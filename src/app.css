@@ -307,3 +307,54 @@ input[type='checkbox'] {
     width: min(92vw, 640px);
   }
 }
+
+/* 触屏设备：加大滑块触控目标 */
+@media (pointer: coarse) {
+  input[type='range'] {
+    height: 8px;
+  }
+  input[type='range']::-webkit-slider-thumb {
+    width: 22px;
+    height: 22px;
+  }
+  input[type='range']::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+  }
+  button {
+    padding: 12px 18px;
+  }
+  .hud {
+    font-size: 15px;
+  }
+  .hud .score b {
+    font-size: 18px;
+  }
+}
+
+/* 窄屏：指针卡片单列，滑块获得完整宽度 */
+@media (max-width: 640px) {
+  #arms-grid {
+    grid-template-columns: 1fr;
+  }
+  .canvas-box {
+    width: 94vw;
+  }
+  header h1 {
+    font-size: 22px;
+    letter-spacing: 4px;
+  }
+  .panel {
+    width: 94vw;
+  }
+}
+
+@media (max-width: 1080px) {
+  main {
+    flex-direction: column;
+    align-items: center;
+  }
+  .panel {
+    width: min(92vw, 640px);
+  }
+}
