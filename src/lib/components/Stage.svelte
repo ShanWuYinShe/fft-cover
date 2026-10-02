@@ -331,6 +331,10 @@
     if (!ctx || !engine.level) return;
     ctx.clearRect(0, 0, SIZE, SIZE);
 
+    // 切关淡入：整画布内容透明度过渡（0.4 秒）
+    const fade = Math.min(1, (now - engine.levelSwitchAt) / 400);
+    if (fade < 1) ctx.globalAlpha = 0.25 + fade * 0.75;
+
     ctx.save();
     applyView();
 
@@ -639,6 +643,7 @@
       ctx.fillText(label, bx + 10, by);
     }
 
+    ctx.globalAlpha = 1;
     drawSpectrum();
   }
 

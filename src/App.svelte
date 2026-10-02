@@ -191,8 +191,15 @@
         <button title="全部指针清零关闭" onclick={() => engine.clearArms()}>⭯ 清零</button>
         <button title="全部指针复位到默认参数" onclick={() => engine.resetAllArms()}>↺ 复位</button>
         {#if engine.hasSavedArms()}
-          <button title="载入本关最佳得分那局的指针配置" onclick={() => engine.loadSavedArms()}>
-            📥 上届解法
+          <button
+            title="载入上届解法并立即旋转（回放最佳参数的实际效果）"
+            onclick={() => {
+              engine.loadSavedArms();
+              engine.resetRun();
+              engine.startRun();
+            }}
+          >
+            ▶ 回放解法
           </button>
         {/if}
       </div>

@@ -159,6 +159,8 @@ export class GameEngine {
   flashTil = $state<number[]>(Array(ARMS_MAX).fill(0));
   /** 全清冲击波起始时刻（画布特效用） */
   fullClearAt = 0;
+  /** 切关淡入动画起始时刻（画布特效用） */
+  levelSwitchAt = 0;
   /** 各关卡历史最快全清用时（秒） */
   bestClears = $state<Record<string, number>>(loadClears());
   /** 已解锁成就（id → 解锁时间戳） */
@@ -229,6 +231,7 @@ export class GameEngine {
     this.level = makeLevel(def);
     this.trimArmsToLimit();
     this.resetRun();
+    this.levelSwitchAt = performance.now(); // 切关淡入动画起点
   }
 
   loadRandom(): void {
