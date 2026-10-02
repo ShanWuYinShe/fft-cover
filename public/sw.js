@@ -1,0 +1,67 @@
+/* 傅立叶指针 · Service Worker
+ * 策略：
+ *  - 导航请求（HTML）与 manifest：network-first，失败回退缓存（保证更新可见 + 离线可玩）
+ *  - 带指纹的资源（/assets/*）、图标：cache-first（内容不可变，命中即用）
+ */
+const CACHE = 'fft-pointers-v1';
+const SHELL = [
+  '/',
+  '/manifest.webmanifest',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/apple-touch-icon.png',
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches
+      .open(CACHE)
+      .then((cache) => cache.addAll(SHELL))
+      .then(() => self.skipWaiting()),
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim()),
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
+
+  // 导航与 manifest：network-first
+  if (req.mode === 'navigate' || url.pathname === '/manifest.webmanifest') {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req).then((hit) => hit || caches.match('/'))),
+    );
+    return;
+  }
+
+  // 静态资源：cache-first（miss 时回源并入库）
+  if (url.pathname.startsWith('/assets/') || /\.(png|svg|ico|webmanifest)$/.test(url.pathname)) {
+    event.respondWith(
+      caches.match(req).then(
+        (hit) =>
+          hit ||
+          fetch(req).then((res) => {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(req, copy));
+            return res;
+          }),
+      ),
+    );
+  }
+});

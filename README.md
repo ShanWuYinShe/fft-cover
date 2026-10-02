@@ -37,6 +37,17 @@
 
 ## 开发
 
+## PWA
+
+线上为可安装的 PWA：手机浏览器菜单「添加到主屏幕」后可全屏运行，**离线也能玩**。
+
+- `public/manifest.webmanifest` — standalone 显示、深色主题、192/512/maskable 图标
+- `public/sw.js` — Service Worker：
+  - 导航与 manifest：**network-first**（保证新版本可见），断网回退缓存
+  - `/assets/*`、图标：**cache-first**（文件名带指纹，内容不可变）
+- 图标由 `icon.svg` 通过 headless Chrome 栅格化生成（192/512/180/32）
+- 仅生产构建注册 SW（dev 下不注册，避免缓存干扰开发）
+
 ## 部署（workwork-server）
 
 线上地址：**https://game.chaoset.com/**（CF 橙云代理，源站 IPv6-only）。

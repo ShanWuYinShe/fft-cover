@@ -1,0 +1,19 @@
+{
+  "name": "傅立叶指针 · 旋转连杆挑战",
+  "short_name": "傅立叶指针",
+  "description": "把最多 10 个旋转指针首尾相连，合成傅立叶级数曲线，收集尽可能多的目标点",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0d18",
+  "theme_color": "#0a0d18",
+  "lang": "zh-CN",
+  "categories": ["games", "education"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
