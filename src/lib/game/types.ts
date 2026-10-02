@@ -16,6 +16,13 @@ export interface Arm {
   phase: number;
 }
 
+/** 频谱分量：频率 k 的模（画布像素）与相位（弧度） */
+export interface SpectrumEntry {
+  k: number;
+  mag: number;
+  phase: number;
+}
+
 /** 游戏阶段：编辑 / 运行中 / 暂停 / 已结算 */
 export type GamePhase = 'edit' | 'running' | 'paused' | 'done';
 
@@ -43,6 +50,8 @@ export interface Level {
   tol: number;
   /** 目标曲线光滑采样（画布坐标，编辑态作参考轮廓） */
   curve: Vec[];
+  /** 目标曲线的离散傅里叶频谱（供"频谱对比"叠加显示） */
+  spectrum: SpectrumEntry[];
   /** 本关可用指针上限 */
   armLimit: number;
   random?: boolean;

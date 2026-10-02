@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SIZE, T0 } from './constants';
-import { armAngle, buildPoints, chainAt, resample, tipAt } from './math';
+import { armAngle, buildCurve, buildPoints, chainAt, dftSpectrum, resample, tipAt } from './math';
 import type { Arm, Vec } from './types';
 
 describe('resample', () => {
@@ -63,6 +63,30 @@ describe('chainAt / tipAt', () => {
     const joints = chainAt(arms, 0);
     expect(joints).toHaveLength(2); // 起点 + 1 根启用指针
     expect(joints[1].x).toBeCloseTo(SIZE / 2 + 30, 5);
+  });
+});
+
+describe('dftSpectrum', () => {
+  it('圆的频谱只在 k=1 处有分量，模等于半径', () => {
+    const curve = buildCurve((t) => ({ x: 120 * Math.cos(t), y: 120 * Math.sin(t) }));
+    const spec = dftSpectrum(curve);
+    const k1 = spec.find((s) => s.k === 1)!;
+    expect(k1.mag).toBeCloseTo(120, 0);
+    expect(k1.phase).toBeCloseTo(0, 2);
+    const others = spec.filter((s) => Math.abs(s.k) !== 1 && s.k !== 0);
+    expect(others.every((s) => s.mag < 1)).toBe(true);
+  });
+
+  it('椭圆在 k=±1 出现长度不等的频率对', () => {
+    const curve = buildCurve((t) => ({ x: 200 * Math.cos(t), y: 105 * Math.sin(t) }));
+    const spec = dftSpectrum(curve);
+    const k1 = spec.find((e) => e.k === 1)!;
+    const km1 = spec.find((e) => e.k === -1)!;
+    // 归一化 0.6 倍后：|c1| = 152.5×0.6 ≈ 91.5，|c-1| = 47.5×0.6 ≈ 28.5
+    expect(k1.mag).toBeCloseTo(91.5, 0);
+    expect(km1.mag).toBeCloseTo(28.5, 0);
+    const k2 = spec.find((e) => e.k === 2)!;
+    expect(k2.mag).toBeLessThan(1);
   });
 });
 

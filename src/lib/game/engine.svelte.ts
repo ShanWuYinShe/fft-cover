@@ -134,6 +134,8 @@ export class GameEngine {
   toast = $state<{ id: string; name: string } | null>(null);
   /** 沙盒转速档位 */
   speed = $state(1);
+  /** 频谱对比开关：在频谱仪上叠加目标曲线的真实频谱 */
+  spectrumCompare = $state(false);
   /** 结算浮层是否显示"全清新纪录" */
   newClearRecord = $state(false);
   /** 各关保存的解法参数（最佳得分那局的指针配置） */
@@ -221,6 +223,11 @@ export class GameEngine {
   /** 沙盒转速档位循环 0.5× → 1× → 2× */
   cycleSpeed(): void {
     this.speed = this.speed === 0.5 ? 1 : this.speed === 1 ? 2 : 0.5;
+  }
+
+  /** 切换频谱对比叠加 */
+  toggleSpectrumCompare(): void {
+    this.spectrumCompare = !this.spectrumCompare;
   }
 
   /** 本关历史最快全清用时（未全清过返回 null） */
@@ -508,6 +515,17 @@ export class GameEngine {
     if (this.trail.length > 2400) this.trail.splice(0, this.trail.length - 2400);
     let finished = false;
     if (!this.sandbox && this.t >= RUN_DUR) {
+      this.stopRun();
+      finished = true;
+    }
+    // 全清 3 秒后自动结算：免去第二圈的空转等待
+    if (
+      !this.sandbox &&
+      !finished &&
+      this.clearT !== null &&
+      this.t - this.clearT >= 3 &&
+      this.phase === 'running'
+    ) {
       this.stopRun();
       finished = true;
     }

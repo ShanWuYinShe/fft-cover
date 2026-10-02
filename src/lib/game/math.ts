@@ -1,5 +1,5 @@
 import { SIZE, T0 } from './constants';
-import type { Arm, Vec } from './types';
+import type { Arm, SpectrumEntry, Vec } from './types';
 
 /** 沿弧长均匀重采样为 n 个点 */
 export function resample(pts: Vec[], n: number): Vec[] {
@@ -74,6 +74,33 @@ export function buildCurve(fn: (t: number) => Vec, samples = 1200): Vec[] {
   const raw: Vec[] = [];
   for (let i = 0; i < samples; i++) raw.push(fn((i / samples) * Math.PI * 2));
   return normalizeShape(raw);
+}
+
+/**
+ * 目标曲线的离散傅里叶频谱：把曲线点列视为复数序列 x+iy，
+ * cₖ = (1/N)Σⱼ Pⱼ·e^{−i2πkj/N}，返回 |cₖ| 与 arg(cₖ)。
+ * 结果直接对应"一根半径 |cₖ|、相位 arg(cₖ)、频率 k× 的指针"。
+ */
+export function dftSpectrum(curve: Vec[], kMax = 10): SpectrumEntry[] {
+  const N = curve.length;
+  const out: SpectrumEntry[] = [];
+  for (let k = -kMax; k <= kMax; k++) {
+    let re = 0;
+    let im = 0;
+    for (let j = 0; j < N; j++) {
+      const th = (2 * Math.PI * k * j) / N;
+      const c = Math.cos(th);
+      const s = Math.sin(th);
+      const x = curve[j].x;
+      const y = curve[j].y;
+      re += x * c + y * s;
+      im += y * c - x * s;
+    }
+    re /= N;
+    im /= N;
+    out.push({ k, mag: Math.hypot(re, im), phase: Math.atan2(im, re) });
+  }
+  return out;
 }
 
 /** 指针 k 在时刻 tt 的绝对角度（弧度）。freq 可为负 = 反转。 */

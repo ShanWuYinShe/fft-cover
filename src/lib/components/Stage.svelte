@@ -98,13 +98,27 @@
     ctx.strokeRect(x0 - 10, y0, 148, 64);
     ctx.fillStyle = 'rgba(139,147,167,.95)';
     ctx.font = '10px sans-serif';
-    ctx.fillText('频谱 |rₖ|（你的傅立叶系数）', x0 - 4, y0 + 12);
+    ctx.fillText('频谱 |rₖ|', x0 - 4, y0 + 12);
+    if (engine.spectrumCompare) {
+      ctx.fillStyle = 'rgba(251,191,36,.9)';
+      ctx.fillText('金框=目标', x0 + 44, y0 + 12);
+    }
     const zx = x0 - 1 + 64;
     ctx.strokeStyle = 'rgba(255,255,255,.18)';
     ctx.beginPath();
     ctx.moveTo(zx, y0 + 18);
     ctx.lineTo(zx, y0 + 58);
     ctx.stroke();
+    // 目标频谱对比（金色描边柱）：对齐它 = 完美拟合
+    if (engine.spectrumCompare && engine.level) {
+      for (const s of engine.level.spectrum) {
+        if (s.mag < 2) continue;
+        const px = x0 - 1 + (s.k + 10) * 6.4;
+        const h = Math.max(2, (s.mag / 210) * 34);
+        ctx.strokeStyle = 'rgba(251,191,36,.85)';
+        ctx.strokeRect(px - 2.5, y0 + 58 - h, 5, h);
+      }
+    }
     for (const a of on) {
       const px = x0 - 1 + (a.freq + 10) * 6.4;
       const h = Math.max(2, (a.r / 210) * 34);
@@ -180,7 +194,7 @@
         if (engine.collectedCount === engine.total && engine.collectedCount > 0) {
           ctx.fillStyle = 'rgba(251,191,36,.95)';
           ctx.font = 'bold 12px sans-serif';
-          ctx.fillText('✨ 全清！按 S 结算（用时越短越好）', 10, 30);
+          ctx.fillText('✨ 全清！3 秒后自动结算', 10, 30);
         }
       }
     }

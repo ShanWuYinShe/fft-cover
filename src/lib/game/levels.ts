@@ -1,5 +1,12 @@
 import { ARMS_MAX } from './constants';
-import { buildPoints, buildCurve, densifyPoly, normalizeShape, resample } from './math';
+import {
+  buildPoints,
+  buildCurve,
+  densifyPoly,
+  dftSpectrum,
+  normalizeShape,
+  resample,
+} from './math';
 import type { Level, LevelDef, Vec } from './types';
 
 const C = Math.cos;
@@ -121,6 +128,7 @@ export function makeLevel(def: LevelDef): Level {
     pts,
     tol: 13,
     curve,
+    spectrum: dftSpectrum(curve),
     armLimit: def.armLimit ?? ARMS_MAX,
   };
 }
@@ -172,6 +180,7 @@ export function makeRandomLevel(seed: number): Level {
     pts: resample(curve, 26),
     tol: 13,
     curve,
+    spectrum: dftSpectrum(curve),
     armLimit: 4,
     random: true,
   };

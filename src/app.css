@@ -190,6 +190,11 @@ button:disabled {
   padding: 5px 10px;
 }
 
+.tools-row button.gold {
+  border-color: rgba(251, 191, 36, 0.6);
+  color: var(--gold);
+}
+
 #arms-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

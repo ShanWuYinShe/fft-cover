@@ -107,6 +107,13 @@
         <span class="muted">（本关上限 {engine.level?.armLimit ?? 10} 根；频率负数 = 反转）</span>
       </h2>
       <div class="tools-row">
+        <button
+          title="在频谱仪上叠加目标曲线的真实频谱（教学用）"
+          class:gold={engine.spectrumCompare}
+          onclick={() => engine.toggleSpectrumCompare()}
+        >
+          🔍 频谱对比
+        </button>
         <button title="随机化已启用指针的半径与相位" onclick={() => engine.randomizeArms()}>
           🎲 随机参数
         </button>
