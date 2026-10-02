@@ -50,6 +50,17 @@ export const LEVEL_DEFS: LevelDef[] = [
     },
   },
   {
+    id: 'gear8',
+    name: '八齿齿轮',
+    hint: 'e^{iθ}(1+0.22cos8θ) = e^{iθ} + 0.11e^{i9θ} + 0.11e^{−i7θ}：<b>1× 主臂 + 9× 与 −7×（反转）</b>小半径副臂。9× 转得飞快！',
+    n: 30,
+    armLimit: 3,
+    fn: (t) => {
+      const r = 160 * (1 + 0.22 * C(8 * t));
+      return { x: r * C(t), y: r * S(t) };
+    },
+  },
+  {
     id: 'inf8',
     name: '无穷 ∞',
     hint: 'x 方向用 1×，y 方向的 sin2θ 需要 <b>2× 指针（相位约 270°）</b>。两根就够！',
@@ -60,6 +71,14 @@ export const LEVEL_DEFS: LevelDef[] = [
       const a = 210;
       return { x: (a * C(t)) / d, y: (a * S(t) * C(t)) / d };
     },
+  },
+  {
+    id: 'lissajous',
+    name: '利萨茹 3:2',
+    hint: 'x=cos3t、y=sin2t 的复数分解含 <b>±3× 与 ±2×</b> 四根——同频率的正反两根相位差 90°，这就是"频率对"。',
+    n: 26,
+    armLimit: 4,
+    fn: (t) => ({ x: 210 * C(3 * t), y: 150 * S(2 * t) }),
   },
   {
     id: 'star5',

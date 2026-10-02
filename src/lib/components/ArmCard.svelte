@@ -9,6 +9,7 @@
 
   function setR(e: Event): void {
     engine.setArm(index, { r: +(e.currentTarget as HTMLInputElement).value });
+    engine.flashArm(index);
   }
   function setFreq(e: Event): void {
     engine.setArm(index, { freq: +(e.currentTarget as HTMLSelectElement).value });
@@ -16,6 +17,7 @@
   function setPhase(e: Event): void {
     const deg = +(e.currentTarget as HTMLInputElement).value;
     engine.setArm(index, { phase: (deg * Math.PI) / 180 });
+    engine.flashArm(index);
   }
   function toggleOn(e: Event): void {
     engine.setArm(index, { on: (e.currentTarget as HTMLInputElement).checked });

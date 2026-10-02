@@ -2,11 +2,77 @@
   import { onMount } from 'svelte';
   import { engine } from '../game/engine.svelte';
   import { chainAt, tipAt } from '../game/math';
+  import type { Vec } from '../game/types';
   import { RUN_DUR, SIZE, T0 } from '../game/constants';
   import { collectSound, finishChord, perfectArpeggio } from '../game/audio';
 
   let canvas: HTMLCanvasElement | undefined = $state();
   let ctx: CanvasRenderingContext2D | null = null;
+  /** 拖拽中的指针下标（-1 = 无；编辑态拖关节调半径/相位） */
+  let dragIdx = -1;
+
+  /** CSS 像素 → 画布逻辑坐标 */
+  function toLocal(ev: PointerEvent): { x: number; y: number } {
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    const k = SIZE / rect.width;
+    return { x: (ev.clientX - rect.left) * k, y: (ev.clientY - rect.top) * k };
+  }
+
+  /** 编辑态命中关节：返回被拖指针的下标 */
+  function hitJoint(x: number, y: number): number {
+    if (engine.phase !== 'edit') return -1;
+    const joints = chainAt(engine.arms, 0);
+    for (let i = 1; i < joints.length; i++) {
+      if (Math.hypot(joints[i].x - x, joints[i].y - y) < 16) {
+        let n = -1;
+        for (let k = 0; k < engine.arms.length; k++) {
+          if (engine.arms[k].on) {
+            n++;
+            if (n === i - 1) return k;
+          }
+        }
+      }
+    }
+    return -1;
+  }
+
+  function onPointerDown(ev: PointerEvent): void {
+    const { x, y } = toLocal(ev);
+    dragIdx = hitJoint(x, y);
+    if (dragIdx >= 0) {
+      try {
+        canvas?.setPointerCapture(ev.pointerId);
+      } catch {
+        /* 合成事件无有效 pointerId 时忽略 */
+      }
+    }
+  }
+
+  function onPointerMove(ev: PointerEvent): void {
+    if (dragIdx < 0 || !canvas) return;
+    const { x, y } = toLocal(ev);
+    const joints = chainAt(engine.arms, 0);
+    let n = -1;
+    let start: Vec = { x: SIZE / 2, y: SIZE / 2 };
+    for (let k = 0; k < engine.arms.length; k++) {
+      if (!engine.arms[k].on) continue;
+      n++;
+      if (k === dragIdx) {
+        start = joints[n]; // 本根起点 = 前一关节，不随拖动改变
+        break;
+      }
+    }
+    const r = Math.max(0, Math.min(210, Math.hypot(x - start.x, y - start.y)));
+    let phase = Math.atan2(y - start.y, x - start.x);
+    if (phase < 0) phase += Math.PI * 2;
+    engine.setArm(dragIdx, { r: Math.round(r), phase });
+    engine.flashArm(dragIdx);
+  }
+
+  function onPointerUp(): void {
+    dragIdx = -1;
+  }
 
   function resize(): void {
     if (!canvas) return;
@@ -159,7 +225,9 @@
     let enabledIdx = 0;
     for (let i = 1; i < joints.length; i++) {
       while (!engine.arms[enabledIdx].on) enabledIdx++;
-      const a = engine.arms[enabledIdx++];
+      const idx = enabledIdx++;
+      const a = engine.arms[idx];
+      const hot = dragIdx === idx || now < engine.flashTil[idx];
       const c = joints[i - 1];
       ctx.strokeStyle = 'rgba(255,255,255,.14)';
       ctx.lineWidth = 1;
@@ -168,15 +236,15 @@
       ctx.arc(c.x, c.y, a.r, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
-      ctx.strokeStyle = 'rgba(230,233,242,.55)';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = hot ? 'rgba(251,191,36,.95)' : 'rgba(230,233,242,.55)';
+      ctx.lineWidth = hot ? 3 : 2;
       ctx.beginPath();
       ctx.moveTo(c.x, c.y);
       ctx.lineTo(joints[i].x, joints[i].y);
       ctx.stroke();
-      ctx.fillStyle = '#a78bfa';
-      ctx.shadowColor = 'rgba(167,139,250,.8)';
-      ctx.shadowBlur = 6;
+      ctx.fillStyle = hot ? '#fbbf24' : '#a78bfa';
+      ctx.shadowColor = hot ? 'rgba(251,191,36,.9)' : 'rgba(167,139,250,.8)';
+      ctx.shadowBlur = hot ? 12 : 6;
       ctx.beginPath();
       ctx.arc(c.x, c.y, 3, 0, Math.PI * 2);
       ctx.fill();
@@ -192,6 +260,19 @@
     ctx.arc(tip.x, tip.y, 5, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
+
+    // 全清冲击波：收集全部点时金色圆环自中心扩散
+    if (engine.fullClearAt > 0) {
+      const age = (now - engine.fullClearAt) / 1200;
+      if (age < 1) {
+        ctx.strokeStyle = 'rgba(251,191,36,' + ((1 - age) * 0.8).toFixed(3) + ')';
+        ctx.lineWidth = 8 * (1 - age) + 1;
+        ctx.beginPath();
+        ctx.arc(SIZE / 2, SIZE / 2, 20 + age * 440, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.lineWidth = 1;
+      }
+    }
 
     drawSpectrum();
   }
@@ -226,6 +307,10 @@
 
 <canvas
   bind:this={canvas}
+  onpointerdown={onPointerDown}
+  onpointermove={onPointerMove}
+  onpointerup={onPointerUp}
+  onpointercancel={onPointerUp}
   onclick={() => {
     if (engine.phase === 'done' && engine.resultDismissed) engine.resultDismissed = false;
   }}

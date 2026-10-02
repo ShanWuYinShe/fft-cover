@@ -76,6 +76,10 @@ export class GameEngine {
   lastRunSandbox = $state(false);
   /** 各关卡历史最佳星级 */
   bestStars = $state<Record<string, number>>(loadBest());
+  /** 调参高亮：各指针关节的画布高亮截止时刻（滑块/拖拽联动） */
+  flashTil = $state<number[]>(Array(ARMS_MAX).fill(0));
+  /** 全清冲击波起始时刻（画布特效用） */
+  fullClearAt = 0;
 
   /** 已收集点索引（画布渲染用，无需响应式） */
   readonly collected = new Set<number>();
@@ -254,6 +258,11 @@ export class GameEngine {
     return this.arms.filter((a) => a.on).length < (this.level?.armLimit ?? ARMS_MAX);
   }
 
+  /** 滑块/拖拽调参时短暂高亮对应关节（画布联动） */
+  flashArm(i: number): void {
+    this.flashTil[i] = performance.now() + 900;
+  }
+
   /** 尖端处尝试收集：命中则按连击计分（COMBO_WINDOW 内连收 combo 递增） */
   tryCollect(p: Vec): boolean {
     const pts = this.level?.pts;
@@ -271,6 +280,7 @@ export class GameEngine {
         this.collected.add(i);
         this.collectAnim.set(i, now);
         this.collectedCount++;
+        if (this.collectedCount === pts.length) this.fullClearAt = now; // 全清冲击波
         return true;
       }
     }

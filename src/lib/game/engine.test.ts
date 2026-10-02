@@ -98,13 +98,13 @@ describe('GameEngine', () => {
   });
 
   it('切到上限更低的关卡时裁剪超出指针', () => {
-    engine.loadLevel(LEVEL_DEFS[6]); // 心形上限 8
+    engine.loadLevel(LEVEL_DEFS.find((d) => d.id === 'heart')!); // 心形上限 8
     engine.setArm(2, { on: true });
     engine.setArm(3, { on: true });
     engine.setArm(4, { on: true });
     engine.setArm(5, { on: true });
     expect(engine.arms.filter((a) => a.on)).toHaveLength(5); // 圆关裁剩 1 根 + 新启 4 根
-    engine.loadLevel(LEVEL_DEFS[1]); // 椭圆上限 2
+    engine.loadLevel(LEVEL_DEFS.find((d) => d.id === 'ellipse')!); // 椭圆上限 2
     expect(engine.arms.filter((a) => a.on)).toHaveLength(2);
   });
 });
