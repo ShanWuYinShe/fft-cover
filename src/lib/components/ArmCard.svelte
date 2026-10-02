@@ -87,14 +87,38 @@
 
 <style>
   .arm {
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 7px 9px 8px;
-    background: rgba(255, 255, 255, 0.02);
+    position: relative;
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-md);
+    padding: 8px 9px 9px 11px;
+    background: rgba(255, 255, 255, 0.022);
     min-width: 0;
+    transition:
+      border-color 0.15s,
+      background 0.15s;
+  }
+  /* 启用态：左侧青色指示条 */
+  .arm::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 9px;
+    bottom: 9px;
+    width: 2.5px;
+    border-radius: 0 2px 2px 0;
+    background: linear-gradient(180deg, var(--cyan), var(--purple));
+    opacity: 1;
+    transition: opacity 0.15s;
+  }
+  .arm.off::before {
+    opacity: 0;
+  }
+  .arm:hover {
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.035);
   }
   .arm.off {
-    opacity: 0.45;
+    opacity: 0.5;
   }
   .row1 {
     display: flex;
@@ -102,54 +126,73 @@
     gap: 7px;
   }
   .row1 b {
-    width: 22px;
+    width: 20px;
     text-align: center;
     color: var(--cyan);
+    font-size: var(--fs-md);
   }
   .row1 input[type='range'] {
     flex: 1;
   }
   .rv {
-    width: 34px;
+    width: 32px;
     text-align: right;
-    font-size: 12px;
-    color: var(--muted);
+    font-size: var(--fs-sm);
+    color: var(--text);
     font-variant-numeric: tabular-nums;
     appearance: none;
     background: none;
     border: none;
     padding: 0;
+    font-family: inherit;
+    cursor: text;
+  }
+  .rv:hover {
+    color: var(--gold);
   }
   .row2 {
     display: flex;
     align-items: center;
-    gap: 7px;
-    margin-top: 6px;
-    font-size: 11.5px;
+    gap: 6px;
+    margin-top: 7px;
+    font-size: var(--fs-xs);
   }
   .dir {
     appearance: none;
-    background: #141a2e;
+    background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: var(--r-sm);
     color: var(--cyan);
-    font-size: 13px;
+    font-size: var(--fs-md);
     width: 26px;
-    height: 22px;
+    height: 24px;
     padding: 0;
     cursor: pointer;
+    transition:
+      border-color 0.15s,
+      background 0.15s;
+  }
+  .dir:hover {
+    border-color: rgba(79, 209, 197, 0.6);
+    background: var(--cyan-dim);
   }
   select {
-    background: #141a2e;
+    background: #121829;
     color: var(--text);
     border: 1px solid var(--line);
-    border-radius: 6px;
-    font-size: 11.5px;
-    padding: 2px 4px;
+    border-radius: var(--r-sm);
+    font-size: var(--fs-xs);
+    padding: 3px 4px;
+    min-height: 24px;
     font-family: inherit;
+    cursor: pointer;
+    outline: none;
+  }
+  select:hover {
+    border-color: rgba(79, 209, 197, 0.45);
   }
   .pv {
-    width: 34px;
+    width: 32px;
     text-align: right;
     color: var(--muted);
     font-variant-numeric: tabular-nums;
@@ -157,6 +200,11 @@
     background: none;
     border: none;
     padding: 0;
+    font-family: inherit;
+    cursor: text;
+  }
+  .pv:hover {
+    color: var(--gold);
   }
   .toggle {
     display: flex;

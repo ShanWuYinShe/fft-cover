@@ -19,46 +19,96 @@
 
 <section>
   <h2>本次成绩</h2>
-  <div class="score-line">
-    <span>已收集</span>
-    <span><b>{engine.collectedCount}</b> / {engine.total} 点</span>
+
+  <div class="metrics">
+    <div class="metric">
+      <span class="k">已收集</span>
+      <span class="v"><b>{engine.collectedCount}</b><i>/{engine.total}</i></span>
+    </div>
+    <div class="metric">
+      <span class="k">得分{engine.newRecord ? ' 🆕' : ''}</span>
+      <span class="v gold"><b>{engine.score}</b></span>
+    </div>
   </div>
-  <div class="score-line">
-    <span>得分</span>
-    <span><b>{engine.score}</b>{engine.newRecord ? ' 🆕' : ''}</span>
+
+  <div class="meta">
+    <span>最佳 {engine.bestScore || '—'}</span>
+    <span class="dot">·</span>
+    <span>星级 <i class="st">{bestText}</i></span>
+    <span class="dot">·</span>
+    <span>全清 {engine.bestClear !== null ? engine.bestClear.toFixed(1) + 's' : '—'}</span>
   </div>
-  <div class="stars-line">
-    最佳得分：{engine.bestScore || '—'} · 历史星级：<span class="st">{bestText}</span>
-  </div>
-  <div class="stars-line">
-    最快全清：{engine.bestClear !== null ? engine.bestClear.toFixed(1) + 's' : '—'}
-  </div>
+
   {#if nextStarGap !== null}
-    <div class="stars-line">距下一星：还需收集 <span class="gap">{nextStarGap}</span> 点</div>
+    <div class="next">距下一星还差 <b>{nextStarGap}</b> 点</div>
   {/if}
 </section>
 
 <style>
-  .score-line {
-    font-size: 14px;
+  .metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .metric {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
+    flex-direction: column;
+    gap: 3px;
+    padding: 9px 12px;
+    border-radius: var(--r-md);
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--line-2);
   }
-  .score-line b {
+  .metric .k {
+    font-size: var(--fs-xs);
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .metric .v {
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .metric .v i {
+    font-style: normal;
+    font-size: var(--fs-sm);
+    font-weight: 400;
+    color: var(--muted-2);
+  }
+  .metric .v.gold b {
     color: var(--gold);
-    font-size: 20px;
+    text-shadow: 0 0 18px rgba(251, 191, 36, 0.25);
   }
-  .stars-line {
-    margin-top: 6px;
-    font-size: 13px;
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: var(--fs-sm);
     color: var(--muted);
   }
-  .st {
-    color: var(--gold);
-    letter-spacing: 2px;
+  .meta .dot {
+    color: var(--muted-2);
   }
-  .gap {
+  .meta .st {
+    color: var(--gold);
+    font-style: normal;
+    letter-spacing: 1px;
+  }
+  .next {
+    margin-top: 9px;
+    padding: 6px 11px;
+    border-radius: var(--r-sm);
+    background: var(--cyan-dim);
+    border: 1px solid rgba(79, 209, 197, 0.28);
+    font-size: var(--fs-sm);
     color: var(--cyan);
+  }
+  .next b {
+    font-size: var(--fs-md);
+    font-variant-numeric: tabular-nums;
   }
 </style>

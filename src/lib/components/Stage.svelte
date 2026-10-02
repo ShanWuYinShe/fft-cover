@@ -103,54 +103,103 @@
   }
 
   /** 频谱仪：右上角实时显示各启用指针的频率与半径——玩家正在编辑的傅立叶系数 */
+  /** 频谱仪：右上角精致面板，实时显示各启用指针的频率与半径 */
   function drawSpectrum(): void {
     const on = engine.arms.filter((a) => a.on);
     if (on.length === 0 || !ctx) return;
-    const x0 = SIZE - 148;
-    const y0 = 70; // 位于 HUD 文字下方，大小屏均不重叠
-    ctx.fillStyle = 'rgba(10,14,26,.6)';
-    ctx.fillRect(x0 - 10, y0, 148, 64);
-    ctx.strokeStyle = 'rgba(255,255,255,.1)';
-    ctx.strokeRect(x0 - 10, y0, 148, 64);
-    ctx.fillStyle = 'rgba(139,147,167,.95)';
-    ctx.font = '10px sans-serif';
-    ctx.fillText('频谱 |rₖ|', x0 - 4, y0 + 12);
+    const W = 152;
+    const H = 74;
+    const x0 = SIZE - W - 12;
+    const y0 = 68;
+    const radius = 10;
+
+    // 面板背景（圆角 + 渐变 + 描边）
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x0 + radius, y0);
+    ctx.arcTo(x0 + W, y0, x0 + W, y0 + H, radius);
+    ctx.arcTo(x0 + W, y0 + H, x0, y0 + H, radius);
+    ctx.arcTo(x0, y0 + H, x0, y0, radius);
+    ctx.arcTo(x0, y0, x0 + W, y0, radius);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, y0, 0, y0 + H);
+    grad.addColorStop(0, 'rgba(18,24,44,.88)');
+    grad.addColorStop(1, 'rgba(11,15,30,.82)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.11)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.clip();
+
+    // 标题栏
+    ctx.fillStyle = 'rgba(139,147,167,.92)';
+    ctx.font = '9px sans-serif';
+    ctx.fillText('频谱 |rₖ|', x0 + 9, y0 + 13);
     if (engine.spectrumCompare) {
       ctx.fillStyle = 'rgba(251,191,36,.9)';
-      ctx.fillText('金框=目标', x0 + 44, y0 + 12);
+      ctx.fillText('金框=目标', x0 + 62, y0 + 13);
     }
-    const zx = x0 - 1 + 64;
-    ctx.strokeStyle = 'rgba(255,255,255,.18)';
+    // 标题分隔线
+    ctx.strokeStyle = 'rgba(255,255,255,.07)';
     ctx.beginPath();
-    ctx.moveTo(zx, y0 + 18);
-    ctx.lineTo(zx, y0 + 58);
+    ctx.moveTo(x0 + 8, y0 + 18);
+    ctx.lineTo(x0 + W - 8, y0 + 18);
     ctx.stroke();
-    // 目标频谱对比（金色描边柱）：对齐它 = 完美拟合
+
+    const baseY = y0 + H - 10;
+    const maxH = 34;
+    const zx = x0 + 10 + 10 * 6.4;
+    // 零频参考线与频率刻度
+    ctx.strokeStyle = 'rgba(255,255,255,.14)';
+    ctx.beginPath();
+    ctx.moveTo(zx, y0 + 22);
+    ctx.lineTo(zx, baseY);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(139,147,167,.5)';
+    ctx.font = '7px sans-serif';
+    ctx.fillText('0', zx - 2, baseY + 8);
+    ctx.fillText('-10×', x0 + 10, baseY + 8);
+    ctx.fillText('+10×', x0 + W - 26, baseY + 8);
+
+    // 目标频谱（金色描边柱）
     if (engine.spectrumCompare && engine.level) {
       for (const s of engine.level.spectrum) {
         if (s.mag < 2) continue;
-        const px = x0 - 1 + (s.k + 10) * 6.4;
-        const h = Math.max(2, (s.mag / 210) * 34);
+        const px = x0 + 10 + (s.k + 10) * 6.4;
+        const h = Math.max(2, (s.mag / 210) * maxH);
         ctx.strokeStyle = 'rgba(251,191,36,.85)';
-        ctx.strokeRect(px - 2.5, y0 + 58 - h, 5, h);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(px - 2.5, baseY - h, 5, h);
       }
     }
+    // 玩家频谱柱（渐变填充）
     for (const a of on) {
-      const px = x0 - 1 + (a.freq + 10) * 6.4;
-      const h = Math.max(2, (a.r / 210) * 34);
-      ctx.fillStyle = a.freq < 0 ? 'rgba(167,139,250,.9)' : 'rgba(79,209,197,.9)';
-      ctx.fillRect(px - 2.5, y0 + 58 - h, 5, h);
+      const px = x0 + 10 + (a.freq + 10) * 6.4;
+      const h = Math.max(2, (a.r / 210) * maxH);
+      const barGrad = ctx.createLinearGradient(0, baseY - h, 0, baseY);
+      if (a.freq < 0) {
+        barGrad.addColorStop(0, 'rgba(167,139,250,1)');
+        barGrad.addColorStop(1, 'rgba(167,139,250,.35)');
+      } else {
+        barGrad.addColorStop(0, 'rgba(79,209,197,1)');
+        barGrad.addColorStop(1, 'rgba(79,209,197,.35)');
+      }
+      ctx.fillStyle = barGrad;
+      ctx.fillRect(px - 2.5, baseY - h, 5, h);
     }
+    ctx.restore();
   }
 
   function draw(now: number): void {
     if (!ctx || !engine.level) return;
     ctx.clearRect(0, 0, SIZE, SIZE);
 
-    // 网格底纹
-    ctx.strokeStyle = 'rgba(255,255,255,.035)';
+    // 网格底纹：细网格 + 每 160px 一条稍亮的参考线
     ctx.lineWidth = 1;
-    for (let g = 80; g < SIZE; g += 80) {
+    for (let g = 40; g < SIZE; g += 40) {
+      const major = g % 160 === 0;
+      ctx.strokeStyle = major ? 'rgba(255,255,255,.05)' : 'rgba(255,255,255,.022)';
       ctx.beginPath();
       ctx.moveTo(g, 0);
       ctx.lineTo(g, SIZE);
@@ -161,14 +210,19 @@
       ctx.stroke();
     }
 
-    // 原点十字
-    ctx.strokeStyle = 'rgba(255,255,255,.25)';
+    // 原点：细十字 + 中心点
+    ctx.strokeStyle = 'rgba(230,233,242,.22)';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(SIZE / 2 - 7, SIZE / 2);
-    ctx.lineTo(SIZE / 2 + 7, SIZE / 2);
-    ctx.moveTo(SIZE / 2, SIZE / 2 - 7);
-    ctx.lineTo(SIZE / 2, SIZE / 2 + 7);
+    ctx.moveTo(SIZE / 2 - 8, SIZE / 2);
+    ctx.lineTo(SIZE / 2 + 8, SIZE / 2);
+    ctx.moveTo(SIZE / 2, SIZE / 2 - 8);
+    ctx.lineTo(SIZE / 2, SIZE / 2 + 8);
     ctx.stroke();
+    ctx.fillStyle = 'rgba(230,233,242,.35)';
+    ctx.beginPath();
+    ctx.arc(SIZE / 2, SIZE / 2, 1.6, 0, Math.PI * 2);
+    ctx.fill();
 
     // 编辑态：目标曲线参考（暗金虚线）+ 幽灵预览轨迹（紫）
     // ghost 按"参数签名"缓存重建，参数未变时零成本复用

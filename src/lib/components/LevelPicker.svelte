@@ -95,8 +95,11 @@
         {engine.todayBest > 0 ? engine.todayBest + ' 分 · ' : ''}{dailyCountdown}
       </span>
     </button>
-    <div class="diff-row">
-      <span class="diff-label">随机难度</span>
+  </div>
+
+  <div class="gen-row">
+    <span class="gen-label">随机生成</span>
+    <div class="diff-chips">
       {#each DIFFS as d (d.id)}
         <button
           type="button"
@@ -108,24 +111,15 @@
         </button>
       {/each}
     </div>
-    <button
-      class="lv"
-      class:active={engine.level?.random}
-      onclick={() => engine.loadRandom()}
-      title="生成随机关卡"
-    >
-      <span class="nm"
-        >🎲 随机 · {engine.difficulty === 'easy'
-          ? '简单'
-          : engine.difficulty === 'hard'
-            ? '困难'
-            : '普通'}</span
-      >
-      <span class="st">无限</span>
+    <button class="gen-btn" title="按当前难度生成随机关卡" onclick={() => engine.loadRandom()}>
+      🎲 生成
     </button>
-    <button class="lv" onclick={() => (showComposer = true)}>
-      <span class="nm">🎨 创作</span>
-      <span class="st">合成器</span>
+    <button
+      class="gen-btn"
+      title="用谐波合成器创作自己的关卡"
+      onclick={() => (showComposer = true)}
+    >
+      🎨 创作
     </button>
   </div>
   {#if engine.level?.random}
@@ -155,85 +149,144 @@
     gap: 6px;
   }
   .lv {
-    padding: 6px 10px;
-    font-size: 12.5px;
-    border-radius: 8px;
+    padding: 7px 11px;
+    font-size: var(--fs-sm);
+    border-radius: var(--r-sm);
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
     align-items: center;
-    min-width: 58px;
+    min-width: 60px;
+    background: rgba(255, 255, 255, 0.02);
   }
   .lv .nm {
     font-weight: 600;
+    white-space: nowrap;
   }
   .lv .st {
     font-size: 9px;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     color: var(--gold);
     min-height: 11px;
   }
   .lv.active {
-    border-color: var(--cyan);
+    border-color: rgba(79, 209, 197, 0.7);
     color: var(--cyan);
-    box-shadow: 0 0 12px rgba(79, 209, 197, 0.2);
+    background: var(--cyan-dim);
+    box-shadow: 0 0 14px rgba(79, 209, 197, 0.18);
   }
   .lv.locked {
-    opacity: 0.5;
+    opacity: 0.42;
   }
-  .diff-row {
+  /* 生成区：难度 + 生成 + 创作，独立一行 */
+  .gen-row {
     display: flex;
     align-items: center;
-    gap: 5px;
-    margin: 0 0 8px;
-    font-size: 11.5px;
-    color: var(--muted);
+    gap: 6px;
+    margin-top: 9px;
+    padding: 7px 9px;
+    border-radius: var(--r-sm);
+    background: rgba(255, 255, 255, 0.022);
+    border: 1px solid var(--line-2);
     flex-wrap: wrap;
   }
+  .gen-label {
+    font-size: var(--fs-xs);
+    color: var(--muted-2);
+    letter-spacing: 1px;
+  }
+  .diff-chips {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+  }
   .diff-chip {
-    font-size: 11px;
-    padding: 3px 9px;
+    font-size: var(--fs-xs);
+    padding: 3px 10px;
+    min-height: 24px;
     border-radius: 999px;
+    color: var(--muted);
+    flex: 1;
   }
   .diff-chip.active {
-    border-color: var(--purple);
+    border-color: rgba(167, 139, 250, 0.7);
     color: var(--purple);
-    background: rgba(167, 139, 250, 0.08);
+    background: var(--purple-dim);
+    box-shadow: 0 0 10px rgba(167, 139, 250, 0.15);
   }
+  .gen-btn {
+    font-size: var(--fs-sm);
+    padding: 4px 11px;
+    min-height: 28px;
+    border-radius: var(--r-sm);
+    white-space: nowrap;
+  }
+  /* 邀请码行 */
   .seed-row {
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-top: 8px;
-    font-size: 12px;
+    margin-top: 9px;
+    padding: 7px 9px;
+    border-radius: var(--r-sm);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--line-2);
+    font-size: var(--fs-sm);
     color: var(--muted);
     flex-wrap: wrap;
   }
   .seed-row b {
     color: var(--gold);
+    font-variant-numeric: tabular-nums;
   }
   .mini {
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 6px;
+    font-size: var(--fs-xs);
+    padding: 3px 9px;
+    min-height: 26px;
+    border-radius: var(--r-sm);
   }
   .seed-input {
-    width: 110px;
-    background: #141a2e;
+    width: 108px;
+    background: #121829;
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: var(--r-sm);
     color: var(--text);
-    font-size: 12px;
-    padding: 4px 6px;
+    font-size: var(--fs-sm);
+    padding: 5px 8px;
     font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .seed-input:focus {
+    border-color: rgba(79, 209, 197, 0.6);
+  }
+  .seed-input::placeholder {
+    color: var(--muted-2);
   }
   #hint {
-    margin: 10px 0 0;
-    font-size: 12.5px;
+    margin: 11px 0 0;
+    padding-left: 9px;
+    border-left: 2px solid rgba(167, 139, 250, 0.35);
+    font-size: var(--fs-sm);
     color: var(--muted);
-    line-height: 1.6;
+    line-height: 1.7;
   }
   #hint :global(b) {
     color: var(--purple);
+  }
+
+  /* 窄屏：难度 chips 独占一行，生成/创作按钮平分 */
+  @media (max-width: 640px) {
+    .gen-label {
+      order: 1;
+    }
+    .diff-chips {
+      flex-basis: 100%;
+      order: 2;
+    }
+    .gen-btn {
+      flex: 1;
+      order: 3;
+    }
   }
 </style>
