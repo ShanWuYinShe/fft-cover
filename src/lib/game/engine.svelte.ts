@@ -414,6 +414,7 @@ export class GameEngine {
 
   /** 随机化所有已启用指针的半径与相位（激发灵感用） */
   randomizeArms(): void {
+    this.pushArmHistory(true);
     for (const a of this.arms) {
       if (!a.on) continue;
       a.r = Math.round(30 + Math.random() * 120);
@@ -423,6 +424,7 @@ export class GameEngine {
 
   /** 全部指针清零关闭 */
   clearArms(): void {
+    this.pushArmHistory(true);
     for (const a of this.arms) {
       a.on = false;
       a.r = 60;
@@ -432,6 +434,7 @@ export class GameEngine {
 
   /** 复位第 i 根指针到默认参数（半径/频率/相位/方向） */
   resetArm(i: number): void {
+    this.pushArmHistory(true);
     const def = armDefaults()[i];
     if (!def) return;
     Object.assign(this.arms[i], def);
@@ -440,6 +443,7 @@ export class GameEngine {
 
   /** 全部指针复位到默认参数 */
   resetAllArms(): void {
+    this.pushArmHistory(true);
     const defs = armDefaults();
     this.arms.forEach((a, i) => Object.assign(a, defs[i]));
   }
@@ -568,6 +572,7 @@ export class GameEngine {
     const id = this.level?.id;
     const saved = id ? this.armsSaves[id] : undefined;
     if (!saved) return false;
+    this.pushArmHistory(true);
     this.arms = saved.map((a) => ({ ...a }));
     this.resetRun();
     return true;
@@ -618,9 +623,70 @@ export class GameEngine {
     return lines.join('\n');
   }
 
+  /* ---------- 调参撤销/重做 ---------- */
+  private armUndoStack: Arm[][] = [];
+  private armRedoStack: Arm[][] = [];
+  /** 上次压栈时刻（600ms 内的连续变化合并为一条记录） */
+  private lastArmPushAt = 0;
+  /** 拖拽进行中：整段拖动合并为一条记录 */
+  private armEditSession = false;
+  armUndoCount = $state(0);
+  armRedoCount = $state(0);
+
+  private syncArmCounts(): void {
+    this.armUndoCount = this.armUndoStack.length;
+    this.armRedoCount = this.armRedoStack.length;
+  }
+
+  /** 把当前参数压入撤销栈（会话合并：600ms 内或拖拽进行中不重复压） */
+  private pushArmHistory(force = false): void {
+    const now = Date.now();
+    if (!force && now - this.lastArmPushAt < 600) {
+      this.lastArmPushAt = now;
+      return;
+    }
+    this.armUndoStack.push(this.arms.map((a) => ({ ...a })));
+    if (this.armUndoStack.length > 60) this.armUndoStack.shift();
+    this.armRedoStack = [];
+    this.syncArmCounts();
+    this.lastArmPushAt = force ? Number.MAX_SAFE_INTEGER : now;
+  }
+
+  /** 拖拽/滑块等连续交互的会话开始 */
+  beginArmEdit(): void {
+    this.pushArmHistory(true);
+    this.armEditSession = true;
+  }
+
+  /** 连续交互结束 */
+  endArmEdit(): void {
+    this.armEditSession = false;
+    this.lastArmPushAt = Date.now();
+  }
+
+  undoArms(): void {
+    const prev = this.armUndoStack.pop();
+    if (!prev) return;
+    this.armRedoStack.push(this.arms.map((a) => ({ ...a })));
+    this.arms = prev.map((a) => ({ ...a }));
+    this.syncArmCounts();
+    this.lastArmPushAt = 0;
+  }
+
+  redoArms(): void {
+    const next = this.armRedoStack.pop();
+    if (!next) return;
+    this.armUndoStack.push(this.arms.map((a) => ({ ...a })));
+    this.arms = next.map((a) => ({ ...a }));
+    this.syncArmCounts();
+    this.lastArmPushAt = 0;
+  }
+
   /** 修改第 i 根指针参数（启用受本关上限约束） */
   setArm(i: number, patch: Partial<Arm>): void {
     if (patch.on === true && !this.arms[i].on && !this.canEnableMore()) return;
+    const touchesTunable = 'r' in patch || 'freq' in patch || 'phase' in patch || 'on' in patch;
+    if (touchesTunable) this.pushArmHistory();
     Object.assign(this.arms[i], patch);
   }
 

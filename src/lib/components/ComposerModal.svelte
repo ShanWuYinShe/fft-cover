@@ -6,9 +6,37 @@
   let { onclose }: { onclose: () => void } = $props();
 
   let coeffs = $state<HarmonicCoeff[]>(
-    Array.from({ length: 6 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 })),
+    Array.from({ length: 6 }, (_, i) => ({ k: i + 1, mag: i === 0 ? 100 : 0, phase: 0 })),
   );
-  coeffs[0].mag = 100;
+
+  const PRESETS: Record<string, { k: number; mag: number; phase: number }[]> = {
+    圆环: [{ k: 1, mag: 100, phase: 0 }],
+    椭圆: [
+      { k: 1, mag: 100, phase: 0 },
+      { k: 2, mag: 50, phase: 90 },
+    ],
+    花瓣: [
+      { k: 1, mag: 80, phase: 0 },
+      { k: 3, mag: 55, phase: 0 },
+      { k: 5, mag: 28, phase: 0 },
+    ],
+    波纹: [
+      { k: 1, mag: 100, phase: 0 },
+      { k: 6, mag: 38, phase: 0 },
+    ],
+    心搏: [
+      { k: 1, mag: 80, phase: 90 },
+      { k: 2, mag: 50, phase: 180 },
+      { k: 3, mag: 26, phase: 90 },
+    ],
+  };
+
+  function applyPreset(name: string): void {
+    const p = PRESETS[name];
+    if (!p) return;
+    coeffs = Array.from({ length: 6 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 }));
+    for (const c of p) coeffs[c.k - 1] = { ...c };
+  }
 
   let canvas: HTMLCanvasElement | undefined = $state();
 
@@ -76,6 +104,12 @@
   <div class="box">
     <h2>🎨 谐波合成器</h2>
     <p class="lead">调节各频率的幅值与相位，合成你的专属曲线。生成后好友可用邀请码载入挑战。</p>
+    <div class="presets">
+      <span class="plabel">预设</span>
+      {#each Object.keys(PRESETS) as name (name)}
+        <button type="button" class="pchip" onclick={() => applyPreset(name)}>{name}</button>
+      {/each}
+    </div>
     <canvas bind:this={canvas} width="150" height="150"></canvas>
     <div class="sliders">
       {#each coeffs as c, i (c.k)}
@@ -140,6 +174,29 @@
   }
   .lead b {
     color: var(--gold);
+  }
+  .presets {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .plabel {
+    font-size: var(--fs-xs);
+    color: var(--muted-2);
+  }
+  .pchip {
+    font-size: var(--fs-xs);
+    padding: 3px 10px;
+    min-height: 24px;
+    border-radius: 999px;
+    color: var(--muted);
+  }
+  .pchip:hover:not(:disabled) {
+    color: var(--cyan);
+    border-color: rgba(79, 209, 197, 0.5);
+    box-shadow: none;
   }
   canvas {
     border: 1px solid var(--line);

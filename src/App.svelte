@@ -65,6 +65,17 @@
   function onKeydown(e: KeyboardEvent): void {
     const tag = (e.target as HTMLElement).tagName;
     if (tag === 'INPUT' || tag === 'SELECT') return;
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+      e.preventDefault();
+      if (e.shiftKey) engine.redoArms();
+      else engine.undoArms();
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+      e.preventDefault();
+      engine.redoArms();
+      return;
+    }
     if (e.code === 'Space') {
       e.preventDefault();
       if (engine.phase === 'done') {
@@ -153,6 +164,20 @@
         >
       </h2>
       <div class="tools-row">
+        <button
+          title="撤销上一次调参（Ctrl/Cmd+Z）"
+          disabled={engine.armUndoCount === 0}
+          onclick={() => engine.undoArms()}
+        >
+          ↶ 撤销
+        </button>
+        <button
+          title="重做（Ctrl/Cmd+Shift+Z）"
+          disabled={engine.armRedoCount === 0}
+          onclick={() => engine.redoArms()}
+        >
+          ↷ 重做
+        </button>
         <button
           title="在频谱仪上叠加目标曲线的真实频谱（教学用）"
           class:gold={engine.spectrumCompare}

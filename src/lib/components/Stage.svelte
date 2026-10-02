@@ -131,6 +131,7 @@
     }
     dragIdx = hit;
     if (dragIdx >= 0) {
+      engine.beginArmEdit(); // 整段拖动合并为一条撤销记录
       engine.markFlag('dragUsed');
       try {
         canvas?.setPointerCapture(ev.pointerId);
@@ -201,6 +202,7 @@
   function onPointerUp(ev: PointerEvent): void {
     pointers.delete(ev.pointerId);
     if (pointers.size < 2) pinchDist = 0;
+    if (dragIdx >= 0) engine.endArmEdit();
     panning = false;
     dragIdx = -1;
     dragInfo = null;
