@@ -407,6 +407,7 @@ export class GameEngine {
     if (id.startsWith('daily-') && this.score > (this.dailyBest[id] ?? 0)) {
       this.dailyBest = { ...this.dailyBest, [id]: this.score };
       this.newRecord = true;
+      this.markFlag('dailyWon');
       try {
         localStorage.setItem(DAILY_KEY, JSON.stringify(this.dailyBest));
       } catch {

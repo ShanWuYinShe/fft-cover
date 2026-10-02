@@ -5,6 +5,7 @@
   import type { Vec } from '../game/types';
   import { RUN_DUR, SIZE, T0 } from '../game/constants';
   import { collectSound, finishChord, perfectArpeggio } from '../game/audio';
+  import { spectrumGaps } from '../game/scoring';
 
   let canvas: HTMLCanvasElement | undefined = $state();
   let ctx: CanvasRenderingContext2D | null = null;
@@ -195,6 +196,22 @@
           ctx.fillStyle = 'rgba(251,191,36,.95)';
           ctx.font = 'bold 12px sans-serif';
           ctx.fillText('✨ 全清！3 秒后自动结算', 10, 30);
+        } else if (engine.phase === 'paused' && engine.collectedCount > 0) {
+          // 暂停时的偏差诊断：告诉玩家最该调整哪两个频率
+          const gaps = spectrumGaps(engine.level.spectrum, engine.arms);
+          if (gaps.length > 0) {
+            ctx.fillStyle = 'rgba(251,191,36,.95)';
+            ctx.font = '11px sans-serif';
+            const parts = gaps.map(
+              (g) =>
+                (g.sign > 0 ? '' : '−') +
+                Math.abs(g.k) +
+                '× 差 ' +
+                Math.round(g.mag) +
+                (g.sign > 0 ? '' : '（过量）'),
+            );
+            ctx.fillText('暂停诊断：' + parts.join('　'), 10, 30);
+          }
         }
       }
     }

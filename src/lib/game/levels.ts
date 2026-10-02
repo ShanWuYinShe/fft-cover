@@ -136,7 +136,7 @@ export function makeLevel(def: LevelDef): Level {
     pts,
     tol: 13,
     curve,
-    spectrum: dftSpectrum(curve),
+    spectrum: dftSpectrum(curve).filter((s) => s.k !== 0),
     armLimit: def.armLimit ?? ARMS_MAX,
   };
 }
@@ -209,7 +209,7 @@ export function makeRandomLevel(seed: number): Level {
     pts: resample(curve, 26),
     tol: 13,
     curve,
-    spectrum: dftSpectrum(curve),
+    spectrum: dftSpectrum(curve).filter((s) => s.k !== 0),
     armLimit: 4,
     random: true,
   };
