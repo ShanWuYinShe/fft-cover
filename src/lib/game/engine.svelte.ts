@@ -12,7 +12,15 @@ import {
   CIRCLED,
   DAILY_KEY,
 } from './constants';
-import { LEVEL_DEFS, makeDailyLevel, makeLevel, makeRandomLevel, todayKey } from './levels';
+import {
+  decodeCoeffs,
+  LEVEL_DEFS,
+  levelFromCoeffs,
+  makeDailyLevel,
+  makeLevel,
+  makeRandomLevel,
+  todayKey,
+} from './levels';
 import { tipAt } from './math';
 import {
   ACHIEVEMENTS,
@@ -470,6 +478,15 @@ export class GameEngine {
       }
     }
     this.checkAchievements();
+  }
+
+  /** 载入玩家创作的谐波合成关卡 */
+  loadCustomLevel(coeffs: { k: number; mag: number; phase: number }[], name: string): void {
+    this.sandbox = false;
+    this.level = levelFromCoeffs(coeffs, name);
+    this.trimArmsToLimit();
+    this.resetRun();
+    this.markFlag('composerPlayed');
   }
 
   /** 进入今日每日挑战（seed 由日期决定，人人同关） */

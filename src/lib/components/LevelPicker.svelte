@@ -1,6 +1,9 @@
 <script lang="ts">
   import { engine } from '../game/engine.svelte';
-  import { LEVEL_DEFS, todayKey } from '../game/levels';
+  import { decodeCoeffs, LEVEL_DEFS, todayKey } from '../game/levels';
+  import ComposerModal from './ComposerModal.svelte';
+
+  let showComposer = $state(false);
 
   const bestOf = (id: string): string => {
     const st = engine.bestStars[id];
@@ -30,6 +33,13 @@
   function loadSeed(): void {
     const raw = seedInput.trim();
     if (raw === '' || raw === '0') return;
+    // 系数串（含 ':'）= 玩家创作的合成关卡
+    if (raw.includes(':')) {
+      const coeffs = decodeCoeffs(raw);
+      if (coeffs) engine.loadCustomLevel(coeffs, '创作 ' + raw.slice(0, 14));
+      seedInput = '';
+      return;
+    }
     const n = Math.abs(Math.floor(Number(raw)));
     if (Number.isFinite(n)) engine.loadRandomSeed(n);
     seedInput = '';
@@ -38,6 +48,9 @@
 
 <section>
   <h2>关卡 <span class="muted">总星数 {totalStars} / {LEVEL_DEFS.length * 3}</span></h2>
+  {#if showComposer}
+    <ComposerModal onclose={() => (showComposer = false)} />
+  {/if}
   <div class="levels">
     {#each LEVEL_DEFS as def, i (def.id)}
       <button
@@ -63,6 +76,10 @@
     <button class="lv" class:active={engine.level?.random} onclick={() => engine.loadRandom()}>
       <span class="nm">🎲 随机</span>
       <span class="st">无限</span>
+    </button>
+    <button class="lv" onclick={() => (showComposer = true)}>
+      <span class="nm">🎨 创作</span>
+      <span class="st">合成器</span>
     </button>
   </div>
   {#if engine.level?.random}

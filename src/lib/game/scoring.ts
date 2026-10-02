@@ -120,6 +120,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'daily-player', name: '每日一练', desc: '每日挑战中拿到得分' },
   { id: 'half-stars', name: '半程大师', desc: '总星数达到满分一半' },
   { id: 'auto-try', name: '数学魔法', desc: '体验过自动拟合演示' },
+  { id: 'composer', name: '造物主', desc: '用谐波合成器创作过关卡' },
 ];
 
 /** 成就判定上下文（全部来自引擎的持久化数据） */
@@ -150,6 +151,7 @@ export function evalAchievements(ctx: AchievementContext): string[] {
   if (ctx.flags.dragUsed) unlocked.push('drag-master');
   if (ctx.flags.dailyWon) unlocked.push('daily-player');
   if (ctx.flags.autoTry) unlocked.push('auto-try');
+  if (ctx.flags.composerPlayed) unlocked.push('composer');
   const starSum = stars.reduce((a, b) => a + b, 0);
   if (starSum >= ctx.levelCount * 1.5) unlocked.push('half-stars');
   return unlocked;

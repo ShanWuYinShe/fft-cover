@@ -1,4 +1,7 @@
 import {
+  decodeCoeffs,
+  encodeCoeffs,
+  levelFromCoeffs,
   LEVEL_DEFS,
   makeDailyLevel,
   makeLevel,
@@ -51,6 +54,34 @@ describe('makeDailyLevel', () => {
 
   it('内置关卡总数为 10', () => {
     expect(LEVEL_DEFS).toHaveLength(10);
+  });
+});
+
+describe('谐波合成器编解码', () => {
+  it('encode/decode roundtrip 保留频率与幅值', () => {
+    const coeffs = [
+      { k: 1, mag: 100, phase: 0 },
+      { k: -2, mag: 55, phase: Math.PI },
+    ];
+    const code = encodeCoeffs(coeffs);
+    const back = decodeCoeffs(code)!;
+    expect(back).toHaveLength(2);
+    expect(back[0].k).toBe(1);
+    expect(back[0].mag).toBe(100);
+    expect(back[1].k).toBe(-2);
+  });
+
+  it('非法码返回 null', () => {
+    expect(decodeCoeffs('12345')).toBeNull();
+    expect(decodeCoeffs('1:100')).toBeNull();
+    expect(decodeCoeffs('abc:def:ghi')).toBeNull();
+  });
+
+  it('levelFromCoeffs 单系数圆生成对应关卡', () => {
+    const lv = levelFromCoeffs([{ k: 1, mag: 100, phase: 0 }], '测试');
+    expect(lv.armLimit).toBe(1);
+    expect(lv.spectrum.find((s) => s.k === 1)?.mag).toBeGreaterThan(50);
+    expect(lv.pts.length).toBeGreaterThan(0);
   });
 });
 

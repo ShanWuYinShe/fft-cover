@@ -141,6 +141,86 @@ export function makeLevel(def: LevelDef): Level {
   };
 }
 
+export interface HarmonicCoeff {
+  k: number;
+  mag: number;
+  phase: number;
+}
+
+/**
+ * 谐波合成器：由系数（正频 e^{ikt} 分量）构建自定义关卡。
+ * 系数即指针参数：mag → 半径、phase → 相位、k → 频率。
+ */
+export function levelFromCoeffs(coeffs: HarmonicCoeff[], name: string, id?: string): Level {
+  const active = coeffs.filter((c) => c.mag > 0.5);
+  const fn = (t: number): Vec => {
+    let x = 0;
+    let y = 0;
+    for (const c of active) {
+      x += c.mag * Math.cos(c.k * t + c.phase);
+      y += c.mag * Math.sin(c.k * t + c.phase);
+    }
+    return { x, y };
+  };
+  const curve = buildCurve(fn);
+  return {
+    id:
+      id ??
+      'custom-' +
+        coeffs
+          .map(
+            (c) =>
+              Math.round(c.k) +
+              '-' +
+              Math.round(c.mag) +
+              '-' +
+              Math.round(((c.phase * 180) / Math.PI) % 360),
+          )
+          .join('_'),
+    name,
+    hint: '玩家创作的谐波合成关卡。开启「🔍 频谱对比」就能看到它的傅立叶系数——你能逆向拼出它吗？',
+    pts: resample(curve, 26),
+    tol: 13,
+    curve,
+    spectrum: dftSpectrum(curve).filter((s) => s.k !== 0),
+    armLimit: Math.max(1, active.length),
+    random: true,
+  };
+}
+
+/** 系数串编码（邀请码）：k:mag:phase 用逗号连接，mag/phase 四舍五入 */
+export function encodeCoeffs(coeffs: HarmonicCoeff[]): string {
+  return coeffs
+    .filter((c) => c.mag > 0.5)
+    .map((c) => c.k + ':' + Math.round(c.mag) + ':' + Math.round(((c.phase * 180) / Math.PI) % 360))
+    .join(',');
+}
+
+/** 系数串解码；格式非法返回 null */
+export function decodeCoeffs(code: string): HarmonicCoeff[] | null {
+  if (!code.includes(':')) return null;
+  const out: HarmonicCoeff[] = [];
+  for (const part of code.split(',')) {
+    const seg = part.split(':');
+    if (seg.length !== 3) return null;
+    const k = Math.round(Number(seg[0]));
+    const mag = Number(seg[1]);
+    const phase = ((Number(seg[2]) * Math.PI) / 180) % (Math.PI * 2);
+    if (
+      !Number.isFinite(k) ||
+      !Number.isFinite(mag) ||
+      !Number.isFinite(phase) ||
+      k === 0 ||
+      k > 10 ||
+      k < -10
+    ) {
+      return null;
+    }
+    out.push({ k, mag, phase });
+  }
+  return out.length > 0 ? out : null;
+}
+
 /** 今日日期串（本地时区，YYYY-MM-DD） */
 export function todayKey(): string {
   const d = new Date();

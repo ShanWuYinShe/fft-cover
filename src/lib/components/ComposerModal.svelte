@@ -1,0 +1,183 @@
+<script lang="ts">
+  import { engine } from '../game/engine.svelte';
+  import { encodeCoeffs, type HarmonicCoeff } from '../game/levels';
+  import { CIRCLED } from '../game/constants';
+
+  let { onclose }: { onclose: () => void } = $props();
+
+  let coeffs = $state<HarmonicCoeff[]>(
+    Array.from({ length: 6 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 })),
+  );
+  coeffs[0].mag = 100;
+
+  let canvas: HTMLCanvasElement | undefined = $state();
+
+  const activeCount = $derived(coeffs.filter((c) => c.mag > 0.5).length);
+  const code = $derived(encodeCoeffs(coeffs));
+
+  $effect(() => {
+    // 预览小画布
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const S = canvas.width;
+    ctx.clearRect(0, 0, S, S);
+    ctx.strokeStyle = 'rgba(255,255,255,.15)';
+    ctx.strokeRect(0.5, 0.5, S - 1, S - 1);
+    ctx.beginPath();
+    const N = 360;
+    const pts: { x: number; y: number }[] = [];
+    for (let i = 0; i < N; i++) {
+      const t = (i / N) * Math.PI * 2;
+      let x = 0;
+      let y = 0;
+      for (const c of coeffs) {
+        if (c.mag <= 0.5) continue;
+        x += c.mag * Math.cos(c.k * t + (c.phase * Math.PI) / 180);
+        y += c.mag * Math.sin(c.k * t + (c.phase * Math.PI) / 180);
+      }
+      pts.push({ x, y });
+    }
+    let m = 0;
+    for (const p of pts) m = Math.max(m, Math.hypot(p.x, p.y));
+    const scale = m > 1 ? (S / 2 - 10) / m : 0;
+    pts.forEach((p, i) => {
+      const px = S / 2 + p.x * scale;
+      const py = S / 2 + p.y * scale;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    });
+    ctx.closePath();
+    ctx.strokeStyle = '#4fd1c5';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  });
+
+  function setMag(k: number, v: number): void {
+    coeffs[k - 1].mag = v;
+  }
+  function setPhase(k: number, v: number): void {
+    coeffs[k - 1].phase = v;
+  }
+
+  function play(): void {
+    if (activeCount === 0) return;
+    engine.loadCustomLevel(
+      coeffs
+        .filter((c) => c.mag > 0.5)
+        .map((c) => ({ k: c.k, mag: c.mag, phase: (c.phase * Math.PI) / 180 })),
+      '创作 ' + (code.length > 14 ? code.slice(0, 14) + '…' : code),
+    );
+    onclose();
+  }
+</script>
+
+<div class="modal">
+  <div class="box">
+    <h2>🎨 谐波合成器</h2>
+    <p class="lead">调节各频率的幅值与相位，合成你的专属曲线。生成后好友可用邀请码载入挑战。</p>
+    <canvas bind:this={canvas} width="150" height="150"></canvas>
+    <div class="sliders">
+      {#each coeffs as c, i (c.k)}
+        <div class="row" class:active={c.mag > 0.5}>
+          <span class="k">{CIRCLED[i] || i + 1} {c.k}×</span>
+          <input
+            type="range"
+            min="0"
+            max="150"
+            step="2"
+            value={c.mag}
+            oninput={(e) => setMag(c.k, +(e.currentTarget as HTMLInputElement).value)}
+          />
+          <input
+            type="range"
+            min="0"
+            max="360"
+            step="5"
+            value={c.phase}
+            oninput={(e) => setPhase(c.k, +(e.currentTarget as HTMLInputElement).value)}
+          />
+        </div>
+      {/each}
+    </div>
+    <p class="lead">启用谐波 {activeCount} 个 · 邀请码 <b>{code || '—'}</b></p>
+    <div class="btns">
+      <button class="primary" disabled={activeCount === 0} onclick={play}>🎮 生成并游玩</button>
+      <button onclick={onclose}>关 闭</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 7, 14, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 60;
+  }
+  .box {
+    width: min(94vw, 440px);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #10152a;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+    text-align: center;
+    box-shadow: 0 16px 60px rgba(0, 0, 0, 0.6);
+  }
+  h2 {
+    margin: 0 0 6px;
+    letter-spacing: 2px;
+  }
+  .lead {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 4px 0 10px;
+  }
+  .lead b {
+    color: var(--gold);
+  }
+  canvas {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #0d1120;
+    margin-bottom: 10px;
+  }
+  .sliders {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    opacity: 0.55;
+  }
+  .row.active {
+    opacity: 1;
+  }
+  .row .k {
+    width: 44px;
+    text-align: left;
+  }
+  .row input[type='range'] {
+    flex: 1;
+    min-width: 0;
+  }
+  .btns {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  .btns button:disabled {
+    opacity: 0.4;
+  }
+</style>
