@@ -16,6 +16,8 @@
   /** ghost 轨迹缓存与参数签名（参数未变时跳过重建） */
   let ghostSig = '';
   let ghostPathCache: Path2D | null = null;
+  /** 编辑态预览：当前参数下幽灵轨迹能扫到的点索引 */
+  let previewHits: Set<number> = new Set();
 
   /* ---------- 视图缩放/平移 ---------- */
   const ZOOM_MIN = 0.5;
@@ -349,11 +351,22 @@
         ghostSig = sig;
         ghostPathCache = new Path2D();
         const N = 720;
+        const tolSq = engine.level.tol * engine.level.tol;
+        const hits = new Set<number>();
         for (let i = 0; i <= N; i++) {
           const p = tipAt(engine.arms, (i / N) * T0);
           if (i === 0) ghostPathCache.moveTo(p.x, p.y);
           else ghostPathCache.lineTo(p.x, p.y);
+          // 预览命中：幽灵轨迹扫过的点（未收集的）
+          for (let k = 0; k < engine.level.pts.length; k++) {
+            if (hits.has(k)) continue;
+            const q = engine.level.pts[k];
+            const dx = q.x - p.x;
+            const dy = q.y - p.y;
+            if (dx * dx + dy * dy < tolSq) hits.add(k);
+          }
         }
+        previewHits = hits;
       }
       ctx.strokeStyle = 'rgba(167,139,250,.4)';
       ctx.lineWidth = 1.6;
@@ -409,6 +422,18 @@
         ctx.arc(p.x, p.y, 4.5 + burst * 0.6, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
+      } else if (engine.phase === 'edit' && previewHits.has(i)) {
+        // 编辑态预览：当前参数下会被扫到的点（半透明金色，区别于已收集的实心金）
+        ctx.fillStyle = 'rgba(251,191,36,.5)';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(251,191,36,.55)';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, engine.level.tol, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.lineWidth = 1 / zoom;
       } else {
         ctx.fillStyle = 'rgba(220,228,255,.55)';
         ctx.beginPath();
@@ -548,8 +573,27 @@
     // 缩放指示（非 1× 时显示）
     if (Math.abs(zoom - 1) > 0.01) {
       ctx.font = '11px sans-serif';
-      ctx.fillStyle = 'rgba(139,147,167,.9)';
+      ctx.fillStyle = 'rgba(139,147,170,.9)';
       ctx.fillText('缩放 ' + zoom.toFixed(2) + '×', 12, SIZE - 14);
+    }
+
+    // 编辑态预览计数：当前参数预计能收集多少点（实时反馈，无需开始旋转）
+    if (engine.phase === 'edit' && engine.level) {
+      const total = engine.level.pts.length;
+      const got = engine.collected.size;
+      const willHit = previewHits.size;
+      const label = '预览收集 ' + willHit + '/' + total + (got > 0 ? '（已收 ' + got + '）' : '');
+      ctx.font = 'bold 12px sans-serif';
+      const w = ctx.measureText(label).width;
+      const bx = SIZE / 2 - w / 2 - 10;
+      const by = SIZE - 16;
+      ctx.fillStyle = 'rgba(16,21,42,.8)';
+      ctx.fillRect(bx, by - 16, w + 20, 24);
+      ctx.strokeStyle = willHit > 0 ? 'rgba(251,191,36,.45)' : 'rgba(255,255,255,.12)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(bx, by - 16, w + 20, 24);
+      ctx.fillStyle = willHit > 0 ? '#fbbf24' : 'rgba(139,147,167,.9)';
+      ctx.fillText(label, bx + 10, by);
     }
 
     drawSpectrum();

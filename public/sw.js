@@ -3,7 +3,8 @@
  *  - 导航请求（HTML）与 manifest：network-first，失败回退缓存（保证更新可见 + 离线可玩）
  *  - 带指纹的资源（/assets/*）、图标：cache-first（内容不可变，命中即用）
  */
-const CACHE = 'fft-pointers-v1';
+// __SW_VERSION__ 由构建注入（vite.config.ts 的 swVersionPlugin）
+const CACHE = 'fft-pointers-__SW_VERSION__';
 const SHELL = [
   '/',
   '/manifest.webmanifest',
