@@ -61,6 +61,7 @@ body {
   color: var(--text);
   font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, sans-serif;
   min-height: 100vh;
+  min-height: 100dvh; /* iOS Safari 地址栏适配 */
   -webkit-font-smoothing: antialiased;
 }
 

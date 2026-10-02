@@ -49,7 +49,7 @@
   }
 
   /** 导出画布当前帧 + 成绩条为 PNG */
-  function saveImage(): void {
+  async function saveImage(): Promise<void> {
     const src = document.querySelector('canvas');
     if (!src) return;
     const off = document.createElement('canvas');
@@ -103,8 +103,24 @@
       octx.font = '30px sans-serif';
       octx.fillText('邀请码 ' + invite, 40, h + 118);
     }
+    // 优先 Web Share files（移动端可直接分享图片到社交 App）
+    const dataUrl = off.toDataURL('image/png');
+    try {
+      const blob = await new Promise<Blob>((resolve2) =>
+        off.toBlob((b) => resolve2(b!), 'image/png'),
+      );
+      const file = new File([blob], 'fft-score.png', { type: 'image/png' });
+      if ('share' in navigator && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: '傅立叶指针战报' });
+        imgState = 'ok';
+        setTimeout(() => (imgState = 'idle'), 1500);
+        return;
+      }
+    } catch {
+      /* 用户取消或不支持则走下载 */
+    }
     const a = document.createElement('a');
-    a.href = off.toDataURL('image/png');
+    a.href = dataUrl;
     a.download = 'fft-' + (engine.level?.id ?? 'run') + '-' + engine.score + '.png';
     a.click();
     imgState = 'ok';

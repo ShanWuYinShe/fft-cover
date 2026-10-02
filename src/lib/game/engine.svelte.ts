@@ -171,12 +171,26 @@ export class GameEngine {
   toast = $state<{ id: string; name: string } | null>(null);
   /** 沙盒转速档位 */
   speed = $state(1);
-  /** 随机关卡难度（🎲 生成时生效） */
-  difficulty = $state<RandomDifficulty>('normal');
+  /** 随机关卡难度（🎲 生成时生效，持久化） */
+  difficulty = $state<RandomDifficulty>(
+    ((): RandomDifficulty => {
+      try {
+        const v = localStorage.getItem('fft-pointers-diff-v1');
+        return v === 'easy' || v === 'hard' ? v : 'normal';
+      } catch {
+        return 'normal';
+      }
+    })(),
+  );
 
-  /** 切换随机关卡难度（下次生成生效） */
+  /** 切换随机关卡难度（下次生成生效），并持久化 */
   setDifficulty(d: RandomDifficulty): void {
     this.difficulty = d;
+    try {
+      localStorage.setItem('fft-pointers-diff-v1', d);
+    } catch {
+      /* 忽略 */
+    }
   }
   /** 频谱对比开关：在频谱仪上叠加目标曲线的真实频谱 */
   spectrumCompare = $state(false);
