@@ -37,6 +37,35 @@
 
 ## 开发
 
+## 部署（workwork-server）
+
+线上地址：**https://game.chaoset.com/**（CF 橙云代理，源站 IPv6-only）。
+
+- 服务器目录 `~/games/`，compose 挂 `ipvlan_docker` 外部网络，静态 IPv6 `…:1::60`（next free was ::60；::10 面板 / ::12 xray / ::20 hotspot / ::30 ops / ::40 media / ::50 music）
+- 证书：chaoset.com 通配符（CF Origin CA），归档 `~/work/dogod/cf_token_and_cert/chaoset.com/`
+- DNS：`game.chaoset.com` AAAA → `…:1::60`（橙云）。**服务器 IPv6 前缀轮换时需更新此记录**（可参照 workwork 面板的轮换同步逻辑）
+- 新增游戏：`sites/` 下加 `<game>/` 静态目录，复制 `deploy/nginx-game.chaoset.com.conf` 中 server 块改 root/server_name，`docker compose exec nginx nginx -s reload`
+
+更新上线流程：
+
+```bash
+pnpm build && scp -r dist workwork-server:/tmp/fft-cover-dist
+ssh workwork-server "rm -rf ~/games/sites/fft-cover && mv /tmp/fft-cover-dist ~/games/sites/fft-cover"
+```
+
+首次部署（服务器无 ~/games 时）：
+
+```bash
+ssh workwork-server "mkdir -p ~/games/nginx/conf.d ~/games/cert ~/games/sites"
+scp deploy/docker-compose.yml workwork-server:~/games/docker-compose.yml
+scp deploy/nginx-game.chaoset.com.conf workwork-server:~/games/nginx/conf.d/games.conf
+scp ~/work/dogod/cf_token_and_cert/chaoset.com/cert.pem ~/work/dogod/cf_token_and_cert/chaoset.com/cert.key workwork-server:/tmp/
+ssh workwork-server "mv /tmp/cert.pem ~/games/cert/chaoset.pem && mv /tmp/cert.key ~/games/cert/chaoset.key && chmod 600 ~/games/cert/chaoset.key"
+ssh workwork-server "cd ~/games && docker compose up -d"
+```
+
+## 开发
+
 ```bash
 pnpm install        # 安装依赖（store 已指向 workspace）
 pnpm dev            # 开发服务器

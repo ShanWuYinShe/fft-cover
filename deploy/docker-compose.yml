@@ -1,0 +1,27 @@
+name: games
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    networks:
+      ipvlan_docker:
+        ipv6_address: 2605:a141:2322:2623:1::60
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./cert:/etc/nginx/certs:ro
+      - ./sites:/var/www:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 3
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1/healthz']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  ipvlan_docker:
+    external: true
