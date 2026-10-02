@@ -18,6 +18,33 @@
     ctx?.setTransform(canvas.width / SIZE, 0, 0, canvas.width / SIZE, 0, 0);
   }
 
+  /** 频谱仪：右上角实时显示各启用指针的频率与半径——玩家正在编辑的傅立叶系数 */
+  function drawSpectrum(): void {
+    const on = engine.arms.filter((a) => a.on);
+    if (on.length === 0 || !ctx) return;
+    const x0 = SIZE - 148;
+    const y0 = 40;
+    ctx.fillStyle = 'rgba(10,14,26,.6)';
+    ctx.fillRect(x0 - 10, y0, 148, 64);
+    ctx.strokeStyle = 'rgba(255,255,255,.1)';
+    ctx.strokeRect(x0 - 10, y0, 148, 64);
+    ctx.fillStyle = 'rgba(139,147,167,.95)';
+    ctx.font = '10px sans-serif';
+    ctx.fillText('频谱 |rₖ|（你的傅立叶系数）', x0 - 4, y0 + 12);
+    const zx = x0 - 1 + 64;
+    ctx.strokeStyle = 'rgba(255,255,255,.18)';
+    ctx.beginPath();
+    ctx.moveTo(zx, y0 + 18);
+    ctx.lineTo(zx, y0 + 58);
+    ctx.stroke();
+    for (const a of on) {
+      const px = x0 - 1 + (a.freq + 10) * 6.4;
+      const h = Math.max(2, (a.r / 210) * 34);
+      ctx.fillStyle = a.freq < 0 ? 'rgba(167,139,250,.9)' : 'rgba(79,209,197,.9)';
+      ctx.fillRect(px - 2.5, y0 + 58 - h, 5, h);
+    }
+  }
+
   function draw(now: number): void {
     if (!ctx || !engine.level) return;
     ctx.clearRect(0, 0, SIZE, SIZE);
@@ -73,10 +100,16 @@
       ctx.setLineDash([]);
     }
 
-    // 运行进度条（顶部，避开圆角）
+    // 运行进度条（顶部，避开圆角）；沙盒不设时限，仅显示标记
     if (engine.phase === 'running' || engine.phase === 'paused') {
-      ctx.fillStyle = 'rgba(79,209,197,.55)';
-      ctx.fillRect(4, 4, (engine.t / RUN_DUR) * (SIZE - 8), 3);
+      if (engine.sandbox) {
+        ctx.fillStyle = 'rgba(167,139,250,.85)';
+        ctx.font = '11px sans-serif';
+        ctx.fillText('🧪 沙盒模式 · 无限时 · 实时调参', 10, 15);
+      } else {
+        ctx.fillStyle = 'rgba(79,209,197,.55)';
+        ctx.fillRect(4, 4, (engine.t / RUN_DUR) * (SIZE - 8), 3);
+      }
     }
 
     // 目标点
@@ -159,6 +192,8 @@
     ctx.arc(tip.x, tip.y, 5, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
+
+    drawSpectrum();
   }
 
   onMount(() => {

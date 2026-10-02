@@ -18,6 +18,8 @@ export const CIRCLED = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', 
 export const COMBO_WINDOW = 1200;
 /** 最佳得分 localStorage 键名 */
 export const BEST_SCORE_KEY = 'fft-pointers-best-score-v1';
+/** 音效开关 localStorage 键名 */
+export const SOUND_KEY = 'fft-pointers-sound-v1';
 /** 五声音阶频率（C 宫调式，两个八度）：收集音效按收集序号递进 */
 export const PENTATONIC = [
   261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.26, 783.99, 880.0, 1046.5,

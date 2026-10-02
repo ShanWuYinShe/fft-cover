@@ -1,4 +1,4 @@
-import { ARMS_MAX, BEST_KEY, BEST_SCORE_KEY, COMBO_WINDOW, RUN_DUR } from './constants';
+import { ARMS_MAX, BEST_KEY, BEST_SCORE_KEY, COMBO_WINDOW, RUN_DUR, SOUND_KEY } from './constants';
 import { LEVEL_DEFS, makeLevel, makeRandomLevel } from './levels';
 import { tipAt } from './math';
 import { scoreForPoint, starsFor } from './scoring';
@@ -38,6 +38,14 @@ function loadScores(): Record<string, number> {
   }
 }
 
+function loadSound(): boolean {
+  try {
+    return localStorage.getItem(SOUND_KEY) !== '0';
+  } catch {
+    return true;
+  }
+}
+
 /**
  * 游戏状态引擎（Svelte 5 runes 深层响应式）。
  * 音效与画布渲染不在此处：音效由组件触发，渲染循环读这里的状态。
@@ -60,8 +68,12 @@ export class GameEngine {
   bestScores = $state<Record<string, number>>(loadScores());
   /** 上次收集时刻（连击窗口判定；-Infinity 表示尚无收集） */
   private lastCollectAt = -Infinity;
-  /** 音效开关 */
-  soundOn = $state(true);
+  /** 音效开关（持久化） */
+  soundOn = $state(loadSound());
+  /** 沙盒模式：无限时长自由旋转，成绩不计入记录 */
+  sandbox = $state(false);
+  /** 刚结束的一局是否为沙盒（结算浮层展示用） */
+  lastRunSandbox = $state(false);
   /** 各关卡历史最佳星级 */
   bestStars = $state<Record<string, number>>(loadBest());
 
@@ -98,7 +110,13 @@ export class GameEngine {
   }
 
   loadRandom(): void {
-    this.level = makeRandomLevel(Math.floor(Math.random() * 1e9));
+    this.loadRandomSeed(Math.floor(Math.random() * 1e9));
+  }
+
+  /** 按邀请码（seed）重建随机关卡：同码必同关卡 */
+  loadRandomSeed(seed: number): void {
+    this.sandbox = false;
+    this.level = makeRandomLevel(seed);
     this.trimArmsToLimit();
     this.resetRun();
   }
@@ -131,7 +149,52 @@ export class GameEngine {
 
   /** 从编辑/暂停态开始或继续 */
   startRun(): void {
+    this.sandbox = false;
     this.phase = 'running';
+  }
+
+  /** 进入沙盒：无限时长自由旋转，实时调参扫点，成绩不计入记录 */
+  enterSandbox(): void {
+    this.resetRun();
+    this.sandbox = true;
+    this.lastRunSandbox = true;
+    this.phase = 'running';
+  }
+
+  /** 结束沙盒：展示成果但不记录 */
+  exitSandbox(): void {
+    if (!this.sandbox) return;
+    this.sandbox = false;
+    this.phase = 'done';
+    this.resultDismissed = false;
+  }
+
+  /** 音效开关（持久化） */
+  setSound(on: boolean): void {
+    this.soundOn = on;
+    try {
+      localStorage.setItem(SOUND_KEY, on ? '1' : '0');
+    } catch {
+      /* 存储不可用则忽略 */
+    }
+  }
+
+  /** 随机化所有已启用指针的半径与相位（激发灵感用） */
+  randomizeArms(): void {
+    for (const a of this.arms) {
+      if (!a.on) continue;
+      a.r = Math.round(30 + Math.random() * 120);
+      a.phase = (Math.round(Math.random() * 360) * Math.PI) / 180;
+    }
+  }
+
+  /** 全部指针清零关闭 */
+  clearArms(): void {
+    for (const a of this.arms) {
+      a.on = false;
+      a.r = 60;
+      a.phase = 0;
+    }
   }
 
   toggleRun(): void {
@@ -147,11 +210,15 @@ export class GameEngine {
     }
   }
 
-  /** 停止并结算星级（记录最佳） */
+  /** 停止并结算星级（记录最佳；沙盒不计入记录） */
   stopRun(): void {
     if (this.phase !== 'running' && this.phase !== 'paused') return;
     this.phase = 'done';
     this.resultDismissed = false;
+    if (this.sandbox) {
+      this.sandbox = false;
+      return;
+    }
     const ratio = this.total ? this.collectedCount / this.total : 0;
     const st = starsFor(ratio);
     const id = this.level?.id;
@@ -217,7 +284,8 @@ export class GameEngine {
   advance(dt: number): { got: number; finished: boolean } {
     if (this.phase !== 'running') return { got: 0, finished: false };
     const prev = this.t;
-    this.t = Math.min(this.t + dt, RUN_DUR);
+    // 沙盒不设时长上限（封顶防浮点溢出），也不自动结算
+    this.t = Math.min(this.t + dt, this.sandbox ? 100000 : RUN_DUR);
     let got = 0;
     const SUB = 6;
     for (let s = 1; s <= SUB; s++) {
@@ -228,7 +296,7 @@ export class GameEngine {
     }
     if (this.trail.length > 2400) this.trail.splice(0, this.trail.length - 2400);
     let finished = false;
-    if (this.t >= RUN_DUR) {
+    if (!this.sandbox && this.t >= RUN_DUR) {
       this.stopRun();
       finished = true;
     }

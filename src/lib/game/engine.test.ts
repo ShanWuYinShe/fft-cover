@@ -58,6 +58,45 @@ describe('GameEngine', () => {
     expect(engine.collectedCount).toBe(0);
   });
 
+  it('沙盒模式：超时不自动结算，exitSandbox 不写最佳分', () => {
+    engine.enterSandbox();
+    expect(engine.sandbox).toBe(true);
+    engine.setArm(0, { r: 120 });
+    let frames = 0;
+    while (engine.t < 16.5 && frames < 1200) {
+      engine.advance(0.016);
+      frames++;
+    }
+    expect(engine.t).toBeGreaterThan(16); // 已超过挑战模式时长
+    expect(engine.phase).toBe('running'); // 沙盒不自动结算
+    engine.exitSandbox();
+    expect(engine.phase).toBe('done');
+    expect(engine.sandbox).toBe(false);
+    expect(engine.bestScore).toBe(0); // 沙盒成绩不写入
+    expect(engine.newRecord).toBe(false);
+  });
+
+  it('loadRandomSeed 同码复现同一关卡', () => {
+    engine.loadRandomSeed(42);
+    const a = engine.level!.pts.map((p) => Math.round(p.x * 100));
+    const nameA = engine.level!.name;
+    engine.loadRandomSeed(42);
+    const b = engine.level!.pts.map((p) => Math.round(p.x * 100));
+    expect(a).toEqual(b);
+    expect(engine.level!.name).toBe(nameA);
+    expect(engine.level!.random).toBe(true);
+  });
+
+  it('随机化只作用于已启用指针，清零全部关闭', () => {
+    engine.setArm(0, { r: 120 });
+    engine.randomizeArms();
+    const on = engine.arms.filter((a) => a.on);
+    expect(on.length).toBeGreaterThan(0);
+    expect(on.every((a) => a.r >= 30 && a.r <= 150)).toBe(true);
+    engine.clearArms();
+    expect(engine.arms.every((a) => !a.on)).toBe(true);
+  });
+
   it('切到上限更低的关卡时裁剪超出指针', () => {
     engine.loadLevel(LEVEL_DEFS[6]); // 心形上限 8
     engine.setArm(2, { on: true });

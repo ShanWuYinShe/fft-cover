@@ -10,6 +10,25 @@
   /** 线性解锁：前一关 ≥1★ 才能进入（随机关不受限） */
   const isLocked = (i: number): boolean =>
     i > 0 && (engine.bestStars[LEVEL_DEFS[i - 1].id] ?? 0) < 1;
+
+  let seedInput = $state('');
+  const seed = $derived(engine.level?.random ? engine.level.id.replace('random-', '') : '');
+
+  async function copySeed(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(seed);
+    } catch {
+      /* 剪贴板不可用则忽略 */
+    }
+  }
+
+  function loadSeed(): void {
+    const raw = seedInput.trim();
+    if (raw === '' || raw === '0') return;
+    const n = Math.abs(Math.floor(Number(raw)));
+    if (Number.isFinite(n)) engine.loadRandomSeed(n);
+    seedInput = '';
+  }
 </script>
 
 <section>
@@ -33,6 +52,21 @@
       <span class="st">无限</span>
     </button>
   </div>
+  {#if engine.level?.random}
+    <div class="seed-row">
+      <span>邀请码 <b>{seed}</b></span>
+      <button class="mini" title="复制邀请码——好友载入后生成同一关卡" onclick={copySeed}>
+        🔗 复制
+      </button>
+      <input
+        class="seed-input"
+        placeholder="输入邀请码"
+        bind:value={seedInput}
+        onkeydown={(e) => e.key === 'Enter' && loadSeed()}
+      />
+      <button class="mini" onclick={loadSeed}>载入</button>
+    </div>
+  {/if}
   <p id="hint">
     {#if engine.level}{engine.level.hint}{/if}
   </p>
@@ -70,6 +104,33 @@
   }
   .lv.locked {
     opacity: 0.5;
+  }
+  .seed-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+  .seed-row b {
+    color: var(--gold);
+  }
+  .mini {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+  .seed-input {
+    width: 110px;
+    background: #141a2e;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 12px;
+    padding: 4px 6px;
+    font-family: inherit;
   }
   #hint {
     margin: 10px 0 0;

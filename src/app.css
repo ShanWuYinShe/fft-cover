@@ -178,6 +178,17 @@ button:disabled {
   font-size: 12px;
 }
 
+.tools-row {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+
+.tools-row button {
+  font-size: 12px;
+  padding: 5px 10px;
+}
+
 #arms-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

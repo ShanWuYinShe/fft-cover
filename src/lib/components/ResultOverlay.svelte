@@ -15,13 +15,19 @@
 </script>
 
 <div class="result">
-  <div class="stars">{'★'.repeat(st)}{'☆'.repeat(3 - st)}</div>
-  <div class="line">
-    收集 {got} / {n} 点（{n ? Math.round((got / n) * 100) : 0}%）· 得分 {engine.score}{engine.newRecord
-      ? ' 🆕新纪录'
-      : ''}
-  </div>
-  <div class="best">历史最佳 ★{Math.max(st, best)}　{words[st]}</div>
+  {#if engine.lastRunSandbox}
+    <div class="stars">🧪</div>
+    <div class="line">沙盒探索结束：收集 {got} / {n} 点 · 得分 {engine.score}</div>
+    <div class="best">沙盒成绩不计入记录——挑战模式见真章！</div>
+  {:else}
+    <div class="stars">{'★'.repeat(st)}{'☆'.repeat(3 - st)}</div>
+    <div class="line">
+      收集 {got} / {n} 点（{n ? Math.round((got / n) * 100) : 0}%）· 得分 {engine.score}{engine.newRecord
+        ? ' 🆕新纪录'
+        : ''}
+    </div>
+    <div class="best">历史最佳 ★{Math.max(st, best)}　{words[st]}</div>
+  {/if}
   <div class="btns">
     <button class="primary" onclick={() => engine.resetRun()}>⟲ 再来一次</button>
     <button onclick={() => (engine.resultDismissed = true)}>👁 查看轨迹</button>
