@@ -1,6 +1,6 @@
 <script lang="ts">
   import { engine } from '../game/engine.svelte';
-  import { LEVEL_DEFS } from '../game/levels';
+  import { LEVEL_DEFS, todayKey } from '../game/levels';
 
   const bestOf = (id: string): string => {
     const st = engine.bestStars[id];
@@ -52,6 +52,14 @@
         <span class="st">{isLocked(i) ? '' : bestOf(def.id)}</span>
       </button>
     {/each}
+    <button
+      class="lv"
+      class:active={engine.level?.id === 'daily-' + todayKey()}
+      onclick={() => engine.loadDaily()}
+    >
+      <span class="nm">📅 每日</span>
+      <span class="st">{engine.todayBest > 0 ? engine.todayBest + ' 分' : '今日'}</span>
+    </button>
     <button class="lv" class:active={engine.level?.random} onclick={() => engine.loadRandom()}>
       <span class="nm">🎲 随机</span>
       <span class="st">无限</span>

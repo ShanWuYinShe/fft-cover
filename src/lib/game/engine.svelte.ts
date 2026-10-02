@@ -10,8 +10,9 @@ import {
   RUN_DUR,
   SOUND_KEY,
   CIRCLED,
+  DAILY_KEY,
 } from './constants';
-import { LEVEL_DEFS, makeLevel, makeRandomLevel } from './levels';
+import { LEVEL_DEFS, makeDailyLevel, makeLevel, makeRandomLevel, todayKey } from './levels';
 import { tipAt } from './math';
 import { ACHIEVEMENTS, evalAchievements, scoreForPoint, starsFor } from './scoring';
 import type { Arm, GamePhase, Level, LevelDef, Vec } from './types';
@@ -69,6 +70,14 @@ function loadClears(): Record<string, number> {
 function loadArmsSaves(): Record<string, Arm[]> {
   try {
     return JSON.parse(localStorage.getItem(ARMS_SAVE_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
+function loadDailyBest(): Record<string, number> {
+  try {
+    return JSON.parse(localStorage.getItem(DAILY_KEY) ?? '{}');
   } catch {
     return {};
   }
@@ -140,6 +149,8 @@ export class GameEngine {
   newClearRecord = $state(false);
   /** 各关保存的解法参数（最佳得分那局的指针配置） */
   armsSaves = $state<Record<string, Arm[]>>(loadArmsSaves());
+  /** 每日挑战历史最佳得分（key = 日期） */
+  dailyBest = $state<Record<string, number>>(loadDailyBest());
   /** 本局全清时刻（秒）；null = 未全清 */
   private clearT: number | null = null;
   /** 结算快照：全清用时 */
@@ -392,7 +403,30 @@ export class GameEngine {
         /* 存储不可用则忽略 */
       }
     }
+    // 每日挑战：刷新今日最佳
+    if (id.startsWith('daily-') && this.score > (this.dailyBest[id] ?? 0)) {
+      this.dailyBest = { ...this.dailyBest, [id]: this.score };
+      this.newRecord = true;
+      try {
+        localStorage.setItem(DAILY_KEY, JSON.stringify(this.dailyBest));
+      } catch {
+        /* 存储不可用则忽略 */
+      }
+    }
     this.checkAchievements();
+  }
+
+  /** 进入今日每日挑战（seed 由日期决定，人人同关） */
+  loadDaily(): void {
+    this.sandbox = false;
+    this.level = makeDailyLevel();
+    this.trimArmsToLimit();
+    this.resetRun();
+  }
+
+  /** 今日最佳得分 */
+  get todayBest(): number {
+    return this.dailyBest['daily-' + todayKey()] ?? 0;
   }
 
   /** 载入本关已保存的解法参数（无存档则不动） */

@@ -1,6 +1,13 @@
+import {
+  LEVEL_DEFS,
+  makeDailyLevel,
+  makeLevel,
+  makeRandomLevel,
+  mulberry32,
+  todayKey,
+} from './levels';
 import { describe, expect, it } from 'vitest';
 import { SIZE } from './constants';
-import { LEVEL_DEFS, makeLevel, makeRandomLevel, mulberry32 } from './levels';
 
 describe('makeLevel', () => {
   it('每个内置关卡都生成指定数量的画布内点集', () => {
@@ -28,6 +35,22 @@ describe('makeRandomLevel', () => {
     const a = makeRandomLevel(1);
     const b = makeRandomLevel(2);
     expect(a.pts[0]).not.toEqual(b.pts[0]);
+  });
+});
+
+describe('makeDailyLevel', () => {
+  it('同一天生成同一关卡，且名称含日期', () => {
+    const a = makeDailyLevel();
+    const b = makeDailyLevel();
+    expect(a.id).toBe(b.id);
+    expect(a.id).toBe('daily-' + todayKey());
+    expect(a.name).toContain(todayKey().slice(5));
+    expect(a.pts).toEqual(b.pts);
+    expect(a.random).toBe(true);
+  });
+
+  it('内置关卡总数为 10', () => {
+    expect(LEVEL_DEFS).toHaveLength(10);
   });
 });
 

@@ -88,6 +88,14 @@ export const LEVEL_DEFS: LevelDef[] = [
     fn: (t) => ({ x: 210 * C(3 * t), y: 150 * S(2 * t) }),
   },
   {
+    id: 'liss54',
+    name: '利萨茹 5:4',
+    hint: '频率对 <b>±5× 与 ±4×</b>——更密的结，四根指针缺一不可。最后一课：频率对的长度各不相同。',
+    n: 30,
+    armLimit: 4,
+    fn: (t) => ({ x: 195 * C(5 * t), y: 165 * S(4 * t) }),
+  },
+  {
     id: 'star5',
     name: '五角星',
     hint: '尖角是无限高频率，5 根指针也难完全贴合——优先保证五条边中段，尽力收集！',
@@ -130,6 +138,27 @@ export function makeLevel(def: LevelDef): Level {
     curve,
     spectrum: dftSpectrum(curve),
     armLimit: def.armLimit ?? ARMS_MAX,
+  };
+}
+
+/** 今日日期串（本地时区，YYYY-MM-DD） */
+export function todayKey(): string {
+  const d = new Date();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return d.getFullYear() + '-' + mm + '-' + dd;
+}
+
+/** 每日挑战：seed 由日期决定，全球玩家同一天面对同一关卡 */
+export function makeDailyLevel(): Level {
+  const key = todayKey();
+  const seed = Number(key.replace(/-/g, ''));
+  const base = makeRandomLevel(seed);
+  return {
+    ...base,
+    id: 'daily-' + key,
+    name: '每日挑战 ' + key.slice(5),
+    hint: '今天全球玩家面对同一关卡（邀请码即日期）。刷新纪录，比比谁的分高！',
   };
 }
 

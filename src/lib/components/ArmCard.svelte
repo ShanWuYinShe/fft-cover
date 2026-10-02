@@ -11,6 +11,18 @@
     engine.setArm(index, { r: +(e.currentTarget as HTMLInputElement).value });
     engine.flashArm(index);
   }
+  function editR(): void {
+    const v = prompt('精确半径（0–210）', String(arm.r));
+    if (v === null) return;
+    const n = Math.max(0, Math.min(210, Math.round(Number(v))));
+    if (Number.isFinite(n)) engine.setArm(index, { r: n });
+  }
+  function editPhase(): void {
+    const v = prompt('精确相位（角度 0–360）', String(Math.round((arm.phase * 180) / Math.PI)));
+    if (v === null) return;
+    const n = Math.max(0, Math.min(360, Math.round(Number(v))));
+    if (Number.isFinite(n)) engine.setArm(index, { phase: (n * Math.PI) / 180 });
+  }
   function setFreq(e: Event): void {
     engine.setArm(index, { freq: +(e.currentTarget as HTMLSelectElement).value });
   }
@@ -37,7 +49,7 @@
       <b>{CIRCLED[index]}</b>
     </label>
     <input type="range" min="0" max="210" step="2" value={arm.r} oninput={setR} />
-    <span class="rv">{arm.r}</span>
+    <button type="button" class="rv" title="点击输入精确值" onclick={editR}>{arm.r}</button>
   </div>
   <div class="row2">
     <select title="负数 = 反向旋转" value={arm.freq} onchange={setFreq}>
@@ -54,7 +66,9 @@
       value={Math.round((arm.phase * 180) / Math.PI)}
       oninput={setPhase}
     />
-    <span class="pv">{Math.round((arm.phase * 180) / Math.PI)}°</span>
+    <button type="button" class="pv" title="点击输入精确值" onclick={editPhase}>
+      {Math.round((arm.phase * 180) / Math.PI)}°
+    </button>
   </div>
 </div>
 
@@ -88,6 +102,10 @@
     font-size: 12px;
     color: var(--muted);
     font-variant-numeric: tabular-nums;
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 0;
   }
   .row2 {
     display: flex;
@@ -110,6 +128,10 @@
     text-align: right;
     color: var(--muted);
     font-variant-numeric: tabular-nums;
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 0;
   }
   .toggle {
     display: flex;
