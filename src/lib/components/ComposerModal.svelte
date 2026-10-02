@@ -5,9 +5,38 @@
 
   let { onclose }: { onclose: () => void } = $props();
 
-  let coeffs = $state<HarmonicCoeff[]>(
-    Array.from({ length: 6 }, (_, i) => ({ k: i + 1, mag: i === 0 ? 100 : 0, phase: 0 })),
-  );
+  const DRAFT_KEY = 'fft-pointers-composer-draft-v1';
+
+  /** 恢复上次编辑的草稿（无草稿时给一个 1×=100 的起点） */
+  function loadDraft(): HarmonicCoeff[] {
+    const base = Array.from({ length: 6 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 }));
+    try {
+      const raw = JSON.parse(localStorage.getItem(DRAFT_KEY) ?? 'null');
+      if (Array.isArray(raw)) {
+        for (const c of raw) {
+          if (typeof c?.k === 'number' && c.k >= 1 && c.k <= 6) {
+            base[c.k - 1] = { k: c.k, mag: +c.mag || 0, phase: +c.phase || 0 };
+          }
+        }
+        return base;
+      }
+    } catch {
+      /* 草稿损坏则用默认 */
+    }
+    base[0].mag = 100;
+    return base;
+  }
+
+  let coeffs = $state<HarmonicCoeff[]>(loadDraft());
+
+  /** 保存草稿（弹层关闭/参数变化时调用） */
+  function saveDraft(): void {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(coeffs));
+    } catch {
+      /* 存储不可用则忽略 */
+    }
+  }
 
   const PRESETS: Record<string, { k: number; mag: number; phase: number }[]> = {
     圆环: [{ k: 1, mag: 100, phase: 0 }],
@@ -36,6 +65,7 @@
     if (!p) return;
     coeffs = Array.from({ length: 6 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 }));
     for (const c of p) coeffs[c.k - 1] = { ...c };
+    saveDraft();
   }
 
   let canvas: HTMLCanvasElement | undefined = $state();
@@ -88,9 +118,11 @@
 
   function setMag(k: number, v: number): void {
     coeffs[k - 1].mag = v;
+    saveDraft();
   }
   function setPhase(k: number, v: number): void {
     coeffs[k - 1].phase = v;
+    saveDraft();
   }
 
   function play(): void {
@@ -101,6 +133,11 @@
         .map((c) => ({ k: c.k, mag: c.mag, phase: (c.phase * Math.PI) / 180 })),
       '创作关卡',
     );
+    try {
+      localStorage.removeItem(DRAFT_KEY); // 已发布，清除草稿
+    } catch {
+      /* 忽略 */
+    }
     onclose();
   }
 </script>

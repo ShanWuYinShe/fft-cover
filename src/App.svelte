@@ -210,7 +210,9 @@
       </div>
     </section>
     <section class="tips">
-      <p>快捷键：<kbd>空格</kbd> 开始/暂停 · <kbd>S</kbd> 停止结算 · <kbd>R</kbd> 重置</p>
+      <p class="kb-only">
+        快捷键：<kbd>空格</kbd> 开始/暂停 · <kbd>S</kbd> 停止结算 · <kbd>R</kbd> 重置
+      </p>
       <p>
         原理：指针尖端位置 = Σ rₖ·e<sup>i(ωₖt+φₖ)</sup
         >。你调的每一根指针，都是目标曲线傅立叶展开中的一项——旋转玩法的背后就是傅立叶变换。

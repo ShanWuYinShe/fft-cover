@@ -371,6 +371,12 @@ input[type='checkbox'] {
 }
 
 /* ---------- 提示区 ---------- */
+@media (pointer: coarse), (max-width: 640px) {
+  .kb-only {
+    display: none; /* 触屏没有物理键盘，隐藏快捷键提示 */
+  }
+}
+
 .tips {
   font-size: var(--fs-sm);
   color: var(--muted);
