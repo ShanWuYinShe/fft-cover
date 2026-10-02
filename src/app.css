@@ -224,7 +224,7 @@ button:disabled {
 
 /* ---------- 右侧面板 ---------- */
 .panel {
-  width: 430px;
+  width: 468px;
   max-width: 94vw;
   display: flex;
   flex-direction: column;
@@ -308,10 +308,11 @@ button:disabled {
 }
 
 /* ---------- 指针卡网格 ---------- */
+/* 指针卡单列：每张卡宽度充裕，滑块与步进器都舒展 */
 #arms-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: 1fr;
+  gap: 7px;
 }
 
 /* ---------- 滑块 ---------- */
@@ -491,7 +492,7 @@ input[type='checkbox'] {
 }
 
 /* 触屏设备：加大滑块与按钮触控目标 */
-@media (pointer: coarse) {
+@media (pointer: coarse), (max-width: 640px) {
   input[type='range'] {
     height: 8px;
   }
@@ -524,5 +525,25 @@ input[type='checkbox'] {
   .canvas-box,
   .panel {
     width: 94vw;
+  }
+  /* 操作栏吸底：滚动调参时也能随时开始/暂停/重置 */
+  .run-row {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    padding: 9px 6px 11px;
+    margin-top: -2px;
+    background: linear-gradient(180deg, rgba(10, 13, 24, 0.65), rgba(10, 13, 24, 0.96) 45%);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--line-2);
+    border-radius: 14px 14px 0 0;
+  }
+  .run-row button {
+    flex: 0 0 auto;
+  }
+  /* 移动端正文稍大更易读 */
+  .tips,
+  .muted {
+    font-size: var(--fs-sm);
   }
 }
