@@ -23,6 +23,18 @@ export interface SpectrumEntry {
   phase: number;
 }
 
+/** 单局历史成绩记录（用于趋势展示） */
+export interface HistoryEntry {
+  /** 记录时间戳 */
+  t: number;
+  score: number;
+  collected: number;
+  total: number;
+  stars: number;
+  /** 全清用时（秒），未全清为 null */
+  clearT: number | null;
+}
+
 /** 游戏阶段：编辑 / 运行中 / 暂停 / 已结算 */
 export type GamePhase = 'edit' | 'running' | 'paused' | 'done';
 

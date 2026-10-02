@@ -11,6 +11,8 @@ import {
   SOUND_KEY,
   CIRCLED,
   DAILY_KEY,
+  HISTORY_KEY,
+  HISTORY_MAX,
 } from './constants';
 import {
   decodeCoeffs,
@@ -30,7 +32,7 @@ import {
   solveFromSpectrum,
   starsFor,
 } from './scoring';
-import type { Arm, GamePhase, Level, LevelDef, Vec } from './types';
+import type { Arm, GamePhase, HistoryEntry, Level, LevelDef, Vec } from './types';
 
 export { starsFor };
 
@@ -93,6 +95,15 @@ function loadArmsSaves(): Record<string, Arm[]> {
 function loadDailyBest(): Record<string, number> {
   try {
     return JSON.parse(localStorage.getItem(DAILY_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
+function loadHistory(): Record<string, HistoryEntry[]> {
+  try {
+    const raw = JSON.parse(localStorage.getItem(HISTORY_KEY) ?? '{}');
+    return raw && typeof raw === 'object' ? (raw as Record<string, HistoryEntry[]>) : {};
   } catch {
     return {};
   }
@@ -181,6 +192,8 @@ export class GameEngine {
   armsSaves = $state<Record<string, Arm[]>>(loadArmsSaves());
   /** 每日挑战历史最佳得分（key = 日期） */
   dailyBest = $state<Record<string, number>>(loadDailyBest());
+  /** 每关历史成绩（key = 关卡 id，最多 HISTORY_MAX 条，用于趋势展示） */
+  history = $state<Record<string, HistoryEntry[]>>(loadHistory());
   /** 本局全清时刻（秒）；null = 未全清 */
   private clearT: number | null = null;
   /** 结算快照：全清用时 */
@@ -310,6 +323,14 @@ export class GameEngine {
       this.autoFrom = null;
       this.autoTo = null;
     }
+  }
+
+  /** 本关最近的历史成绩（新的在后），取最近 n 条 */
+  recentHistory(n = 10): HistoryEntry[] {
+    const id = this.level?.id;
+    if (!id) return [];
+    const list = this.history[id] ?? [];
+    return list.slice(-n);
   }
 
   /** 本关历史最快全清用时（未全清过返回 null） */
@@ -479,6 +500,24 @@ export class GameEngine {
         /* 存储不可用则忽略 */
       }
     }
+    // 历史成绩入档（趋势展示；每关保留最近 HISTORY_MAX 局）
+    const entry: HistoryEntry = {
+      t: Date.now(),
+      score: this.score,
+      collected: this.collectedCount,
+      total: this.total,
+      stars: st,
+      clearT: this.clearT,
+    };
+    const list = [...(this.history[id] ?? []), entry];
+    if (list.length > HISTORY_MAX) list.splice(0, list.length - HISTORY_MAX);
+    this.history = { ...this.history, [id]: list };
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(this.history));
+    } catch {
+      /* 存储不可用则忽略 */
+    }
+
     // 最佳得分那局的解法参数入档（"载入上届解法"用）
     if (this.score > 0) {
       this.armsSaves = { ...this.armsSaves, [id]: this.arms.map((a) => ({ ...a })) };

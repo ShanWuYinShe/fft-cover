@@ -30,6 +30,10 @@ export const FLAGS_KEY = 'fft-pointers-flags-v1';
 export const ARMS_SAVE_KEY = 'fft-pointers-arms-save-v1';
 /** 每日挑战最佳得分 localStorage 键名 */
 export const DAILY_KEY = 'fft-pointers-daily-v1';
+/** 每关历史成绩 localStorage 键名（用于趋势展示） */
+export const HISTORY_KEY = 'fft-pointers-history-v1';
+/** 每关保留的历史记录条数上限 */
+export const HISTORY_MAX = 30;
 
 /** 五声音阶频率（C 宫调式，两个八度）：收集音效按收集序号递进 */
 export const PENTATONIC = [
