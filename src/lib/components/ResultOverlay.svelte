@@ -7,37 +7,6 @@
   let shareState: 'idle' | 'ok' = $state('idle');
   let imgState: 'idle' | 'ok' = $state('idle');
 
-  /** 导出画布当前帧 + 成绩条为 PNG */
-  function saveImage(): void {
-    const src = document.querySelector('canvas');
-    if (!src) return;
-    const off = document.createElement('canvas');
-    off.width = src.width;
-    off.height = src.height + 120;
-    const octx = off.getContext('2d');
-    if (!octx) return;
-    octx.drawImage(src, 0, 0);
-    const h = src.height;
-    octx.fillStyle = 'rgba(8,10,20,.92)';
-    octx.fillRect(0, h, off.width, 120);
-    octx.fillStyle = '#fbbf24';
-    octx.font = 'bold 44px sans-serif';
-    octx.fillText((engine.level?.name ?? '') + '  ' + engine.score + ' 分', 40, h + 52);
-    octx.fillStyle = '#8b93a7';
-    octx.font = '30px sans-serif';
-    octx.fillText(
-      '收集 ' + got + '/' + n + ' · 拟合度 ' + (fit * 100).toFixed(0) + '% · 傅立叶指针',
-      40,
-      h + 98,
-    );
-    const a = document.createElement('a');
-    a.href = off.toDataURL('image/png');
-    a.download = 'fft-' + (engine.level?.id ?? 'run') + '-' + engine.score + '.png';
-    a.click();
-    imgState = 'ok';
-    setTimeout(() => (imgState = 'idle'), 1500);
-  }
-
   /** 兼容降级：旧式 execCommand 复制 */
   function fallbackCopy(text: string): boolean {
     try {
@@ -77,6 +46,50 @@
     }
     copyState = ok ? 'ok' : 'fail';
     setTimeout(() => (copyState = 'idle'), 1500);
+  }
+
+  /** 导出画布当前帧 + 成绩条为 PNG */
+  function saveImage(): void {
+    const src = document.querySelector('canvas');
+    if (!src) return;
+    const off = document.createElement('canvas');
+    off.width = src.width;
+    off.height = src.height + 120;
+    const octx = off.getContext('2d');
+    if (!octx) return;
+    octx.drawImage(src, 0, 0);
+    const h = src.height;
+    octx.fillStyle = 'rgba(8,10,20,.92)';
+    octx.fillRect(0, h, off.width, 120);
+    octx.fillStyle = '#fbbf24';
+    octx.font = 'bold 44px sans-serif';
+    octx.fillText((engine.level?.name ?? '') + '  ' + engine.score + ' 分', 40, h + 52);
+    octx.fillStyle = '#8b93a7';
+    octx.font = '30px sans-serif';
+    octx.fillText(
+      '收集 ' + got + '/' + n + ' · 拟合度 ' + (fit * 100).toFixed(0) + '% · 傅立叶指针',
+      40,
+      h + 98,
+    );
+    const levelId = engine.level?.id ?? '';
+    let invite: string | null = null;
+    if (levelId.startsWith('random-')) invite = levelId.replace('random-', '');
+    else if (levelId.startsWith('daily-')) invite = levelId.replace('daily-', '');
+    else if (levelId.startsWith('custom-')) {
+      // custom id 格式 k-mag-phaseDeg（_ 分隔）→ 转回 k:mag:phaseDeg（, 分隔）系数串
+      invite = levelId.replace('custom-', '').replaceAll('_', ',').replaceAll('-', ':');
+    }
+    if (invite) {
+      octx.fillStyle = '#4fd1c5';
+      octx.font = '30px sans-serif';
+      octx.fillText('邀请码 ' + invite, 40, h + 118);
+    }
+    const a = document.createElement('a');
+    a.href = off.toDataURL('image/png');
+    a.download = 'fft-' + (engine.level?.id ?? 'run') + '-' + engine.score + '.png';
+    a.click();
+    imgState = 'ok';
+    setTimeout(() => (imgState = 'idle'), 1500);
   }
 
   const words = [

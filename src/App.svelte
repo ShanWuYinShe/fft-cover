@@ -6,9 +6,26 @@
   import ResultOverlay from './lib/components/ResultOverlay.svelte';
   import AchievementsModal from './lib/components/AchievementsModal.svelte';
   import { engine } from './lib/game/engine.svelte';
-  import { achvSound, beep, finishChord, perfectArpeggio } from './lib/game/audio';
+  import {
+    achvSound,
+    beep,
+    finishChord,
+    perfectArpeggio,
+    setVolume,
+    getVolume,
+  } from './lib/game/audio';
 
   let showAchv = $state(false);
+  let volume = $state(getVolume());
+
+  /** 音量三态循环 1 → 0.5 → 0（静音时同步引擎开关） */
+  function cycleVolume(): void {
+    const next = volume === 1 ? 0.5 : volume === 0.5 ? 0 : 1;
+    volume = next;
+    setVolume(next);
+    engine.setSound(next > 0);
+  }
+  const volIcon = $derived(volume === 1 ? '🔊' : volume === 0.5 ? '🔉' : '🔇');
 
   // 新手引导：首次访问显示（flag 持久化在引擎 flags 里）
   const tutorialSeen = $derived(!!engine.flags['tutorialSeen']);
@@ -87,8 +104,8 @@
         </button>
         <button title="沙盒转速档位" onclick={() => engine.cycleSpeed()}>⚡ {engine.speed}×</button>
         <button onclick={() => engine.resetRun()}>⟲ 重置点</button>
-        <button title="音效开关" onclick={() => engine.setSound(!engine.soundOn)}>
-          {engine.soundOn ? '🔊' : '🔇'}
+        <button title="音量（点击循环 全/半/静）" onclick={cycleVolume}>
+          {volIcon}
         </button>
       {:else}
         <button class="primary" onclick={toggleRun}>{engine.runLabel}</button>
@@ -106,8 +123,8 @@
         >
           🧪 沙盒
         </button>
-        <button title="音效开关" onclick={() => engine.setSound(!engine.soundOn)}>
-          {engine.soundOn ? '🔊' : '🔇'}
+        <button title="音量（点击循环 全/半/静）" onclick={cycleVolume}>
+          {volIcon}
         </button>
         <button title="成就" onclick={() => (showAchv = true)}>🏆</button>
       {/if}

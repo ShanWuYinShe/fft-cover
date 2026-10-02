@@ -1,6 +1,29 @@
 import { PENTATONIC } from './constants';
 
 let audioCtx: AudioContext | null = null;
+/** 全局音量（0/0.5/1 三态），由 App 切换并持久化 */
+let volume = 1;
+
+export function setVolume(v: number): void {
+  volume = v;
+  try {
+    localStorage.setItem('fft-pointers-volume-v1', String(v));
+  } catch {
+    /* 忽略 */
+  }
+}
+
+export function getVolume(): number {
+  try {
+    return Number(localStorage.getItem('fft-pointers-volume-v1') ?? '1') || 1;
+  } catch {
+    return 1;
+  }
+}
+
+function vol(): number {
+  return volume;
+}
 
 /** 播放一声短音。on=false 时静默；音频不可用时静默失败。 */
 export function beep(
@@ -20,7 +43,7 @@ export function beep(
     const g = audioCtx.createGain();
     o.type = type;
     o.frequency.value = freq;
-    g.gain.setValueAtTime(gain, audioCtx.currentTime);
+    g.gain.setValueAtTime(gain * vol(), audioCtx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
     o.connect(g);
     g.connect(audioCtx.destination);
@@ -57,7 +80,7 @@ export function startPad(on: boolean): void {
     padOsc.type = 'sine';
     padOsc.frequency.value = 130.81; // C3
     padGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-    padGain.gain.exponentialRampToValueAtTime(0.035, audioCtx.currentTime + 0.8);
+    padGain.gain.exponentialRampToValueAtTime(0.035 * vol(), audioCtx.currentTime + 0.8);
     padOsc.connect(padGain);
     padGain.connect(audioCtx.destination);
     padOsc.start();
