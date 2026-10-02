@@ -4,10 +4,12 @@
   import { chainAt, tipAt } from '../game/math';
   import type { Vec } from '../game/types';
   import { RUN_DUR, SIZE, T0 } from '../game/constants';
-  import { collectSound, finishChord, perfectArpeggio, startPad, stopPad } from '../game/audio';
+  import { collectSound, finishChord, perfectArpeggio, solveDone, solveTick } from '../game/audio';
   import { spectrumGaps } from '../game/scoring';
 
   let canvas: HTMLCanvasElement | undefined = $state();
+  /** 自动拟合音效的进度档位（-1 = 未在拟合） */
+  let lastSolveStep = -1;
   let ctx: CanvasRenderingContext2D | null = null;
   /** 拖拽中的指针下标（-1 = 无；编辑态拖关节调半径/相位） */
   let dragIdx = -1;
@@ -394,15 +396,23 @@
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
       if (engine.phase === 'running') {
-        startPad(engine.soundOn); // 幂等：已在响则忽略
         const { got, finished } = engine.advance(dt);
         if (got > 0) collectSound(engine.collectedCount, engine.soundOn);
         if (finished) {
           if (engine.collectedCount === engine.total) perfectArpeggio(engine.soundOn);
           else finishChord(engine.soundOn);
         }
-      } else {
-        stopPad();
+        // 自动拟合进度音：每跨过 20% 播一个上行音符，呼应逐项逼近
+        if (engine.autoSolve) {
+          const step = Math.min(4, Math.floor(engine.autoProgress * 5));
+          if (step !== lastSolveStep) {
+            lastSolveStep = step;
+            solveTick(step, engine.soundOn);
+          }
+        } else if (lastSolveStep >= 0) {
+          lastSolveStep = -1;
+          solveDone(engine.soundOn); // 拟合动画收尾
+        }
       }
       draw(now);
       raf = requestAnimationFrame(frame);

@@ -64,52 +64,18 @@ export function collectSound(count: number, on: boolean): void {
   beep(f / 1.5, 0.14, 'sine', 0.08, on);
 }
 
-let padOsc: OscillatorNode | null = null;
-let padGain: GainNode | null = null;
-
-/** 运行时低音持续音（C3），极低音量的氛围垫 */
-export function startPad(on: boolean): void {
-  if (!on || padOsc) return;
-  try {
-    const Ctor =
-      window.AudioContext ??
-      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    audioCtx = audioCtx ?? new Ctor();
-    padOsc = audioCtx.createOscillator();
-    padGain = audioCtx.createGain();
-    padOsc.type = 'sine';
-    padOsc.frequency.value = 130.81; // C3
-    padGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-    padGain.gain.exponentialRampToValueAtTime(0.035 * vol(), audioCtx.currentTime + 0.8);
-    padOsc.connect(padGain);
-    padGain.connect(audioCtx.destination);
-    padOsc.start();
-  } catch {
-    padOsc = null;
-  }
+/**
+ * 自动拟合进度音：每跨过 20% 进度播放一个上行五声音阶音符，
+ * 呼应"傅立叶逐项逼近"的过程。step 0..4。
+ */
+export function solveTick(step: number, on: boolean): void {
+  const scale = [261.63, 329.63, 392.0, 523.25, 659.26];
+  beep(scale[Math.min(step, scale.length - 1)], 0.18, 'triangle', 0.09, on);
 }
 
-/** 停止低音垫（淡出） */
-export function stopPad(): void {
-  try {
-    if (padGain && audioCtx) {
-      padGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
-    }
-    if (padOsc) {
-      const o = padOsc;
-      setTimeout(() => {
-        try {
-          o.stop();
-        } catch {
-          /* 已停止则忽略 */
-        }
-      }, 500);
-    }
-  } catch {
-    /* 忽略 */
-  }
-  padOsc = null;
-  padGain = null;
+/** 自动拟合完成音：高八度 C6 短音收尾 */
+export function solveDone(on: boolean): void {
+  beep(1046.5, 0.3, 'triangle', 0.12, on);
 }
 
 /** 成就解锁音：快速上行三连音 */
