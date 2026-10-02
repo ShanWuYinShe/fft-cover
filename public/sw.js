@@ -13,13 +13,15 @@ const SHELL = [
   '/apple-touch-icon.png',
 ];
 
+// 安装：预缓存 app shell。不在此处 skipWaiting——新版本先进入 waiting，
+// 由页面提示用户后发送 SKIP_WAITING 再接管，避免打断进行中的对局。
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE)
-      .then((cache) => cache.addAll(SHELL))
-      .then(() => self.skipWaiting()),
-  );
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));
+});
+
+// 页面确认更新后立即接管
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {

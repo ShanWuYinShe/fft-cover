@@ -32,6 +32,10 @@
   let pinchDist = 0;
   let pinchZoom = 1;
   let pinchMid = { x: 0, y: 0 };
+  /** 单指/鼠标平移模式（中键、右键、Shift+拖动；触屏为单指空白处拖动） */
+  let panning = false;
+  let panStart = { x: 0, y: 0 };
+  let panOrigin = { x: 0, y: 0 };
 
   const clampZoom = (z: number) => Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z));
 
@@ -108,7 +112,24 @@
     }
     if (pointers.size > 2) return;
     const { x, y } = toLocal(ev);
-    dragIdx = hitJoint(x, y);
+    const hit = hitJoint(x, y);
+    // 平移：中键/右键、Shift+拖动，或在触屏上按住空白处拖动（关节命中时优先拖关节）
+    const wantPan =
+      ev.button === 1 || ev.button === 2 || ev.shiftKey || (hit < 0 && ev.pointerType === 'touch');
+    if (wantPan && hit < 0) {
+      panning = true;
+      panStart = { x: ev.clientX, y: ev.clientY };
+      panOrigin = { x: panX, y: panY };
+      dragIdx = -1;
+      dragInfo = null;
+      try {
+        canvas?.setPointerCapture(ev.pointerId);
+      } catch {
+        /* 合成事件无有效 pointerId 时忽略 */
+      }
+      return;
+    }
+    dragIdx = hit;
     if (dragIdx >= 0) {
       engine.markFlag('dragUsed');
       try {
@@ -121,6 +142,15 @@
 
   function onPointerMove(ev: PointerEvent): void {
     if (pointers.has(ev.pointerId)) pointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+
+    // 单指/鼠标平移
+    if (panning && canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const k = SIZE / rect.width;
+      panX = panOrigin.x - ((ev.clientX - panStart.x) * k) / zoom;
+      panY = panOrigin.y - ((ev.clientY - panStart.y) * k) / zoom;
+      return;
+    }
 
     // 双指：捏合缩放 + 中点平移
     if (pointers.size === 2) {
@@ -171,8 +201,19 @@
   function onPointerUp(ev: PointerEvent): void {
     pointers.delete(ev.pointerId);
     if (pointers.size < 2) pinchDist = 0;
+    panning = false;
     dragIdx = -1;
     dragInfo = null;
+  }
+
+  /** 双击画布：复位视图 */
+  function onDblClick(): void {
+    resetView();
+  }
+
+  /** 右键用于平移，屏蔽浏览器菜单 */
+  function onContextMenu(e: MouseEvent): void {
+    e.preventDefault();
   }
   /** 拖拽中的实时数值（画布提示用） */
   let dragInfo: { x: number; y: number; r: number; deg: number } | null = $state(null);
@@ -645,6 +686,8 @@
   onpointerup={onPointerUp}
   onpointercancel={onPointerUp}
   onwheel={onWheel}
+  ondblclick={onDblClick}
+  oncontextmenu={onContextMenu}
   onclick={() => {
     if (engine.phase === 'done' && engine.resultDismissed) engine.resultDismissed = false;
   }}
@@ -658,7 +701,7 @@
   <button
     type="button"
     class="zoom-reset"
-    title="复位视图（也支持双指捏合 / 滚轮）"
+    title="复位视图（双击画布同效；滚轮缩放，Shift/中键/右键拖动或双指平移）"
     onclick={resetView}>⤢</button
   >
 </div>

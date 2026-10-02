@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import Stage from './lib/components/Stage.svelte';
   import ArmCard from './lib/components/ArmCard.svelte';
   import LevelPicker from './lib/components/LevelPicker.svelte';
@@ -16,6 +17,16 @@
   } from './lib/game/audio';
 
   let showAchv = $state(false);
+  /** PWA：有新版本等待接管（main.ts 在 SW 进入 waiting 时派发 pwa-update） */
+  let updateReady = $state(false);
+  onMount(() => {
+    const onUpdate = () => (updateReady = true);
+    window.addEventListener('pwa-update', onUpdate);
+    return () => window.removeEventListener('pwa-update', onUpdate);
+  });
+  function applyPwaUpdate(): void {
+    void import('./main').then((m) => m.applyUpdate());
+  }
   let volume = $state(getVolume());
 
   /** 音量三态循环 1 → 0.5 → 0（静音时同步引擎开关） */
@@ -200,4 +211,11 @@
 {/if}
 {#if engine.toast}
   <div class="toast">🏆 解锁成就：{engine.toast.name}</div>
+{/if}
+{#if updateReady}
+  <div class="update-bar">
+    <span>✨ 新版本已就绪</span>
+    <button type="button" class="mini" onclick={applyPwaUpdate}>立即刷新</button>
+    <button type="button" class="mini ghost" onclick={() => (updateReady = false)}>稍后</button>
+  </div>
 {/if}
