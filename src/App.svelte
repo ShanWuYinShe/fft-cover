@@ -6,7 +6,7 @@
   import ResultOverlay from './lib/components/ResultOverlay.svelte';
   import AchievementsModal from './lib/components/AchievementsModal.svelte';
   import { engine } from './lib/game/engine.svelte';
-  import { beep, finishChord, perfectArpeggio } from './lib/game/audio';
+  import { achvSound, beep, finishChord, perfectArpeggio } from './lib/game/audio';
 
   let showAchv = $state(false);
 
@@ -17,6 +17,7 @@
   let toastTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => {
     if (!engine.toast) return;
+    achvSound(engine.soundOn);
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => engine.clearToast(), 3000);
   });

@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { engine, starsFor } from '../game/engine.svelte';
+  import { engine } from '../game/engine.svelte';
+  import { fitScore, starsFor } from '../game/scoring';
 
   type CopyState = 'idle' | 'ok' | 'fail';
   let copyState = $state<CopyState>('idle');
@@ -44,6 +45,7 @@
   const got = $derived(engine.collectedCount);
   const st = $derived(starsFor(n ? got / n : 0));
   const best = $derived(engine.level ? (engine.bestStars[engine.level.id] ?? 0) : 0);
+  const fit = $derived(engine.level ? fitScore(engine.level.spectrum, engine.arms) : 0);
 </script>
 
 <div class="result">
@@ -69,7 +71,7 @@
       历史最佳 ★{Math.max(st, best)}
       {#if engine.bestClear !== null}· 最快全清 {engine.bestClear.toFixed(1)}s{/if}　{words[st]}
     </div>
-    <div class="arms-line">解法：{engine.armsLine()}</div>
+    <div class="arms-line">解法：{engine.armsLine()} · 拟合度 {(fit * 100).toFixed(0)}%</div>
   {/if}
   <div class="btns">
     <button class="primary" onclick={() => engine.resetRun()}>⟲ 再来一次</button>

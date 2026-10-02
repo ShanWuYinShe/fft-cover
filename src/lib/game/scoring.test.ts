@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   evalAchievements,
+  fitScore,
   scoreForPoint,
   solveFromSpectrum,
   spectrumGaps,
   starsFor,
 } from './scoring';
+import type { SpectrumEntry } from './types';
 
 describe('starsFor', () => {
   it('按 90%/65%/35% 阈值定星级', () => {
@@ -47,6 +49,21 @@ describe('evalAchievements', () => {
     expect(evalAchievements({ ...base, flags: { inviteLoaded: true } })).toContain('inviter');
     expect(evalAchievements({ ...base, flags: { dragUsed: true } })).toContain('drag-master');
   });
+  it('fitScore 完美贴合为 1，偏差按能量比扣减', () => {
+    const target: SpectrumEntry[] = [{ k: 1, mag: 120, phase: 0 }];
+    expect(fitScore(target, [{ on: true, r: 120, freq: 1, phase: 0 }])).toBe(1);
+    // 半径 60：误差能量 (60/120)² = 0.25 → 拟合度 1 - 0.5 ≈ 0.5
+    const half = fitScore(target, [{ on: true, r: 60, freq: 1, phase: 0 }]);
+    expect(half).toBeGreaterThan(0.45);
+    expect(half).toBeLessThan(0.55);
+    // 多余分量计偏差
+    const extra = fitScore(target, [
+      { on: true, r: 120, freq: 1, phase: 0 },
+      { on: true, r: 60, freq: 5, phase: 0 },
+    ]);
+    expect(extra).toBeLessThan(1);
+  });
+
   it('solveFromSpectrum 从频谱解出指针参数', () => {
     const spectrum = [
       { k: 0, mag: 320, phase: 0 },

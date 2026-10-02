@@ -32,11 +32,21 @@ export function beep(
 }
 
 /**
- * 收集音效：按五声音阶随收集序号递进（傅立叶 = 谐波 = 和声）。
- * count 为已收集总数（从 1 开始）。
+ * 收集音效：主音按五声音阶随收集序号递进，
+ * 叠加低八度纯五度和声（更丰满）。count 为已收集总数（从 1 开始）。
  */
 export function collectSound(count: number, on: boolean): void {
-  beep(PENTATONIC[(count - 1) % PENTATONIC.length], 0.12, 'sine', 0.16, on);
+  const f = PENTATONIC[(count - 1) % PENTATONIC.length];
+  beep(f, 0.12, 'sine', 0.14, on);
+  beep(f / 1.5, 0.14, 'sine', 0.08, on);
+}
+
+/** 成就解锁音：快速上行三连音 */
+export function achvSound(on: boolean): void {
+  if (!on) return;
+  [523.25, 659.26, 783.99].forEach((f, i) => {
+    setTimeout(() => beep(f, 0.12, 'triangle', 0.1, true), i * 70);
+  });
 }
 
 /** 完美收集琶音：C 大三和弦上行（C4-E4-G4-C5） */

@@ -58,6 +58,30 @@ export function spectrumGaps(target: SpectrumEntry[], arms: Arm[], top = 2): Spe
 }
 
 /**
+ * 拟合度：目标频谱与玩家频谱的相对误差（0~1，1 = 完全贴合）。
+ * k=0 直流项与玩家多余分量均计入偏差。
+ */
+export function fitScore(target: SpectrumEntry[], arms: Arm[]): number {
+  const cur = armSpectrum(arms);
+  let num = 0;
+  let den = 0;
+  for (const t of target) {
+    if (t.k === 0) continue;
+    const c = cur.get(t.k) ?? { re: 0, im: 0 };
+    const tr = t.mag * Math.cos(t.phase);
+    const ti = t.mag * Math.sin(t.phase);
+    num += (tr - c.re) ** 2 + (ti - c.im) ** 2;
+    den += tr * tr + ti * ti;
+  }
+  for (const [k, c] of cur) {
+    if (k === 0 || target.some((t) => t.k === k)) continue;
+    num += c.re ** 2 + c.im ** 2;
+  }
+  if (den === 0) return num === 0 ? 1 : 0;
+  return Math.max(0, 1 - Math.sqrt(num / den));
+}
+
+/**
  * 从目标频谱直接解出指针参数（DFT 系数即答案）：
  * 按模排序取前 limit 根，相位归一到 [0, 2π)。
  * 返回固定 10 槽位的指针数组（未用槽位关闭、半径 0）。
