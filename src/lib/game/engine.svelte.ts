@@ -409,6 +409,20 @@ export class GameEngine {
     }
   }
 
+  /** 复位第 i 根指针到默认参数（半径/频率/相位/方向） */
+  resetArm(i: number): void {
+    const def = armDefaults()[i];
+    if (!def) return;
+    Object.assign(this.arms[i], def);
+    this.flashArm(i);
+  }
+
+  /** 全部指针复位到默认参数 */
+  resetAllArms(): void {
+    const defs = armDefaults();
+    this.arms.forEach((a, i) => Object.assign(a, defs[i]));
+  }
+
   toggleRun(): void {
     if (this.phase === 'edit' || this.phase === 'paused') {
       if (this.phase === 'edit') {

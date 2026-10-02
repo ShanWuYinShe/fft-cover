@@ -17,12 +17,61 @@
   let ghostSig = '';
   let ghostPathCache: Path2D | null = null;
 
-  /** CSS 像素 → 画布逻辑坐标 */
-  function toLocal(ev: PointerEvent): { x: number; y: number } {
+  /* ---------- 视图缩放/平移 ---------- */
+  const ZOOM_MIN = 0.5;
+  const ZOOM_MAX = 3;
+  /** 缩放倍率 */
+  let zoom = $state(1);
+  /** 视图中心相对画布中心的偏移（逻辑坐标） */
+  let panX = $state(0);
+  let panY = $state(0);
+  /** 多指管理（捏合缩放/平移） */
+  const pointers = new Map<number, { x: number; y: number }>();
+  let pinchDist = 0;
+  let pinchZoom = 1;
+  let pinchMid = { x: 0, y: 0 };
+
+  const clampZoom = (z: number) => Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z));
+
+  function resetView(): void {
+    zoom = 1;
+    panX = 0;
+    panY = 0;
+  }
+  function zoomBy(factor: number): void {
+    zoom = clampZoom(zoom * factor);
+  }
+
+  /** 屏幕(CSS 像素) → 画布逻辑坐标（含缩放与平移的反映射） */
+  function screenToLogical(clientX: number, clientY: number): { x: number; y: number } {
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-    const k = SIZE / rect.width;
-    return { x: (ev.clientX - rect.left) * k, y: (ev.clientY - rect.top) * k };
+    const k = SIZE / rect.width; // CSS → 画布像素
+    const sx = (clientX - rect.left) * k;
+    const sy = (clientY - rect.top) * k;
+    return {
+      x: (sx - SIZE / 2) / zoom + SIZE / 2 + panX,
+      y: (sy - SIZE / 2) / zoom + SIZE / 2 + panY,
+    };
+  }
+
+  function toLocal(ev: PointerEvent): { x: number; y: number } {
+    return screenToLogical(ev.clientX, ev.clientY);
+  }
+
+  /** 以某个屏幕点为锚点缩放（保持该点下的内容不动） */
+  function zoomAt(clientX: number, clientY: number, factor: number): void {
+    const before = screenToLogical(clientX, clientY);
+    zoom = clampZoom(zoom * factor);
+    const after = screenToLogical(clientX, clientY);
+    panX += before.x - after.x;
+    panY += before.y - after.y;
+  }
+
+  function onWheel(e: WheelEvent): void {
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+    zoomAt(e.clientX, e.clientY, factor);
   }
 
   /** 编辑态命中关节：返回被拖指针的下标 */
@@ -44,10 +93,21 @@
   }
 
   function onPointerDown(ev: PointerEvent): void {
+    pointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    // 双指：进入捏合/平移模式（不拖关节）
+    if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      pinchDist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+      pinchZoom = zoom;
+      pinchMid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      dragIdx = -1;
+      dragInfo = null;
+      return;
+    }
+    if (pointers.size > 2) return;
     const { x, y } = toLocal(ev);
     dragIdx = hitJoint(x, y);
     if (dragIdx >= 0) {
-      engine.markFlag('dragUsed');
       engine.markFlag('dragUsed');
       try {
         canvas?.setPointerCapture(ev.pointerId);
@@ -58,6 +118,28 @@
   }
 
   function onPointerMove(ev: PointerEvent): void {
+    if (pointers.has(ev.pointerId)) pointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+
+    // 双指：捏合缩放 + 中点平移
+    if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+      const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      if (canvas) {
+        // 先按两指距离比例缩放（以中点为锚点）
+        const target = clampZoom(pinchZoom * (dist / pinchDist));
+        const factor = target / zoom;
+        if (Math.abs(factor - 1) > 0.001) zoomAt(mid.x, mid.y, factor);
+        // 再跟随中点位移平移（1:1 屏幕像素 → 逻辑像素）
+        const rect = canvas.getBoundingClientRect();
+        const k = SIZE / rect.width;
+        panX -= ((mid.x - pinchMid.x) * k) / zoom;
+        panY -= ((mid.y - pinchMid.y) * k) / zoom;
+        pinchMid = mid;
+      }
+      return;
+    }
+
     if (dragIdx < 0 || !canvas) return;
     const { x, y } = toLocal(ev);
     const joints = chainAt(engine.arms, 0);
@@ -84,11 +166,12 @@
     };
   }
 
-  function onPointerUp(): void {
+  function onPointerUp(ev: PointerEvent): void {
+    pointers.delete(ev.pointerId);
+    if (pointers.size < 2) pinchDist = 0;
     dragIdx = -1;
     dragInfo = null;
   }
-
   /** 拖拽中的实时数值（画布提示用） */
   let dragInfo: { x: number; y: number; r: number; deg: number } | null = $state(null);
 
@@ -191,22 +274,42 @@
     ctx.restore();
   }
 
+  /** 应用视图变换：之后绘制的一切都随缩放/平移变换 */
+  function applyView(): void {
+    if (!ctx) return;
+    ctx.translate(SIZE / 2, SIZE / 2);
+    ctx.scale(zoom, zoom);
+    ctx.translate(-SIZE / 2 - panX, -SIZE / 2 - panY);
+  }
+
   function draw(now: number): void {
     if (!ctx || !engine.level) return;
     ctx.clearRect(0, 0, SIZE, SIZE);
 
-    // 网格底纹：细网格 + 每 160px 一条稍亮的参考线
-    ctx.lineWidth = 1;
-    for (let g = 40; g < SIZE; g += 40) {
-      const major = g % 160 === 0;
+    ctx.save();
+    applyView();
+
+    // 网格底纹：按当前可见范围绘制（随缩放自适应），每 160px 一条亮线
+    const half = SIZE / 2 / zoom;
+    const left = SIZE / 2 + panX - half;
+    const top = SIZE / 2 + panY - half;
+    const right = SIZE / 2 + panX + half;
+    const bottom = SIZE / 2 + panY + half;
+    ctx.lineWidth = 1 / zoom;
+    for (let g = Math.floor(left / 40) * 40; g <= right; g += 40) {
+      const major = ((g % 160) + 160) % 160 === 0;
       ctx.strokeStyle = major ? 'rgba(255,255,255,.05)' : 'rgba(255,255,255,.022)';
       ctx.beginPath();
-      ctx.moveTo(g, 0);
-      ctx.lineTo(g, SIZE);
+      ctx.moveTo(g, top);
+      ctx.lineTo(g, bottom);
       ctx.stroke();
+    }
+    for (let g = Math.floor(top / 40) * 40; g <= bottom; g += 40) {
+      const major = ((g % 160) + 160) % 160 === 0;
+      ctx.strokeStyle = major ? 'rgba(255,255,255,.05)' : 'rgba(255,255,255,.022)';
       ctx.beginPath();
-      ctx.moveTo(0, g);
-      ctx.lineTo(SIZE, g);
+      ctx.moveTo(left, g);
+      ctx.lineTo(right, g);
       ctx.stroke();
     }
 
@@ -424,17 +527,29 @@
       }
     }
 
-    // 拖拽实时数值提示
+    // —— 以下为屏幕空间元素（不随缩放变换）——
+    ctx.restore();
+
+    // 拖拽实时数值提示（跟随关节的逻辑位置 → 换算到屏幕空间）
     if (dragInfo && dragIdx >= 0 && engine.phase === 'edit') {
+      const sx = (dragInfo.x - SIZE / 2 - panX) * zoom + SIZE / 2;
+      const sy = (dragInfo.y - SIZE / 2 - panY) * zoom + SIZE / 2;
       const label = dragInfo.r + ' · ' + dragInfo.deg + '°';
       ctx.font = 'bold 13px sans-serif';
       const w = ctx.measureText(label).width;
       ctx.fillStyle = 'rgba(10,14,26,.85)';
-      ctx.fillRect(dragInfo.x - 6, dragInfo.y - 16, w + 12, 22);
+      ctx.fillRect(sx - 6, sy - 16, w + 12, 22);
       ctx.strokeStyle = 'rgba(251,191,36,.7)';
-      ctx.strokeRect(dragInfo.x - 6, dragInfo.y - 16, w + 12, 22);
+      ctx.strokeRect(sx - 6, sy - 16, w + 12, 22);
       ctx.fillStyle = '#fbbf24';
-      ctx.fillText(label, dragInfo.x, dragInfo.y);
+      ctx.fillText(label, sx, sy);
+    }
+
+    // 缩放指示（非 1× 时显示）
+    if (Math.abs(zoom - 1) > 0.01) {
+      ctx.font = '11px sans-serif';
+      ctx.fillStyle = 'rgba(139,147,167,.9)';
+      ctx.fillText('缩放 ' + zoom.toFixed(2) + '×', 12, SIZE - 14);
     }
 
     drawSpectrum();
@@ -485,7 +600,71 @@
   onpointermove={onPointerMove}
   onpointerup={onPointerUp}
   onpointercancel={onPointerUp}
+  onwheel={onWheel}
   onclick={() => {
     if (engine.phase === 'done' && engine.resultDismissed) engine.resultDismissed = false;
   }}
 ></canvas>
+
+<!-- 缩放控件（画布右下角） -->
+<div class="zoom-bar">
+  <button type="button" title="缩小" onclick={() => zoomBy(1 / 1.25)}>−</button>
+  <span class="zoom-val">{Math.round(zoom * 100)}%</span>
+  <button type="button" title="放大" onclick={() => zoomBy(1.25)}>+</button>
+  <button
+    type="button"
+    class="zoom-reset"
+    title="复位视图（也支持双指捏合 / 滚轮）"
+    onclick={resetView}>⤢</button
+  >
+</div>
+
+<style>
+  .zoom-bar {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px;
+    border-radius: 999px;
+    background: rgba(16, 21, 42, 0.78);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(6px);
+    z-index: 5;
+  }
+  .zoom-bar button {
+    width: 26px;
+    height: 26px;
+    min-height: 0;
+    padding: 0;
+    line-height: 1;
+    font-size: var(--fs-md);
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+  }
+  .zoom-bar button:hover:not(:disabled) {
+    background: var(--cyan-dim);
+    color: var(--cyan);
+    box-shadow: none;
+  }
+  .zoom-bar .zoom-reset {
+    font-size: var(--fs-sm);
+  }
+  .zoom-val {
+    min-width: 38px;
+    text-align: center;
+    font-size: var(--fs-xs);
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  @media (pointer: coarse), (max-width: 640px) {
+    .zoom-bar button {
+      width: 34px;
+      height: 34px;
+    }
+  }
+</style>

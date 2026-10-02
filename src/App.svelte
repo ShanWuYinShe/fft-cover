@@ -153,6 +153,7 @@
           🎲 随机参数
         </button>
         <button title="全部指针清零关闭" onclick={() => engine.clearArms()}>⭯ 清零</button>
+        <button title="全部指针复位到默认参数" onclick={() => engine.resetAllArms()}>↺ 复位</button>
         {#if engine.hasSavedArms()}
           <button title="载入本关最佳得分那局的指针配置" onclick={() => engine.loadSavedArms()}>
             📥 上届解法

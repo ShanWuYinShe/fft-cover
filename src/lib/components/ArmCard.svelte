@@ -237,6 +237,14 @@
         onclick={pPlus.onClick}>+</button
       >
     </div>
+    <button
+      type="button"
+      class="reset"
+      title="复位这根指针的默认参数"
+      onclick={() => engine.resetArm(index)}
+    >
+      ↺
+    </button>
   </div>
 </div>
 
@@ -400,6 +408,24 @@
     gap: 3px;
     cursor: pointer;
     user-select: none;
+  }
+  .reset {
+    appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+    min-height: 0;
+    width: 22px;
+    height: 24px;
+    font-size: var(--fs-md);
+    color: var(--muted-2);
+    border-radius: var(--r-sm);
+    cursor: pointer;
+  }
+  .reset:hover {
+    color: var(--gold);
+    background: var(--gold-dim);
+    box-shadow: none;
   }
   /* 触屏：加大步进按钮热区到 32px */
   @media (pointer: coarse), (max-width: 640px) {
