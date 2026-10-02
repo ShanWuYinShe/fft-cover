@@ -3,3 +3,5 @@ dist/
 .workwork/
 
 .DS_Store
+.pnpm-store/
+store/
