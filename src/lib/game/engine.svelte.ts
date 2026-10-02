@@ -1,7 +1,10 @@
-import { BEST_KEY, RUN_DUR, STAR_LEVELS } from './constants';
+import { ARMS_MAX, BEST_KEY, BEST_SCORE_KEY, COMBO_WINDOW, RUN_DUR } from './constants';
 import { LEVEL_DEFS, makeLevel, makeRandomLevel } from './levels';
 import { tipAt } from './math';
+import { scoreForPoint, starsFor } from './scoring';
 import type { Arm, GamePhase, Level, LevelDef, Vec } from './types';
+
+export { starsFor };
 
 /** 指针初始参数：默认启用 1×、2×，其余关闭待玩家启用 */
 function armDefaults(): Arm[] {
@@ -19,14 +22,17 @@ function armDefaults(): Arm[] {
   ];
 }
 
-/** 按收集比例定星级 */
-export function starsFor(p: number): number {
-  return p >= STAR_LEVELS[0] ? 3 : p >= STAR_LEVELS[1] ? 2 : p >= STAR_LEVELS[2] ? 1 : 0;
-}
-
 function loadBest(): Record<string, number> {
   try {
     return JSON.parse(localStorage.getItem(BEST_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
+function loadScores(): Record<string, number> {
+  try {
+    return JSON.parse(localStorage.getItem(BEST_SCORE_KEY) ?? '{}');
   } catch {
     return {};
   }
@@ -44,6 +50,16 @@ export class GameEngine {
   t = $state(0);
   /** 已收集点数（响应式，供 UI） */
   collectedCount = $state(0);
+  /** 本次运行得分（连击计分） */
+  score = $state(0);
+  /** 结算浮层是否被折叠（点画布恢复） */
+  resultDismissed = $state(false);
+  /** 结算时是否刷新了本关最佳得分 */
+  newRecord = $state(false);
+  /** 各关卡历史最佳得分 */
+  bestScores = $state<Record<string, number>>(loadScores());
+  /** 上次收集时刻（连击窗口判定；-Infinity 表示尚无收集） */
+  private lastCollectAt = -Infinity;
   /** 音效开关 */
   soundOn = $state(true);
   /** 各关卡历史最佳星级 */
@@ -66,18 +82,37 @@ export class GameEngine {
     return this.level ? this.level.pts.length : 0;
   }
 
+  /** 本关历史最佳得分 */
+  get bestScore(): number {
+    return this.level ? (this.bestScores[this.level.id] ?? 0) : 0;
+  }
+
   get runLabel(): string {
     return this.phase === 'running' ? '⏸ 暂停' : '▶ 开始旋转';
   }
 
   loadLevel(def: LevelDef): void {
     this.level = makeLevel(def);
+    this.trimArmsToLimit();
     this.resetRun();
   }
 
   loadRandom(): void {
     this.level = makeRandomLevel(Math.floor(Math.random() * 1e9));
+    this.trimArmsToLimit();
     this.resetRun();
+  }
+
+  /** 关卡切换后按上限裁剪已启用指针（保留序号靠前者） */
+  private trimArmsToLimit(): void {
+    const limit = this.level?.armLimit ?? ARMS_MAX;
+    let n = 0;
+    for (const a of this.arms) {
+      if (a.on) {
+        n++;
+        if (n > limit) a.on = false;
+      }
+    }
   }
 
   /** 回到编辑态：清空尾迹与收集 */
@@ -89,6 +124,9 @@ export class GameEngine {
     this.collected.clear();
     this.collectAnim.clear();
     this.collectedCount = 0;
+    this.score = 0;
+    this.resultDismissed = false;
+    this.lastCollectAt = -Infinity;
   }
 
   /** 从编辑/暂停态开始或继续 */
@@ -113,10 +151,13 @@ export class GameEngine {
   stopRun(): void {
     if (this.phase !== 'running' && this.phase !== 'paused') return;
     this.phase = 'done';
+    this.resultDismissed = false;
     const ratio = this.total ? this.collectedCount / this.total : 0;
     const st = starsFor(ratio);
     const id = this.level?.id;
-    if (id && st > (this.bestStars[id] ?? 0)) {
+    if (!id) return;
+    this.newRecord = false;
+    if (st > (this.bestStars[id] ?? 0)) {
       this.bestStars = { ...this.bestStars, [id]: st };
       try {
         localStorage.setItem(BEST_KEY, JSON.stringify(this.bestStars));
@@ -124,15 +165,30 @@ export class GameEngine {
         /* 存储不可用则忽略 */
       }
     }
+    if (this.score > (this.bestScores[id] ?? 0)) {
+      this.bestScores = { ...this.bestScores, [id]: this.score };
+      this.newRecord = true;
+      try {
+        localStorage.setItem(BEST_SCORE_KEY, JSON.stringify(this.bestScores));
+      } catch {
+        /* 存储不可用则忽略 */
+      }
+    }
   }
 
-  /** 修改第 i 根指针参数 */
+  /** 修改第 i 根指针参数（启用受本关上限约束） */
   setArm(i: number, patch: Partial<Arm>): void {
+    if (patch.on === true && !this.arms[i].on && !this.canEnableMore()) return;
     Object.assign(this.arms[i], patch);
   }
 
-  /** 尖端处尝试收集，返回是否命中新点 */
-  private collectAt(p: Vec): boolean {
+  /** 是否还能再启用一根指针 */
+  canEnableMore(): boolean {
+    return this.arms.filter((a) => a.on).length < (this.level?.armLimit ?? ARMS_MAX);
+  }
+
+  /** 尖端处尝试收集：命中则按连击计分（COMBO_WINDOW 内连收 combo 递增） */
+  tryCollect(p: Vec): boolean {
     const pts = this.level?.pts;
     if (!pts) return false;
     const tolSq = (this.level?.tol ?? 13) ** 2;
@@ -141,10 +197,13 @@ export class GameEngine {
       const dx = pts[i].x - p.x;
       const dy = pts[i].y - p.y;
       if (dx * dx + dy * dy < tolSq) {
+        const now = performance.now();
+        this.combo = now - this.lastCollectAt < COMBO_WINDOW ? this.combo + 1 : 0;
+        this.lastCollectAt = now;
+        this.score += scoreForPoint(this.combo);
         this.collected.add(i);
-        this.collectAnim.set(i, performance.now());
+        this.collectAnim.set(i, now);
         this.collectedCount++;
-        this.combo++;
         return true;
       }
     }
@@ -164,7 +223,7 @@ export class GameEngine {
     for (let s = 1; s <= SUB; s++) {
       const st = prev + ((this.t - prev) * s) / SUB;
       const p = tipAt(this.arms, st);
-      if (this.collectAt(p)) got++;
+      if (this.tryCollect(p)) got++;
       this.trail.push({ x: p.x, y: p.y });
     }
     if (this.trail.length > 2400) this.trail.splice(0, this.trail.length - 2400);

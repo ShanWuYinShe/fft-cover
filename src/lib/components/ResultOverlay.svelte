@@ -16,9 +16,16 @@
 
 <div class="result">
   <div class="stars">{'★'.repeat(st)}{'☆'.repeat(3 - st)}</div>
-  <div class="line">收集 {got} / {n} 点（{n ? Math.round((got / n) * 100) : 0}%）</div>
+  <div class="line">
+    收集 {got} / {n} 点（{n ? Math.round((got / n) * 100) : 0}%）· 得分 {engine.score}{engine.newRecord
+      ? ' 🆕新纪录'
+      : ''}
+  </div>
   <div class="best">历史最佳 ★{Math.max(st, best)}　{words[st]}</div>
-  <button class="primary" onclick={() => engine.resetRun()}>⟲ 再来一次</button>
+  <div class="btns">
+    <button class="primary" onclick={() => engine.resetRun()}>⟲ 再来一次</button>
+    <button onclick={() => (engine.resultDismissed = true)}>👁 查看轨迹</button>
+  </div>
 </div>
 
 <style>
@@ -48,5 +55,9 @@
   .best {
     font-size: 13px;
     color: var(--muted);
+  }
+  .btns {
+    display: flex;
+    gap: 8px;
   }
 </style>

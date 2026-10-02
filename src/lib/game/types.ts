@@ -26,18 +26,24 @@ export interface LevelDef {
   hint: string;
   /** 目标点数量 */
   n: number;
+  /** 本关可用指针上限（缺省 10） */
+  armLimit?: number;
   /** 参数化闭曲线（数学坐标，t ∈ [0, 2π)），与 poly 二选一 */
   fn?: (t: number) => Vec;
   /** 折线顶点（数学坐标，首尾相接），与 fn 二选一 */
   poly?: Vec[];
 }
 
-/** 运行时关卡：包含画布坐标下的目标点集 */
+/** 运行时关卡：包含画布坐标下的目标点集与目标曲线 */
 export interface Level {
   id: string;
   name: string;
   hint: string;
   pts: Vec[];
   tol: number;
+  /** 目标曲线光滑采样（画布坐标，编辑态作参考轮廓） */
+  curve: Vec[];
+  /** 本关可用指针上限 */
+  armLimit: number;
   random?: boolean;
 }

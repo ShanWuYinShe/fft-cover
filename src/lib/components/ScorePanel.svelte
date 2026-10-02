@@ -14,7 +14,13 @@
     <span>已收集</span>
     <span><b>{engine.collectedCount}</b> / {engine.total} 点</span>
   </div>
-  <div class="stars-line">历史最佳：<span class="st">{bestText}</span></div>
+  <div class="score-line">
+    <span>得分</span>
+    <span><b>{engine.score}</b>{engine.newRecord ? ' 🆕' : ''}</span>
+  </div>
+  <div class="stars-line">
+    最佳得分：{engine.bestScore || '—'} · 历史星级：<span class="st">{bestText}</span>
+  </div>
 </section>
 
 <style>

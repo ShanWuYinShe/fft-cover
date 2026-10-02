@@ -6,19 +6,26 @@
     const st = engine.bestStars[id];
     return st ? '★'.repeat(st) : '';
   };
+
+  /** 线性解锁：前一关 ≥1★ 才能进入（随机关不受限） */
+  const isLocked = (i: number): boolean =>
+    i > 0 && (engine.bestStars[LEVEL_DEFS[i - 1].id] ?? 0) < 1;
 </script>
 
 <section>
   <h2>关卡</h2>
   <div class="levels">
-    {#each LEVEL_DEFS as def (def.id)}
+    {#each LEVEL_DEFS as def, i (def.id)}
       <button
         class="lv"
         class:active={engine.level?.id === def.id}
+        class:locked={isLocked(i)}
+        disabled={isLocked(i)}
+        title={isLocked(i) ? '获得前一关至少 1★ 后解锁' : ''}
         onclick={() => engine.loadLevel(def)}
       >
-        <span class="nm">{def.name}</span>
-        <span class="st">{bestOf(def.id)}</span>
+        <span class="nm">{isLocked(i) ? '🔒' : def.name}</span>
+        <span class="st">{isLocked(i) ? '' : bestOf(def.id)}</span>
       </button>
     {/each}
     <button class="lv" class:active={engine.level?.random} onclick={() => engine.loadRandom()}>
@@ -60,6 +67,9 @@
     border-color: var(--cyan);
     color: var(--cyan);
     box-shadow: 0 0 12px rgba(79, 209, 197, 0.2);
+  }
+  .lv.locked {
+    opacity: 0.5;
   }
   #hint {
     margin: 10px 0 0;

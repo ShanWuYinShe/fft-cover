@@ -5,7 +5,7 @@
   import ScorePanel from './lib/components/ScorePanel.svelte';
   import ResultOverlay from './lib/components/ResultOverlay.svelte';
   import { engine } from './lib/game/engine.svelte';
-  import { beep, finishChord } from './lib/game/audio';
+  import { beep, finishChord, perfectArpeggio } from './lib/game/audio';
 
   function toggleRun(): void {
     engine.toggleRun();
@@ -15,7 +15,8 @@
     const was = engine.phase;
     engine.stopRun();
     if (engine.phase === 'done' && (was === 'running' || was === 'paused')) {
-      finishChord(engine.soundOn);
+      if (engine.collectedCount === engine.total) perfectArpeggio(engine.soundOn);
+      else finishChord(engine.soundOn);
     }
   }
   function onKeydown(e: KeyboardEvent): void {
@@ -70,7 +71,10 @@
     <LevelPicker />
     <ScorePanel />
     <section>
-      <h2>指针 <span class="muted">（自中心起首尾相连；频率负数 = 反转）</span></h2>
+      <h2>
+        指针
+        <span class="muted">（本关上限 {engine.level?.armLimit ?? 10} 根；频率负数 = 反转）</span>
+      </h2>
       <div id="arms-grid">
         {#each engine.arms as arm, i (i)}
           <ArmCard {arm} index={i} />

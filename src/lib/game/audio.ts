@@ -1,3 +1,5 @@
+import { PENTATONIC } from './constants';
+
 let audioCtx: AudioContext | null = null;
 
 /** 播放一声短音。on=false 时静默；音频不可用时静默失败。 */
@@ -29,12 +31,23 @@ export function beep(
   }
 }
 
-/** 收集音效：音高随连击上升 */
-export function collectSound(combo: number, on: boolean): void {
-  beep(500 + combo * 40, 0.1, 'sine', 0.18, on);
+/**
+ * 收集音效：按五声音阶随收集序号递进（傅立叶 = 谐波 = 和声）。
+ * count 为已收集总数（从 1 开始）。
+ */
+export function collectSound(count: number, on: boolean): void {
+  beep(PENTATONIC[(count - 1) % PENTATONIC.length], 0.12, 'sine', 0.16, on);
 }
 
-/** 结束音效：上行双音 */
+/** 完美收集琶音：C 大三和弦上行（C4-E4-G4-C5） */
+export function perfectArpeggio(on: boolean): void {
+  if (!on) return;
+  [261.63, 329.63, 392.0, 523.25].forEach((f, i) => {
+    setTimeout(() => beep(f, 0.25, 'triangle', 0.12, true), i * 90);
+  });
+}
+
+/** 普通结束音效：上行双音 */
 export function finishChord(on: boolean): void {
   beep(660, 0.12, 'triangle', 0.12, on);
   setTimeout(() => beep(880, 0.2, 'triangle', 0.12, on), 110);

@@ -3,7 +3,7 @@
   import { engine } from '../game/engine.svelte';
   import { chainAt, tipAt } from '../game/math';
   import { RUN_DUR, SIZE, T0 } from '../game/constants';
-  import { collectSound, finishChord } from '../game/audio';
+  import { collectSound, finishChord, perfectArpeggio } from '../game/audio';
 
   let canvas: HTMLCanvasElement | undefined = $state();
   let ctx: CanvasRenderingContext2D | null = null;
@@ -45,8 +45,20 @@
     ctx.lineTo(SIZE / 2, SIZE / 2 + 7);
     ctx.stroke();
 
-    // 编辑态：幽灵预览轨迹（一个基础周期的尖端轨迹，每帧重建以响应参数变化）
+    // 编辑态：目标曲线参考（暗金虚线）+ 幽灵预览轨迹（紫，每帧重建以响应参数变化）
     if (engine.phase === 'edit') {
+      const curve = engine.level.curve;
+      ctx.strokeStyle = 'rgba(251,191,36,.32)';
+      ctx.lineWidth = 1.4;
+      ctx.setLineDash([3, 5]);
+      ctx.beginPath();
+      for (let i = 0; i < curve.length; i++) {
+        const p = curve[i];
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.closePath();
+      ctx.stroke();
       const ghost = new Path2D();
       const N = 720;
       for (let i = 0; i <= N; i++) {
@@ -59,6 +71,12 @@
       ctx.setLineDash([5, 6]);
       ctx.stroke(ghost);
       ctx.setLineDash([]);
+    }
+
+    // 运行进度条（顶部，避开圆角）
+    if (engine.phase === 'running' || engine.phase === 'paused') {
+      ctx.fillStyle = 'rgba(79,209,197,.55)';
+      ctx.fillRect(4, 4, (engine.t / RUN_DUR) * (SIZE - 8), 3);
     }
 
     // 目标点
@@ -154,8 +172,11 @@
       last = now;
       if (engine.phase === 'running') {
         const { got, finished } = engine.advance(dt);
-        if (got > 0) collectSound(engine.combo, engine.soundOn);
-        if (finished) finishChord(engine.soundOn);
+        if (got > 0) collectSound(engine.collectedCount, engine.soundOn);
+        if (finished) {
+          if (engine.collectedCount === engine.total) perfectArpeggio(engine.soundOn);
+          else finishChord(engine.soundOn);
+        }
       }
       draw(now);
       raf = requestAnimationFrame(frame);
@@ -168,4 +189,9 @@
   });
 </script>
 
-<canvas bind:this={canvas}></canvas>
+<canvas
+  bind:this={canvas}
+  onclick={() => {
+    if (engine.phase === 'done' && engine.resultDismissed) engine.resultDismissed = false;
+  }}
+></canvas>

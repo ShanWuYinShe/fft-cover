@@ -1,30 +1,38 @@
-import { buildPoints, buildPolyPoints } from './math';
+import { ARMS_MAX } from './constants';
+import { buildPoints, buildCurve, densifyPoly, normalizeShape, resample } from './math';
 import type { Level, LevelDef, Vec } from './types';
 
 const C = Math.cos;
 const S = Math.sin;
 
-/** 内置关卡（难度递进）。hint 中给出傅立叶分解线索。 */
+/**
+ * 内置关卡（难度递进）。
+ * armLimit 为本关指针上限——每关都存在按傅立叶精确分解可达成的高分路径。
+ * hint 给出目标曲线的谐波分解线索（含负频率项）。
+ */
 export const LEVEL_DEFS: LevelDef[] = [
   {
     id: 'circle',
     name: '圆',
-    hint: '一根指针就够了：启用 ①（频率 1×），把半径调到指针尖正好扫过圆周。',
+    hint: '一根 1× 指针就能画圆（半径约 120，相位随意）——单一频率项，这是傅立叶级数最简单的形式。',
     n: 24,
+    armLimit: 1,
     fn: (t) => ({ x: 200 * C(t), y: 200 * S(t) }),
   },
   {
     id: 'ellipse',
     name: '椭圆',
-    hint: '同频率同向指针只能合成一个圆。椭圆需要 <b>1× 与 -1×（反转）</b>两根指针：一正一反叠加把圆压扁。',
+    hint: '精确分解含 <b>1× 与 −1×（反转）</b>两根：一正一反两个旋转向量叠加，把圆压成椭圆。相位很重要！',
     n: 24,
+    armLimit: 2,
     fn: (t) => ({ x: 200 * C(t), y: 105 * S(t) }),
   },
   {
     id: 'clover',
     name: '三叶草',
-    hint: '曲线是 r=cos3θ：用 1× 作主臂，再叠加 <b>2× 和 4×</b> 指针把圆压出三个叶片（试着微调半径与相位）。',
+    hint: 'r=cos3θ 的复数分解：e^{iθ}·cos3θ = ½e^{i4θ} + ½e^{−i2θ}——只要 <b>4× 与 −2×（反转）</b>两根！',
     n: 27,
+    armLimit: 2,
     fn: (t) => {
       const r = 150 * C(3 * t);
       return { x: r * C(t), y: r * S(t) };
@@ -33,8 +41,9 @@ export const LEVEL_DEFS: LevelDef[] = [
   {
     id: 'flower5',
     name: '五瓣花',
-    hint: 'r=1+0.35cos5θ 的展开含 <b>1×、4×、6×</b> 三种频率。提示：4×、6× 的半径都不大。',
+    hint: 'r=1+0.38cos5θ → e^{iθ} + 0.19e^{i6θ} + 0.19e^{−i4θ}：需要 <b>1×、6×、−4×（反转）</b>三根。',
     n: 30,
+    armLimit: 3,
     fn: (t) => {
       const r = 150 * (1 + 0.38 * C(5 * t));
       return { x: r * C(t), y: r * S(t) };
@@ -45,6 +54,7 @@ export const LEVEL_DEFS: LevelDef[] = [
     name: '无穷 ∞',
     hint: 'x 方向用 1×，y 方向的 sin2θ 需要 <b>2× 指针（相位约 270°）</b>。两根就够！',
     n: 24,
+    armLimit: 2,
     fn: (t) => {
       const d = 1 + S(t) * S(t);
       const a = 210;
@@ -54,8 +64,9 @@ export const LEVEL_DEFS: LevelDef[] = [
   {
     id: 'star5',
     name: '五角星',
-    hint: '尖角是无限高频率，10 根指针也难完全贴合——尽力收集，别追求完美！',
+    hint: '尖角是无限高频率，5 根指针也难完全贴合——优先保证五条边中段，尽力收集！',
     n: 30,
+    armLimit: 5,
     poly: (() => {
       const p: Vec[] = [];
       for (let i = 0; i < 10; i++) {
@@ -70,8 +81,9 @@ export const LEVEL_DEFS: LevelDef[] = [
   {
     id: 'heart',
     name: '心形',
-    hint: '心形以 <b>2×</b> 谐波为主：启用 1×~4× 多根指针，耐心调半径和相位。这是终极考验！',
+    hint: '终极考验：心形的精确分解需要 <b>±1×、±2×、±3×、±4× 全部 8 根</b>（反转组合一个不能少）——通关它，你就真正理解了傅立叶级数！',
     n: 30,
+    armLimit: 8,
     fn: (t) => ({
       x: 16 * Math.pow(S(t), 3),
       y: 13 * C(t) - 5 * C(2 * t) - 2 * C(3 * t) - C(4 * t),
@@ -79,10 +91,19 @@ export const LEVEL_DEFS: LevelDef[] = [
   },
 ];
 
-/** 由静态定义构建运行时关卡（点集为画布坐标） */
+/** 由静态定义构建运行时关卡：点集、参考曲线与指针上限 */
 export function makeLevel(def: LevelDef): Level {
-  const pts = def.poly ? buildPolyPoints(def.poly, def.n) : buildPoints(def.fn!, def.n);
-  return { id: def.id, name: def.name, hint: def.hint, pts, tol: 13 };
+  const curve = def.poly ? normalizeShape(densifyPoly(def.poly)) : buildCurve(def.fn!);
+  const pts = def.poly ? resample(curve, def.n) : buildPoints(def.fn!, def.n);
+  return {
+    id: def.id,
+    name: def.name,
+    hint: def.hint,
+    pts,
+    tol: 13,
+    curve,
+    armLimit: def.armLimit ?? ARMS_MAX,
+  };
 }
 
 /** 可复现伪随机数（mulberry32） */
@@ -98,7 +119,7 @@ export function mulberry32(a: number): () => number {
 
 /**
  * 随机关卡：随机取 ≤6× 的 3~4 个谐波（必含 1×）生成平滑闭曲线。
- * 保证理论上 ≤4 根指针即可完美拟合。
+ * 理论上 4 根指针即可完美拟合。
  */
 export function makeRandomLevel(seed: number): Level {
   const rnd = mulberry32(seed);
@@ -124,12 +145,15 @@ export function makeRandomLevel(seed: number): Level {
     }
     return { x, y };
   };
+  const curve = buildCurve(fn);
   return {
     id: 'random-' + seed,
     name: '随机 #' + (seed % 1000),
-    hint: '随机拼合的形状，只用了 ≤6× 的 4 个谐波——理论上一根 1× + 三根高次指针就能完美拟合！',
-    pts: buildPoints(fn, 26),
+    hint: '随机拼合的形状，只用了 ≤6× 的 4 个谐波——理论上 4 根指针就能完美拟合！',
+    pts: resample(curve, 26),
     tol: 13,
+    curve,
+    armLimit: 4,
     random: true,
   };
 }

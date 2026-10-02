@@ -25,7 +25,13 @@
 <div class="arm" class:off={!arm.on}>
   <div class="row1">
     <label class="toggle">
-      <input type="checkbox" checked={arm.on} onchange={toggleOn} />
+      <input
+        type="checkbox"
+        checked={arm.on}
+        disabled={!arm.on && !engine.canEnableMore()}
+        title={!arm.on && !engine.canEnableMore() ? '本关指针已达上限' : '启用/停用'}
+        onchange={toggleOn}
+      />
       <b>{CIRCLED[index]}</b>
     </label>
     <input type="range" min="0" max="210" step="2" value={arm.r} oninput={setR} />
