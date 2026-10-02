@@ -10,6 +10,9 @@
 
   let showAchv = $state(false);
 
+  // 新手引导：首次访问显示（flag 持久化在引擎 flags 里）
+  const tutorialSeen = $derived(!!engine.flags['tutorialSeen']);
+
   // 成就解锁 toast：3 秒后自动消失
   let toastTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => {
@@ -141,6 +144,26 @@
 </main>
 {#if showAchv}
   <AchievementsModal onclose={() => (showAchv = false)} />
+{/if}
+{#if !tutorialSeen}
+  <div class="tutorial">
+    <div class="tut-box">
+      <h2>怎么玩？</h2>
+      <ol>
+        <li>右侧启用指针并拖动滑块——<b>金色虚线</b>是目标曲线，把你的<b>紫色轨迹</b>贴上去</li>
+        <li>点「▶ 开始旋转」，指针尖端每扫过一个点就得分，连收有连击加成</li>
+        <li>跑完结算星级；卡关就开「🔍 频谱对比」看目标的真实傅立叶系数</li>
+      </ol>
+      <button
+        class="primary"
+        onclick={() => {
+          engine.markFlag('tutorialSeen');
+        }}
+      >
+        开始挑战
+      </button>
+    </div>
+  </div>
 {/if}
 {#if engine.toast}
   <div class="toast">🏆 解锁成就：{engine.toast.name}</div>

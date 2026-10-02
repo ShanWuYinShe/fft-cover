@@ -240,6 +240,35 @@
       }
     }
 
+    // 幽灵竞速：上届解法的轨迹同屏（金色虚线），直观对比当前方案
+    if (engine.phase !== 'edit' && engine.hasSavedArms() && engine.level) {
+      const saved = engine.armsSaves[engine.level.id];
+      const cur = engine.arms
+        .map((a) => a.r + ':' + a.freq + ':' + Math.round((a.phase * 180) / Math.PI))
+        .join();
+      const sv = saved
+        .map((a) => a.r + ':' + a.freq + ':' + Math.round((a.phase * 180) / Math.PI))
+        .join();
+      if (cur !== sv) {
+        const ghost = new Path2D();
+        const M = 480;
+        const from = Math.max(0, engine.t - T0);
+        for (let i = 0; i <= M; i++) {
+          const p = tipAt(saved, from + ((engine.t - from) * i) / M);
+          if (i === 0) ghost.moveTo(p.x, p.y);
+          else ghost.lineTo(p.x, p.y);
+        }
+        ctx.strokeStyle = 'rgba(251,191,36,.5)';
+        ctx.lineWidth = 1.4;
+        ctx.setLineDash([2, 5]);
+        ctx.stroke(ghost);
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(251,191,36,.75)';
+        ctx.font = '10px sans-serif';
+        ctx.fillText('👻 上届解法', 10, SIZE - 12);
+      }
+    }
+
     // 指针链
     const tt = engine.phase === 'edit' ? 0 : engine.t;
     const joints = chainAt(engine.arms, tt);

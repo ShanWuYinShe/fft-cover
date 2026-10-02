@@ -250,6 +250,38 @@ input[type='checkbox'] {
   font-family: inherit;
 }
 
+.tutorial {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 14, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 70;
+}
+
+.tutorial .tut-box {
+  width: min(92vw, 420px);
+  background: #10152a;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px 26px;
+  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.6);
+}
+
+.tutorial h2 {
+  margin: 0 0 10px;
+  letter-spacing: 2px;
+}
+
+.tutorial ol {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  line-height: 1.9;
+  font-size: 13.5px;
+  color: var(--text);
+}
+
 .toast {
   position: fixed;
   top: 18px;
