@@ -4,6 +4,7 @@
 
   type CopyState = 'idle' | 'ok' | 'fail';
   let copyState = $state<CopyState>('idle');
+  let shareState: 'idle' | 'ok' = $state('idle');
   let imgState: 'idle' | 'ok' = $state('idle');
 
   /** 导出画布当前帧 + 成绩条为 PNG */
@@ -55,12 +56,24 @@
   }
 
   async function copyReport(): Promise<void> {
+    const text = engine.buildReport();
+    // 移动端优先原生分享面板
+    if ('share' in navigator) {
+      try {
+        await navigator.share({ title: '傅立叶指针战报', text });
+        shareState = 'ok';
+        setTimeout(() => (shareState = 'idle'), 1500);
+        return;
+      } catch {
+        /* 用户取消或环境不支持则走剪贴板 */
+      }
+    }
     let ok = false;
     try {
-      await navigator.clipboard.writeText(engine.buildReport());
+      await navigator.clipboard.writeText(text);
       ok = true;
     } catch {
-      ok = fallbackCopy(engine.buildReport());
+      ok = fallbackCopy(text);
     }
     copyState = ok ? 'ok' : 'fail';
     setTimeout(() => (copyState = 'idle'), 1500);
@@ -109,7 +122,13 @@
     <button class="primary" onclick={() => engine.resetRun()}>⟲ 再来一次</button>
     <button onclick={() => (engine.resultDismissed = true)}>👁 查看轨迹</button>
     <button onclick={copyReport}>
-      {copyState === 'ok' ? '✓ 已复制' : copyState === 'fail' ? '⚠ 复制失败' : '📋 复制战报'}
+      {shareState === 'ok'
+        ? '✓ 已分享'
+        : copyState === 'ok'
+          ? '✓ 已复制'
+          : copyState === 'fail'
+            ? '⚠ 复制失败'
+            : '📤 分享战报'}
     </button>
     <button onclick={saveImage}>{imgState === 'ok' ? '✓ 已保存' : '📸 保存成绩图'}</button>
   </div>

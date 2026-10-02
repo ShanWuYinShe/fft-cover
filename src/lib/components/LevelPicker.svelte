@@ -17,10 +17,25 @@
   let seedInput = $state('');
   const seed = $derived(engine.level?.random ? engine.level.id.replace('random-', '') : '');
 
-  /** 全关卡总星数（满 27） */
+  /** 全关卡总星数（满 30，随 10 关） */
   const totalStars = $derived(
     LEVEL_DEFS.reduce((sum, d) => sum + (engine.bestStars[d.id] ?? 0), 0),
   );
+
+  // 每日倒计时（30 秒刷新）
+  let now = $state(Date.now());
+  $effect(() => {
+    const timer = setInterval(() => (now = Date.now()), 30_000);
+    return () => clearInterval(timer);
+  });
+  const dailyCountdown = $derived.by(() => {
+    const t = new Date(now);
+    t.setHours(24, 0, 0, 0);
+    const ms = t.getTime() - now;
+    const h = Math.floor(ms / 3_600_000);
+    const m = Math.floor((ms % 3_600_000) / 60_000);
+    return h + ' 时 ' + m + ' 分';
+  });
 
   async function copySeed(): Promise<void> {
     try {
@@ -71,7 +86,9 @@
       onclick={() => engine.loadDaily()}
     >
       <span class="nm">📅 每日</span>
-      <span class="st">{engine.todayBest > 0 ? engine.todayBest + ' 分' : '今日'}</span>
+      <span class="st">
+        {engine.todayBest > 0 ? engine.todayBest + ' 分 · ' : ''}{dailyCountdown}
+      </span>
     </button>
     <button class="lv" class:active={engine.level?.random} onclick={() => engine.loadRandom()}>
       <span class="nm">🎲 随机</span>
