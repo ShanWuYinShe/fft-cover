@@ -14,7 +14,13 @@ import {
 } from './constants';
 import { LEVEL_DEFS, makeDailyLevel, makeLevel, makeRandomLevel, todayKey } from './levels';
 import { tipAt } from './math';
-import { ACHIEVEMENTS, evalAchievements, scoreForPoint, starsFor } from './scoring';
+import {
+  ACHIEVEMENTS,
+  evalAchievements,
+  scoreForPoint,
+  solveFromSpectrum,
+  starsFor,
+} from './scoring';
 import type { Arm, GamePhase, Level, LevelDef, Vec } from './types';
 
 export { starsFor };
@@ -145,6 +151,14 @@ export class GameEngine {
   speed = $state(1);
   /** 频谱对比开关：在频谱仪上叠加目标曲线的真实频谱 */
   spectrumCompare = $state(false);
+  /** 自动拟合动画进行中（仅沙盒） */
+  autoSolve = $state(false);
+  /** 自动拟合进度 0→1 */
+  autoProgress = $state(0);
+  /** 插值起点快照 */
+  private autoFrom: Arm[] | null = null;
+  /** 插值目标（DFT 解） */
+  private autoTo: Arm[] | null = null;
   /** 结算浮层是否显示"全清新纪录" */
   newClearRecord = $state(false);
   /** 各关保存的解法参数（最佳得分那局的指针配置） */
@@ -239,6 +253,46 @@ export class GameEngine {
   /** 切换频谱对比叠加 */
   toggleSpectrumCompare(): void {
     this.spectrumCompare = !this.spectrumCompare;
+  }
+
+  /**
+   * 沙盒自动拟合演示：按目标频谱解出精确参数，
+   * 并在 2 秒内把指针从当前值平滑过渡过去（傅立叶逐项逼近可视化）。
+   */
+  startAutoSolve(): void {
+    if (!this.sandbox || !this.level || this.autoSolve) return;
+    this.autoFrom = this.arms.map((a) => ({ ...a }));
+    this.autoTo = solveFromSpectrum(this.level.spectrum, this.level.armLimit);
+    this.autoSolve = true;
+    this.autoProgress = 0;
+  }
+
+  /** 插值推进自动拟合（advance 内调用） */
+  private stepAutoSolve(dt: number): void {
+    if (!this.autoSolve || !this.autoFrom || !this.autoTo) return;
+    this.autoProgress = Math.min(this.autoProgress + dt / 2, 1);
+    const e = 1 - Math.pow(1 - this.autoProgress, 3); // easeOutCubic
+    this.arms = this.autoFrom.map((from, i) => {
+      const to = this.autoTo![i];
+      const wrap = (d: number) => {
+        while (d > Math.PI) d -= Math.PI * 2;
+        while (d < -Math.PI) d += Math.PI * 2;
+        return d;
+      };
+      let dp = wrap(to.phase - from.phase);
+      const phase = from.phase + dp * e;
+      return {
+        on: e > 0.15 ? to.on : from.on,
+        r: Math.round(from.r + (to.r - from.r) * e),
+        freq: e > 0.5 ? to.freq : from.freq,
+        phase,
+      };
+    });
+    if (this.autoProgress >= 1) {
+      this.autoSolve = false;
+      this.autoFrom = null;
+      this.autoTo = null;
+    }
   }
 
   /** 本关历史最快全清用时（未全清过返回 null） */
@@ -445,6 +499,18 @@ export class GameEngine {
     return !!(id && this.armsSaves[id]);
   }
 
+  /** 启用指针的解法参数串（如 ①120/1×/0° + ②60/2×/90°） */
+  armsLine(): string {
+    const parts = this.arms
+      .map((a, i) => ({ a, i }))
+      .filter(({ a }) => a.on)
+      .map(
+        ({ a, i }) =>
+          CIRCLED[i] + a.r + '/' + a.freq + '×/' + Math.round((a.phase * 180) / Math.PI) + '°',
+      );
+    return parts.join(' + ') || '（无启用指针）';
+  }
+
   /** 生成可分享的战报文本 */
   buildReport(): string {
     const lines: string[] = [];
@@ -468,20 +534,7 @@ export class GameEngine {
         ' 点' +
         (this.clearT !== null ? ' · 全清 ' + this.clearT.toFixed(1) + 's' : ''),
     );
-    const armsLine = this.arms
-      .filter((a) => a.on)
-      .map(
-        (a) =>
-          CIRCLED[this.arms.indexOf(a)] +
-          a.r +
-          '/' +
-          a.freq +
-          '×/' +
-          Math.round((a.phase * 180) / Math.PI) +
-          '°',
-      )
-      .join(' + ');
-    lines.push('解法：' + armsLine);
+    lines.push('解法：' + this.armsLine());
     if (this.level?.random) lines.push('邀请码：' + this.level.id.replace('random-', ''));
     return lines.join('\n');
   }
@@ -535,6 +588,7 @@ export class GameEngine {
    */
   advance(dt: number): { got: number; finished: boolean } {
     if (this.phase !== 'running') return { got: 0, finished: false };
+    if (this.autoSolve) this.stepAutoSolve(dt);
     const prev = this.t;
     // 沙盒不设时长上限（封顶防浮点溢出）也不自动结算，且可调转速
     const step = dt * (this.sandbox ? this.speed : 1);

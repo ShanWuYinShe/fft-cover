@@ -69,6 +69,7 @@
       历史最佳 ★{Math.max(st, best)}
       {#if engine.bestClear !== null}· 最快全清 {engine.bestClear.toFixed(1)}s{/if}　{words[st]}
     </div>
+    <div class="arms-line">解法：{engine.armsLine()}</div>
   {/if}
   <div class="btns">
     <button class="primary" onclick={() => engine.resetRun()}>⟲ 再来一次</button>
@@ -105,6 +106,11 @@
   }
   .line b {
     color: var(--gold);
+  }
+  .arms-line {
+    font-size: 12px;
+    color: var(--muted);
+    max-width: 90%;
   }
   .best {
     font-size: 13px;

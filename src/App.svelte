@@ -72,6 +72,13 @@
     <div class="run-row">
       {#if engine.sandbox}
         <button class="primary" onclick={() => engine.exitSandbox()}>⏹ 结束沙盒</button>
+        <button
+          title="按目标频谱自动解出精确参数（动画演示傅立叶逐项逼近）"
+          disabled={engine.autoSolve}
+          onclick={() => engine.startAutoSolve()}
+        >
+          🪄 {engine.autoSolve ? '拟合中…' : '自动拟合'}
+        </button>
         <button title="沙盒转速档位" onclick={() => engine.cycleSpeed()}>⚡ {engine.speed}×</button>
         <button onclick={() => engine.resetRun()}>⟲ 重置点</button>
         <button title="音效开关" onclick={() => engine.setSound(!engine.soundOn)}>

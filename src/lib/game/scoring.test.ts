@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { evalAchievements, scoreForPoint, starsFor } from './scoring';
+import {
+  evalAchievements,
+  scoreForPoint,
+  solveFromSpectrum,
+  spectrumGaps,
+  starsFor,
+} from './scoring';
 
 describe('starsFor', () => {
   it('按 90%/65%/35% 阈值定星级', () => {
@@ -41,6 +47,24 @@ describe('evalAchievements', () => {
     expect(evalAchievements({ ...base, flags: { inviteLoaded: true } })).toContain('inviter');
     expect(evalAchievements({ ...base, flags: { dragUsed: true } })).toContain('drag-master');
   });
+  it('solveFromSpectrum 从频谱解出指针参数', () => {
+    const spectrum = [
+      { k: 0, mag: 320, phase: 0 },
+      { k: 1, mag: 120, phase: 0 },
+      { k: -2, mag: 60, phase: 1.5 },
+      { k: 3, mag: 0.5, phase: 0 },
+    ];
+    const arms = solveFromSpectrum(spectrum, 3);
+    expect(arms).toHaveLength(10);
+    const on = arms.filter((a) => a.on);
+    expect(on).toHaveLength(3); // k=0 跳过，按模取前三
+    expect(on[0]).toEqual({ on: true, r: 120, freq: 1, phase: 0 });
+    expect(on[1].r).toBe(60);
+    expect(on[1].freq).toBe(-2);
+    expect(on[1].phase).toBeCloseTo(1.5, 5);
+    expect(arms.filter((a) => !a.on)).toHaveLength(7);
+  });
+
   it('全关三星判定谐波大师', () => {
     const nine = { bestStars: {}, bestScores: {}, bestClears: {}, flags: {}, levelCount: 9 };
     const partial = { ...nine, bestStars: { circle: 3, ellipse: 3 } };

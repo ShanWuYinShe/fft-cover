@@ -57,6 +57,25 @@ export function spectrumGaps(target: SpectrumEntry[], arms: Arm[], top = 2): Spe
   return gaps.slice(0, top);
 }
 
+/**
+ * 从目标频谱直接解出指针参数（DFT 系数即答案）：
+ * 按模排序取前 limit 根，相位归一到 [0, 2π)。
+ * 返回固定 10 槽位的指针数组（未用槽位关闭、半径 0）。
+ */
+export function solveFromSpectrum(spectrum: SpectrumEntry[], limit: number, slots = 10): Arm[] {
+  const sorted = spectrum
+    .filter((s) => s.k !== 0)
+    .sort((a, b) => b.mag - a.mag)
+    .slice(0, limit);
+  const out: Arm[] = Array.from({ length: slots }, () => ({ on: false, r: 0, freq: 1, phase: 0 }));
+  sorted.forEach((s, i) => {
+    let phase = s.phase;
+    if (phase < 0) phase += Math.PI * 2;
+    out[i] = { on: true, r: Math.round(s.mag), freq: s.k, phase };
+  });
+  return out;
+}
+
 /** 成就定义 */
 export interface AchievementDef {
   id: string;
