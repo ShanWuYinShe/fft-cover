@@ -29,7 +29,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   {
     id: 'ellipse',
     name: '椭圆',
-    hint: '精确分解含 <b>1× 与 −1×（反转）</b>两根：一正一反两个旋转向量叠加，把圆压成椭圆。相位很重要！',
+    hint: '精确分解含 <b>1× 与 −1×（⟲ 反转）</b>两根：一正一反两个旋转向量叠加，把圆压成椭圆。相位很重要！',
     n: 24,
     armLimit: 2,
     fn: (t) => ({ x: 200 * C(t), y: 105 * S(t) }),
@@ -37,7 +37,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   {
     id: 'clover',
     name: '三叶草',
-    hint: 'r=cos3θ 的复数分解：e^{iθ}·cos3θ = ½e^{i4θ} + ½e^{−i2θ}——只要 <b>4× 与 −2×（反转）</b>两根！',
+    hint: 'r=cos3θ 的复数分解：e^{iθ}·cos3θ = ½e^{i4θ} + ½e^{−i2θ}——只要 <b>4× 与 −2×（⟲ 反转）</b>两根！',
     n: 27,
     armLimit: 2,
     fn: (t) => {
@@ -48,7 +48,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   {
     id: 'flower5',
     name: '五瓣花',
-    hint: 'r=1+0.38cos5θ → e^{iθ} + 0.19e^{i6θ} + 0.19e^{−i4θ}：需要 <b>1×、6×、−4×（反转）</b>三根。',
+    hint: 'r=1+0.38cos5θ → e^{iθ} + 0.19e^{i6θ} + 0.19e^{−i4θ}：需要 <b>1×、6×、−4×（⟲ 反转）</b>三根。',
     n: 30,
     armLimit: 3,
     fn: (t) => {
@@ -59,7 +59,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   {
     id: 'gear8',
     name: '八齿齿轮',
-    hint: 'e^{iθ}(1+0.22cos8θ) = e^{iθ} + 0.11e^{i9θ} + 0.11e^{−i7θ}：<b>1× 主臂 + 9× 与 −7×（反转）</b>小半径副臂。9× 转得飞快！',
+    hint: 'e^{iθ}(1+0.22cos8θ) = e^{iθ} + 0.11e^{i9θ} + 0.11e^{−i7θ}：<b>1× 主臂 + 9× 与 −7×（⟲ 反转）</b>小半径副臂。9× 转得飞快！',
     n: 30,
     armLimit: 3,
     fn: (t) => {
@@ -115,7 +115,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   {
     id: 'heart',
     name: '心形',
-    hint: '终极考验：心形的精确分解需要 <b>±1×、±2×、±3×、±4× 全部 8 根</b>（反转组合一个不能少）——通关它，你就真正理解了傅立叶级数！',
+    hint: '终极考验：心形的精确分解需要 <b>±1×、±2×、±3×、±4× 全部 8 根</b>（⟲ 反转组合一个不能少）——通关它，你就真正理解了傅立叶级数！',
     n: 30,
     armLimit: 8,
     fn: (t) => ({
@@ -136,7 +136,7 @@ export function makeLevel(def: LevelDef): Level {
     pts,
     tol: 13,
     curve,
-    spectrum: dftSpectrum(curve).filter((s) => s.k !== 0),
+    spectrum: dftSpectrum(curve, 16).filter((s) => s.k !== 0),
     armLimit: def.armLimit ?? ARMS_MAX,
   };
 }
@@ -182,7 +182,7 @@ export function levelFromCoeffs(coeffs: HarmonicCoeff[], name: string, id?: stri
     pts: resample(curve, 26),
     tol: 13,
     curve,
-    spectrum: dftSpectrum(curve).filter((s) => s.k !== 0),
+    spectrum: dftSpectrum(curve, 16).filter((s) => s.k !== 0),
     armLimit: Math.max(1, active.length),
     random: true,
   };
@@ -253,18 +253,103 @@ export function mulberry32(a: number): () => number {
   };
 }
 
+/** 随机关卡难度：easy/normal 可被少量指针完美拟合；hard 含超出 10× 的分量，不可完美拟合 */
+export type RandomDifficulty = 'easy' | 'normal' | 'hard';
+
 /**
- * 随机关卡：随机取 ≤6× 的 3~4 个谐波（必含 1×）生成平滑闭曲线。
- * 理论上 4 根指针即可完美拟合。
+ * 随机关卡（按难度）：
+ * - easy：3 个 ≤6× 谐波，3 根内可完美拟合
+ * - normal：3~4 个 ≤6× 谐波，4 根内可完美拟合
+ * - hard：含 11~16× 的"不可表达"高频分量（指针频率上限 10×），
+ *   或随机尖角多边形（尖角为无限高频率）——设计上无法完美拟合，尽量逼近
  */
-export function makeRandomLevel(seed: number): Level {
+export function makeRandomLevel(seed: number, diff: RandomDifficulty = 'normal'): Level {
   const rnd = mulberry32(seed);
+
+  if (diff === 'hard') {
+    // 两种困难形态随机
+    if (rnd() < 0.5) {
+      // a) 高频细节：低频主体 + 11~16× 不可表达分量
+      const hiK = 11 + Math.floor(rnd() * 6); // 11..16
+      const lowKs = [1, 2, 3, 4, 5, 6];
+      for (let i = lowKs.length - 1; i > 0; i--) {
+        const j = Math.floor(rnd() * (i + 1));
+        [lowKs[i], lowKs[j]] = [lowKs[j], lowKs[i]];
+      }
+      const chosen = lowKs.slice(0, 2 + Math.floor(rnd() * 2));
+      if (!chosen.includes(1)) chosen.push(1);
+      const coeffs = chosen.map((k) => ({
+        k,
+        a: k === 1 ? 140 + rnd() * 40 : 18 + rnd() * 35,
+        p: rnd() * Math.PI * 2,
+      }));
+      const hiA = 8 + rnd() * 14;
+      const hiP = rnd() * Math.PI * 2;
+      const fn = (t: number): Vec => {
+        let x = 0;
+        let y = 0;
+        for (const c of coeffs) {
+          x += c.a * Math.cos(c.k * t + c.p);
+          y += c.a * Math.sin(c.k * t + c.p);
+        }
+        x += hiA * Math.cos(hiK * t + hiP);
+        y += hiA * Math.sin(hiK * t + hiP);
+        return { x, y };
+      };
+      const curve = buildCurve(fn);
+      return {
+        id: 'random-' + seed,
+        name: '随机·难 #' + (seed % 1000),
+        hint:
+          '⚠️ 困难关：含有 **超过 10×** 的高频细节（' +
+          hiK +
+          '×），指针无法表达——拟合度有上限，尽量逼近！',
+        pts: resample(curve, 30),
+        tol: 12,
+        curve,
+        spectrum: dftSpectrum(curve, 16).filter((s) => s.k !== 0),
+        armLimit: 8,
+        random: true,
+      };
+    }
+    // b) 随机尖角多边形（顶点半径随机）
+    const sides = 5 + Math.floor(rnd() * 4); // 5..8
+    const poly: Vec[] = [];
+    for (let i = 0; i < sides; i++) {
+      const a = (i / sides) * Math.PI * 2 - Math.PI / 2;
+      const r = 100 + rnd() * 90;
+      poly.push({ x: r * Math.cos(a), y: r * Math.sin(a) });
+    }
+    poly.push(poly[0]);
+    const dense: Vec[] = [];
+    for (let i = 0; i < poly.length - 1; i++) {
+      const a = poly[i];
+      const b = poly[i + 1];
+      for (let k = 0; k < 40; k++) {
+        dense.push({ x: a.x + ((b.x - a.x) * k) / 40, y: a.y + ((b.y - a.y) * k) / 40 });
+      }
+    }
+    const curve = normalizeShape(dense);
+    return {
+      id: 'random-' + seed,
+      name: '随机·难 #' + (seed % 1000),
+      hint: '⚠️ 困难关：随机尖角多边形——尖角是无限高频率，10 根指针不可能完美拟合。别追求满分，比比谁更接近！',
+      pts: resample(curve, 30),
+      tol: 11,
+      curve,
+      spectrum: dftSpectrum(curve, 16).filter((s) => s.k !== 0),
+      armLimit: 8,
+      random: true,
+    };
+  }
+
   const ks = [1, 2, 3, 4, 5, 6];
   for (let i = ks.length - 1; i > 0; i--) {
     const j = Math.floor(rnd() * (i + 1));
     [ks[i], ks[j]] = [ks[j], ks[i]];
   }
-  const chosen = ks.slice(0, 3 + Math.floor(rnd() * 2));
+  const count = diff === 'easy' ? 3 : 3 + Math.floor(rnd() * 2);
+  const chosen = ks.slice(0, count);
   if (!chosen.includes(1)) chosen[0] = 1;
   chosen.sort((a, b) => a - b);
   const coeffs = chosen.map((k) => ({
@@ -284,13 +369,16 @@ export function makeRandomLevel(seed: number): Level {
   const curve = buildCurve(fn);
   return {
     id: 'random-' + seed,
-    name: '随机 #' + (seed % 1000),
-    hint: '随机拼合的形状，只用了 ≤6× 的 4 个谐波——理论上 4 根指针就能完美拟合！',
+    name: '随机 #' + (seed % 1000) + (diff === 'easy' ? '·易' : ''),
+    hint:
+      diff === 'easy'
+        ? '简单随机关：只用了 3 个 ≤6× 谐波——3 根指针就能完美拟合！'
+        : '随机拼合的形状，只用了 ≤6× 的谐波——理论上 4 根指针就能完美拟合！',
     pts: resample(curve, 26),
     tol: 13,
     curve,
-    spectrum: dftSpectrum(curve).filter((s) => s.k !== 0),
-    armLimit: 4,
+    spectrum: dftSpectrum(curve, 16).filter((s) => s.k !== 0),
+    armLimit: diff === 'easy' ? 3 : 4,
     random: true,
   };
 }

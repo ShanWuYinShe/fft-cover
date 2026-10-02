@@ -20,6 +20,7 @@ import {
   makeLevel,
   makeRandomLevel,
   todayKey,
+  type RandomDifficulty,
 } from './levels';
 import { tipAt } from './math';
 import {
@@ -157,6 +158,13 @@ export class GameEngine {
   toast = $state<{ id: string; name: string } | null>(null);
   /** 沙盒转速档位 */
   speed = $state(1);
+  /** 随机关卡难度（🎲 生成时生效） */
+  difficulty = $state<RandomDifficulty>('normal');
+
+  /** 切换随机关卡难度（下次生成生效） */
+  setDifficulty(d: RandomDifficulty): void {
+    this.difficulty = d;
+  }
   /** 频谱对比开关：在频谱仪上叠加目标曲线的真实频谱 */
   spectrumCompare = $state(false);
   /** 自动拟合动画进行中（仅沙盒） */
@@ -211,13 +219,13 @@ export class GameEngine {
   }
 
   loadRandom(): void {
-    this.loadRandomSeed(Math.floor(Math.random() * 1e9));
+    this.loadRandomSeed(Math.floor(Math.random() * 1e9), this.difficulty);
   }
 
-  /** 按邀请码（seed）重建随机关卡：同码必同关卡 */
-  loadRandomSeed(seed: number): void {
+  /** 按邀请码（seed）重建随机关卡：同码必同关卡。难度不影响已有关卡复现 */
+  loadRandomSeed(seed: number, diff: RandomDifficulty = 'normal'): void {
     this.sandbox = false;
-    this.level = makeRandomLevel(seed);
+    this.level = makeRandomLevel(seed, diff);
     this.trimArmsToLimit();
     this.resetRun();
     this.markFlag('inviteLoaded');

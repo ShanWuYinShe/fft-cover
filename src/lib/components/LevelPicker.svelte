@@ -15,6 +15,11 @@
     i > 0 && (engine.bestStars[LEVEL_DEFS[i - 1].id] ?? 0) < 1;
 
   let seedInput = $state('');
+  const DIFFS = [
+    { id: 'easy', nm: '简单' },
+    { id: 'normal', nm: '普通' },
+    { id: 'hard', nm: '困难' },
+  ] as const;
   const seed = $derived(engine.level?.random ? engine.level.id.replace('random-', '') : '');
 
   /** 全关卡总星数（满 30，随 10 关） */
@@ -90,8 +95,32 @@
         {engine.todayBest > 0 ? engine.todayBest + ' 分 · ' : ''}{dailyCountdown}
       </span>
     </button>
-    <button class="lv" class:active={engine.level?.random} onclick={() => engine.loadRandom()}>
-      <span class="nm">🎲 随机</span>
+    <div class="diff-row">
+      <span class="diff-label">随机难度</span>
+      {#each DIFFS as d (d.id)}
+        <button
+          type="button"
+          class="diff-chip"
+          class:active={engine.difficulty === d.id}
+          onclick={() => engine.setDifficulty(d.id)}
+        >
+          {d.nm}
+        </button>
+      {/each}
+    </div>
+    <button
+      class="lv"
+      class:active={engine.level?.random}
+      onclick={() => engine.loadRandom()}
+      title="生成随机关卡"
+    >
+      <span class="nm"
+        >🎲 随机 · {engine.difficulty === 'easy'
+          ? '简单'
+          : engine.difficulty === 'hard'
+            ? '困难'
+            : '普通'}</span
+      >
       <span class="st">无限</span>
     </button>
     <button class="lv" onclick={() => (showComposer = true)}>
@@ -151,6 +180,25 @@
   }
   .lv.locked {
     opacity: 0.5;
+  }
+  .diff-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0 0 8px;
+    font-size: 11.5px;
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+  .diff-chip {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+  .diff-chip.active {
+    border-color: var(--purple);
+    color: var(--purple);
+    background: rgba(167, 139, 250, 0.08);
   }
   .seed-row {
     display: flex;

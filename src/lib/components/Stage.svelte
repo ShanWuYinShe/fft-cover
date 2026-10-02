@@ -74,11 +74,21 @@
     if (phase < 0) phase += Math.PI * 2;
     engine.setArm(dragIdx, { r: Math.round(r), phase });
     engine.flashArm(dragIdx);
+    dragInfo = {
+      x: joints[n].x + Math.min(90, r) * 0.5 + 30,
+      y: joints[n].y - 24,
+      r: Math.round(r),
+      deg: Math.round((phase * 180) / Math.PI),
+    };
   }
 
   function onPointerUp(): void {
     dragIdx = -1;
+    dragInfo = null;
   }
+
+  /** 拖拽中的实时数值（画布提示用） */
+  let dragInfo: { x: number; y: number; r: number; deg: number } | null = $state(null);
 
   function resize(): void {
     if (!canvas) return;
@@ -356,6 +366,19 @@
         ctx.stroke();
         ctx.lineWidth = 1;
       }
+    }
+
+    // 拖拽实时数值提示
+    if (dragInfo && dragIdx >= 0 && engine.phase === 'edit') {
+      const label = dragInfo.r + ' · ' + dragInfo.deg + '°';
+      ctx.font = 'bold 13px sans-serif';
+      const w = ctx.measureText(label).width;
+      ctx.fillStyle = 'rgba(10,14,26,.85)';
+      ctx.fillRect(dragInfo.x - 6, dragInfo.y - 16, w + 12, 22);
+      ctx.strokeStyle = 'rgba(251,191,36,.7)';
+      ctx.strokeRect(dragInfo.x - 6, dragInfo.y - 16, w + 12, 22);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillText(label, dragInfo.x, dragInfo.y);
     }
 
     drawSpectrum();

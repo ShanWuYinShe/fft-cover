@@ -137,7 +137,9 @@
     <section>
       <h2>
         指针
-        <span class="muted">（本关上限 {engine.level?.armLimit ?? 10} 根；频率负数 = 反转）</span>
+        <span class="muted"
+          >（本关上限 {engine.level?.armLimit ?? 10} 根；⟲ 切换旋转方向，点击数值精确输入）</span
+        >
       </h2>
       <div class="tools-row">
         <button

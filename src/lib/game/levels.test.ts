@@ -34,6 +34,24 @@ describe('makeRandomLevel', () => {
     expect(a.pts).toEqual(b.pts);
   });
 
+  it('困难难度含超出 10× 的频谱分量（不可完美拟合）', () => {
+    // 多个 seed 采样，确认困难关频谱存在 |k|>10 的分量
+    let foundHigh = false;
+    for (let seed = 1; seed <= 30; seed++) {
+      const lv = makeRandomLevel(seed, 'hard');
+      if (lv.spectrum.some((s) => Math.abs(s.k) > 10)) foundHigh = true;
+    }
+    expect(foundHigh).toBe(true);
+  });
+
+  it('简单难度 armLimit 为 3 且显著分量 ≤6×', () => {
+    const lv = makeRandomLevel(7, 'easy');
+    expect(lv.armLimit).toBe(3);
+    const strong = lv.spectrum.filter((s) => s.mag > 2);
+    expect(strong.length).toBeGreaterThan(0);
+    expect(strong.every((s) => Math.abs(s.k) <= 6)).toBe(true);
+  });
+
   it('不同 seed 生成不同关卡', () => {
     const a = makeRandomLevel(1);
     const b = makeRandomLevel(2);

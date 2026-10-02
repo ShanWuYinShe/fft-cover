@@ -5,7 +5,7 @@
 
   let { index, arm }: { index: number; arm: Arm } = $props();
 
-  const freqOptions = Array.from({ length: 19 }, (_, i) => (i < 9 ? i - 10 : i - 8));
+  const freqOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
   function setR(e: Event): void {
     engine.setArm(index, { r: +(e.currentTarget as HTMLInputElement).value });
@@ -24,7 +24,12 @@
     if (Number.isFinite(n)) engine.setArm(index, { phase: (n * Math.PI) / 180 });
   }
   function setFreq(e: Event): void {
-    engine.setArm(index, { freq: +(e.currentTarget as HTMLSelectElement).value });
+    const v = +(e.currentTarget as HTMLSelectElement).value;
+    engine.setArm(index, { freq: Math.sign(arm.freq || 1) * v });
+  }
+  function toggleDir(): void {
+    engine.setArm(index, { freq: -(arm.freq || 1) });
+    engine.flashArm(index);
   }
   function setPhase(e: Event): void {
     const deg = +(e.currentTarget as HTMLInputElement).value;
@@ -52,7 +57,15 @@
     <button type="button" class="rv" title="点击输入精确值" onclick={editR}>{arm.r}</button>
   </div>
   <div class="row2">
-    <select title="负数 = 反向旋转" value={arm.freq} onchange={setFreq}>
+    <button
+      type="button"
+      class="dir"
+      title={arm.freq < 0 ? '当前反向旋转，点击改为正向' : '当前正向旋转，点击改为反向'}
+      onclick={toggleDir}
+    >
+      {arm.freq < 0 ? '⟲' : '⟳'}
+    </button>
+    <select title="旋转频率" value={Math.abs(arm.freq)} onchange={setFreq}>
       {#each freqOptions as f (f)}
         <option value={f}>{f}×</option>
       {/each}
@@ -113,6 +126,18 @@
     gap: 7px;
     margin-top: 6px;
     font-size: 11.5px;
+  }
+  .dir {
+    appearance: none;
+    background: #141a2e;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--cyan);
+    font-size: 13px;
+    width: 26px;
+    height: 22px;
+    padding: 0;
+    cursor: pointer;
   }
   select {
     background: #141a2e;
