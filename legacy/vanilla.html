@@ -1,0 +1,1154 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>傅立叶指针 · 旋转连杆挑战</title>
+    <style>
+      :root {
+        --bg: #0b0e1a;
+        --panel: rgba(255, 255, 255, 0.045);
+        --line: rgba(255, 255, 255, 0.12);
+        --cyan: #4fd1c5;
+        --purple: #a78bfa;
+        --gold: #fbbf24;
+        --text: #e6e9f2;
+        --muted: #8b93a7;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: radial-gradient(1200px 800px at 70% -10%, #131a33 0%, var(--bg) 55%) fixed;
+        color: var(--text);
+        font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, sans-serif;
+        min-height: 100vh;
+      }
+      header {
+        padding: 18px 24px 6px;
+        text-align: center;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 26px;
+        letter-spacing: 6px;
+        font-weight: 700;
+        background: linear-gradient(90deg, var(--cyan), var(--purple), var(--gold));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      header .sub {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      main {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 12px 20px 40px;
+        flex-wrap: wrap;
+      }
+      /* ===== 舞台 ===== */
+      .stage-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .canvas-box {
+        position: relative;
+        width: min(92vw, 640px);
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1/1;
+        background:
+          radial-gradient(circle at 50% 42%, rgba(79, 209, 197, 0.07), transparent 60%), #0d1120;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+      }
+      #hud {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 12px 16px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      #hud .lvl {
+        font-weight: 600;
+        color: var(--text);
+        letter-spacing: 2px;
+      }
+      #hud .score b {
+        color: var(--gold);
+        font-size: 16px;
+      }
+      #result {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        background: rgba(8, 10, 20, 0.72);
+        backdrop-filter: blur(3px);
+        border-radius: 14px;
+        text-align: center;
+      }
+      #result.hidden {
+        display: none;
+      }
+      #result .stars {
+        font-size: 42px;
+        letter-spacing: 8px;
+        color: var(--gold);
+        text-shadow: 0 0 24px rgba(251, 191, 36, 0.6);
+      }
+      #result .line {
+        font-size: 15px;
+        color: var(--text);
+      }
+      #result .best {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      /* ===== 按钮 ===== */
+      .run-row {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      button {
+        appearance: none;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--panel);
+        color: var(--text);
+        font-size: 14px;
+        padding: 9px 16px;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-family: inherit;
+      }
+      button:hover {
+        border-color: var(--cyan);
+        color: var(--cyan);
+      }
+      button.primary {
+        background: linear-gradient(135deg, rgba(79, 209, 197, 0.18), rgba(167, 139, 250, 0.18));
+        border-color: rgba(79, 209, 197, 0.5);
+        color: var(--cyan);
+        font-weight: 600;
+      }
+      button.primary:hover {
+        box-shadow: 0 0 18px rgba(79, 209, 197, 0.25);
+      }
+      button:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      button:disabled:hover {
+        border-color: var(--line);
+        color: var(--text);
+        box-shadow: none;
+      }
+      /* ===== 右侧面板 ===== */
+      .panel {
+        width: 430px;
+        max-width: 94vw;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .panel section {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+      }
+      .panel h2 {
+        margin: 0 0 10px;
+        font-size: 13px;
+        letter-spacing: 3px;
+        color: var(--muted);
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .panel h2 .muted {
+        letter-spacing: 0;
+        text-transform: none;
+      }
+      .muted {
+        color: var(--muted);
+        font-weight: 400;
+        font-size: 12px;
+      }
+      /* 关卡按钮 */
+      #levels {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .lv {
+        padding: 6px 10px;
+        font-size: 12.5px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        align-items: center;
+        min-width: 58px;
+      }
+      .lv .nm {
+        font-weight: 600;
+      }
+      .lv .st {
+        font-size: 9px;
+        letter-spacing: 1px;
+        color: var(--gold);
+        min-height: 11px;
+      }
+      .lv.active {
+        border-color: var(--cyan);
+        color: var(--cyan);
+        box-shadow: 0 0 12px rgba(79, 209, 197, 0.2);
+      }
+      #hint {
+        margin: 10px 0 0;
+        font-size: 12.5px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      #hint b {
+        color: var(--purple);
+      }
+      /* 分数 */
+      #score-line {
+        font-size: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      #score-line b {
+        color: var(--gold);
+        font-size: 20px;
+      }
+      #stars-line {
+        margin-top: 6px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      #stars-line .st {
+        color: var(--gold);
+        letter-spacing: 2px;
+      }
+      /* 指针卡 */
+      #arms {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .arm {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 7px 9px 8px;
+        background: rgba(255, 255, 255, 0.02);
+        min-width: 0;
+      }
+      .arm input[type='range'] {
+        min-width: 0;
+      }
+      .arm.off {
+        opacity: 0.45;
+      }
+      .arm .row1 {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .arm .row1 b {
+        width: 22px;
+        text-align: center;
+        color: var(--cyan);
+      }
+      .arm .row1 input[type='range'] {
+        flex: 1;
+      }
+      .arm .rv {
+        width: 34px;
+        text-align: right;
+        font-size: 12px;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .arm .row2 {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 6px;
+        font-size: 11.5px;
+      }
+      .arm select {
+        background: #141a2e;
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        font-size: 11.5px;
+        padding: 2px 4px;
+        font-family: inherit;
+      }
+      .arm .dir {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        color: var(--muted);
+        cursor: pointer;
+        user-select: none;
+      }
+      .arm .pv {
+        width: 34px;
+        text-align: right;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      /* 滑块 */
+      input[type='range'] {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 4px;
+        border-radius: 2px;
+        background: linear-gradient(90deg, var(--cyan), var(--purple));
+        outline: none;
+        cursor: pointer;
+      }
+      input[type='range']::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid var(--cyan);
+        box-shadow: 0 0 8px rgba(79, 209, 197, 0.6);
+      }
+      input[type='range']::-moz-range-thumb {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid var(--cyan);
+      }
+      input[type='checkbox'] {
+        accent-color: var(--cyan);
+        cursor: pointer;
+      }
+      .tips {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+      .tips kbd {
+        background: #1a2138;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-size: 11px;
+        font-family: inherit;
+      }
+      @media (max-width: 1080px) {
+        main {
+          flex-direction: column;
+          align-items: center;
+        }
+        .panel {
+          width: min(92vw, 640px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>傅立叶指针</h1>
+      <p class="sub">
+        把最多 10 个旋转指针首尾相连——它们的合成就是一条傅立叶级数曲线，让指尖收集尽可能多的点
+      </p>
+    </header>
+    <main>
+      <section class="stage-wrap">
+        <div class="canvas-box">
+          <canvas id="stage"></canvas>
+          <div id="hud">
+            <span class="lvl" id="hud-lvl"></span
+            ><span class="score">收集 <b id="hud-score">0</b>/<span id="hud-total">0</span></span>
+          </div>
+          <div id="result" class="hidden"></div>
+        </div>
+        <div class="run-row">
+          <button id="btn-run" class="primary">▶ 开始旋转</button>
+          <button id="btn-stop">⏹ 停止结算</button>
+          <button id="btn-reset">⟲ 重置点</button>
+          <button id="btn-sound" title="音效开关">🔊</button>
+        </div>
+      </section>
+      <aside class="panel">
+        <section>
+          <h2>关卡</h2>
+          <div id="levels"></div>
+          <p id="hint"></p>
+        </section>
+        <section>
+          <h2>本次成绩</h2>
+          <div id="score-line">
+            <span>已收集</span><span><b id="s-col">0</b> / <span id="s-total">0</span> 点</span>
+          </div>
+          <div id="stars-line">历史最佳：<span class="st" id="s-best">—</span></div>
+        </section>
+        <section>
+          <h2>指针 <span class="muted">（自中心起首尾相连；频率负数 = 反转）</span></h2>
+          <div id="arms"></div>
+        </section>
+        <section class="tips">
+          <p>快捷键：<kbd>空格</kbd> 开始/暂停 · <kbd>S</kbd> 停止结算 · <kbd>R</kbd> 重置</p>
+          <p>
+            原理：指针尖端位置 = Σ
+            rₖ·e<sup>i(ωₖt+φₖ)</sup>。你调的每一根指针，都是目标曲线傅立叶展开中的一项——旋转玩法的背后就是傅立叶变换。
+          </p>
+        </section>
+      </aside>
+    </main>
+    <script>
+      'use strict';
+      /* ============================================================
+       * 傅立叶指针 · 游戏核心
+       * 指针链末端 = Σ rₖ·e^{i(ωₖt+φₖ)}（傅立叶级数合成）
+       * ============================================================ */
+      const ARMS_MAX = 10;
+      const T0 = 8; // 基础周期（秒），频率 f 的指针每周期转 f 圈
+      const RUN_CYCLES = 2; // 每次运行跑 2 个基础周期
+      const RUN_DUR = T0 * RUN_CYCLES;
+      const SIZE = 640; // 画布逻辑尺寸
+      const STAR_LEVELS = [0.9, 0.65, 0.35]; // 三星/二星/一星阈值（收集比例）
+
+      const cv = document.getElementById('stage');
+      const ctx = cv.getContext('2d');
+      const $ = (id) => document.getElementById(id);
+
+      /* ---------- 状态 ---------- */
+      let arms = []; // {on, r, freq, rev, phase}  phase: 弧度
+      let level = null; // {id, name, hint, pts:[{x,y}], tol, random?}
+      let state = 'edit'; // edit | running | paused | done
+      let t = 0; // 运行时间（秒）
+      let collected = new Set(); // 已收集点索引
+      let collectAnim = new Map(); // idx -> 收集时刻（发光动画）
+      let combo = 0;
+      let trail = []; // 运行尾迹
+      let ghostDirty = true;
+      let ghostPath = null;
+      let soundOn = true;
+      let bestStars = {};
+      try {
+        bestStars = JSON.parse(localStorage.getItem('fft-pointers-best-v1') || '{}');
+      } catch (e) {
+        bestStars = {};
+      }
+
+      /* ---------- 工具 ---------- */
+      function mulberry32(a) {
+        return function () {
+          a |= 0;
+          a = (a + 0x6d2b79f5) | 0;
+          let s = Math.imul(a ^ (a >>> 15), 1 | a);
+          s = (s + Math.imul(s ^ (s >>> 7), 61 | s)) ^ s;
+          return ((s ^ (s >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+      // 沿弧长均匀重采样
+      function resample(pts, n) {
+        const L = [0];
+        for (let i = 1; i < pts.length; i++) {
+          const dx = pts[i].x - pts[i - 1].x,
+            dy = pts[i].y - pts[i - 1].y;
+          L.push(L[i - 1] + Math.hypot(dx, dy));
+        }
+        const total = L[L.length - 1];
+        const out = [];
+        let j = 0;
+        for (let k = 0; k < n; k++) {
+          const target = (total * k) / n;
+          while (j < L.length - 2 && L[j + 1] < target) j++;
+          const seg = L[j + 1] - L[j] || 1;
+          const u = (target - L[j]) / seg;
+          out.push({
+            x: pts[j].x + (pts[j + 1].x - pts[j].x) * u,
+            y: pts[j].y + (pts[j + 1].y - pts[j].y) * u,
+          });
+        }
+        return out;
+      }
+      // 密集采样曲线 → 归一化（居中 + 限制在半径 240 内）→ 均匀取点
+      function buildPoints(fn, n, samples = 2400) {
+        const raw = [];
+        for (let i = 0; i < samples; i++) raw.push(fn((i / samples) * Math.PI * 2));
+        let minX = 1e9,
+          maxX = -1e9,
+          minY = 1e9,
+          maxY = -1e9;
+        for (const p of raw) {
+          minX = Math.min(minX, p.x);
+          maxX = Math.max(maxX, p.x);
+          minY = Math.min(minY, p.y);
+          maxY = Math.max(maxY, p.y);
+        }
+        const cx = (minX + maxX) / 2,
+          cy = (minY + maxY) / 2;
+        const scale = 240 / Math.max(maxX - minX, maxY - minY);
+        const norm = raw.map((p) => ({
+          x: (p.x - cx) * scale + SIZE / 2,
+          y: (p.y - cy) * scale + SIZE / 2,
+        }));
+        return resample(norm, n);
+      }
+
+      /* ---------- 关卡 ---------- */
+      const C = Math.cos,
+        S = Math.sin;
+      const LEVEL_DEFS = [
+        {
+          id: 'circle',
+          name: '圆',
+          hint: '一根指针就够了：启用 ①（频率 1×），把半径调到指针尖正好扫过圆周。',
+          n: 24,
+          fn: (t) => ({ x: 200 * C(t), y: 200 * S(t) }),
+        },
+        {
+          id: 'ellipse',
+          name: '椭圆',
+          hint: '同频率同向指针只能合成一个圆。椭圆需要 <b>1× 与 -1×（反转）</b>两根指针：一正一反叠加把圆压扁。',
+          n: 24,
+          fn: (t) => ({ x: 200 * C(t), y: 105 * S(t) }),
+        },
+        {
+          id: 'clover',
+          name: '三叶草',
+          hint: '曲线是 r=cos3θ：用 1× 作主臂，再叠加 <b>2× 和 4×</b> 指针把圆压出三个叶片（试着微调半径与相位）。',
+          n: 27,
+          fn: (t) => {
+            const r = 150 * C(3 * t);
+            return { x: r * C(t), y: r * S(t) };
+          },
+        },
+        {
+          id: 'flower5',
+          name: '五瓣花',
+          hint: 'r=1+0.35cos5θ 的展开含 <b>1×、4×、6×</b> 三种频率。提示：4×、6× 的半径都不大。',
+          n: 30,
+          fn: (t) => {
+            const r = 150 * (1 + 0.38 * C(5 * t));
+            return { x: r * C(t), y: r * S(t) };
+          },
+        },
+        {
+          id: 'inf8',
+          name: '无穷 ∞',
+          hint: 'x 方向用 1×，y 方向的 sin2θ 需要 <b>2× 指针（相位约 270°）</b>。两根就够！',
+          n: 24,
+          fn: (t) => {
+            const d = 1 + S(t) * S(t),
+              a = 210;
+            return { x: (a * C(t)) / d, y: (a * S(t) * C(t)) / d };
+          },
+        },
+        {
+          id: 'star5',
+          name: '五角星',
+          hint: '尖角是无限高频率，10 根指针也难完全贴合——尽力收集，别追求完美！',
+          n: 30,
+          fn: null,
+          poly: (() => {
+            const p = [];
+            for (let i = 0; i < 10; i++) {
+              const a = -Math.PI / 2 + (i * Math.PI) / 5,
+                r = i % 2 === 0 ? 190 : 80;
+              p.push({ x: r * C(a), y: r * S(a) });
+            }
+            p.push(p[0]);
+            return p;
+          })(),
+        },
+        {
+          id: 'heart',
+          name: '心形',
+          hint: '心形以 <b>2×</b> 谐波为主：启用 1×~4× 多根指针，耐心调半径和相位。这是终极考验！',
+          n: 30,
+          fn: (t) => ({
+            x: 16 * Math.pow(S(t), 3),
+            y: 13 * C(t) - 5 * C(2 * t) - 2 * C(3 * t) - C(4 * t),
+          }),
+        },
+      ];
+      function loadLevel(def) {
+        let pts;
+        if (def.poly) {
+          // 折线关卡：先密集采样再归一化
+          const dense = [];
+          for (let i = 0; i < def.poly.length - 1; i++) {
+            const a = def.poly[i],
+              b = def.poly[i + 1];
+            for (let k = 0; k < 60; k++)
+              dense.push({ x: a.x + ((b.x - a.x) * k) / 60, y: a.y + ((b.y - a.y) * k) / 60 });
+          }
+          let minX = 1e9,
+            maxX = -1e9,
+            minY = 1e9,
+            maxY = -1e9;
+          for (const p of dense) {
+            minX = Math.min(minX, p.x);
+            maxX = Math.max(maxX, p.x);
+            minY = Math.min(minY, p.y);
+            maxY = Math.max(maxY, p.y);
+          }
+          const cx = (minX + maxX) / 2,
+            cy = (minY + maxY) / 2,
+            sc = 240 / Math.max(maxX - minX, maxY - minY);
+          pts = resample(
+            dense.map((p) => ({ x: (p.x - cx) * sc + SIZE / 2, y: (p.y - cy) * sc + SIZE / 2 })),
+            def.n,
+          );
+        } else {
+          pts = buildPoints(def.fn, def.n);
+        }
+        level = { id: def.id, name: def.name, hint: def.hint, pts, tol: 13, def };
+        resetRun();
+        renderLevelButtons();
+      }
+      function makeRandomLevel(seed) {
+        const rnd = mulberry32(seed);
+        const ks = [1, 2, 3, 4, 5, 6];
+        // 打乱后取 3~4 个谐波，必含 1×
+        for (let i = ks.length - 1; i > 0; i--) {
+          const j = Math.floor(rnd() * (i + 1));
+          [ks[i], ks[j]] = [ks[j], ks[i]];
+        }
+        const chosen = ks.slice(0, 3 + Math.floor(rnd() * 2));
+        if (!chosen.includes(1)) chosen[0] = 1;
+        chosen.sort((a, b) => a - b);
+        const coeffs = chosen.map((k) => ({
+          k,
+          a: k === 1 ? 150 + rnd() * 40 : 15 + rnd() * 45,
+          p: rnd() * Math.PI * 2,
+        }));
+        const fn = (t) => {
+          let x = 0,
+            y = 0;
+          for (const c of coeffs) {
+            x += c.a * Math.cos(c.k * t + c.p);
+            y += c.a * Math.sin(c.k * t + c.p);
+          }
+          return { x, y };
+        };
+        loadLevel({
+          id: 'random-' + seed,
+          name: '随机 #' + (seed % 1000),
+          hint: '随机拼合的形状，只用了 ≤6× 的 4 个谐波——理论上一根 1× + 三根高次指针就能完美拟合！',
+          n: 26,
+          fn,
+          random: true,
+        });
+        ghostDirty = true;
+      }
+
+      /* ---------- 指针数学 ---------- */
+      function armAngle(a, tt) {
+        return ((Math.PI * 2 * a.freq) / T0) * tt + a.phase; // freq 可为负 = 反转
+      }
+      // 返回链上每个关节位置（含起点），只统计启用的指针
+      function chainAt(tt) {
+        const joints = [{ x: SIZE / 2, y: SIZE / 2 }];
+        let x = SIZE / 2,
+          y = SIZE / 2;
+        for (const a of arms) {
+          if (!a.on) continue;
+          const th = armAngle(a, tt);
+          x += a.r * Math.cos(th);
+          y += a.r * Math.sin(th);
+          joints.push({ x, y });
+        }
+        return joints;
+      }
+      const tipAt = (tt) => {
+        const j = chainAt(tt);
+        return j[j.length - 1];
+      };
+
+      /* ---------- 收集 ---------- */
+      function collectAt(x, y) {
+        const pts = level.pts;
+        for (let i = 0; i < pts.length; i++) {
+          if (collected.has(i)) continue;
+          const dx = pts[i].x - x,
+            dy = pts[i].y - y;
+          if (dx * dx + dy * dy < level.tol * level.tol) {
+            collected.add(i);
+            collectAnim.set(i, performance.now());
+            beep(500 + combo * 40, 0.1, 'sine', 0.18);
+            combo++;
+            updateHUD();
+          }
+        }
+      }
+
+      /* ---------- 运行控制 ---------- */
+      function startRun() {
+        if (state === 'edit') {
+          t = 0;
+          trail = [];
+          combo = 0;
+        }
+        state = 'running';
+        syncButtons();
+        hideResult();
+      }
+      function pauseRun() {
+        if (state === 'running') {
+          state = 'paused';
+          syncButtons();
+        }
+      }
+      function toggleRun() {
+        if (state === 'edit' || state === 'paused') startRun();
+        else if (state === 'running') pauseRun();
+      }
+      function stopRun() {
+        if (state !== 'running' && state !== 'paused') return;
+        state = 'done';
+        syncButtons();
+        showResult();
+        if (soundOn) {
+          beep(660, 0.12, 'triangle', 0.12);
+          setTimeout(() => beep(880, 0.2, 'triangle', 0.12), 110);
+        }
+      }
+      function resetRun() {
+        state = 'edit';
+        t = 0;
+        trail = [];
+        combo = 0;
+        collected = new Set();
+        collectAnim = new Map();
+        ghostDirty = true;
+        hideResult();
+        syncButtons();
+        updateHUD();
+      }
+
+      /* ---------- 结算 ---------- */
+      function starsFor(p) {
+        return p >= STAR_LEVELS[0] ? 3 : p >= STAR_LEVELS[1] ? 2 : p >= STAR_LEVELS[2] ? 1 : 0;
+      }
+      function showResult() {
+        const n = level.pts.length,
+          got = collected.size;
+        const p = got / n,
+          st = starsFor(p);
+        const prev = bestStars[level.id] || 0;
+        if (st > prev) {
+          bestStars[level.id] = st;
+          try {
+            localStorage.setItem('fft-pointers-best-v1', JSON.stringify(bestStars));
+          } catch (e) {}
+        }
+        const words = [
+          '再调调指针，让它扫过更多点！',
+          '有点意思了！试着叠加一根新指针。',
+          '相当不错！微调相位还能更准。',
+          '完美拟合！你已掌握谐波的力量！',
+        ];
+        const box = $('result');
+        box.innerHTML =
+          '<div class="stars">' +
+          '★'.repeat(st) +
+          '☆'.repeat(3 - st) +
+          '</div>' +
+          '<div class="line">收集 ' +
+          got +
+          ' / ' +
+          n +
+          ' 点（' +
+          Math.round(p * 100) +
+          '%）</div>' +
+          '<div class="best">历史最佳 ★' +
+          Math.max(st, prev) +
+          '　' +
+          words[st] +
+          '</div>' +
+          '<button id="btn-again" class="primary">⟲ 再来一次</button>';
+        box.classList.remove('hidden');
+        $('btn-again').onclick = resetRun;
+        renderLevelButtons();
+        updateHUD();
+      }
+      function hideResult() {
+        $('result').classList.add('hidden');
+      }
+
+      /* ---------- 渲染 ---------- */
+      function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        const w = cv.clientWidth;
+        cv.width = Math.round(w * dpr);
+        cv.height = Math.round(w * dpr);
+        ctx.setTransform(cv.width / SIZE, 0, 0, cv.width / SIZE, 0, 0);
+      }
+      window.addEventListener('resize', resizeCanvas);
+
+      function rebuildGhost() {
+        ghostPath = new Path2D();
+        const N = 720;
+        for (let i = 0; i <= N; i++) {
+          const p = tipAt((i / N) * T0);
+          i === 0 ? ghostPath.moveTo(p.x, p.y) : ghostPath.lineTo(p.x, p.y);
+        }
+        ghostDirty = false;
+      }
+
+      function draw(now) {
+        ctx.clearRect(0, 0, SIZE, SIZE);
+        // 网格底纹
+        ctx.strokeStyle = 'rgba(255,255,255,.035)';
+        ctx.lineWidth = 1;
+        for (let g = 80; g < SIZE; g += 80) {
+          ctx.beginPath();
+          ctx.moveTo(g, 0);
+          ctx.lineTo(g, SIZE);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, g);
+          ctx.lineTo(SIZE, g);
+          ctx.stroke();
+        }
+        // 原点
+        ctx.strokeStyle = 'rgba(255,255,255,.25)';
+        ctx.beginPath();
+        ctx.moveTo(SIZE / 2 - 7, SIZE / 2);
+        ctx.lineTo(SIZE / 2 + 7, SIZE / 2);
+        ctx.moveTo(SIZE / 2, SIZE / 2 - 7);
+        ctx.lineTo(SIZE / 2, SIZE / 2 + 7);
+        ctx.stroke();
+
+        // 幽灵预览轨迹（编辑态）
+        if (state === 'edit') {
+          if (ghostDirty) rebuildGhost();
+          ctx.strokeStyle = 'rgba(167,139,250,.4)';
+          ctx.lineWidth = 1.6;
+          ctx.setLineDash([5, 6]);
+          ctx.stroke(ghostPath);
+          ctx.setLineDash([]);
+        }
+
+        // 目标点
+        const pts = level.pts;
+        for (let i = 0; i < pts.length; i++) {
+          const p = pts[i];
+          if (collected.has(i)) {
+            const age = (now - (collectAnim.get(i) || 0)) / 400;
+            const burst = age < 1 ? (1 - age) * 10 : 0;
+            ctx.fillStyle = '#fbbf24';
+            ctx.shadowColor = 'rgba(251,191,36,.9)';
+            ctx.shadowBlur = 12 + burst * 2;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 4.5 + burst * 0.6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          } else {
+            ctx.fillStyle = 'rgba(220,228,255,.55)';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(220,228,255,.18)';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, level.tol, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        }
+
+        // 运行尾迹
+        if (trail.length > 1 && state !== 'edit') {
+          ctx.lineCap = 'round';
+          for (let i = 1; i < trail.length; i++) {
+            const a = i / trail.length;
+            ctx.strokeStyle = 'rgba(79,209,197,' + (a * 0.75).toFixed(3) + ')';
+            ctx.lineWidth = 1 + a * 1.8;
+            ctx.beginPath();
+            ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
+            ctx.lineTo(trail[i].x, trail[i].y);
+            ctx.stroke();
+          }
+        }
+
+        // 指针链
+        const tt = state === 'edit' ? 0 : t;
+        const joints = chainAt(tt);
+        for (let i = 1; i < joints.length; i++) {
+          const a = arms[enabledIndex(i - 1)];
+          const c = joints[i - 1];
+          // 半径圈
+          ctx.strokeStyle = 'rgba(255,255,255,.14)';
+          ctx.lineWidth = 1;
+          ctx.fillStyle = 'rgba(255,255,255,.025)';
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, a.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          // 连杆
+          ctx.strokeStyle = 'rgba(230,233,242,.55)';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(c.x, c.y);
+          ctx.lineTo(joints[i].x, joints[i].y);
+          ctx.stroke();
+          // 关节
+          ctx.fillStyle = '#a78bfa';
+          ctx.shadowColor = 'rgba(167,139,250,.8)';
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+        // 尖端
+        const tip = joints[joints.length - 1];
+        ctx.fillStyle = '#4fd1c5';
+        ctx.shadowColor = 'rgba(79,209,197,1)';
+        ctx.shadowBlur = 16;
+        ctx.beginPath();
+        ctx.arc(tip.x, tip.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+      // 第 i 个启用指针在 arms 数组里的下标
+      function enabledIndex(i) {
+        let n = -1;
+        for (let k = 0; k < arms.length; k++) {
+          if (arms[k].on) {
+            n++;
+            if (n === i) return k;
+          }
+        }
+        return arms.length - 1;
+      }
+
+      /* ---------- 主循环 ---------- */
+      let lastFrame = performance.now();
+      function frame(now) {
+        const dt = Math.min((now - lastFrame) / 1000, 0.05);
+        lastFrame = now;
+        if (state === 'running') {
+          const prev = t;
+          t = Math.min(t + dt, RUN_DUR);
+          // 子步进收集，防高速漏判
+          const SUB = 6;
+          for (let s = 1; s <= SUB; s++) {
+            const st = prev + ((t - prev) * s) / SUB;
+            const p = tipAt(st);
+            collectAt(p.x, p.y);
+            trail.push({ x: p.x, y: p.y });
+          }
+          if (trail.length > 2400) trail.splice(0, trail.length - 2400);
+          if (t >= RUN_DUR) stopRun();
+        }
+        draw(now);
+        requestAnimationFrame(frame);
+      }
+
+      /* ---------- UI：指针面板 ---------- */
+      const CIRCLED = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'];
+      const ARM_DEFAULTS = [
+        { on: true, r: 130, freq: 1, phase: 0 },
+        { on: true, r: 60, freq: 2, phase: 0 },
+        { on: false, r: 40, freq: 3, phase: 0 },
+        { on: false, r: 32, freq: 4, phase: 0 },
+        { on: false, r: 26, freq: 5, phase: 0 },
+        { on: false, r: 22, freq: 6, phase: 0 },
+        { on: false, r: 18, freq: 7, phase: 0 },
+        { on: false, r: 16, freq: 8, phase: 0 },
+        { on: false, r: 14, freq: 9, phase: 0 },
+        { on: false, r: 12, freq: 10, phase: 0 },
+      ];
+      function buildArmPanel() {
+        arms = ARM_DEFAULTS.map((a) => ({ ...a, phase: a.phase }));
+        const box = $('arms');
+        box.innerHTML = '';
+        arms.forEach((a, i) => {
+          const el = document.createElement('div');
+          el.className = 'arm' + (a.on ? '' : ' off');
+          el.dataset.i = i;
+          // 频率选项：-10..-1, 1..10（负数 = 反转），跳过 0
+          let freqOpts = '';
+          for (let f = -10; f <= 10; f++) {
+            if (f === 0) continue;
+            freqOpts +=
+              '<option value="' +
+              f +
+              '"' +
+              (a.freq === f ? ' selected' : '') +
+              '>' +
+              f +
+              '×</option>';
+          }
+          el.innerHTML =
+            '<div class="row1">' +
+            '<label class="dir"><input type="checkbox" class="on"' +
+            (a.on ? ' checked' : '') +
+            '> <b>' +
+            CIRCLED[i] +
+            '</b></label>' +
+            '<input type="range" class="radius" min="0" max="210" step="2" value="' +
+            a.r +
+            '">' +
+            '<span class="rv">' +
+            a.r +
+            '</span>' +
+            '</div>' +
+            '<div class="row2">' +
+            '<select class="freq" title="负数 = 反向旋转">' +
+            freqOpts +
+            '</select>' +
+            '<input type="range" class="phase" min="0" max="360" step="5" value="0" title="初始相位">' +
+            '<span class="pv">0°</span>' +
+            '</div>';
+          box.appendChild(el);
+        });
+      }
+      $('arms').addEventListener('input', (e) => {
+        const el = e.target.closest('.arm');
+        if (!el) return;
+        const i = +el.dataset.i,
+          a = arms[i];
+        if (e.target.classList.contains('on')) {
+          const onCount = arms.filter((x) => x.on).length;
+          if (e.target.checked && onCount >= ARMS_MAX) {
+            e.target.checked = false;
+            return;
+          } // 上限保护（理论上难触发）
+          a.on = e.target.checked;
+          el.classList.toggle('off', !a.on);
+        }
+        if (e.target.classList.contains('radius')) {
+          a.r = +e.target.value;
+          el.querySelector('.rv').textContent = a.r;
+        }
+        if (e.target.classList.contains('freq')) a.freq = +e.target.value;
+        if (e.target.classList.contains('phase')) {
+          a.phase = (+e.target.value * Math.PI) / 180;
+          el.querySelector('.pv').textContent = e.target.value + '°';
+        }
+        ghostDirty = true;
+        if (state === 'done') resetRun(); // 结算后改参数 → 自动重开
+      });
+
+      /* ---------- UI：关卡 / 分数 / 按钮 ---------- */
+      function renderLevelButtons() {
+        const box = $('levels');
+        box.innerHTML = '';
+        LEVEL_DEFS.forEach((def) => {
+          const b = document.createElement('button');
+          b.className = 'lv' + (level && level.id === def.id ? ' active' : '');
+          const st = bestStars[def.id];
+          b.innerHTML =
+            '<span class="nm">' +
+            def.name +
+            '</span><span class="st">' +
+            (st ? '★'.repeat(st) : '') +
+            '</span>';
+          b.onclick = () => loadLevel(def);
+          box.appendChild(b);
+        });
+        const rb = document.createElement('button');
+        rb.className = 'lv' + (level && level.random ? ' active' : '');
+        rb.innerHTML = '<span class="nm">🎲 随机</span><span class="st">无限</span>';
+        rb.onclick = () => makeRandomLevel(Math.floor(Math.random() * 1e9));
+        box.appendChild(rb);
+      }
+      function updateHUD() {
+        const n = level.pts.length,
+          got = collected.size;
+        $('hud-lvl').textContent = level.name;
+        $('hud-score').textContent = got;
+        $('hud-total').textContent = n;
+        $('s-col').textContent = got;
+        $('s-total').textContent = n;
+        const st = bestStars[level.id];
+        $('s-best').textContent = st ? '★'.repeat(st) + '☆'.repeat(3 - st) : '—';
+      }
+      function syncButtons() {
+        $('btn-run').textContent = state === 'running' ? '⏸ 暂停' : '▶ 开始旋转';
+        $('btn-stop').disabled = state !== 'running' && state !== 'paused';
+      }
+
+      /* ---------- 音效 ---------- */
+      let audioCtx = null;
+      function beep(freq, dur, type, gain) {
+        if (!soundOn) return;
+        try {
+          audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+          const o = audioCtx.createOscillator(),
+            g = audioCtx.createGain();
+          o.type = type || 'sine';
+          o.frequency.value = freq;
+          g.gain.setValueAtTime(gain || 0.15, audioCtx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (dur || 0.1));
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.start();
+          o.stop(audioCtx.currentTime + (dur || 0.1));
+        } catch (e) {
+          /* 音频不可用则忽略 */
+        }
+      }
+
+      /* ---------- 事件 ---------- */
+      $('btn-run').onclick = () => {
+        toggleRun();
+        beep(state === 'running' ? 440 : 330, 0.06, 'square', 0.06);
+      };
+      $('btn-stop').onclick = stopRun;
+      $('btn-reset').onclick = () => {
+        resetRun();
+        beep(300, 0.06, 'square', 0.06);
+      };
+      $('btn-sound').onclick = () => {
+        soundOn = !soundOn;
+        $('btn-sound').textContent = soundOn ? '🔊' : '🔇';
+      };
+      document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+        if (e.code === 'Space') {
+          e.preventDefault();
+          toggleRun();
+        } else if (e.key === 's' || e.key === 'S') stopRun();
+        else if (e.key === 'r' || e.key === 'R') resetRun();
+      });
+
+      /* ---------- 启动 ---------- */
+      buildArmPanel();
+      loadLevel(LEVEL_DEFS[0]);
+      resizeCanvas();
+      updateHUD();
+      requestAnimationFrame(frame);
+    </script>
+  </body>
+</html>
