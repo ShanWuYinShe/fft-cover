@@ -66,8 +66,27 @@
     octx.fillText((engine.level?.name ?? '') + '  ' + engine.score + ' 分', 40, h + 52);
     octx.fillStyle = '#8b93a7';
     octx.font = '30px sans-serif';
+    // 进步对比：与上一局得分差（历史中倒数第二条为本局之前的一局）
+    const hist = engine.recentHistory(10);
+    let deltaText = '';
+    if (hist.length >= 2) {
+      const prev = hist[hist.length - 2].score;
+      const cur = hist[hist.length - 1].score;
+      const d = cur - prev;
+      if (d !== 0) {
+        deltaText = '  较上局 ' + (d > 0 ? '+' : '') + d;
+        octx.fillStyle = d > 0 ? '#4fd1c5' : '#f87171';
+      }
+    }
     octx.fillText(
-      '收集 ' + got + '/' + n + ' · 拟合度 ' + (fit * 100).toFixed(0) + '% · 傅立叶指针',
+      '收集 ' +
+        got +
+        '/' +
+        n +
+        ' · 拟合度 ' +
+        (fit * 100).toFixed(0) +
+        '% · 傅立叶指针' +
+        deltaText,
       40,
       h + 98,
     );

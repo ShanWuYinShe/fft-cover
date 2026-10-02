@@ -237,7 +237,7 @@
 {#if engine.toast}
   <div class="toast">🏆 解锁成就：{engine.toast.name}</div>
 {/if}
-{#if updateReady}
+{#if updateReady && engine.phase !== 'running'}
   <div class="update-bar">
     <span>✨ 新版本已就绪</span>
     <button type="button" class="mini" onclick={applyPwaUpdate}>立即刷新</button>
