@@ -251,16 +251,20 @@ export function todayKey(): string {
   return d.getFullYear() + '-' + mm + '-' + dd;
 }
 
-/** 每日挑战：seed 由日期决定，全球玩家同一天面对同一关卡 */
-export function makeDailyLevel(): Level {
+/** 每日挑战：seed 由日期+难度决定，同一天同难度的玩家面对同一关卡 */
+export function makeDailyLevel(diff: RandomDifficulty = 'normal'): Level {
   const key = todayKey();
   const seed = Number(key.replace(/-/g, ''));
-  const base = makeRandomLevel(seed);
+  const base = makeRandomLevel(seed, diff);
+  const tag = diff === 'normal' ? '' : diff === 'easy' ? '·易' : '·难';
   return {
     ...base,
-    id: 'daily-' + key,
-    name: '每日挑战 ' + key.slice(5),
-    hint: '今天全球玩家面对同一关卡（邀请码即日期）。刷新纪录，比比谁的分高！',
+    id: 'daily-' + key + '-' + diff,
+    name: '每日挑战 ' + key.slice(5) + tag,
+    hint:
+      diff === 'hard'
+        ? '⚠️ 今日困难挑战：含有超出 10× 的分量，无法完美拟合——全球玩家同关，比比谁更接近！'
+        : '今天同难度的玩家面对同一关卡（邀请码即日期+难度）。刷新纪录，比比谁的分高！',
   };
 }
 

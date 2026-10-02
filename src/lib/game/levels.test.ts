@@ -64,7 +64,7 @@ describe('makeDailyLevel', () => {
     const a = makeDailyLevel();
     const b = makeDailyLevel();
     expect(a.id).toBe(b.id);
-    expect(a.id).toBe('daily-' + todayKey());
+    expect(a.id).toBe('daily-' + todayKey() + '-normal');
     expect(a.name).toContain(todayKey().slice(5));
     expect(a.pts).toEqual(b.pts);
     expect(a.random).toBe(true);

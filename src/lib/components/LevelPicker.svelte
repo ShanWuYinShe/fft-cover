@@ -29,6 +29,7 @@
 
   // 每日倒计时（30 秒刷新）
   let now = $state(Date.now());
+  const makeDailyId = (diff: string) => 'daily-' + todayKey() + '-' + diff;
   $effect(() => {
     const timer = setInterval(() => (now = Date.now()), 30_000);
     return () => clearInterval(timer);
@@ -87,10 +88,17 @@
     {/each}
     <button
       class="lv"
-      class:active={engine.level?.id === 'daily-' + todayKey()}
+      class:active={engine.level?.id === makeDailyId(engine.difficulty)}
+      title="按当前随机难度生成今日关卡"
       onclick={() => engine.loadDaily()}
     >
-      <span class="nm">📅 每日</span>
+      <span class="nm"
+        >📅 每日{engine.difficulty === 'easy'
+          ? '·易'
+          : engine.difficulty === 'hard'
+            ? '·难'
+            : ''}</span
+      >
       <span class="st">
         {engine.todayBest > 0 ? engine.todayBest + ' 分 · ' : ''}{dailyCountdown}
       </span>

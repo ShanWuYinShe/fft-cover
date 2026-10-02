@@ -554,10 +554,10 @@ export class GameEngine {
     this.markFlag('composerPlayed');
   }
 
-  /** 进入今日每日挑战（seed 由日期决定，人人同关） */
+  /** 进入今日每日挑战（seed 由日期+难度决定，人人同关） */
   loadDaily(): void {
     this.sandbox = false;
-    this.level = makeDailyLevel();
+    this.level = makeDailyLevel(this.difficulty);
     this.trimArmsToLimit();
     this.resetRun();
   }
