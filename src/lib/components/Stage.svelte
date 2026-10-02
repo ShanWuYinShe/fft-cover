@@ -688,6 +688,7 @@
 
 <canvas
   bind:this={canvas}
+  aria-label="傅立叶指针游戏画布：中央为原点，虚线为目标曲线，圆点为收集目标"
   onpointerdown={onPointerDown}
   onpointermove={onPointerMove}
   onpointerup={onPointerUp}
