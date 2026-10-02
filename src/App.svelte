@@ -39,7 +39,12 @@
     if (tag === 'INPUT' || tag === 'SELECT') return;
     if (e.code === 'Space') {
       e.preventDefault();
-      toggleRun();
+      if (engine.phase === 'done') {
+        engine.resetRun();
+        engine.startRun(); // 快速迭代：结算后空格立即重开
+      } else {
+        toggleRun();
+      }
     } else if (e.key === 's' || e.key === 'S') {
       stopRun();
     } else if (e.key === 'r' || e.key === 'R') {

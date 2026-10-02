@@ -4,7 +4,7 @@
   import { chainAt, tipAt } from '../game/math';
   import type { Vec } from '../game/types';
   import { RUN_DUR, SIZE, T0 } from '../game/constants';
-  import { collectSound, finishChord, perfectArpeggio } from '../game/audio';
+  import { collectSound, finishChord, perfectArpeggio, startPad, stopPad } from '../game/audio';
   import { spectrumGaps } from '../game/scoring';
 
   let canvas: HTMLCanvasElement | undefined = $state();
@@ -354,12 +354,15 @@
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
       if (engine.phase === 'running') {
+        startPad(engine.soundOn); // 幂等：已在响则忽略
         const { got, finished } = engine.advance(dt);
         if (got > 0) collectSound(engine.collectedCount, engine.soundOn);
         if (finished) {
           if (engine.collectedCount === engine.total) perfectArpeggio(engine.soundOn);
           else finishChord(engine.soundOn);
         }
+      } else {
+        stopPad();
       }
       draw(now);
       raf = requestAnimationFrame(frame);

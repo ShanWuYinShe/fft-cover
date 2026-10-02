@@ -41,6 +41,54 @@ export function collectSound(count: number, on: boolean): void {
   beep(f / 1.5, 0.14, 'sine', 0.08, on);
 }
 
+let padOsc: OscillatorNode | null = null;
+let padGain: GainNode | null = null;
+
+/** 运行时低音持续音（C3），极低音量的氛围垫 */
+export function startPad(on: boolean): void {
+  if (!on || padOsc) return;
+  try {
+    const Ctor =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    audioCtx = audioCtx ?? new Ctor();
+    padOsc = audioCtx.createOscillator();
+    padGain = audioCtx.createGain();
+    padOsc.type = 'sine';
+    padOsc.frequency.value = 130.81; // C3
+    padGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    padGain.gain.exponentialRampToValueAtTime(0.035, audioCtx.currentTime + 0.8);
+    padOsc.connect(padGain);
+    padGain.connect(audioCtx.destination);
+    padOsc.start();
+  } catch {
+    padOsc = null;
+  }
+}
+
+/** 停止低音垫（淡出） */
+export function stopPad(): void {
+  try {
+    if (padGain && audioCtx) {
+      padGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
+    }
+    if (padOsc) {
+      const o = padOsc;
+      setTimeout(() => {
+        try {
+          o.stop();
+        } catch {
+          /* 已停止则忽略 */
+        }
+      }, 500);
+    }
+  } catch {
+    /* 忽略 */
+  }
+  padOsc = null;
+  padGain = null;
+}
+
 /** 成就解锁音：快速上行三连音 */
 export function achvSound(on: boolean): void {
   if (!on) return;

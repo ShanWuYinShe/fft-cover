@@ -265,6 +265,7 @@ export class GameEngine {
     this.autoTo = solveFromSpectrum(this.level.spectrum, this.level.armLimit);
     this.autoSolve = true;
     this.autoProgress = 0;
+    this.markFlag('autoTry');
   }
 
   /** 插值推进自动拟合（advance 内调用） */
