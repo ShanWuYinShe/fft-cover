@@ -136,6 +136,32 @@ describe('GameEngine', () => {
     engine.enterSandbox();
   });
 
+  it('buildReport 生成含成绩与解法的战报', () => {
+    engine.setArm(0, { r: 120 });
+    engine.phase = 'running';
+    let guard = 0;
+    while (engine.collectedCount < engine.total && guard < 2000) engine.advance(0.016);
+    engine.stopRun();
+    const rep = engine.buildReport();
+    expect(rep).toContain('圆');
+    expect(rep).toContain('★');
+    expect(rep).toContain('30000');
+    expect(rep).toContain('120/1×/0°');
+    expect(rep).not.toContain('邀请码');
+  });
+
+  it('最佳得分那局的解法入档并可载入', () => {
+    engine.setArm(0, { r: 120 });
+    engine.phase = 'running';
+    let guard = 0;
+    while (engine.collectedCount < engine.total && guard < 2000) engine.advance(0.016);
+    engine.stopRun();
+    expect(engine.hasSavedArms()).toBe(true);
+    engine.setArm(0, { r: 55 });
+    expect(engine.loadSavedArms()).toBe(true);
+    expect(engine.arms[0].r).toBe(120);
+    expect(engine.phase).toBe('edit');
+  });
   it('切到上限更低的关卡时裁剪超出指针', () => {
     engine.loadLevel(LEVEL_DEFS.find((d) => d.id === 'heart')!); // 心形上限 8
     engine.setArm(2, { on: true });

@@ -26,6 +26,8 @@ export const CLEAR_KEY = 'fft-pointers-clear-v1';
 export const ACHV_KEY = 'fft-pointers-achv-v1';
 /** 行为标记 localStorage 键名（沙盒/邀请码/拖拽等"用过"类成就） */
 export const FLAGS_KEY = 'fft-pointers-flags-v1';
+/** 各关解法参数存档 localStorage 键名 */
+export const ARMS_SAVE_KEY = 'fft-pointers-arms-save-v1';
 
 /** 五声音阶频率（C 宫调式，两个八度）：收集音效按收集序号递进 */
 export const PENTATONIC = [

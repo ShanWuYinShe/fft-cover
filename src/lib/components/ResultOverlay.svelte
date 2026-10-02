@@ -1,6 +1,38 @@
 <script lang="ts">
   import { engine, starsFor } from '../game/engine.svelte';
 
+  type CopyState = 'idle' | 'ok' | 'fail';
+  let copyState = $state<CopyState>('idle');
+
+  /** 兼容降级：旧式 execCommand 复制 */
+  function fallbackCopy(text: string): boolean {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async function copyReport(): Promise<void> {
+    let ok = false;
+    try {
+      await navigator.clipboard.writeText(engine.buildReport());
+      ok = true;
+    } catch {
+      ok = fallbackCopy(engine.buildReport());
+    }
+    copyState = ok ? 'ok' : 'fail';
+    setTimeout(() => (copyState = 'idle'), 1500);
+  }
+
   const words = [
     '再调调指针，让它扫过更多点！',
     '有点意思了！试着叠加一根新指针。',
@@ -41,6 +73,9 @@
   <div class="btns">
     <button class="primary" onclick={() => engine.resetRun()}>⟲ 再来一次</button>
     <button onclick={() => (engine.resultDismissed = true)}>👁 查看轨迹</button>
+    <button onclick={copyReport}>
+      {copyState === 'ok' ? '✓ 已复制' : copyState === 'fail' ? '⚠ 复制失败' : '📋 复制战报'}
+    </button>
   </div>
 </div>
 

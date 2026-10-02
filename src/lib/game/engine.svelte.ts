@@ -1,6 +1,7 @@
 import {
   ACHV_KEY,
   ARMS_MAX,
+  ARMS_SAVE_KEY,
   BEST_KEY,
   BEST_SCORE_KEY,
   CLEAR_KEY,
@@ -8,6 +9,7 @@ import {
   FLAGS_KEY,
   RUN_DUR,
   SOUND_KEY,
+  CIRCLED,
 } from './constants';
 import { LEVEL_DEFS, makeLevel, makeRandomLevel } from './levels';
 import { tipAt } from './math';
@@ -59,6 +61,14 @@ function loadSound(): boolean {
 function loadClears(): Record<string, number> {
   try {
     return JSON.parse(localStorage.getItem(CLEAR_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
+function loadArmsSaves(): Record<string, Arm[]> {
+  try {
+    return JSON.parse(localStorage.getItem(ARMS_SAVE_KEY) ?? '{}');
   } catch {
     return {};
   }
@@ -126,6 +136,8 @@ export class GameEngine {
   speed = $state(1);
   /** 结算浮层是否显示"全清新纪录" */
   newClearRecord = $state(false);
+  /** 各关保存的解法参数（最佳得分那局的指针配置） */
+  armsSaves = $state<Record<string, Arm[]>>(loadArmsSaves());
   /** 本局全清时刻（秒）；null = 未全清 */
   private clearT: number | null = null;
   /** 结算快照：全清用时 */
@@ -364,7 +376,72 @@ export class GameEngine {
         /* 存储不可用则忽略 */
       }
     }
+    // 最佳得分那局的解法参数入档（"载入上届解法"用）
+    if (this.score > 0) {
+      this.armsSaves = { ...this.armsSaves, [id]: this.arms.map((a) => ({ ...a })) };
+      try {
+        localStorage.setItem(ARMS_SAVE_KEY, JSON.stringify(this.armsSaves));
+      } catch {
+        /* 存储不可用则忽略 */
+      }
+    }
     this.checkAchievements();
+  }
+
+  /** 载入本关已保存的解法参数（无存档则不动） */
+  loadSavedArms(): boolean {
+    const id = this.level?.id;
+    const saved = id ? this.armsSaves[id] : undefined;
+    if (!saved) return false;
+    this.arms = saved.map((a) => ({ ...a }));
+    this.resetRun();
+    return true;
+  }
+
+  hasSavedArms(): boolean {
+    const id = this.level?.id;
+    return !!(id && this.armsSaves[id]);
+  }
+
+  /** 生成可分享的战报文本 */
+  buildReport(): string {
+    const lines: string[] = [];
+    const name = this.level?.name ?? '未知关卡';
+    const st = starsFor(this.total ? this.collectedCount / this.total : 0);
+    lines.push(
+      '【傅立叶指针】' +
+        name +
+        ' · ' +
+        '★'.repeat(st) +
+        '☆'.repeat(3 - st) +
+        ' · ' +
+        this.score +
+        ' 分',
+    );
+    lines.push(
+      '收集 ' +
+        this.collectedCount +
+        '/' +
+        this.total +
+        ' 点' +
+        (this.clearT !== null ? ' · 全清 ' + this.clearT.toFixed(1) + 's' : ''),
+    );
+    const armsLine = this.arms
+      .filter((a) => a.on)
+      .map(
+        (a) =>
+          CIRCLED[this.arms.indexOf(a)] +
+          a.r +
+          '/' +
+          a.freq +
+          '×/' +
+          Math.round((a.phase * 180) / Math.PI) +
+          '°',
+      )
+      .join(' + ');
+    lines.push('解法：' + armsLine);
+    if (this.level?.random) lines.push('邀请码：' + this.level.id.replace('random-', ''));
+    return lines.join('\n');
   }
 
   /** 修改第 i 根指针参数（启用受本关上限约束） */
