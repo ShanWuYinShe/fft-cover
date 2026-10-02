@@ -41,6 +41,8 @@
     const { x, y } = toLocal(ev);
     dragIdx = hitJoint(x, y);
     if (dragIdx >= 0) {
+      engine.markFlag('dragUsed');
+      engine.markFlag('dragUsed');
       try {
         canvas?.setPointerCapture(ev.pointerId);
       } catch {

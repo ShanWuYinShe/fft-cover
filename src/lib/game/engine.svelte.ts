@@ -1,15 +1,17 @@
 import {
+  ACHV_KEY,
   ARMS_MAX,
   BEST_KEY,
   BEST_SCORE_KEY,
   CLEAR_KEY,
   COMBO_WINDOW,
+  FLAGS_KEY,
   RUN_DUR,
   SOUND_KEY,
 } from './constants';
 import { LEVEL_DEFS, makeLevel, makeRandomLevel } from './levels';
 import { tipAt } from './math';
-import { scoreForPoint, starsFor } from './scoring';
+import { ACHIEVEMENTS, evalAchievements, scoreForPoint, starsFor } from './scoring';
 import type { Arm, GamePhase, Level, LevelDef, Vec } from './types';
 
 export { starsFor };
@@ -62,6 +64,22 @@ function loadClears(): Record<string, number> {
   }
 }
 
+function loadAchv(): Record<string, number> {
+  try {
+    return JSON.parse(localStorage.getItem(ACHV_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
+function loadFlags(): Record<string, boolean> {
+  try {
+    return JSON.parse(localStorage.getItem(FLAGS_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
 /**
  * 游戏状态引擎（Svelte 5 runes 深层响应式）。
  * 音效与画布渲染不在此处：音效由组件触发，渲染循环读这里的状态。
@@ -98,6 +116,12 @@ export class GameEngine {
   fullClearAt = 0;
   /** 各关卡历史最快全清用时（秒） */
   bestClears = $state<Record<string, number>>(loadClears());
+  /** 已解锁成就（id → 解锁时间戳） */
+  achievements = $state<Record<string, number>>(loadAchv());
+  /** 行为标记（"用过"类成就的数据源） */
+  flags = $state<Record<string, boolean>>(loadFlags());
+  /** 当前弹出的成就提示（一次一条） */
+  toast = $state<{ id: string; name: string } | null>(null);
   /** 沙盒转速档位 */
   speed = $state(1);
   /** 结算浮层是否显示"全清新纪录" */
@@ -149,6 +173,7 @@ export class GameEngine {
     this.level = makeRandomLevel(seed);
     this.trimArmsToLimit();
     this.resetRun();
+    this.markFlag('inviteLoaded');
   }
 
   /** 关卡切换后按上限裁剪已启用指针（保留序号靠前者） */
@@ -191,6 +216,47 @@ export class GameEngine {
     return this.level ? (this.bestClears[this.level.id] ?? null) : null;
   }
 
+  /** 标记一个行为标志并重查成就 */
+  markFlag(key: string): void {
+    if (this.flags[key]) return;
+    this.flags = { ...this.flags, [key]: true };
+    try {
+      localStorage.setItem(FLAGS_KEY, JSON.stringify(this.flags));
+    } catch {
+      /* 存储不可用则忽略 */
+    }
+    this.checkAchievements();
+  }
+
+  /** 重新判定成就，新解锁的依次弹出提示 */
+  checkAchievements(): void {
+    const ctx = {
+      bestStars: this.bestStars,
+      bestScores: this.bestScores,
+      bestClears: this.bestClears,
+      flags: this.flags,
+      levelCount: LEVEL_DEFS.length,
+    };
+    const now = Date.now();
+    for (const id of evalAchievements(ctx)) {
+      if (this.achievements[id]) continue;
+      const def = ACHIEVEMENTS.find((a) => a.id === id);
+      if (!def) continue;
+      this.achievements = { ...this.achievements, [id]: now };
+      try {
+        localStorage.setItem(ACHV_KEY, JSON.stringify(this.achievements));
+      } catch {
+        /* 存储不可用则忽略 */
+      }
+      this.toast = { id, name: def.name };
+    }
+  }
+
+  /** 清除成就提示（UI 延时调用） */
+  clearToast(): void {
+    this.toast = null;
+  }
+
   /** 从编辑/暂停态开始或继续 */
   startRun(): void {
     this.sandbox = false;
@@ -203,6 +269,7 @@ export class GameEngine {
     this.sandbox = true;
     this.lastRunSandbox = true;
     this.phase = 'running';
+    this.markFlag('sandboxUsed');
   }
 
   /** 结束沙盒：展示成果但不记录 */
@@ -297,6 +364,7 @@ export class GameEngine {
         /* 存储不可用则忽略 */
       }
     }
+    this.checkAchievements();
   }
 
   /** 修改第 i 根指针参数（启用受本关上限约束） */

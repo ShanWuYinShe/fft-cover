@@ -245,6 +245,22 @@ input[type='checkbox'] {
   font-family: inherit;
 }
 
+.toast {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(167, 139, 250, 0.16));
+  border: 1px solid rgba(251, 191, 36, 0.55);
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 12px;
+  z-index: 60;
+  box-shadow: 0 8px 30px rgba(251, 191, 36, 0.25);
+}
+
 @media (max-width: 1080px) {
   main {
     flex-direction: column;

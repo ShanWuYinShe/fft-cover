@@ -4,8 +4,19 @@
   import LevelPicker from './lib/components/LevelPicker.svelte';
   import ScorePanel from './lib/components/ScorePanel.svelte';
   import ResultOverlay from './lib/components/ResultOverlay.svelte';
+  import AchievementsModal from './lib/components/AchievementsModal.svelte';
   import { engine } from './lib/game/engine.svelte';
   import { beep, finishChord, perfectArpeggio } from './lib/game/audio';
+
+  let showAchv = $state(false);
+
+  // 成就解锁 toast：3 秒后自动消失
+  let toastTimer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => {
+    if (!engine.toast) return;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => engine.clearToast(), 3000);
+  });
 
   function toggleRun(): void {
     engine.toggleRun();
@@ -82,6 +93,7 @@
         <button title="音效开关" onclick={() => engine.setSound(!engine.soundOn)}>
           {engine.soundOn ? '🔊' : '🔇'}
         </button>
+        <button title="成就" onclick={() => (showAchv = true)}>🏆</button>
       {/if}
     </div>
   </section>
@@ -115,3 +127,9 @@
     </section>
   </aside>
 </main>
+{#if showAchv}
+  <AchievementsModal onclose={() => (showAchv = false)} />
+{/if}
+{#if engine.toast}
+  <div class="toast">🏆 解锁成就：{engine.toast.name}</div>
+{/if}
