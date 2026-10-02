@@ -70,8 +70,24 @@ describe('makeDailyLevel', () => {
     expect(a.random).toBe(true);
   });
 
-  it('内置关卡总数为 10', () => {
-    expect(LEVEL_DEFS).toHaveLength(10);
+  it('内置关卡总数为 12', () => {
+    expect(LEVEL_DEFS).toHaveLength(12);
+  });
+
+  it('九瓣花的显著频谱都在 10× 以内（可完美拟合）', () => {
+    const def = LEVEL_DEFS.find((d) => d.id === 'rose9')!;
+    const lv = makeLevel(def);
+    const strong = lv.spectrum.filter((s) => s.mag > 2);
+    expect(strong.length).toBeGreaterThan(0);
+    expect(strong.every((s) => Math.abs(s.k) <= 10)).toBe(true);
+  });
+
+  it('十二波纹含超出 10× 的分量（不可完美拟合）', () => {
+    const def = LEVEL_DEFS.find((d) => d.id === 'ripple12')!;
+    const lv = makeLevel(def);
+    // 存在 |k| > 10 的显著分量 → 指针无法表达
+    const beyond = lv.spectrum.filter((s) => Math.abs(s.k) > 10 && s.mag > 2);
+    expect(beyond.length).toBeGreaterThan(0);
   });
 });
 

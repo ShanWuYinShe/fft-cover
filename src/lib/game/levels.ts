@@ -96,6 +96,17 @@ export const LEVEL_DEFS: LevelDef[] = [
     fn: (t) => ({ x: 195 * C(5 * t), y: 165 * S(4 * t) }),
   },
   {
+    id: 'rose9',
+    name: '九瓣花',
+    hint: 'e^{iθ}(1+0.22cos9θ) = e^{iθ} + 0.11e^{i10θ} + 0.11e^{−i8θ}：<b>1×、10× 与 −8×（⟲ 反转）</b>三根即可完美——越高频的花，需要的谐波越高。',
+    n: 30,
+    armLimit: 3,
+    fn: (t) => {
+      const r = 160 * (1 + 0.22 * C(9 * t));
+      return { x: r * C(t), y: r * S(t) };
+    },
+  },
+  {
     id: 'star5',
     name: '五角星',
     hint: '尖角是无限高频率，5 根指针也难完全贴合——优先保证五条边中段，尽力收集！',
@@ -122,6 +133,17 @@ export const LEVEL_DEFS: LevelDef[] = [
       x: 16 * Math.pow(S(t), 3),
       y: 13 * C(t) - 5 * C(2 * t) - 2 * C(3 * t) - C(4 * t),
     }),
+  },
+  {
+    id: 'ripple12',
+    name: '十二波纹',
+    hint: '⚠️ 收官挑战：r=1+0.14cos12θ 的精确分解含 <b>13× 与 −11×</b>——都超出了 10× 上限，<b>无法完美拟合</b>。用 1× 撑起主体，再用 10× 尽量压出波纹，比比谁更接近！',
+    n: 34,
+    armLimit: 10,
+    fn: (t) => {
+      const r = 150 * (1 + 0.14 * C(12 * t));
+      return { x: r * C(t), y: r * S(t) };
+    },
   },
 ];
 
