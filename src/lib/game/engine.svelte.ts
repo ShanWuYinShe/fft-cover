@@ -1,4 +1,12 @@
-import { ARMS_MAX, BEST_KEY, BEST_SCORE_KEY, COMBO_WINDOW, RUN_DUR, SOUND_KEY } from './constants';
+import {
+  ARMS_MAX,
+  BEST_KEY,
+  BEST_SCORE_KEY,
+  CLEAR_KEY,
+  COMBO_WINDOW,
+  RUN_DUR,
+  SOUND_KEY,
+} from './constants';
 import { LEVEL_DEFS, makeLevel, makeRandomLevel } from './levels';
 import { tipAt } from './math';
 import { scoreForPoint, starsFor } from './scoring';
@@ -46,6 +54,14 @@ function loadSound(): boolean {
   }
 }
 
+function loadClears(): Record<string, number> {
+  try {
+    return JSON.parse(localStorage.getItem(CLEAR_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
 /**
  * 游戏状态引擎（Svelte 5 runes 深层响应式）。
  * 音效与画布渲染不在此处：音效由组件触发，渲染循环读这里的状态。
@@ -80,6 +96,16 @@ export class GameEngine {
   flashTil = $state<number[]>(Array(ARMS_MAX).fill(0));
   /** 全清冲击波起始时刻（画布特效用） */
   fullClearAt = 0;
+  /** 各关卡历史最快全清用时（秒） */
+  bestClears = $state<Record<string, number>>(loadClears());
+  /** 沙盒转速档位 */
+  speed = $state(1);
+  /** 结算浮层是否显示"全清新纪录" */
+  newClearRecord = $state(false);
+  /** 本局全清时刻（秒）；null = 未全清 */
+  private clearT: number | null = null;
+  /** 结算快照：全清用时 */
+  lastClearT: number | null = null;
 
   /** 已收集点索引（画布渲染用，无需响应式） */
   readonly collected = new Set<number>();
@@ -149,6 +175,20 @@ export class GameEngine {
     this.score = 0;
     this.resultDismissed = false;
     this.lastCollectAt = -Infinity;
+    this.fullClearAt = 0;
+    this.clearT = null;
+    this.newClearRecord = false;
+    this.newRecord = false;
+  }
+
+  /** 沙盒转速档位循环 0.5× → 1× → 2× */
+  cycleSpeed(): void {
+    this.speed = this.speed === 0.5 ? 1 : this.speed === 1 ? 2 : 0.5;
+  }
+
+  /** 本关历史最快全清用时（未全清过返回 null） */
+  get bestClear(): number | null {
+    return this.level ? (this.bestClears[this.level.id] ?? null) : null;
   }
 
   /** 从编辑/暂停态开始或继续 */
@@ -223,10 +263,22 @@ export class GameEngine {
       this.sandbox = false;
       return;
     }
-    const ratio = this.total ? this.collectedCount / this.total : 0;
-    const st = starsFor(ratio);
+    // 最快全清时间竞速（挑战模式）
+    this.lastClearT = this.clearT;
+    this.newClearRecord = false;
     const id = this.level?.id;
     if (!id) return;
+    if (this.clearT !== null && this.clearT < (this.bestClears[id] ?? Infinity)) {
+      this.bestClears = { ...this.bestClears, [id]: this.clearT };
+      this.newClearRecord = true;
+      try {
+        localStorage.setItem(CLEAR_KEY, JSON.stringify(this.bestClears));
+      } catch {
+        /* 存储不可用则忽略 */
+      }
+    }
+    const ratio = this.total ? this.collectedCount / this.total : 0;
+    const st = starsFor(ratio);
     this.newRecord = false;
     if (st > (this.bestStars[id] ?? 0)) {
       this.bestStars = { ...this.bestStars, [id]: st };
@@ -280,7 +332,10 @@ export class GameEngine {
         this.collected.add(i);
         this.collectAnim.set(i, now);
         this.collectedCount++;
-        if (this.collectedCount === pts.length) this.fullClearAt = now; // 全清冲击波
+        if (this.collectedCount === pts.length) {
+          this.fullClearAt = now; // 全清冲击波
+          this.clearT = this.t; // 竞速：记录全清用时
+        }
         return true;
       }
     }
@@ -294,8 +349,9 @@ export class GameEngine {
   advance(dt: number): { got: number; finished: boolean } {
     if (this.phase !== 'running') return { got: 0, finished: false };
     const prev = this.t;
-    // 沙盒不设时长上限（封顶防浮点溢出），也不自动结算
-    this.t = Math.min(this.t + dt, this.sandbox ? 100000 : RUN_DUR);
+    // 沙盒不设时长上限（封顶防浮点溢出）也不自动结算，且可调转速
+    const step = dt * (this.sandbox ? this.speed : 1);
+    this.t = Math.min(this.t + step, this.sandbox ? 100000 : RUN_DUR);
     let got = 0;
     const SUB = 6;
     for (let s = 1; s <= SUB; s++) {

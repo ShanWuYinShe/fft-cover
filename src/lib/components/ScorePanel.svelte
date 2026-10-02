@@ -21,6 +21,9 @@
   <div class="stars-line">
     最佳得分：{engine.bestScore || '—'} · 历史星级：<span class="st">{bestText}</span>
   </div>
+  <div class="stars-line">
+    最快全清：{engine.bestClear !== null ? engine.bestClear.toFixed(1) + 's' : '—'}
+  </div>
 </section>
 
 <style>

@@ -26,7 +26,17 @@
         ? ' 🆕新纪录'
         : ''}
     </div>
-    <div class="best">历史最佳 ★{Math.max(st, best)}　{words[st]}</div>
+    <div class="line">
+      {#if engine.lastClearT !== null}
+        ⚡ 全清用时 <b>{engine.lastClearT.toFixed(1)}s</b>{engine.newClearRecord
+          ? ' 🆕最快纪录'
+          : ''}
+      {/if}
+    </div>
+    <div class="best">
+      历史最佳 ★{Math.max(st, best)}
+      {#if engine.bestClear !== null}· 最快全清 {engine.bestClear.toFixed(1)}s{/if}　{words[st]}
+    </div>
   {/if}
   <div class="btns">
     <button class="primary" onclick={() => engine.resetRun()}>⟲ 再来一次</button>
@@ -57,6 +67,9 @@
   .line {
     font-size: 15px;
     color: var(--text);
+  }
+  .line b {
+    color: var(--gold);
   }
   .best {
     font-size: 13px;

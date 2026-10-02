@@ -14,6 +14,11 @@
   let seedInput = $state('');
   const seed = $derived(engine.level?.random ? engine.level.id.replace('random-', '') : '');
 
+  /** 全关卡总星数（满 27） */
+  const totalStars = $derived(
+    LEVEL_DEFS.reduce((sum, d) => sum + (engine.bestStars[d.id] ?? 0), 0),
+  );
+
   async function copySeed(): Promise<void> {
     try {
       await navigator.clipboard.writeText(seed);
@@ -32,7 +37,7 @@
 </script>
 
 <section>
-  <h2>关卡</h2>
+  <h2>关卡 <span class="muted">总星数 {totalStars} / {LEVEL_DEFS.length * 3}</span></h2>
   <div class="levels">
     {#each LEVEL_DEFS as def, i (def.id)}
       <button

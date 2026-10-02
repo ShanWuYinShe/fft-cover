@@ -58,6 +58,7 @@
     <div class="run-row">
       {#if engine.sandbox}
         <button class="primary" onclick={() => engine.exitSandbox()}>⏹ 结束沙盒</button>
+        <button title="沙盒转速档位" onclick={() => engine.cycleSpeed()}>⚡ {engine.speed}×</button>
         <button onclick={() => engine.resetRun()}>⟲ 重置点</button>
         <button title="音效开关" onclick={() => engine.setSound(!engine.soundOn)}>
           {engine.soundOn ? '🔊' : '🔇'}

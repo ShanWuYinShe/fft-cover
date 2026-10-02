@@ -97,6 +97,45 @@ describe('GameEngine', () => {
     expect(engine.arms.every((a) => !a.on)).toBe(true);
   });
 
+  it('全清后结算记录最快全清用时', () => {
+    expect(engine.bestClear).toBe(null);
+    engine.setArm(0, { r: 120 });
+    engine.phase = 'running';
+    let guard = 0;
+    while (engine.collectedCount < engine.total && guard < 2000) {
+      engine.advance(0.016);
+      guard++;
+    }
+    expect(engine.collectedCount).toBe(engine.total);
+    engine.stopRun();
+    expect(engine.lastClearT).not.toBeNull();
+    expect(engine.bestClear).not.toBeNull();
+    expect(engine.bestClear!).toBeGreaterThan(0);
+    expect(engine.newClearRecord).toBe(true);
+    // 第二局更慢的全清不会刷新最快纪录
+    engine.resetRun();
+    engine.phase = 'running';
+    guard = 0;
+    while (engine.collectedCount < engine.total && guard < 2000) {
+      engine.advance(0.05);
+      guard++;
+    }
+    engine.stopRun();
+    expect(engine.newClearRecord).toBe(false);
+  });
+
+  it('沙盒转速影响时间流速，挑战模式不受影响', () => {
+    engine.enterSandbox();
+    engine.speed = 2;
+    engine.advance(0.016);
+    expect(engine.t).toBeCloseTo(0.032, 5);
+    engine.speed = 0.5;
+    engine.advance(0.016);
+    expect(engine.t).toBeCloseTo(0.04, 5);
+    engine.exitSandbox();
+    engine.enterSandbox();
+  });
+
   it('切到上限更低的关卡时裁剪超出指针', () => {
     engine.loadLevel(LEVEL_DEFS.find((d) => d.id === 'heart')!); // 心形上限 8
     engine.setArm(2, { on: true });

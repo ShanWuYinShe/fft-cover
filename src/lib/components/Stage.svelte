@@ -175,6 +175,11 @@
       } else {
         ctx.fillStyle = 'rgba(79,209,197,.55)';
         ctx.fillRect(4, 4, (engine.t / RUN_DUR) * (SIZE - 8), 3);
+        if (engine.collectedCount === engine.total && engine.collectedCount > 0) {
+          ctx.fillStyle = 'rgba(251,191,36,.95)';
+          ctx.font = 'bold 12px sans-serif';
+          ctx.fillText('✨ 全清！按 S 结算（用时越短越好）', 10, 30);
+        }
       }
     }
 
