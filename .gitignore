@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.workwork/
+
+.DS_Store
