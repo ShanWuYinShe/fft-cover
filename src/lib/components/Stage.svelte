@@ -11,6 +11,9 @@
   let ctx: CanvasRenderingContext2D | null = null;
   /** 拖拽中的指针下标（-1 = 无；编辑态拖关节调半径/相位） */
   let dragIdx = -1;
+  /** ghost 轨迹缓存与参数签名（参数未变时跳过重建） */
+  let ghostSig = '';
+  let ghostPathCache: Path2D | null = null;
 
   /** CSS 像素 → 画布逻辑坐标 */
   function toLocal(ev: PointerEvent): { x: number; y: number } {
@@ -92,7 +95,7 @@
     const on = engine.arms.filter((a) => a.on);
     if (on.length === 0 || !ctx) return;
     const x0 = SIZE - 148;
-    const y0 = 40;
+    const y0 = 70; // 位于 HUD 文字下方，大小屏均不重叠
     ctx.fillStyle = 'rgba(10,14,26,.6)';
     ctx.fillRect(x0 - 10, y0, 148, 64);
     ctx.strokeStyle = 'rgba(255,255,255,.1)';
@@ -155,7 +158,8 @@
     ctx.lineTo(SIZE / 2, SIZE / 2 + 7);
     ctx.stroke();
 
-    // 编辑态：目标曲线参考（暗金虚线）+ 幽灵预览轨迹（紫，每帧重建以响应参数变化）
+    // 编辑态：目标曲线参考（暗金虚线）+ 幽灵预览轨迹（紫）
+    // ghost 按"参数签名"缓存重建，参数未变时零成本复用
     if (engine.phase === 'edit') {
       const curve = engine.level.curve;
       ctx.strokeStyle = 'rgba(251,191,36,.32)';
@@ -169,17 +173,23 @@
       }
       ctx.closePath();
       ctx.stroke();
-      const ghost = new Path2D();
-      const N = 720;
-      for (let i = 0; i <= N; i++) {
-        const p = tipAt(engine.arms, (i / N) * T0);
-        if (i === 0) ghost.moveTo(p.x, p.y);
-        else ghost.lineTo(p.x, p.y);
+      const sig = engine.arms
+        .map((a) => (a.on ? 1 : 0) + a.r + ':' + a.freq + ':' + a.phase.toFixed(3))
+        .join('|');
+      if (sig !== ghostSig || !ghostPathCache) {
+        ghostSig = sig;
+        ghostPathCache = new Path2D();
+        const N = 720;
+        for (let i = 0; i <= N; i++) {
+          const p = tipAt(engine.arms, (i / N) * T0);
+          if (i === 0) ghostPathCache.moveTo(p.x, p.y);
+          else ghostPathCache.lineTo(p.x, p.y);
+        }
       }
       ctx.strokeStyle = 'rgba(167,139,250,.4)';
       ctx.lineWidth = 1.6;
       ctx.setLineDash([5, 6]);
-      ctx.stroke(ghost);
+      ctx.stroke(ghostPathCache);
       ctx.setLineDash([]);
     }
 
@@ -242,17 +252,24 @@
       }
     }
 
-    // 运行尾迹
+    // 运行尾迹：分 48 组批量绘制（组内共享透明度），drawcall 数量级下降
     if (engine.trail.length > 1 && engine.phase !== 'edit') {
       ctx.lineCap = 'round';
       const trail = engine.trail;
-      for (let i = 1; i < trail.length; i++) {
-        const a = i / trail.length;
+      const GROUPS = 48;
+      const per = Math.ceil(trail.length / GROUPS);
+      for (let g = 0; g < GROUPS; g++) {
+        const startIdx = g * per;
+        const endIdx = Math.min(trail.length - 1, startIdx + per);
+        if (startIdx >= endIdx) continue;
+        const a = endIdx / trail.length;
         ctx.strokeStyle = 'rgba(79,209,197,' + (a * 0.75).toFixed(3) + ')';
         ctx.lineWidth = 1 + a * 1.8;
         ctx.beginPath();
-        ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
-        ctx.lineTo(trail[i].x, trail[i].y);
+        ctx.moveTo(trail[startIdx].x, trail[startIdx].y);
+        for (let i = startIdx + 1; i <= endIdx; i++) {
+          ctx.lineTo(trail[i].x, trail[i].y);
+        }
         ctx.stroke();
       }
     }
