@@ -44,13 +44,18 @@
   const code = $derived(encodeCoeffs(coeffs));
 
   $effect(() => {
-    // 预览小画布
+    // 预览小画布（乘 DPR 保证高分屏清晰）
     if (!canvas) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = 150 * dpr;
+    canvas.height = 150 * dpr;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    const S = canvas.width;
+    ctx.scale(dpr, dpr);
+    const S = 150;
     ctx.clearRect(0, 0, S, S);
     ctx.strokeStyle = 'rgba(255,255,255,.15)';
+    ctx.lineWidth = 1;
     ctx.strokeRect(0.5, 0.5, S - 1, S - 1);
     ctx.beginPath();
     const N = 360;
@@ -94,7 +99,7 @@
       coeffs
         .filter((c) => c.mag > 0.5)
         .map((c) => ({ k: c.k, mag: c.mag, phase: (c.phase * Math.PI) / 180 })),
-      '创作 ' + (code.length > 14 ? code.slice(0, 14) + '…' : code),
+      '创作关卡',
     );
     onclose();
   }
@@ -199,6 +204,8 @@
     box-shadow: none;
   }
   canvas {
+    width: 150px;
+    height: 150px;
     border: 1px solid var(--line);
     border-radius: 10px;
     background: #0d1120;

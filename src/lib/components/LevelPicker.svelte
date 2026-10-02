@@ -57,7 +57,7 @@
     // 系数串（含 ':'）= 玩家创作的合成关卡
     if (raw.includes(':')) {
       const coeffs = decodeCoeffs(raw);
-      if (coeffs) engine.loadCustomLevel(coeffs, '创作 ' + raw.slice(0, 14));
+      if (coeffs) engine.loadCustomLevel(coeffs, '创作关卡');
       seedInput = '';
       return;
     }
