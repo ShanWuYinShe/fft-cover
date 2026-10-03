@@ -46,8 +46,13 @@ export function densifyPoly(poly: Vec[]): Vec[] {
 }
 
 /**
- * 形状归一化：居中 + 限制在半径 240 内 + 平移到画布中心。
+ * 形状归一化：限制在半径 240 内 + **质心平移到画布中心**。
  * 关卡点集与目标参考曲线共用同一变换，保证视觉重合。
+ *
+ * 必须用质心（而非包围盒中心）：指针链无常量项（k=0），
+ * 其均值恒在原点——若点集质心偏离原点超过容差，
+ * 精确傅立叶分解也无法贴合点集（旧版三叶草偏移 29.9、
+ * 心形 24.3，均超过容差 13）。
  */
 export function normalizeShape(raw: Vec[]): Vec[] {
   let minX = Infinity;
@@ -60,12 +65,21 @@ export function normalizeShape(raw: Vec[]): Vec[] {
     minY = Math.min(minY, p.y);
     maxY = Math.max(maxY, p.y);
   }
-  const cx = (minX + maxX) / 2;
-  const cy = (minY + maxY) / 2;
   const scale = 240 / Math.max(maxX - minX, maxY - minY);
-  return raw.map((p) => ({
-    x: (p.x - cx) * scale + SIZE / 2,
-    y: (p.y - cy) * scale + SIZE / 2,
+  // 以包围盒中心为基准缩放
+  const bx = (minX + maxX) / 2;
+  const by = (minY + maxY) / 2;
+  const scaled = raw.map((p) => ({
+    x: (p.x - bx) * scale,
+    y: (p.y - by) * scale,
+  }));
+  // 再把质心平移到原点（指针链均值所在处）
+  const n = scaled.length || 1;
+  const cx = scaled.reduce((s, p) => s + p.x, 0) / n;
+  const cy = scaled.reduce((s, p) => s + p.y, 0) / n;
+  return scaled.map((p) => ({
+    x: p.x - cx + SIZE / 2,
+    y: p.y - cy + SIZE / 2,
   }));
 }
 

@@ -70,9 +70,9 @@ export const LEVEL_DEFS: LevelDef[] = [
   {
     id: 'inf8',
     name: '无穷 ∞',
-    hint: 'x 方向用 1×，y 方向的 sin2θ 需要 <b>2× 指针（相位约 270°）</b>。两根就够！',
+    hint: '别被"两根"骗了！x=cosθ/(1+sin²θ) 自含 <b>±1× 与 ±3×</b> 谐波，y 又需要 ±2×——<b>±1× 与 ±2× 四根</b>起步，3× 微调贴合交叉处。',
     n: 24,
-    armLimit: 2,
+    armLimit: 6,
     fn: (t) => {
       const d = 1 + S(t) * S(t);
       const a = 210;
