@@ -110,7 +110,7 @@
         <span class="lvl">{engine.level?.name ?? ''}{engine.sandbox ? ' 🧪' : ''}</span>
         <span class="score">收集 <b>{engine.collectedCount}</b>/{engine.total}</span>
       </div>
-      {#if engine.phase === 'done'}
+      {#if engine.phase === 'done' && !engine.resultDismissed}
         <ResultOverlay />
       {/if}
     </div>
