@@ -173,10 +173,14 @@
   </div>
 
   <div class="row2">
+    <!-- 旋转方向：与频谱仪同色语义（青=正频、紫=负频）。精确分解三叶草/无穷等形状必用反向 -->
     <button
       type="button"
       class="dir"
-      title={arm.freq < 0 ? '当前反向旋转，点击改为正向' : '当前正向旋转，点击改为反向'}
+      class:ccw={arm.freq < 0}
+      title={arm.freq < 0
+        ? '当前反向旋转（⟲，紫色，对应频谱负频），点击改为正向'
+        : '当前正向旋转（⟳，青色），点击改为反向——拟合三叶草/无穷等形状需要反向指针'}
       onclick={toggleDir}
     >
       {arm.freq < 0 ? '⟲' : '⟳'}
@@ -375,7 +379,7 @@
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--line);
     border-radius: var(--r-sm);
-    color: var(--cyan);
+    color: var(--cyan); /* 正向：青（与频谱正频柱同色） */
     font-size: var(--fs-md);
     width: 24px;
     height: 24px;
@@ -386,6 +390,13 @@
   .dir:hover {
     border-color: rgba(79, 209, 197, 0.6);
     background: var(--cyan-dim);
+  }
+  .dir.ccw {
+    color: var(--purple); /* 反向：紫（与频谱负频柱同色） */
+  }
+  .dir.ccw:hover {
+    border-color: rgba(167, 139, 250, 0.6);
+    background: var(--purple-dim);
   }
   select {
     background: #121829;

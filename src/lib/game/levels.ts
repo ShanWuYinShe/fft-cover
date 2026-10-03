@@ -37,7 +37,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   {
     id: 'clover',
     name: '三叶草',
-    hint: 'r=cos3θ 的复数分解：e^{iθ}·cos3θ = ½e^{i4θ} + ½e^{−i2θ}——只要 <b>4× 与 −2×（⟲ 反转）</b>两根！',
+    hint: 'r=cos3θ 的复数分解：e^{iθ}·cos3θ = ½e^{i4θ} + ½e^{−i2θ}——只要 <b>4× 与 −2× 两根</b>！负频率＝<b>反向旋转</b>：把 −2× 那根的方向按钮切到 <b>⟲（紫色）</b>即可。',
     n: 27,
     armLimit: 2,
     fn: (t) => {
