@@ -129,6 +129,7 @@
         <button title="音量（点击循环 全/半/静）" onclick={cycleVolume}>
           {volIcon}
         </button>
+        <button title="成就" onclick={() => (showAchv = true)}>🏆</button>
       {:else}
         <button class="primary" onclick={toggleRun}>{engine.runLabel}</button>
         <button
