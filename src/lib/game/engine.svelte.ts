@@ -419,6 +419,23 @@ export class GameEngine {
   }
 
   /** 本关历史最快全清用时（未全清过返回 null） */
+  /**
+   * 首关手把手引导是否显示：从未完成过引导、当前是圆关、且圆关还没拿过星。
+   * 入门容易——第一次打开就知道第一步该做什么。
+   */
+  get showFirstGuide(): boolean {
+    if (this.flags.guideDone) return false;
+    if (this.sandbox) return false;
+    if (this.level?.id !== 'circle') return false;
+    return (this.bestStars['circle'] ?? 0) === 0;
+  }
+
+  /** 引导第 1 步是否已达成（半径调到 120 附近——默认 130 需玩家主动贴近目标） */
+  get guideRReady(): boolean {
+    const a = this.arms[0];
+    return !!a && a.on && a.r >= 115 && a.r <= 125;
+  }
+
   /** 当前关是否已达成完美全清 */
   get isPerfect(): boolean {
     return !!this.level && !!this.perfectLevels[this.level.id];
@@ -622,6 +639,8 @@ export class GameEngine {
         /* 存储不可用则忽略 */
       }
     }
+    // 首关引导：圆关跑完一局即视为"已学会"，不再打扰
+    if (id === 'circle') this.markFlag('guideDone');
     // 卡关计数：0 星累加，拿到星即清零（渐进式求助提示的依据）
     const nextFails =
       st === 0
