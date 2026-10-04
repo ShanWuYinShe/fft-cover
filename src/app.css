@@ -293,6 +293,17 @@ button:disabled {
   background: linear-gradient(180deg, var(--cyan), var(--purple));
 }
 
+/* 分区强调色：关卡=青、成绩=金、指针=紫——一眼区分面板职责 */
+.panel section:nth-of-type(1) h2::before {
+  background: linear-gradient(180deg, #7ff0e2, var(--cyan));
+}
+.panel section:nth-of-type(2) h2::before {
+  background: linear-gradient(180deg, #ffe9a8, var(--gold));
+}
+.panel section:nth-of-type(3) h2::before {
+  background: linear-gradient(180deg, #c4b5fd, var(--purple));
+}
+
 .panel h2 .muted {
   letter-spacing: 0;
   text-transform: none;

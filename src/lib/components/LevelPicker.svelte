@@ -82,7 +82,9 @@
         title={isLocked(i) ? '获得前一关至少 1★ 后解锁' : ''}
         onclick={() => engine.loadLevel(def)}
       >
-        <span class="nm">{isLocked(i) ? '🔒' : def.name}</span>
+        <span class="nm"
+          >{def.name}{#if isLocked(i)}<i class="lock">🔒</i>{/if}</span
+        >
         <span class="st">{isLocked(i) ? '' : bestOf(def.id)}</span>
       </button>
     {/each}
@@ -184,7 +186,23 @@
     box-shadow: 0 0 14px rgba(79, 209, 197, 0.18);
   }
   .lv.locked {
-    opacity: 0.42;
+    opacity: 0.5;
+    background: rgba(255, 255, 255, 0.012);
+  }
+  .lv.locked .nm {
+    color: var(--muted-2);
+    font-weight: 500;
+  }
+  .lv .lock {
+    font-style: normal;
+    font-size: 9px;
+    margin-left: 2px;
+    opacity: 0.75;
+  }
+  .lv.locked .st {
+    color: var(--muted-2);
+    font-size: 8.5px;
+    letter-spacing: 0;
   }
   /* 生成区：难度 + 生成 + 创作，独立一行 */
   .gen-row {
