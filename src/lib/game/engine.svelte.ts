@@ -32,7 +32,7 @@ import {
   solveFromSpectrum,
   starsFor,
 } from './scoring';
-import type { Arm, GamePhase, HistoryEntry, Level, LevelDef, Vec } from './types';
+import type { Arm, Floater, GamePhase, HistoryEntry, Level, LevelDef, Vec } from './types';
 
 export { starsFor };
 
@@ -146,7 +146,7 @@ export class GameEngine {
   /** 各关卡历史最佳得分 */
   bestScores = $state<Record<string, number>>(loadScores());
   /** 上次收集时刻（连击窗口判定；-Infinity 表示尚无收集） */
-  private lastCollectAt = -Infinity;
+  lastCollectAt = -Infinity;
   /** 音效开关（持久化） */
   soundOn = $state(loadSound());
   /** 沙盒模式：无限时长自由旋转，成绩不计入记录 */
@@ -225,6 +225,10 @@ export class GameEngine {
   trail: Vec[] = [];
   /** 连击数（音高用） */
   combo = 0;
+  /** 收集飘字（连击反馈，画布绘制用），advance 中清理过期项 */
+  floaters: Floater[] = [];
+  /** 挑战模式 2× 快进（跳过明显无法全清的等待，不影响计分公平） */
+  fastForward = $state(false);
 
   constructor() {
     this.loadLevel(LEVEL_DEFS[0]);
@@ -363,6 +367,23 @@ export class GameEngine {
       this.autoTo = null;
       this.autoSlots.clear();
     }
+  }
+
+  /**
+   * 本局拿星后新解锁的下一关（无则 null）——结算浮层引导用。
+   * 条件：本局 st>=1、存在下一关、且下一关此前从未拿过星（首次解锁）。
+   */
+  get newlyUnlockedNext(): LevelDef | null {
+    const id = this.level?.id;
+    if (!id) return null;
+    const idx = LEVEL_DEFS.findIndex((d) => d.id === id);
+    const next = idx >= 0 ? LEVEL_DEFS[idx + 1] : undefined;
+    if (!next) return null;
+    // 本局至少 1 星 且 下一关此前未拿过星（本局前还锁定）→ 首次解锁
+    if ((this.bestStars[id] ?? 0) < 1) return null;
+    if ((this.bestStars[next.id] ?? 0) > 0) return null;
+    if (this.starsBeforeRun >= 1) return null; // 上一局就解锁过了
+    return next;
   }
 
   /** 本关最近的历史成绩（新的在后），取最近 n 条 */
@@ -506,8 +527,12 @@ export class GameEngine {
   }
 
   /** 停止并结算星级（记录最佳；沙盒不计入记录） */
+  /** 结算前的本关星数（判断"首次解锁下一关"用） */
+  private starsBeforeRun = 0;
+
   stopRun(): void {
     if (this.phase !== 'running' && this.phase !== 'paused') return;
+    this.starsBeforeRun = this.level ? (this.bestStars[this.level.id] ?? 0) : 0;
     this.phase = 'done';
     this.resultDismissed = false;
     if (this.sandbox) {
@@ -765,6 +790,14 @@ export class GameEngine {
         this.collected.add(i);
         this.collectAnim.set(i, now);
         this.collectedCount++;
+        this.floaters.push({
+          x: pts[i].x,
+          y: pts[i].y,
+          score: scoreForPoint(this.combo),
+          combo: this.combo,
+          born: now,
+        });
+        if (this.floaters.length > 24) this.floaters.shift();
         if (this.collectedCount === pts.length) {
           this.fullClearAt = now; // 全清冲击波
           this.clearT = this.t; // 竞速：记录全清用时
@@ -782,9 +815,14 @@ export class GameEngine {
   advance(dt: number): { got: number; finished: boolean } {
     if (this.phase !== 'running') return { got: 0, finished: false };
     if (this.autoSolve) this.stepAutoSolve(dt);
+    // 清理过期飘字（900ms 生命周期，见 Stage 绘制）
+    if (this.floaters.length > 0) {
+      const nowMs = performance.now();
+      this.floaters = this.floaters.filter((f) => nowMs - f.born < 900);
+    }
     const prev = this.t;
     // 沙盒不设时长上限（封顶防浮点溢出）也不自动结算，且可调转速
-    const step = dt * (this.sandbox ? this.speed : 1);
+    const step = dt * (this.sandbox ? this.speed : this.fastForward ? 2 : 1);
     this.t = Math.min(this.t + step, this.sandbox ? 100000 : RUN_DUR);
     let got = 0;
     const SUB = 6;

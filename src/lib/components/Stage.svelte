@@ -3,7 +3,7 @@
   import { engine } from '../game/engine.svelte';
   import { chainAt, tipAt } from '../game/math';
   import type { Vec } from '../game/types';
-  import { RUN_DUR, SIZE, T0 } from '../game/constants';
+  import { COMBO_WINDOW, RUN_DUR, SIZE, T0 } from '../game/constants';
   import { collectSound, finishChord, perfectArpeggio, solveDone, solveTick } from '../game/audio';
   import { spectrumGaps } from '../game/scoring';
 
@@ -460,6 +460,27 @@
       }
     }
 
+    // 收集飘字：+分数 ×连击（连击越高越大越金）
+    if (engine.floaters.length > 0) {
+      ctx.textAlign = 'center';
+      for (const f of engine.floaters) {
+        const age = Math.min((now - f.born) / 900, 1);
+        const alpha = 1 - age * age;
+        const size = 12 + Math.min(f.combo, 9) * 1.4;
+        ctx.font = 'bold ' + size.toFixed(0) + 'px sans-serif';
+        ctx.fillStyle =
+          f.combo >= 3
+            ? 'rgba(251,191,36,' + alpha.toFixed(3) + ')'
+            : 'rgba(230,233,242,' + (alpha * 0.9).toFixed(3) + ')';
+        ctx.fillText(
+          '+' + f.score + (f.combo >= 1 ? '  ×' + (f.combo + 1) : ''),
+          f.x,
+          f.y - 16 - age * 30,
+        );
+      }
+      ctx.textAlign = 'start';
+    }
+
     // 目标点
     const pts = engine.level.pts;
     for (let i = 0; i < pts.length; i++) {
@@ -620,6 +641,26 @@
       ctx.strokeRect(sx - 6, sy - 16, w + 12, 22);
       ctx.fillStyle = '#fbbf24';
       ctx.fillText(label, sx, sy);
+    }
+
+    // 连击状态：×N 连击 + 剩余窗口条（运行态且连击 ≥2 时显示）
+    if (engine.phase === 'running' && engine.combo >= 2) {
+      const remain = Math.max(0, 1 - (performance.now() - engine.lastCollectAt) / COMBO_WINDOW);
+      if (remain > 0) {
+        const cxr = SIZE - 24;
+        const cyr = 112; // 频谱仪面板下方
+        ctx.textAlign = 'right';
+        ctx.font = 'bold 16px sans-serif';
+        const hot = engine.combo >= 5;
+        ctx.fillStyle = hot ? 'rgba(251,191,36,.95)' : 'rgba(196,181,253,.95)';
+        ctx.fillText('×' + (engine.combo + 1) + ' 连击', cxr, cyr);
+        // 剩余窗口条
+        ctx.fillStyle = 'rgba(255,255,255,.12)';
+        ctx.fillRect(cxr - 78, cyr + 6, 78, 3);
+        ctx.fillStyle = hot ? 'rgba(251,191,36,.9)' : 'rgba(196,181,253,.9)';
+        ctx.fillRect(cxr - 78, cyr + 6, 78 * remain, 3);
+        ctx.textAlign = 'start';
+      }
     }
 
     // 缩放指示（非 1× 时显示）

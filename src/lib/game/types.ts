@@ -35,6 +35,15 @@ export interface HistoryEntry {
   clearT: number | null;
 }
 
+/** 收集飘字（连击反馈） */
+export interface Floater {
+  x: number;
+  y: number;
+  score: number;
+  combo: number;
+  born: number;
+}
+
 /** 游戏阶段：编辑 / 运行中 / 暂停 / 已结算 */
 export type GamePhase = 'edit' | 'running' | 'paused' | 'done';
 

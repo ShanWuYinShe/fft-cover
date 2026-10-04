@@ -60,6 +60,7 @@
     beep(engine.phase === 'running' ? 440 : 330, 0.06, 'square', 0.06, engine.soundOn);
   }
   function stopRun(): void {
+    engine.fastForward = false;
     const was = engine.phase;
     engine.stopRun();
     if (engine.phase === 'done' && (was === 'running' || was === 'paused')) {
@@ -67,6 +68,11 @@
       else finishChord(engine.soundOn);
     }
   }
+  // $effect：编辑态/结算后确保快进关闭（防止遗留状态）
+  $effect(() => {
+    if (engine.phase !== 'running' && engine.fastForward) engine.fastForward = false;
+  });
+
   function onKeydown(e: KeyboardEvent): void {
     const tag = (e.target as HTMLElement).tagName;
     if (tag === 'INPUT' || tag === 'SELECT') return;
@@ -144,6 +150,14 @@
           disabled={engine.phase !== 'running' && engine.phase !== 'paused'}
         >
           ⏹ <span class="bt-long">停止结算</span><span class="bt-short">停止</span>
+        </button>
+        <button
+          title="2× 快进：跳过等待（不影响得分与连击判定）"
+          class:gold={engine.fastForward}
+          disabled={engine.phase !== 'running'}
+          onclick={() => (engine.fastForward = !engine.fastForward)}
+        >
+          ⏩ 2×
         </button>
         <button onclick={() => engine.resetRun()}
           >⟲ <span class="bt-long">重置点</span><span class="bt-short">重置</span></button

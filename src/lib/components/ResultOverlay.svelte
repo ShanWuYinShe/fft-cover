@@ -222,6 +222,20 @@
         {#if engine.bestClear !== null}· 最快全清 {engine.bestClear.toFixed(1)}s{/if}　{words[st]}
       </div>
       <div class="arms-line">解法：{engine.armsLine()} · 拟合度 {(fit * 100).toFixed(0)}%</div>
+      {#if engine.newlyUnlockedNext}
+        <button
+          type="button"
+          class="next-unlock"
+          onclick={() => engine.loadLevel(engine.newlyUnlockedNext!)}
+        >
+          <span class="nu-badge">🔓</span>
+          <span class="nu-txt">
+            <b>下一关已解锁</b>
+            <i>{engine.newlyUnlockedNext.name} → 前往挑战</i>
+          </span>
+          <span class="nu-arrow">→</span>
+        </button>
+      {/if}
       {#if chart}
         <div class="trend">
           <span class="tlabel">最近 {trend.length} 局</span>
@@ -421,6 +435,44 @@
   .best {
     font-size: 13px;
     color: var(--muted);
+  }
+  .next-unlock {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: var(--r-md);
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(167, 139, 250, 0.12));
+    border: 1px solid rgba(251, 191, 36, 0.45);
+    cursor: pointer;
+    text-align: left;
+  }
+  .next-unlock:hover:not(:disabled) {
+    border-color: rgba(251, 191, 36, 0.8);
+    box-shadow: 0 0 18px rgba(251, 191, 36, 0.18);
+  }
+  .nu-badge {
+    font-size: 20px;
+  }
+  .nu-txt {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .nu-txt b {
+    font-size: var(--fs-sm);
+    color: var(--gold);
+  }
+  .nu-txt i {
+    font-style: normal;
+    font-size: var(--fs-xs);
+    color: var(--muted);
+  }
+  .nu-arrow {
+    color: var(--gold);
+    font-size: var(--fs-lg);
   }
   .btns {
     display: grid;
