@@ -325,11 +325,6 @@ button:disabled {
   color: var(--purple);
 }
 
-#arms-grid.fitting {
-  pointer-events: none;
-  opacity: 0.55;
-}
-
 /* 指针卡单列：每张卡宽度充裕，滑块与步进器都舒展 */
 #arms-grid {
   display: grid;

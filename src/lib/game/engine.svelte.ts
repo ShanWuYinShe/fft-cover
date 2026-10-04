@@ -200,6 +200,8 @@ export class GameEngine {
   autoProgress = $state(0);
   /** 插值起点快照 */
   private autoFrom: Arm[] | null = null;
+  /** 拟合中参与插值的指针位；用户改动的位会退出该集合（保留用户值） */
+  private autoSlots = new Set<number>();
   /** 插值目标（DFT 解） */
   private autoTo: Arm[] | null = null;
   /** 结算浮层是否显示"全清新纪录" */
@@ -318,36 +320,48 @@ export class GameEngine {
     if (!this.sandbox || !this.level || this.autoSolve) return;
     this.autoFrom = this.arms.map((a) => ({ ...a }));
     this.autoTo = solveFromSpectrum(this.level.spectrum, this.level.armLimit);
+    // 参与插值的指针位 = 拟合解中启用的位；用户中途改动的位会退出该集合
+    this.autoSlots = new Set<number>();
+    this.autoTo.forEach((a, i) => {
+      if (a.on) this.autoSlots.add(i);
+    });
     this.autoSolve = true;
     this.autoProgress = 0;
     this.markFlag('autoTry');
   }
 
-  /** 插值推进自动拟合（advance 内调用） */
+  /**
+   * 插值推进自动拟合（advance 内调用）。
+   * 只插值 autoSlots 中仍参与的指针位；用户中途改动的位
+   * （setArm 时从 autoSlots 移除）保持用户值，互不覆盖。
+   */
   private stepAutoSolve(dt: number): void {
     if (!this.autoSolve || !this.autoFrom || !this.autoTo) return;
     this.autoProgress = Math.min(this.autoProgress + dt / 2, 1);
     const e = 1 - Math.pow(1 - this.autoProgress, 3); // easeOutCubic
-    this.arms = this.autoFrom.map((from, i) => {
-      const to = this.autoTo![i];
-      const wrap = (d: number) => {
-        while (d > Math.PI) d -= Math.PI * 2;
-        while (d < -Math.PI) d += Math.PI * 2;
-        return d;
-      };
+    const wrap = (d: number) => {
+      while (d > Math.PI) d -= Math.PI * 2;
+      while (d < -Math.PI) d += Math.PI * 2;
+      return d;
+    };
+    for (const i of this.autoSlots) {
+      const from = this.autoFrom[i];
+      const to = this.autoTo[i];
+      if (!from || !to) continue;
       let dp = wrap(to.phase - from.phase);
       const phase = from.phase + dp * e;
-      return {
+      this.arms[i] = {
         on: e > 0.15 ? to.on : from.on,
         r: Math.round(from.r + (to.r - from.r) * e),
         freq: e > 0.5 ? to.freq : from.freq,
         phase,
       };
-    });
+    }
     if (this.autoProgress >= 1) {
       this.autoSolve = false;
       this.autoFrom = null;
       this.autoTo = null;
+      this.autoSlots.clear();
     }
   }
 
@@ -714,9 +728,10 @@ export class GameEngine {
     this.lastArmPushAt = 0;
   }
 
-  /** 修改第 i 根指针参数（启用受本关上限约束；拟合动画期间拒绝手动修改，避免与插值拉扯） */
+  /** 修改第 i 根指针参数（启用受本关上限约束） */
   setArm(i: number, patch: Partial<Arm>): void {
-    if (this.autoSolve) return;
+    // 拟合动画期间：用户改动的指针位退出拟合范围（保留用户值），其余位继续插值
+    if (this.autoSolve) this.autoSlots.delete(i);
     if (patch.on === true && !this.arms[i].on && !this.canEnableMore()) return;
     const touchesTunable = 'r' in patch || 'freq' in patch || 'phase' in patch || 'on' in patch;
     if (touchesTunable) this.pushArmHistory();

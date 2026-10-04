@@ -205,9 +205,9 @@
         {/if}
       </div>
       {#if engine.autoSolve}
-        <p class="fitting-tip">🪄 自动拟合中…（点击画布可打断，回到手动调参）</p>
+        <p class="fitting-tip">🪄 自动拟合中——直接调整任意指针即可接管它；点击画布可打断</p>
       {/if}
-      <div id="arms-grid" class:fitting={engine.autoSolve}>
+      <div id="arms-grid">
         {#each engine.arms as arm, i (i)}
           <ArmCard {arm} index={i} />
         {/each}
