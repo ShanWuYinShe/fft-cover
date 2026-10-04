@@ -242,6 +242,7 @@ export class GameEngine {
   }
 
   loadLevel(def: LevelDef): void {
+    this.cancelAutoSolve();
     this.level = makeLevel(def);
     this.trimArmsToLimit();
     this.resetRun();
@@ -254,6 +255,7 @@ export class GameEngine {
 
   /** 按邀请码（seed）重建随机关卡：同码必同关卡。难度不影响已有关卡复现 */
   loadRandomSeed(seed: number, diff: RandomDifficulty = 'normal'): void {
+    this.cancelAutoSolve();
     this.sandbox = false;
     this.level = makeRandomLevel(seed, diff);
     this.trimArmsToLimit();
@@ -305,6 +307,13 @@ export class GameEngine {
    * 沙盒自动拟合演示：按目标频谱解出精确参数，
    * 并在 2 秒内把指针从当前值平滑过渡过去（傅立叶逐项逼近可视化）。
    */
+  /** 终止自动拟合（用户主动操作 / 切关 / 退出沙盒时调用，防止插值覆盖新状态） */
+  cancelAutoSolve(): void {
+    this.autoSolve = false;
+    this.autoFrom = null;
+    this.autoTo = null;
+  }
+
   startAutoSolve(): void {
     if (!this.sandbox || !this.level || this.autoSolve) return;
     this.autoFrom = this.arms.map((a) => ({ ...a }));
@@ -413,6 +422,7 @@ export class GameEngine {
 
   /** 结束沙盒：展示成果但不记录 */
   exitSandbox(): void {
+    this.cancelAutoSolve();
     if (!this.sandbox) return;
     this.sandbox = false;
     this.phase = 'done';
@@ -431,6 +441,7 @@ export class GameEngine {
 
   /** 随机化所有已启用指针的半径与相位（激发灵感用） */
   randomizeArms(): void {
+    this.cancelAutoSolve();
     this.pushArmHistory(true);
     for (const a of this.arms) {
       if (!a.on) continue;
@@ -441,6 +452,7 @@ export class GameEngine {
 
   /** 全部指针清零关闭 */
   clearArms(): void {
+    this.cancelAutoSolve();
     this.pushArmHistory(true);
     for (const a of this.arms) {
       a.on = false;
@@ -460,6 +472,7 @@ export class GameEngine {
 
   /** 全部指针复位到默认参数 */
   resetAllArms(): void {
+    this.cancelAutoSolve();
     this.pushArmHistory(true);
     const defs = armDefaults();
     this.arms.forEach((a, i) => Object.assign(a, defs[i]));
@@ -564,6 +577,7 @@ export class GameEngine {
 
   /** 载入玩家创作的谐波合成关卡 */
   loadCustomLevel(coeffs: { k: number; mag: number; phase: number }[], name: string): void {
+    this.cancelAutoSolve();
     this.sandbox = false;
     this.level = levelFromCoeffs(coeffs, name);
     this.trimArmsToLimit();
@@ -573,6 +587,7 @@ export class GameEngine {
 
   /** 进入今日每日挑战（seed 由日期+难度决定，人人同关） */
   loadDaily(): void {
+    this.cancelAutoSolve();
     this.sandbox = false;
     this.level = makeDailyLevel(this.difficulty);
     this.trimArmsToLimit();
@@ -699,8 +714,9 @@ export class GameEngine {
     this.lastArmPushAt = 0;
   }
 
-  /** 修改第 i 根指针参数（启用受本关上限约束） */
+  /** 修改第 i 根指针参数（启用受本关上限约束；拟合动画期间拒绝手动修改，避免与插值拉扯） */
   setArm(i: number, patch: Partial<Arm>): void {
+    if (this.autoSolve) return;
     if (patch.on === true && !this.arms[i].on && !this.canEnableMore()) return;
     const touchesTunable = 'r' in patch || 'freq' in patch || 'phase' in patch || 'on' in patch;
     if (touchesTunable) this.pushArmHistory();

@@ -99,6 +99,7 @@
   }
 
   function onPointerDown(ev: PointerEvent): void {
+    if (engine.autoSolve) engine.cancelAutoSolve(); // 用户碰画布 = 打断拟合，回到手动控制
     pointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
     // 双指：进入捏合/平移模式（不拖关节）
     if (pointers.size === 2) {
@@ -131,6 +132,7 @@
     }
     dragIdx = hit;
     if (dragIdx >= 0) {
+      engine.cancelAutoSolve(); // 用户拖关节 = 主动打断拟合
       engine.beginArmEdit(); // 整段拖动合并为一条撤销记录
       engine.markFlag('dragUsed');
       try {

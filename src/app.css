@@ -315,6 +315,21 @@ button:disabled {
 }
 
 /* ---------- 指针卡网格 ---------- */
+.fitting-tip {
+  margin: 0 0 8px;
+  padding: 6px 11px;
+  border-radius: var(--r-sm);
+  background: var(--purple-dim);
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  font-size: var(--fs-xs);
+  color: var(--purple);
+}
+
+#arms-grid.fitting {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
 /* 指针卡单列：每张卡宽度充裕，滑块与步进器都舒展 */
 #arms-grid {
   display: grid;
