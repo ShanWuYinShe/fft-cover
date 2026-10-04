@@ -99,3 +99,21 @@ export function finishChord(on: boolean): void {
   beep(660, 0.12, 'triangle', 0.12, on);
   setTimeout(() => beep(880, 0.2, 'triangle', 0.12, on), 110);
 }
+
+/* ---------- UI 音效（业界标准：交互反馈音，音量远低于游戏音） ---------- */
+
+/** UI 按钮点击：短促轻音 */
+export function uiClick(on = true): void {
+  beep(660, 0.05, 'triangle', 0.05, on);
+}
+
+/** UI 切换（方向/toggle/快进）：双音下行 */
+export function uiToggle(on = true): void {
+  beep(520, 0.05, 'triangle', 0.05, on);
+  setTimeout(() => beep(390, 0.06, 'triangle', 0.045, on), 45);
+}
+
+/** UI 返回/取消：单音更低 */
+export function uiBack(on = true): void {
+  beep(330, 0.07, 'triangle', 0.05, on);
+}

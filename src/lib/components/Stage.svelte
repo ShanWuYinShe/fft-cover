@@ -329,8 +329,20 @@
     ctx.translate(-SIZE / 2 - panX, -SIZE / 2 - panY);
   }
 
+  /** 全清震动是否已触发（本局一次） */
+  let shakeDone = false;
+
   function draw(now: number): void {
     if (!ctx || !engine.level) return;
+    // 全清震动：本局首次全清时触发一次 CSS 抖动
+    if (!shakeDone && engine.fullClearAt > 0) {
+      shakeDone = true;
+      canvas?.classList.remove('shake');
+      void canvas?.offsetWidth; // 强制 reflow 重启动画
+      canvas?.classList.add('shake');
+    }
+    if (engine.phase === 'edit') shakeDone = false;
+
     ctx.clearRect(0, 0, SIZE, SIZE);
 
     // 切关淡入：整画布内容透明度过渡（0.4 秒）

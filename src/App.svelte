@@ -14,6 +14,8 @@
     perfectArpeggio,
     setVolume,
     getVolume,
+    uiClick,
+    uiToggle,
   } from './lib/game/audio';
 
   let showAchv = $state(false);
@@ -27,7 +29,16 @@
   onMount(() => {
     const onUpdate = () => (updateReady = true);
     window.addEventListener('pwa-update', onUpdate);
-    return () => window.removeEventListener('pwa-update', onUpdate);
+    // 全局按钮点击音（capture：先于组件自身 handler，业界标准 UI juice）
+    const onUiClick = (e: MouseEvent) => {
+      const el = e.target as HTMLElement;
+      if (el.closest('button')) uiClick(engine.soundOn);
+    };
+    document.addEventListener('click', onUiClick, true);
+    return () => {
+      window.removeEventListener('pwa-update', onUpdate);
+      document.removeEventListener('click', onUiClick, true);
+    };
   });
   function applyPwaUpdate(): void {
     void import('./main').then((m) => m.applyUpdate());
@@ -72,6 +83,12 @@
   $effect(() => {
     if (engine.phase !== 'running' && engine.fastForward) engine.fastForward = false;
   });
+
+  /** 全局按钮点击音（事件委托，业界标准 UI juice） */
+  function onGlobalClick(e: MouseEvent): void {
+    const el = e.target as HTMLElement;
+    if (el.closest('button')) uiClick(engine.soundOn);
+  }
 
   function onKeydown(e: KeyboardEvent): void {
     const tag = (e.target as HTMLElement).tagName;
@@ -120,11 +137,41 @@
         <span
           class="score"
           style="--progress: {engine.total ? (engine.collectedCount / engine.total) * 100 : 0}%"
-          >收集 <b>{engine.collectedCount}</b>/{engine.total}</span
+          >收集 {#key engine.collectedCount}<b class="hud-pulse">{engine.collectedCount}</b
+            >{/key}/{engine.total}</span
         >
       </div>
       {#if engine.phase === 'done' && !engine.resultDismissed}
         <ResultOverlay />
+      {/if}
+
+      {#if engine.phase === 'paused' && !engine.sandbox}
+        <div class="pause-menu">
+          <h3>已暂停</h3>
+          <p class="pm-sub">调整策略后继续，或者重新来过</p>
+          <button type="button" class="primary" onclick={() => engine.toggleRun()}
+            >▶ 继续旋转</button
+          >
+          <button
+            type="button"
+            onclick={() => {
+              engine.fastForward = false;
+              engine.resetRun();
+            }}
+          >
+            ⟲ 回到调参
+          </button>
+          <button
+            type="button"
+            onclick={() => {
+              engine.fastForward = false;
+              engine.resetRun();
+              engine.startRun();
+            }}
+          >
+            ↻ 重新开始
+          </button>
+        </div>
       {/if}
     </div>
     <div class="run-row">
