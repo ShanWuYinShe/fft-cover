@@ -767,4 +767,10 @@
       height: 34px;
     }
   }
+  /* 移动端隐藏缩放控件：双指捏合/平移已足够，且避免遮挡画布底部的预览徽章 */
+  @media (max-width: 640px) {
+    .zoom-bar {
+      display: none;
+    }
+  }
 </style>

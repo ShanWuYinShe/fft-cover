@@ -17,6 +17,8 @@
   } from './lib/game/audio';
 
   let showAchv = $state(false);
+  /** 移动端底部标签：关卡 / 指针 / 成绩（桌面端忽略，全部 section 同屏显示） */
+  let mobileTab: 'levels' | 'arms' | 'score' = $state('levels');
   /** PWA：有新版本等待接管（main.ts 在 SW 进入 waiting 时派发 pwa-update） */
   let updateReady = $state(false);
   onMount(() => {
@@ -138,9 +140,11 @@
           onclick={stopRun}
           disabled={engine.phase !== 'running' && engine.phase !== 'paused'}
         >
-          ⏹ 停止结算
+          ⏹ <span class="bt-long">停止结算</span><span class="bt-short">停止</span>
         </button>
-        <button onclick={() => engine.resetRun()}>⟲ 重置点</button>
+        <button onclick={() => engine.resetRun()}
+          >⟲ <span class="bt-long">重置点</span><span class="bt-short">重置</span></button
+        >
         <button
           title="无限时自由旋转，实时调参，成绩不计入记录"
           disabled={engine.phase === 'running' || engine.phase === 'paused'}
@@ -156,7 +160,7 @@
     </div>
   </section>
 
-  <aside class="panel">
+  <aside class="panel" data-tab={mobileTab}>
     <LevelPicker />
     <ScorePanel />
     <section>
@@ -226,6 +230,19 @@
     </section>
   </aside>
 </main>
+
+<!-- 移动端底部标签栏（桌面隐藏）：画布固定在屏内，面板按需切换 -->
+<nav class="mobile-tabs">
+  <button type="button" class:on={mobileTab === 'levels'} onclick={() => (mobileTab = 'levels')}>
+    <i>🗺</i><span>关卡</span>
+  </button>
+  <button type="button" class:on={mobileTab === 'arms'} onclick={() => (mobileTab = 'arms')}>
+    <i>🎛</i><span>指针</span>
+  </button>
+  <button type="button" class:on={mobileTab === 'score'} onclick={() => (mobileTab = 'score')}>
+    <i>🏆</i><span>成绩</span>
+  </button>
+</nav>
 {#if showAchv}
   <AchievementsModal onclose={() => (showAchv = false)} />
 {/if}

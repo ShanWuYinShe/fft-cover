@@ -638,3 +638,172 @@ input[type='checkbox'] {
     font-size: var(--fs-sm);
   }
 }
+
+/* ============================================================
+ * 移动端（≤640px）：画布固定在屏内 + 底部标签抽屉
+ * 目标：调参时始终能看到画布，页面不再整体滚动
+ * ============================================================ */
+.mobile-tabs {
+  display: none; /* 桌面隐藏 */
+}
+
+@media (max-width: 640px) {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden; /* 页面不滚动，滚动交给面板内部 */
+  }
+
+  body {
+    min-height: 100dvh;
+  }
+
+  header {
+    padding: 8px 16px 2px;
+  }
+
+  header h1 {
+    font-size: 17px;
+    letter-spacing: 4px;
+  }
+
+  header .sub {
+    display: none; /* 移动端省掉副标题，把高度让给画布 */
+  }
+
+  main {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 6px 10px 4px;
+    flex-wrap: nowrap;
+    height: calc(100dvh - 34px); /* 减去标题与 Tab 栏 */
+    overflow: hidden;
+  }
+
+  /* 舞台：固定高度，画布自适应 */
+  .stage-wrap {
+    flex: 0 0 auto;
+    gap: 7px;
+  }
+
+  .canvas-box {
+    width: min(92vw, 46vh);
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .run-row {
+    position: static; /* 不再吸底：整页已固定，按钮就在画布下 */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 0;
+    margin: 0;
+    gap: 6px;
+    background: none;
+    border: none;
+    backdrop-filter: none;
+  }
+
+  .run-row button {
+    width: 100%;
+  }
+
+  .run-row button {
+    font-size: var(--fs-sm);
+    padding: 8px 10px;
+    min-height: 42px; /* 触摸友好 */
+    flex: 0 1 auto;
+  }
+
+  /* 面板：占满剩余高度，内部滚动 */
+  .panel {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: none;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    gap: 8px;
+  }
+
+  /* 标签切换：只显示当前 Tab 对应的 section */
+  .panel > section {
+    display: none;
+  }
+  .panel[data-tab='levels'] > section:nth-of-type(1),
+  .panel[data-tab='arms'] > section:nth-of-type(3),
+  .panel[data-tab='score'] > section:nth-of-type(2),
+  .panel[data-tab='score'] > section:nth-of-type(4) {
+    display: block;
+  }
+
+  /* 指针卡：紧凑但仍保持单列可读 */
+  #arms-grid {
+    gap: 6px;
+  }
+
+  /* 底部标签栏：固定，大触摸目标 */
+  .mobile-tabs {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    padding: 4px 6px calc(4px + env(safe-area-inset-bottom));
+    gap: 4px;
+    background: linear-gradient(180deg, rgba(10, 13, 24, 0.86), rgba(8, 10, 20, 0.98));
+    border-top: 1px solid var(--line-2);
+    backdrop-filter: blur(10px);
+  }
+
+  .mobile-tabs button {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 7px 4px;
+    min-height: 48px;
+    border: none;
+    background: transparent;
+    border-radius: var(--r-md);
+    color: var(--muted);
+    font-size: var(--fs-xs);
+  }
+
+  .mobile-tabs button i {
+    font-style: normal;
+    font-size: 17px;
+    line-height: 1;
+  }
+
+  .mobile-tabs button.on {
+    color: var(--cyan);
+    background: var(--cyan-dim);
+  }
+
+  .mobile-tabs button.on i {
+    filter: drop-shadow(0 0 8px rgba(79, 209, 197, 0.5));
+  }
+
+  /* 给底部标签栏留出空间 */
+  body {
+    padding-bottom: 62px;
+  }
+}
+
+/* 按钮文案：桌面用全称，移动端用短称 */
+.bt-short {
+  display: none;
+}
+@media (max-width: 640px) {
+  .bt-long {
+    display: none;
+  }
+  .bt-short {
+    display: inline;
+  }
+}
