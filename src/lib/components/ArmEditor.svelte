@@ -31,9 +31,6 @@
     engine.setArm(index, { freq: -(arm.freq || 1) });
     engine.flashArm(index);
   }
-  function toggleOn(e: Event): void {
-    engine.setArm(index, { on: (e.currentTarget as HTMLInputElement).checked });
-  }
 
   /** 步进：半径 ±1（可长按连发），相位 ±1° */
   function stepR(delta: number): void {
@@ -50,10 +47,7 @@
     engine.flashArm(index);
   }
 
-  /**
-   * 步进按钮：短按走 click（同时支持键盘 Enter/Space 与读屏点击），
-   * 长按 320ms 后以 55ms 连发；连发过则忽略抬手那一次 click。
-   */
+  /** 步进按钮：短按 click（兼容键盘/读屏），长按连发 */
   function repeat(fn: () => void): {
     onDown: (e: PointerEvent) => void;
     onUp: () => void;
@@ -100,7 +94,7 @@
       if (editing === 'r') {
         engine.setArm(index, { r: Math.max(0, Math.min(R_MAX, n)) });
       } else if (editing === 'p') {
-        let d = ((n % 360) + 360) % 360;
+        const d = ((n % 360) + 360) % 360;
         engine.setArm(index, { phase: (d * Math.PI) / 180 });
       }
       engine.flashArm(index);
@@ -118,18 +112,19 @@
   }
 </script>
 
-<div class="arm" class:off={!arm.on}>
-  <div class="row1">
-    <label class="toggle">
-      <input
-        type="checkbox"
-        checked={arm.on}
-        disabled={!arm.on && !engine.canEnableMore()}
-        title={!arm.on && !engine.canEnableMore() ? '本关指针已达上限' : '启用/停用'}
-        onchange={toggleOn}
-      />
-      <b>{CIRCLED[index]}</b>
-    </label>
+<div class="editor">
+  <div class="hd">
+    <span class="who">编辑 <b>{CIRCLED[index]}</b></span>
+    <button
+      type="button"
+      class="reset"
+      title="复位这根指针的默认参数"
+      onclick={() => engine.resetArm(index)}>复位</button
+    >
+  </div>
+
+  <div class="line">
+    <span class="lb">半径</span>
     <input type="range" min="0" max={R_MAX} step="1" value={arm.r} oninput={setR} title="半径" />
     <div class="spin">
       <button
@@ -155,7 +150,7 @@
           onkeydown={onEditKey}
         />
       {:else}
-        <button type="button" class="val rv" title="点击输入精确值" onclick={() => beginEdit('r')}
+        <button type="button" class="val" title="点击输入精确值" onclick={() => beginEdit('r')}
           >{arm.r}</button
         >
       {/if}
@@ -172,8 +167,68 @@
     </div>
   </div>
 
-  <div class="row2">
-    <!-- 旋转方向：文字化（顺/逆），色彩与频谱仪同语义（青=顺、紫=逆） -->
+  <div class="line">
+    <span class="lb">相位</span>
+    <input
+      type="range"
+      title="初始相位"
+      min="0"
+      max="360"
+      step="1"
+      value={deg}
+      oninput={setPhase}
+    />
+    <div class="spin">
+      <button
+        type="button"
+        class="sb"
+        title="相位 −1°（长按连发）"
+        onpointerdown={pMinus.onDown}
+        onpointerup={pMinus.onUp}
+        onpointerleave={pMinus.onUp}
+        onpointercancel={pMinus.onUp}
+        onclick={pMinus.onClick}>−</button
+      >
+      {#if editing === 'p'}
+        <!-- svelte-ignore a11y_autofocus -->
+        <input
+          class="num-edit"
+          type="number"
+          inputmode="numeric"
+          autofocus
+          value={draft}
+          oninput={(e) => (draft = e.currentTarget.value)}
+          onblur={commitEdit}
+          onkeydown={onEditKey}
+        />
+      {:else}
+        <button
+          type="button"
+          class="val"
+          title="点击输入精确值（角度）"
+          onclick={() => beginEdit('p')}>{deg}°</button
+        >
+      {/if}
+      <button
+        type="button"
+        class="sb"
+        title="相位 +1°（长按连发）"
+        onpointerdown={pPlus.onDown}
+        onpointerup={pPlus.onUp}
+        onpointerleave={pPlus.onUp}
+        onpointercancel={pPlus.onUp}
+        onclick={pPlus.onClick}>+</button
+      >
+    </div>
+  </div>
+
+  <div class="line freq-line">
+    <span class="lb">频率</span>
+    <select title="旋转频率" value={Math.abs(arm.freq)} onchange={setFreq}>
+      {#each freqOptions as f (f)}
+        <option value={f}>{f}×</option>
+      {/each}
+    </select>
     <button
       type="button"
       class="dir"
@@ -183,128 +238,67 @@
         : '当前顺时针旋转（青色），点击改为逆时针——拟合三叶草/无穷等形状需要逆时针指针'}
       onclick={toggleDir}
     >
-      {arm.freq < 0 ? '逆' : '顺'}
+      {arm.freq < 0 ? '逆时针' : '顺时针'}
     </button>
-    <select title="旋转频率" value={Math.abs(arm.freq)} onchange={setFreq}>
-      {#each freqOptions as f (f)}
-        <option value={f}>{f}×</option>
-      {/each}
-    </select>
-    <div class="phase">
-      <input
-        type="range"
-        title="初始相位"
-        min="0"
-        max="360"
-        step="1"
-        value={deg}
-        oninput={setPhase}
-      />
-      <div class="spin">
-        <button
-          type="button"
-          class="sb"
-          title="相位 −1°（长按连发）"
-          onpointerdown={pMinus.onDown}
-          onpointerup={pMinus.onUp}
-          onpointerleave={pMinus.onUp}
-          onpointercancel={pMinus.onUp}
-          onclick={pMinus.onClick}>−</button
-        >
-        {#if editing === 'p'}
-          <!-- svelte-ignore a11y_autofocus -->
-          <input
-            class="num-edit"
-            type="number"
-            inputmode="numeric"
-            autofocus
-            value={draft}
-            oninput={(e) => (draft = e.currentTarget.value)}
-            onblur={commitEdit}
-            onkeydown={onEditKey}
-          />
-        {:else}
-          <button
-            type="button"
-            class="val pv"
-            title="点击输入精确值（角度）"
-            onclick={() => beginEdit('p')}>{deg}°</button
-          >
-        {/if}
-        <button
-          type="button"
-          class="sb"
-          title="相位 +1°（长按连发）"
-          onpointerdown={pPlus.onDown}
-          onpointerup={pPlus.onUp}
-          onpointerleave={pPlus.onUp}
-          onpointercancel={pPlus.onUp}
-          onclick={pPlus.onClick}>+</button
-        >
-      </div>
-    </div>
-    <button
-      type="button"
-      class="reset"
-      title="复位这根指针的默认参数"
-      onclick={() => engine.resetArm(index)}>复位</button
-    >
   </div>
 </div>
 
 <style>
-  .arm {
-    position: relative;
-    border: 1px solid var(--line-2);
+  .editor {
+    border: 1px solid rgba(79, 209, 197, 0.35);
     border-radius: var(--r-md);
-    padding: 8px 9px 9px 11px;
-    background: rgba(255, 255, 255, 0.022);
-    min-width: 0;
-    transition:
-      border-color 0.15s,
-      background 0.15s;
-  }
-  .arm::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 9px;
-    bottom: 9px;
-    width: 2.5px;
-    border-radius: 0 2px 2px 0;
-    background: linear-gradient(180deg, var(--cyan), var(--purple));
-    transition: opacity 0.15s;
-  }
-  .arm.off::before {
-    opacity: 0;
-  }
-  .arm:hover {
-    border-color: rgba(255, 255, 255, 0.18);
-  }
-  .arm.off {
-    opacity: 0.55;
-  }
-  .row1,
-  .row2 {
+    background: linear-gradient(170deg, rgba(79, 209, 197, 0.06), rgba(167, 139, 250, 0.04));
+    padding: 9px 11px 10px;
     display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .row2 {
+    flex-direction: column;
+    gap: 7px;
     margin-top: 7px;
   }
-  .row1 input[type='range'],
-  .row2 input[type='range'] {
-    flex: 1;
-    min-width: 40px;
+  .hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
-  .row1 b {
-    width: 18px;
-    text-align: center;
+  .who {
+    font-size: var(--fs-sm);
+    color: var(--muted);
+  }
+  .who b {
     color: var(--cyan);
     font-size: var(--fs-md);
   }
-  /* 步进器：− 数值 + */
+  .reset {
+    appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0 4px;
+    min-height: 22px;
+    font-size: var(--fs-xs);
+    color: var(--muted-2);
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .reset:hover {
+    color: var(--gold);
+    background: var(--gold-dim);
+    box-shadow: none;
+  }
+  .line {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .lb {
+    font-size: var(--fs-xs);
+    color: var(--muted-2);
+    width: 26px;
+    flex: 0 0 auto;
+  }
+  .line input[type='range'] {
+    flex: 1;
+    min-width: 40px;
+  }
   .spin {
     display: flex;
     align-items: center;
@@ -313,8 +307,8 @@
   }
   .sb {
     appearance: none;
-    width: 22px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
     padding: 0;
     min-height: 0;
     line-height: 1;
@@ -332,19 +326,15 @@
     color: var(--cyan);
     background: var(--cyan-dim);
   }
-  .sb:active {
-    background: var(--cyan-dim);
-    color: var(--cyan);
-  }
   .val {
     appearance: none;
     background: none;
     border: none;
     padding: 0;
     min-height: 0;
-    width: 34px;
+    min-width: 42px;
     text-align: center;
-    font-size: var(--fs-sm);
+    font-size: var(--fs-md);
     color: var(--text);
     font-variant-numeric: tabular-nums;
     font-family: inherit;
@@ -354,11 +344,11 @@
     color: var(--gold);
   }
   .num-edit {
-    width: 46px;
-    height: 24px;
+    width: 52px;
+    height: 30px;
     padding: 0 2px;
     text-align: center;
-    font-size: var(--fs-sm);
+    font-size: var(--fs-md);
     font-family: inherit;
     font-variant-numeric: tabular-nums;
     color: var(--text);
@@ -374,17 +364,29 @@
     -webkit-appearance: none;
     margin: 0;
   }
+  .freq-line select {
+    flex: 0 0 auto;
+    background: #121829;
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    font-size: var(--fs-sm);
+    padding: 5px 6px;
+    min-height: 30px;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+  }
   .dir {
+    flex: 1;
     appearance: none;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--line);
     border-radius: var(--r-sm);
-    color: var(--cyan); /* 顺时针：青（与频谱正频柱同色） */
-    font-size: var(--fs-sm);
-    min-width: 28px;
-    height: 24px;
-    padding: 0 6px;
-    min-height: 0;
+    color: var(--cyan);
+    font-size: var(--fs-xs);
+    min-height: 30px;
+    padding: 0 8px;
     cursor: pointer;
     font-family: inherit;
   }
@@ -393,91 +395,10 @@
     background: var(--cyan-dim);
   }
   .dir.ccw {
-    color: var(--purple); /* 逆时针：紫（与频谱负频柱同色） */
+    color: var(--purple);
   }
   .dir.ccw:hover {
     border-color: rgba(167, 139, 250, 0.6);
     background: var(--purple-dim);
-  }
-  /* 相位组：滑块 + 步进（窄屏独占一行） */
-  .phase {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex: 1;
-    min-width: 0;
-  }
-  .phase input[type='range'] {
-    flex: 1;
-    min-width: 30px;
-  }
-  @media (max-width: 640px), (pointer: coarse) {
-    .phase {
-      flex-basis: 100%;
-    }
-  }
-  select {
-    background: #121829;
-    color: var(--text);
-    border: 1px solid var(--line);
-    border-radius: var(--r-sm);
-    font-size: var(--fs-xs);
-    padding: 3px 4px;
-    height: 24px;
-    font-family: inherit;
-    cursor: pointer;
-    outline: none;
-  }
-  select:hover {
-    border-color: rgba(79, 209, 197, 0.45);
-  }
-  .toggle {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    cursor: pointer;
-    user-select: none;
-  }
-  .reset {
-    appearance: none;
-    background: transparent;
-    border: none;
-    padding: 0 4px;
-    min-height: 24px;
-    font-size: var(--fs-xs);
-    color: var(--muted-2);
-    border-radius: var(--r-sm);
-    cursor: pointer;
-    font-family: inherit;
-    flex: 0 0 auto;
-  }
-  .reset:hover {
-    color: var(--gold);
-    background: var(--gold-dim);
-    box-shadow: none;
-  }
-  /* 触屏：加大步进按钮热区到 32px */
-  @media (pointer: coarse), (max-width: 640px) {
-    .sb {
-      width: 32px;
-      height: 32px;
-      font-size: var(--fs-lg);
-    }
-    .val {
-      width: 40px;
-      font-size: var(--fs-md);
-    }
-    .num-edit {
-      width: 56px;
-      height: 32px;
-    }
-    .dir {
-      width: 32px;
-      height: 32px;
-    }
-    select {
-      height: 32px;
-      font-size: var(--fs-sm);
-    }
   }
 </style>

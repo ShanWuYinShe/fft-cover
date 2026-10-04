@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import Stage from './lib/components/Stage.svelte';
-  import ArmCard from './lib/components/ArmCard.svelte';
+  import ArmPanel from './lib/components/ArmPanel.svelte';
   import LevelPicker from './lib/components/LevelPicker.svelte';
   import ScorePanel from './lib/components/ScorePanel.svelte';
   import ResultOverlay from './lib/components/ResultOverlay.svelte';
@@ -21,9 +21,6 @@
   let showAchv = $state(false);
   /** 移动端底部标签：关卡 / 指针 / 成绩（桌面端忽略，全部 section 同屏显示） */
   let mobileTab: 'levels' | 'arms' | 'score' = $state('levels');
-  /** 移动端：是否展开未启用的指针卡（默认折叠，减少滚动） */
-  let showAllArms = $state(false);
-  const offArms = $derived(engine.arms.filter((a) => !a.on).length);
   /** PWA：有新版本等待接管（main.ts 在 SW 进入 waiting 时派发 pwa-update） */
   let updateReady = $state(false);
   onMount(() => {
@@ -128,7 +125,7 @@
   <p class="sub">旋转指针 · 合成曲线 · 收集目标点</p>
 </header>
 
-<main>
+<main data-tab={mobileTab}>
   <section class="stage-wrap">
     <div class="canvas-box">
       <Stage />
@@ -224,80 +221,76 @@
     </div>
   </section>
 
-  <aside class="panel" data-tab={mobileTab}>
-    <LevelPicker />
-    <ScorePanel />
-    <section>
-      <h2>
-        指针
-        <span class="muted"
-          >（本关上限 {engine.level?.armLimit ?? 10} 根；⟲ 切换旋转方向，点击数值精确输入）</span
-        >
-      </h2>
-      <div class="tools-row">
-        <button
-          title="撤销上一次调参（Ctrl/Cmd+Z）"
-          disabled={engine.armUndoCount === 0}
-          onclick={() => engine.undoArms()}
-        >
-          ↶ 撤销
-        </button>
-        <button
-          title="重做（Ctrl/Cmd+Shift+Z）"
-          disabled={engine.armRedoCount === 0}
-          onclick={() => engine.redoArms()}
-        >
-          ↷ 重做
-        </button>
-        <button
-          title="在频谱仪上叠加目标曲线的真实频谱（教学用）"
-          class:gold={engine.spectrumCompare}
-          onclick={() => engine.toggleSpectrumCompare()}
-        >
-          🔍 频谱对比
-        </button>
-        <button title="随机化已启用指针的半径与相位" onclick={() => engine.randomizeArms()}>
-          🎲 随机参数
-        </button>
-        <button title="全部指针清零关闭" onclick={() => engine.clearArms()}>⭯ 清零</button>
-        <button title="全部指针复位到默认参数" onclick={() => engine.resetAllArms()}>↺ 复位</button>
-        {#if engine.hasSavedArms()}
+  <div class="sides">
+    <aside class="side side-left">
+      <LevelPicker />
+      <ScorePanel />
+    </aside>
+
+    <aside class="side side-right">
+      <section class="sec-arms">
+        <h2>
+          指针
+          <span class="muted">（本关最多 {engine.level?.armLimit ?? 10} 根）</span>
+        </h2>
+        <div class="tools-row">
           <button
-            title="载入上届解法并立即旋转（回放最佳参数的实际效果）"
-            onclick={() => {
-              engine.loadSavedArms();
-              engine.resetRun();
-              engine.startRun();
-            }}
+            title="撤销上一次调参（Ctrl/Cmd+Z）"
+            disabled={engine.armUndoCount === 0}
+            onclick={() => engine.undoArms()}
           >
-            ▶ 回放解法
+            ↶ 撤销
           </button>
+          <button
+            title="重做（Ctrl/Cmd+Shift+Z）"
+            disabled={engine.armRedoCount === 0}
+            onclick={() => engine.redoArms()}
+          >
+            ↷ 重做
+          </button>
+          <button
+            title="在频谱仪上叠加目标曲线的真实频谱（教学用）"
+            class:gold={engine.spectrumCompare}
+            onclick={() => engine.toggleSpectrumCompare()}
+          >
+            🔍 频谱对比
+          </button>
+          <button title="随机化已启用指针的半径与相位" onclick={() => engine.randomizeArms()}>
+            🎲 随机参数
+          </button>
+          <button title="全部指针清零关闭" onclick={() => engine.clearArms()}>⭯ 清零</button>
+          <button title="全部指针复位到默认参数" onclick={() => engine.resetAllArms()}
+            >↺ 复位</button
+          >
+          {#if engine.hasSavedArms()}
+            <button
+              title="载入上届解法并立即旋转（回放最佳参数的实际效果）"
+              onclick={() => {
+                engine.loadSavedArms();
+                engine.resetRun();
+                engine.startRun();
+              }}
+            >
+              ▶ 回放解法
+            </button>
+          {/if}
+        </div>
+        {#if engine.autoSolve}
+          <p class="fitting-tip">🪄 自动拟合中——直接调整任意指针即可接管它；点击画布可打断</p>
         {/if}
-      </div>
-      {#if engine.autoSolve}
-        <p class="fitting-tip">🪄 自动拟合中——直接调整任意指针即可接管它；点击画布可打断</p>
-      {/if}
-      <div id="arms-grid" class:folded={!showAllArms}>
-        {#each engine.arms as arm, i (i)}
-          <ArmCard {arm} index={i} />
-        {/each}
-      </div>
-      {#if offArms > 0}
-        <button type="button" class="arm-fold" onclick={() => (showAllArms = !showAllArms)}>
-          {showAllArms ? '收起未启用指针' : '＋ 还有 ' + offArms + ' 根指针未启用'}
-        </button>
-      {/if}
-    </section>
-    <section class="tips">
-      <p class="kb-only">
-        快捷键：<kbd>空格</kbd> 开始/暂停 · <kbd>S</kbd> 停止结算 · <kbd>R</kbd> 重置
-      </p>
-      <p>
-        原理：指针尖端位置 = Σ rₖ·e<sup>i(ωₖt+φₖ)</sup
-        >。你调的每一根指针，都是目标曲线傅立叶展开中的一项——旋转玩法的背后就是傅立叶变换。
-      </p>
-    </section>
-  </aside>
+        <ArmPanel />
+      </section>
+      <section class="tips sec-tips">
+        <p class="kb-only">
+          快捷键：<kbd>空格</kbd> 开始/暂停 · <kbd>S</kbd> 停止结算 · <kbd>R</kbd> 重置
+        </p>
+        <p>
+          原理：指针尖端位置 = Σ rₖ·e<sup>i(ωₖt+φₖ)</sup
+          >。你调的每一根指针，都是目标曲线傅立叶展开中的一项——旋转玩法的背后就是傅立叶变换。
+        </p>
+      </section>
+    </aside>
+  </div>
 </main>
 
 <!-- 移动端底部标签栏（桌面隐藏）：画布固定在屏内，面板按需切换 -->

@@ -93,23 +93,45 @@ header .sub {
 
 /* ---------- 主布局 ---------- */
 main {
-  display: flex;
-  gap: 22px;
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr) 348px;
   justify-content: center;
-  align-items: flex-start;
-  padding: 14px 20px 48px;
-  flex-wrap: wrap;
+  align-items: start;
+  gap: 14px;
+  padding: 14px 20px 40px;
+}
+
+/* 侧栏容器：桌面 display:contents（两个 aside 直接参与 main 的三栏 grid），
+   移动端成为唯一的滚动容器 */
+.sides {
+  display: contents;
+}
+
+/* 三栏定位：DOM 顺序是 画布 → 侧栏，需显式排到中/左/右 */
+.stage-wrap {
+  grid-column: 2;
+  grid-row: 1;
+}
+.side-left {
+  grid-column: 1;
+  grid-row: 1;
+}
+.side-right {
+  grid-column: 3;
+  grid-row: 1;
 }
 
 .stage-wrap {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  min-width: 0;
 }
 
 .canvas-box {
   position: relative;
-  width: min(92vw, 640px);
+  width: min(100%, 640px);
+  margin: 0 auto;
 }
 
 canvas {
@@ -246,16 +268,15 @@ button:disabled {
   flex-wrap: wrap;
 }
 
-/* ---------- 右侧面板 ---------- */
-.panel {
-  width: 468px;
-  max-width: 94vw;
+/* ---------- 侧栏 ---------- */
+.side {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 0;
 }
 
-.panel section {
+.side section {
   position: relative;
   background: linear-gradient(170deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.018));
   border: 1px solid var(--line);
@@ -264,7 +285,7 @@ button:disabled {
   box-shadow: var(--sh-1);
 }
 
-.panel h2 {
+.side h2 {
   display: flex;
   align-items: baseline;
   gap: 8px;
@@ -277,13 +298,13 @@ button:disabled {
   font-weight: 600;
 }
 
-.panel h2 > .muted {
+.side h2 > .muted {
   flex: 1 1 140px;
   min-width: 0;
   white-space: normal;
 }
 
-.panel h2::before {
+.side h2::before {
   content: '';
   position: absolute;
   left: 15px;
@@ -294,17 +315,17 @@ button:disabled {
 }
 
 /* 分区强调色：关卡=青、成绩=金、指针=紫——一眼区分面板职责 */
-.panel section:nth-of-type(1) h2::before {
+.side-left > section:nth-of-type(1) h2::before {
   background: linear-gradient(180deg, #7ff0e2, var(--cyan));
 }
-.panel section:nth-of-type(2) h2::before {
+.side-left > section:nth-of-type(2) h2::before {
   background: linear-gradient(180deg, #ffe9a8, var(--gold));
 }
-.panel section:nth-of-type(3) h2::before {
+.side-right > section.sec-arms h2::before {
   background: linear-gradient(180deg, #c4b5fd, var(--purple));
 }
 
-.panel h2 .muted {
+.side h2 .muted {
   letter-spacing: 0;
   text-transform: none;
   font-weight: 400;
@@ -351,13 +372,6 @@ button:disabled {
   border: 1px solid rgba(167, 139, 250, 0.35);
   font-size: var(--fs-xs);
   color: var(--purple);
-}
-
-/* 指针卡单列：每张卡宽度充裕，滑块与步进器都舒展 */
-#arms-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 7px;
 }
 
 /* ---------- 滑块 ---------- */
@@ -572,13 +586,24 @@ input[type='checkbox'] {
 }
 
 /* ---------- 响应式 ---------- */
-@media (max-width: 1080px) {
+/* 中屏（两栏）：画布 + 右侧堆叠面板（面板独立滚动） */
+@media (max-width: 1180px) {
   main {
-    flex-direction: column;
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    justify-content: center;
   }
-  .panel {
-    width: min(92vw, 640px);
+  .stage-wrap {
+    grid-column: 1;
+  }
+  .sides {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    max-height: calc(100dvh - 110px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -610,11 +635,7 @@ input[type='checkbox'] {
     font-size: 21px;
     letter-spacing: 5px;
   }
-  #arms-grid {
-    grid-template-columns: 1fr;
-  }
-  .canvas-box,
-  .panel {
+  .canvas-box {
     width: 94vw;
   }
   /* 操作栏吸底：滚动调参时也能随时开始/暂停/重置 */
@@ -696,7 +717,7 @@ input[type='checkbox'] {
   .run-row {
     position: static; /* 不再吸底：整页已固定，按钮就在画布下 */
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     padding: 0;
     margin: 0;
     gap: 6px;
@@ -716,32 +737,31 @@ input[type='checkbox'] {
     flex: 0 1 auto;
   }
 
-  /* 面板：占满剩余高度，内部滚动 */
-  .panel {
+  /* 侧栏容器：占满剩余高度，内部滚动（两个 aside 前后排列） */
+  .sides {
+    display: flex;
+    flex-direction: column;
     flex: 1 1 auto;
     width: 100%;
-    max-width: none;
     min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 4px;
     gap: 8px;
   }
+  .side {
+    gap: 8px;
+  }
 
   /* 标签切换：只显示当前 Tab 对应的 section */
-  .panel > section {
+  main[data-tab] .sides section {
     display: none;
   }
-  .panel[data-tab='levels'] > section:nth-of-type(1),
-  .panel[data-tab='arms'] > section:nth-of-type(3),
-  .panel[data-tab='score'] > section:nth-of-type(2),
-  .panel[data-tab='score'] > section:nth-of-type(4) {
+  main[data-tab='levels'] .sides .side-left > section:nth-of-type(1),
+  main[data-tab='score'] .sides .side-left > section:nth-of-type(2),
+  main[data-tab='arms'] .sides section.sec-arms,
+  main[data-tab='score'] .sides section.sec-tips {
     display: block;
-  }
-
-  /* 指针卡：紧凑但仍保持单列可读 */
-  #arms-grid {
-    gap: 6px;
   }
 
   /* 底部标签栏：固定，大触摸目标 */
@@ -808,34 +828,6 @@ input[type='checkbox'] {
   }
 }
 
-/* 指针卡折叠开关：桌面隐藏（桌面空间足够，全部展示） */
-.arm-fold {
-  display: none;
-}
-
-@media (max-width: 640px) {
-  /* 移动端默认折叠未启用的指针卡：调参区首屏只需展示在用的指针 */
-  #arms-grid.folded .arm.off {
-    display: none;
-  }
-  .arm-fold {
-    display: block;
-    width: 100%;
-    margin-top: 6px;
-    padding: 10px;
-    min-height: 40px;
-    font-size: var(--fs-sm);
-    color: var(--muted);
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px dashed var(--line);
-    border-radius: var(--r-md);
-  }
-  .arm-fold:hover:not(:disabled) {
-    color: var(--cyan);
-    border-color: rgba(79, 209, 197, 0.45);
-  }
-}
-
 /* ============================================================
  * 手机横屏：复用左右布局（画布在左、面板在右），画布按高度约束
  * ============================================================ */
@@ -885,18 +877,20 @@ input[type='checkbox'] {
     min-height: 38px;
   }
 
-  .panel {
+  .sides {
+    display: flex;
+    flex-direction: column;
     flex: 1 1 0;
     width: 0;
     min-width: 0;
-    max-width: none;
     min-height: 0;
     overflow-y: auto;
     padding-bottom: 4px;
+    gap: 10px;
   }
 
   /* 横屏空间允许，全部 section 同屏显示（不启用 Tab 抽屉） */
-  .panel > section {
+  main[data-tab] .sides section {
     display: block;
   }
 
@@ -910,14 +904,6 @@ input[type='checkbox'] {
 
   body {
     padding-bottom: 0;
-  }
-
-  #arms-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  #arms-grid.folded .arm.off {
-    display: none;
   }
 }
 
