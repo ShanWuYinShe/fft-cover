@@ -19,6 +19,9 @@
   let showAchv = $state(false);
   /** 移动端底部标签：关卡 / 指针 / 成绩（桌面端忽略，全部 section 同屏显示） */
   let mobileTab: 'levels' | 'arms' | 'score' = $state('levels');
+  /** 移动端：是否展开未启用的指针卡（默认折叠，减少滚动） */
+  let showAllArms = $state(false);
+  const offArms = $derived(engine.arms.filter((a) => !a.on).length);
   /** PWA：有新版本等待接管（main.ts 在 SW 进入 waiting 时派发 pwa-update） */
   let updateReady = $state(false);
   onMount(() => {
@@ -213,11 +216,16 @@
       {#if engine.autoSolve}
         <p class="fitting-tip">🪄 自动拟合中——直接调整任意指针即可接管它；点击画布可打断</p>
       {/if}
-      <div id="arms-grid">
+      <div id="arms-grid" class:folded={!showAllArms}>
         {#each engine.arms as arm, i (i)}
           <ArmCard {arm} index={i} />
         {/each}
       </div>
+      {#if offArms > 0}
+        <button type="button" class="arm-fold" onclick={() => (showAllArms = !showAllArms)}>
+          {showAllArms ? '收起未启用指针' : '＋ 还有 ' + offArms + ' 根指针未启用'}
+        </button>
+      {/if}
     </section>
     <section class="tips">
       <p class="kb-only">
@@ -251,9 +259,9 @@
     <div class="tut-box">
       <h2>怎么玩？</h2>
       <ol>
-        <li>右侧启用指针并拖动滑块——<b>金色虚线</b>是目标曲线，把你的<b>紫色轨迹</b>贴上去</li>
+        <li>在指针面板启用指针并调参——<b>金色虚线</b>是目标曲线，让<b>紫色轨迹</b>贴上去</li>
         <li>点「▶ 开始旋转」，指针尖端每扫过一个点就得分，连收有连击加成</li>
-        <li>跑完结算星级；卡关就开「🔍 频谱对比」看目标的真实傅立叶系数</li>
+        <li>跑完结算星级；卡关就开「频谱对比」看目标的真实傅立叶系数</li>
       </ol>
       <button
         class="primary"
