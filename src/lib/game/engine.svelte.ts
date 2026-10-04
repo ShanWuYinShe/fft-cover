@@ -6,7 +6,9 @@ import {
   BEST_SCORE_KEY,
   CLEAR_KEY,
   COMBO_WINDOW,
+  FAIL_KEY,
   FLAGS_KEY,
+  PERFECT_KEY,
   RUN_DUR,
   SOUND_KEY,
   CIRCLED,
@@ -73,6 +75,22 @@ function loadSound(): boolean {
     return localStorage.getItem(SOUND_KEY) !== '0';
   } catch {
     return true;
+  }
+}
+
+function loadPerfect(): Record<string, true> {
+  try {
+    return JSON.parse(localStorage.getItem(PERFECT_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
+function loadFails(): Record<string, number> {
+  try {
+    return JSON.parse(localStorage.getItem(FAIL_KEY) ?? '{}');
+  } catch {
+    return {};
   }
 }
 
@@ -163,6 +181,12 @@ export class GameEngine {
   levelSwitchAt = 0;
   /** 各关卡历史最快全清用时（秒） */
   bestClears = $state<Record<string, number>>(loadClears());
+  /** 完美全清（100% 收集）过的关卡——三星之上的顶端追求 */
+  perfectLevels = $state<Record<string, true>>(loadPerfect());
+  /** 各关连续 0 星次数（卡关提示的渐进解锁依据） */
+  failCounts = $state<Record<string, number>>(loadFails());
+  /** 本局是否首次达成完美全清（结算演出用） */
+  newPerfect = $state(false);
   /** 已解锁成就（id → 解锁时间戳） */
   achievements = $state<Record<string, number>>(loadAchv());
   /** 行为标记（"用过"类成就的数据源） */
@@ -395,6 +419,36 @@ export class GameEngine {
   }
 
   /** 本关历史最快全清用时（未全清过返回 null） */
+  /** 当前关是否已达成完美全清 */
+  get isPerfect(): boolean {
+    return !!this.level && !!this.perfectLevels[this.level.id];
+  }
+
+  /**
+   * 是否解锁"精确参数提示"：同一关连续 2 次 0 星后浮现。
+   * 入门容易——但提示是主动求助出来的，不破坏自己发现的乐趣。
+   */
+  get hintUnlocked(): boolean {
+    if (!this.level) return false;
+    return (this.failCounts[this.level.id] ?? 0) >= 2;
+  }
+
+  /** 本关精确分解参数文本（卡关求助用，如「① 112 / 4×顺 / 0°」） */
+  exactSolutionText(): string {
+    if (!this.level) return '';
+    const sol = solveFromSpectrum(this.level.spectrum, this.level.armLimit);
+    return sol
+      .map((a, i) => (a.on ? { a, i } : null))
+      .filter((x): x is { a: Arm; i: number } => x !== null)
+      .map(({ a, i }) => {
+        const raw = Math.round((a.phase * 180) / Math.PI) % 360;
+        const deg = raw < 0 ? raw + 360 : raw;
+        const dir = a.freq < 0 ? '逆' : '顺';
+        return CIRCLED[i] + ' ' + a.r + ' / ' + Math.abs(a.freq) + '×' + dir + ' / ' + deg + '°';
+      })
+      .join('　');
+  }
+
   get bestClear(): number | null {
     return this.level ? (this.bestClears[this.level.id] ?? null) : null;
   }
@@ -419,6 +473,7 @@ export class GameEngine {
       bestClears: this.bestClears,
       flags: this.flags,
       levelCount: LEVEL_DEFS.length,
+      perfect: this.perfectLevels,
     };
     const now = Date.now();
     for (const id of evalAchievements(ctx)) {
@@ -556,6 +611,29 @@ export class GameEngine {
     const ratio = this.total ? this.collectedCount / this.total : 0;
     const st = starsFor(ratio);
     this.newRecord = false;
+    // 完美全清（100%）：三星之上的顶端追求，首次达成给特殊演出
+    this.newPerfect = false;
+    if (this.total > 0 && this.collectedCount === this.total && !this.perfectLevels[id]) {
+      this.perfectLevels = { ...this.perfectLevels, [id]: true };
+      this.newPerfect = true;
+      try {
+        localStorage.setItem(PERFECT_KEY, JSON.stringify(this.perfectLevels));
+      } catch {
+        /* 存储不可用则忽略 */
+      }
+    }
+    // 卡关计数：0 星累加，拿到星即清零（渐进式求助提示的依据）
+    const nextFails =
+      st === 0
+        ? { ...this.failCounts, [id]: (this.failCounts[id] ?? 0) + 1 }
+        : { ...this.failCounts };
+    if (st > 0) delete nextFails[id];
+    this.failCounts = nextFails;
+    try {
+      localStorage.setItem(FAIL_KEY, JSON.stringify(this.failCounts));
+    } catch {
+      /* 存储不可用则忽略 */
+    }
     if (st > (this.bestStars[id] ?? 0)) {
       this.bestStars = { ...this.bestStars, [id]: st };
       try {

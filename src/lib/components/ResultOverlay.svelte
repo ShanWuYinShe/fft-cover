@@ -140,6 +140,9 @@
   const best = $derived(engine.level ? (engine.bestStars[engine.level.id] ?? 0) : 0);
   const fit = $derived(engine.level ? fitScore(engine.level.spectrum, engine.arms) : 0);
 
+  /** 是否展开"精确参数提示"（卡关 2 次后可用，主动点击才显示） */
+  let showHint = $state(false);
+
   /** 得分计数动画：结算时从 0 递增到最终得分（游戏化反馈） */
   let shownScore = $state(0);
   $effect(() => {
@@ -193,6 +196,14 @@
       <div class="line">沙盒探索结束：收集 {got} / {n} 点 · 得分 {engine.score}</div>
       <div class="best">沙盒成绩不计入记录——挑战模式见真章！</div>
     {:else}
+      {#if engine.newPerfect}
+        <div class="perfect-banner">
+          <span class="pf-ico">🏆</span>
+          <span class="pf-txt"><b>完美全清</b><i>100% 收集 · 全部命中</i></span>
+        </div>
+      {:else if engine.isPerfect}
+        <div class="perfect-mini">👑 完美全清</div>
+      {/if}
       <div class="stars" aria-label="{st} 星">
         {#each [0, 1, 2] as i (i)}
           <span class="star" class:on={i < st} style="animation-delay: {0.15 + i * 0.13}s">
@@ -221,7 +232,26 @@
         历史最佳 ★{Math.max(st, best)}
         {#if engine.bestClear !== null}· 最快全清 {engine.bestClear.toFixed(1)}s{/if}　{words[st]}
       </div>
+      {#if engine.hintUnlocked && st < 3}
+        <div class="ask-hint">
+          {#if !showHint}
+            <button type="button" class="hint-btn" onclick={() => (showHint = true)}>
+              💡 卡住了？查看精确参数分解
+            </button>
+          {:else}
+            <p class="hint-txt">
+              <b>精确解：</b>{engine.exactSolutionText()}
+            </p>
+            <p class="hint-note">
+              按这些参数设置指针（方向为「逆」的指针需要切到逆时针），再开始旋转即可全清。
+            </p>
+          {/if}
+        </div>
+      {/if}
       <div class="arms-line">解法：{engine.armsLine()} · 拟合度 {(fit * 100).toFixed(0)}%</div>
+      {#if st === 3 && !engine.newPerfect && !engine.isPerfect && got < n}
+        <div class="to-perfect">再收集 <b>{n - got}</b> 点即可达成 👑 完美全清</div>
+      {/if}
       {#if engine.newlyUnlockedNext}
         <button
           type="button"
@@ -322,6 +352,108 @@
       transform: translateY(0) scale(1);
     }
   }
+
+  /* 距完美提示：三星之后的精通目标 */
+  .to-perfect {
+    width: 100%;
+    padding: 7px 10px;
+    border-radius: var(--r-sm);
+    background: rgba(251, 191, 36, 0.09);
+    border: 1px dashed rgba(251, 191, 36, 0.4);
+    font-size: var(--fs-xs);
+    color: var(--muted);
+  }
+  .to-perfect b {
+    color: var(--gold);
+  }
+  /* 完美全清：三星之上的顶端追求 */
+  .perfect-banner {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: var(--r-md);
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.22), rgba(255, 233, 168, 0.12));
+    border: 1px solid rgba(251, 191, 36, 0.6);
+    box-shadow: 0 0 26px rgba(251, 191, 36, 0.25);
+    animation: perfect-in 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) 0.5s backwards;
+  }
+  @keyframes perfect-in {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  .pf-ico {
+    font-size: 22px;
+    filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.7));
+  }
+  .pf-txt {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+  }
+  .pf-txt b {
+    font-size: var(--fs-md);
+    color: var(--gold);
+    letter-spacing: 2px;
+  }
+  .pf-txt i {
+    font-style: normal;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .perfect-mini {
+    font-size: var(--fs-xs);
+    color: var(--gold);
+    letter-spacing: 2px;
+    opacity: 0.85;
+  }
+  /* 卡关求助：连续 0 星 2 次后才出现，主动点击才展开 */
+  .ask-hint {
+    width: 100%;
+    margin-top: 2px;
+  }
+  .hint-btn {
+    width: 100%;
+    min-height: 34px;
+    font-size: var(--fs-xs);
+    color: var(--cyan);
+    background: var(--cyan-dim);
+    border: 1px dashed rgba(79, 209, 197, 0.45);
+    border-radius: var(--r-md);
+  }
+  .hint-btn:hover:not(:disabled) {
+    border-style: solid;
+    border-color: rgba(79, 209, 197, 0.8);
+  }
+  .hint-txt {
+    margin: 0;
+    padding: 8px 10px;
+    border-radius: var(--r-sm);
+    background: rgba(79, 209, 197, 0.09);
+    border: 1px solid rgba(79, 209, 197, 0.3);
+    font-size: var(--fs-sm);
+    color: var(--text);
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+  }
+  .hint-txt b {
+    color: var(--cyan);
+  }
+  .hint-note {
+    margin: 5px 0 0;
+    font-size: 10px;
+    color: var(--muted-2);
+    text-align: left;
+  }
+
   /* 星级：逐颗弹出 */
   .stars {
     display: flex;

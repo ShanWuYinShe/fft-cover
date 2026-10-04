@@ -22,6 +22,10 @@ export const BEST_SCORE_KEY = 'fft-pointers-best-score-v1';
 export const SOUND_KEY = 'fft-pointers-sound-v1';
 /** 最快全清用时 localStorage 键名 */
 export const CLEAR_KEY = 'fft-pointers-clear-v1';
+/** 完美全清（100% 收集）记录：关卡 id → true */
+export const PERFECT_KEY = 'fft-pointers-perfect-v1';
+/** 各关连续失败次数（0 星），用于"卡关提示"渐进解锁 */
+export const FAIL_KEY = 'fft-pointers-fails-v1';
 /** 已解锁成就 localStorage 键名 */
 export const ACHV_KEY = 'fft-pointers-achv-v1';
 /** 行为标记 localStorage 键名（沙盒/邀请码/拖拽等"用过"类成就） */

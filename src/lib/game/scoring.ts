@@ -113,6 +113,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'first-clear', name: '首次全清', desc: '收集齐任意一关的全部点' },
   { id: 'combo-king', name: '连击之王', desc: '单局得分达到 30000' },
   { id: 'all-three', name: '谐波大师', desc: '全部内置关卡三星' },
+  { id: 'all-perfect', name: '完美主义', desc: '全部内置关卡完美全清（100%）' },
   { id: 'speed-demon', name: '光速谐波', desc: '任意一关 8 秒内全清' },
   { id: 'sandboxer', name: '自由爵士', desc: '体验一次沙盒模式' },
   { id: 'inviter', name: '牵线搭桥', desc: '使用过随机关邀请码' },
@@ -131,6 +132,8 @@ export interface AchievementContext {
   flags: Record<string, boolean>;
   /** 内置关卡总数（总星数满分 = 关卡数 × 3） */
   levelCount: number;
+  /** 完美全清（100% 收集）的关卡集合 */
+  perfect?: Record<string, true>;
 }
 
 /** 按上下文返回全部已达成成就的 id */
@@ -154,5 +157,8 @@ export function evalAchievements(ctx: AchievementContext): string[] {
   if (ctx.flags.composerPlayed) unlocked.push('composer');
   const starSum = stars.reduce((a, b) => a + b, 0);
   if (starSum >= ctx.levelCount * 1.5) unlocked.push('half-stars');
+  // 完美主义：全部内置关卡都达成 100% 全清（顶端追求）
+  const perfectCount = Object.keys(ctx.perfect ?? {}).length;
+  if (perfectCount >= ctx.levelCount) unlocked.push('all-perfect');
   return unlocked;
 }

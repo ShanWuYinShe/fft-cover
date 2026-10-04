@@ -26,6 +26,10 @@
   const totalStars = $derived(
     LEVEL_DEFS.reduce((sum, d) => sum + (engine.bestStars[d.id] ?? 0), 0),
   );
+  /** 已完美全清的关卡数（三星之上的顶端追求进度） */
+  const perfectCount = $derived(
+    LEVEL_DEFS.reduce((n, d) => n + (engine.perfectLevels[d.id] ? 1 : 0), 0),
+  );
 
   // 每日倒计时（30 秒刷新）
   let now = $state(Date.now());
@@ -68,7 +72,12 @@
 </script>
 
 <section>
-  <h2>关卡 <span class="muted">总星数 {totalStars} / {LEVEL_DEFS.length * 3}</span></h2>
+  <h2>
+    关卡
+    <span class="muted"
+      >总星数 {totalStars} / {LEVEL_DEFS.length * 3}{#if perfectCount > 0}&nbsp;· 👑 {perfectCount}{/if}</span
+    >
+  </h2>
   {#if showComposer}
     <ComposerModal onclose={() => (showComposer = false)} />
   {/if}
@@ -83,7 +92,8 @@
         onclick={() => engine.loadLevel(def)}
       >
         <span class="nm"
-          >{def.name}{#if isLocked(i)}<i class="lock">🔒</i>{/if}</span
+          >{def.name}{#if isLocked(i)}<i class="lock">🔒</i
+            >{/if}{#if engine.perfectLevels[def.id]}<i class="pf">👑</i>{/if}</span
         >
         <span class="st">{isLocked(i) ? '' : bestOf(def.id)}</span>
       </button>
@@ -192,6 +202,11 @@
   .lv.locked .nm {
     color: var(--muted-2);
     font-weight: 500;
+  }
+  .lv .pf {
+    font-style: normal;
+    font-size: 9px;
+    margin-left: 1px;
   }
   .lv .lock {
     font-style: normal;
