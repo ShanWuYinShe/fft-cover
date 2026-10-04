@@ -97,9 +97,7 @@
 
 <header>
   <h1>傅立叶指针</h1>
-  <p class="sub">
-    把最多 10 个旋转指针首尾相连——它们的合成就是一条傅立叶级数曲线，让指尖收集尽可能多的点
-  </p>
+  <p class="sub">旋转指针 · 合成曲线 · 收集目标点</p>
 </header>
 
 <main>
@@ -108,7 +106,11 @@
       <Stage />
       <div class="hud">
         <span class="lvl">{engine.level?.name ?? ''}{engine.sandbox ? ' 🧪' : ''}</span>
-        <span class="score">收集 <b>{engine.collectedCount}</b>/{engine.total}</span>
+        <span
+          class="score"
+          style="--progress: {engine.total ? (engine.collectedCount / engine.total) * 100 : 0}%"
+          >收集 <b>{engine.collectedCount}</b>/{engine.total}</span
+        >
       </div>
       {#if engine.phase === 'done' && !engine.resultDismissed}
         <ResultOverlay />

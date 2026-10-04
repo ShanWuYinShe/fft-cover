@@ -140,6 +140,26 @@
   const best = $derived(engine.level ? (engine.bestStars[engine.level.id] ?? 0) : 0);
   const fit = $derived(engine.level ? fitScore(engine.level.spectrum, engine.arms) : 0);
 
+  /** 得分计数动画：结算时从 0 递增到最终得分（游戏化反馈） */
+  let shownScore = $state(0);
+  $effect(() => {
+    const target = engine.score;
+    if (!target || engine.lastRunSandbox) {
+      shownScore = target;
+      return;
+    }
+    let raf = 0;
+    const t0 = performance.now();
+    const dur = 620;
+    const tick = (now: number): void => {
+      const p = Math.min((now - t0) / dur, 1);
+      shownScore = Math.round(target * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  });
+
   /* ---------- 最近成绩趋势（迷你折线） ---------- */
   const trend = $derived(engine.recentHistory(10));
   const chart = $derived.by(() => {
@@ -167,67 +187,80 @@
 </script>
 
 <div class="result">
-  {#if engine.lastRunSandbox}
-    <div class="stars">🧪</div>
-    <div class="line">沙盒探索结束：收集 {got} / {n} 点 · 得分 {engine.score}</div>
-    <div class="best">沙盒成绩不计入记录——挑战模式见真章！</div>
-  {:else}
-    <div class="stars">{'★'.repeat(st)}{'☆'.repeat(3 - st)}</div>
-    <div class="line">
-      收集 {got} / {n} 点（{n ? Math.round((got / n) * 100) : 0}%）· 得分 {engine.score}{engine.newRecord
-        ? ' 🆕新纪录'
-        : ''}
-    </div>
-    <div class="line">
-      {#if engine.lastClearT !== null}
-        ⚡ 全清用时 <b>{engine.lastClearT.toFixed(1)}s</b>{engine.newClearRecord
-          ? ' 🆕最快纪录'
-          : ''}
-      {/if}
-    </div>
-    <div class="best">
-      历史最佳 ★{Math.max(st, best)}
-      {#if engine.bestClear !== null}· 最快全清 {engine.bestClear.toFixed(1)}s{/if}　{words[st]}
-    </div>
-    <div class="arms-line">解法：{engine.armsLine()} · 拟合度 {(fit * 100).toFixed(0)}%</div>
-    {#if chart}
-      <div class="trend">
-        <span class="tlabel">最近 {trend.length} 局</span>
-        <svg
-          viewBox="0 0 {chart.W} {chart.H}"
-          width={chart.W}
-          height={chart.H}
-          role="img"
-          aria-label="最近成绩趋势"
-        >
-          <polyline
-            points={chart.path}
-            fill="none"
-            stroke="rgba(79,209,197,.65)"
-            stroke-width="1.6"
-          />
-          {#each chart.pts.slice(0, -1) as p (p.x)}
-            <circle cx={p.x} cy={p.y} r="1.8" fill="rgba(139,147,167,.75)" />
-          {/each}
-          <circle cx={chart.last.x} cy={chart.last.y} r="3.4" fill="#fbbf24" />
-        </svg>
-        <span class="tval">本局 {chart.last.e.score}</span>
+  <div class="card">
+    {#if engine.lastRunSandbox}
+      <div class="stars">🧪</div>
+      <div class="line">沙盒探索结束：收集 {got} / {n} 点 · 得分 {engine.score}</div>
+      <div class="best">沙盒成绩不计入记录——挑战模式见真章！</div>
+    {:else}
+      <div class="stars" aria-label="{st} 星">
+        {#each [0, 1, 2] as i (i)}
+          <span class="star" class:on={i < st} style="animation-delay: {0.15 + i * 0.13}s">
+            {i < st ? '★' : '☆'}
+          </span>
+        {/each}
       </div>
+      <div class="score-big">
+        <b>{shownScore}</b>
+        <span class="score-cap">
+          得分{#if engine.newRecord}<i class="rec">新纪录</i>{/if}
+        </span>
+      </div>
+      <div class="stat-row">
+        <span>收集 <b>{got}</b>/{n}（{n ? Math.round((got / n) * 100) : 0}%）</span>
+        {#if engine.lastClearT !== null}
+          <span class="dot">·</span>
+          <span
+            >全清 <b>{engine.lastClearT.toFixed(1)}s</b>{#if engine.newClearRecord}<i class="rec"
+                >最快</i
+              >{/if}</span
+          >
+        {/if}
+      </div>
+      <div class="best">
+        历史最佳 ★{Math.max(st, best)}
+        {#if engine.bestClear !== null}· 最快全清 {engine.bestClear.toFixed(1)}s{/if}　{words[st]}
+      </div>
+      <div class="arms-line">解法：{engine.armsLine()} · 拟合度 {(fit * 100).toFixed(0)}%</div>
+      {#if chart}
+        <div class="trend">
+          <span class="tlabel">最近 {trend.length} 局</span>
+          <svg
+            viewBox="0 0 {chart.W} {chart.H}"
+            width={chart.W}
+            height={chart.H}
+            role="img"
+            aria-label="最近成绩趋势"
+          >
+            <polyline
+              points={chart.path}
+              fill="none"
+              stroke="rgba(79,209,197,.65)"
+              stroke-width="1.6"
+            />
+            {#each chart.pts.slice(0, -1) as p (p.x)}
+              <circle cx={p.x} cy={p.y} r="1.8" fill="rgba(139,147,167,.75)" />
+            {/each}
+            <circle cx={chart.last.x} cy={chart.last.y} r="3.4" fill="#fbbf24" />
+          </svg>
+          <span class="tval">本局 {chart.last.e.score}</span>
+        </div>
+      {/if}
     {/if}
-  {/if}
-  <div class="btns">
-    <button class="primary" onclick={() => engine.resetRun()}>⟲ 再来一次</button>
-    <button onclick={() => (engine.resultDismissed = true)}>👁 查看轨迹</button>
-    <button onclick={copyReport}>
-      {shareState === 'ok'
-        ? '✓ 已分享'
-        : copyState === 'ok'
-          ? '✓ 已复制'
-          : copyState === 'fail'
-            ? '⚠ 复制失败'
-            : '📤 分享战报'}
-    </button>
-    <button onclick={saveImage}>{imgState === 'ok' ? '✓ 已保存' : '📸 保存成绩图'}</button>
+    <div class="btns">
+      <button class="primary" onclick={() => engine.resetRun()}>⟲ 再来一次</button>
+      <button onclick={() => (engine.resultDismissed = true)}>👁 查看轨迹</button>
+      <button onclick={copyReport}>
+        {shareState === 'ok'
+          ? '✓ 已分享'
+          : copyState === 'ok'
+            ? '✓ 已复制'
+            : copyState === 'fail'
+              ? '⚠ 复制失败'
+              : '📤 分享战报'}
+      </button>
+      <button onclick={saveImage}>{imgState === 'ok' ? '✓ 已保存' : '📸 保存成绩图'}</button>
+    </div>
   </div>
 </div>
 
@@ -235,16 +268,116 @@
   .result {
     position: absolute;
     inset: 0;
-    animation: pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 10px;
-    background: rgba(8, 10, 20, 0.72);
-    backdrop-filter: blur(3px);
+    padding: 12px;
+    background: radial-gradient(circle at 50% 45%, rgba(10, 14, 28, 0.62), rgba(5, 7, 14, 0.9));
+    backdrop-filter: blur(5px);
     border-radius: 14px;
+    animation: fade-in 0.3s ease-out;
+    z-index: 5;
+  }
+  /* 结果面板：游戏结算卡（玻璃拟态 + 上浮入场） */
+  .card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    width: min(100%, 396px);
+    max-height: 100%;
+    overflow-y: auto;
+    padding: 18px 20px 16px;
+    border-radius: 20px;
+    background: linear-gradient(168deg, rgba(24, 30, 56, 0.96), rgba(12, 16, 32, 0.98));
+    border: 1px solid rgba(130, 150, 210, 0.22);
+    box-shadow:
+      0 26px 70px rgba(0, 0, 0, 0.62),
+      0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+      0 1px 0 rgba(255, 255, 255, 0.07) inset;
+    animation: card-in 0.42s cubic-bezier(0.34, 1.4, 0.64, 1);
     text-align: center;
+  }
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.94);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  /* 星级：逐颗弹出 */
+  .stars {
+    display: flex;
+    gap: 6px;
+    font-size: 34px;
+    line-height: 1;
+  }
+  .stars .star {
+    color: rgba(160, 172, 200, 0.35);
+    animation: star-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  }
+  .stars .star.on {
+    color: var(--gold);
+    text-shadow:
+      0 0 18px rgba(251, 191, 36, 0.7),
+      0 0 42px rgba(251, 191, 36, 0.35);
+  }
+  /* 超大得分数字 */
+  .score-big {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    margin: 2px 0 0;
+  }
+  .score-big b {
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(180deg, #ffe9a8, var(--gold) 65%, #e79a12);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 4px 18px rgba(251, 191, 36, 0.35));
+  }
+  .score-cap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--fs-xs);
+    letter-spacing: 3px;
+    color: var(--muted);
+  }
+  .rec {
+    font-style: normal;
+    font-size: 10px;
+    letter-spacing: 0;
+    padding: 1px 6px;
+    border-radius: 999px;
+    color: #0a0d18;
+    background: linear-gradient(135deg, #ffe9a8, var(--gold));
+    font-weight: 700;
+  }
+  /* 次要统计行 */
+  .stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-size: var(--fs-md);
+    color: var(--muted);
+  }
+  .stat-row b {
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-row .dot {
+    color: var(--muted-2);
   }
   .stars {
     font-size: 42px;
@@ -280,9 +413,6 @@
     font-size: 15px;
     color: var(--text);
   }
-  .line b {
-    color: var(--gold);
-  }
   .arms-line {
     font-size: 12px;
     color: var(--muted);
@@ -293,8 +423,21 @@
     color: var(--muted);
   }
   .btns {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
+    width: 100%;
+    margin-top: 4px;
+  }
+  .btns button {
+    width: 100%;
+    font-size: var(--fs-sm);
+    min-height: 38px;
+    padding: 8px 10px;
+  }
+  /* 主按钮（再来一次）横跨整行，突出主操作 */
+  .btns button:first-child {
+    grid-column: 1 / -1;
   }
   .trend {
     display: flex;
@@ -319,5 +462,7 @@
   }
   .trend svg {
     display: block;
+    height: 34px;
+    width: auto;
   }
 </style>
