@@ -380,8 +380,8 @@
     // ghost 按"参数签名"缓存重建，参数未变时零成本复用
     if (engine.phase === 'edit') {
       const curve = engine.level.curve;
-      ctx.strokeStyle = 'rgba(251,191,36,.32)';
-      ctx.lineWidth = 1.4;
+      ctx.strokeStyle = 'rgba(251,191,36,.55)';
+      ctx.lineWidth = 1.8;
       ctx.setLineDash([3, 5]);
       ctx.beginPath();
       for (let i = 0; i < curve.length; i++) {
@@ -415,10 +415,13 @@
         }
         previewHits = hits;
       }
-      ctx.strokeStyle = 'rgba(167,139,250,.4)';
-      ctx.lineWidth = 1.6;
-      ctx.setLineDash([5, 6]);
+      ctx.strokeStyle = 'rgba(196,181,253,.95)';
+      ctx.lineWidth = 2.2;
+      ctx.setLineDash([]); // 实线：与目标的金色虚线强区分
+      ctx.shadowColor = 'rgba(167,139,250,.6)';
+      ctx.shadowBlur = 6;
       ctx.stroke(ghostPathCache);
+      ctx.shadowBlur = 0;
       ctx.setLineDash([]);
     }
 
