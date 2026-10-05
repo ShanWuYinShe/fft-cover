@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import Stage from './lib/components/Stage.svelte';
   import ArmPanel from './lib/components/ArmPanel.svelte';
+  import { readArmsFromHash } from './lib/game/share';
   import LevelPicker from './lib/components/LevelPicker.svelte';
   import ScorePanel from './lib/components/ScorePanel.svelte';
   import ResultOverlay from './lib/components/ResultOverlay.svelte';
@@ -24,6 +25,11 @@
   /** PWA：有新版本等待接管（main.ts 在 SW 进入 waiting 时派发 pwa-update） */
   let updateReady = $state(false);
   onMount(() => {
+    // 好友解法挑战：从 URL hash 载入参数并清除 hash（避免刷新重复提示）
+    const code = readArmsFromHash(location.hash);
+    if (code && engine.applyArmsCode(code)) {
+      history.replaceState(null, '', location.pathname + location.search);
+    }
     const onUpdate = () => (updateReady = true);
     window.addEventListener('pwa-update', onUpdate);
     // 全局按钮点击音（capture：先于组件自身 handler，业界标准 UI juice）
@@ -171,6 +177,17 @@
         </div>
       {/if}
     </div>
+    {#if engine.remoteChallenge}
+      <div class="remote-tip">
+        <span>🎁 <b>好友的解法挑战</b>——参数已载入，点「▶ 开始旋转」试试能不能全清</span>
+        <button
+          type="button"
+          class="rt-close"
+          title="关闭提示"
+          onclick={() => (engine.remoteChallenge = false)}>✕</button
+        >
+      </div>
+    {/if}
     {#if engine.showFirstGuide}
       <div class="first-guide" class:ok={engine.guideRReady}>
         {#if engine.guideRReady}

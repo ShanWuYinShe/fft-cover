@@ -31,6 +31,7 @@ import {
   type RandomDifficulty,
 } from './levels';
 import { tipAt } from './math';
+import { decodeArms } from './share';
 import {
   ACHIEVEMENTS,
   evalAchievements,
@@ -374,6 +375,23 @@ export class GameEngine {
    * 沙盒自动拟合演示：按目标频谱解出精确参数，
    * 并在 2 秒内把指针从当前值平滑过渡过去（傅立叶逐项逼近可视化）。
    */
+  /** 朋友分享来的解法是否已载入（提示条展示用） */
+  remoteChallenge = $state(false);
+
+  /**
+   * 载入好友分享的解法参数。
+   * 返回是否成功；成功时置 remoteChallenge 供 UI 提示。
+   */
+  applyArmsCode(code: string): boolean {
+    const arms = decodeArms(code);
+    if (!arms) return false;
+    this.cancelAutoSolve();
+    this.pushArmHistory(true);
+    this.arms = arms;
+    this.remoteChallenge = true;
+    return true;
+  }
+
   /** 终止自动拟合（用户主动操作 / 切关 / 退出沙盒时调用，防止插值覆盖新状态） */
   cancelAutoSolve(): void {
     this.autoSolve = false;

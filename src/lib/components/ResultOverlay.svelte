@@ -1,5 +1,6 @@
 <script lang="ts">
   import { engine } from '../game/engine.svelte';
+  import { buildShareUrl, encodeArms } from '../game/share';
   import { fitScore, starsFor } from '../game/scoring';
 
   type CopyState = 'idle' | 'ok' | 'fail';
@@ -21,6 +22,29 @@
       return ok;
     } catch {
       return false;
+    }
+  }
+
+  /** 分享解法挑战链接：好友打开即载入这套参数 */
+  async function shareArms(): Promise<void> {
+    const code = encodeArms(engine.arms);
+    if (!code) return;
+    const url = buildShareUrl(location.origin + location.pathname, code);
+    const text =
+      '我在《傅立叶指针》的「' + (engine.level?.name ?? '') + '」调出了这套解法，你能全清吗？';
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: '傅立叶指针 · 解法挑战', text, url });
+        shareState = 'ok';
+        setTimeout(() => (shareState = 'idle'), 1600);
+      } else {
+        await navigator.clipboard.writeText(text + ' ' + url);
+        copyState = 'ok';
+        setTimeout(() => (copyState = 'idle'), 1600);
+      }
+    } catch {
+      copyState = 'fail';
+      setTimeout(() => (copyState = 'idle'), 1600);
     }
   }
 
@@ -317,6 +341,7 @@
               : '📤 分享战报'}
       </button>
       <button onclick={saveImage}>{imgState === 'ok' ? '✓ 已保存' : '📸 保存成绩图'}</button>
+      <button class="wide" onclick={shareArms}>🔗 挑战好友（分享解法）</button>
     </div>
   </div>
 </div>
@@ -684,6 +709,10 @@
     font-size: var(--fs-sm);
     min-height: 38px;
     padding: 8px 10px;
+  }
+  /* 横跨整行的次级按钮（分享解法） */
+  .btns button.wide {
+    grid-column: 1 / -1;
   }
   /* 主按钮（再来一次）横跨整行，突出主操作 */
   .btns button:first-child {
