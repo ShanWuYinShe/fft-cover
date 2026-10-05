@@ -96,7 +96,19 @@
   }
 </script>
 
-<div class="modal">
+<svelte:window
+  onkeydown={(e) => {
+    if (e.key === 'Escape') onclose();
+  }}
+/>
+
+<div
+  class="modal"
+  role="presentation"
+  onclick={(e) => {
+    if (e.target === e.currentTarget) onclose();
+  }}
+>
   <div class="box">
     <h2>
       🏆 成就 <span class="muted">{unlockedCount} / {ACHIEVEMENTS.length}</span>

@@ -215,127 +215,129 @@
 
 <div class="result">
   <div class="card">
-    {#if engine.lastRunSandbox}
-      <div class="stars">🧪</div>
-      <div class="line">沙盒探索结束：收集 {got} / {n} 点 · 得分 {engine.score}</div>
-      <div class="best">沙盒成绩不计入记录——挑战模式见真章！</div>
-    {:else}
-      {#if engine.newExpertClear}
-        <div class="expert-banner">
-          <span class="ex-ico2">💎</span>
-          <span class="ex-txt"><b>专家全清</b><i>无轮廓预览下 100% 收集</i></span>
-        </div>
-      {:else if engine.isExpertClear}
-        <div class="expert-mini">💎 专家全清</div>
-      {/if}
-      {#if engine.newExact}
-        <div class="exact-banner">
-          <span class="ex-ico">🎯</span>
-          <span class="ex-txt"><b>精确解认证</b><i>参数与傅立叶分解完全一致</i></span>
-        </div>
-      {:else if engine.isExact}
-        <div class="exact-mini">🎯 精确解</div>
-      {/if}
-      {#if engine.newPerfect}
-        <div class="perfect-banner">
-          <span class="pf-ico">🏆</span>
-          <span class="pf-txt"><b>完美全清</b><i>100% 收集 · 全部命中</i></span>
-        </div>
-      {:else if engine.isPerfect}
-        <div class="perfect-mini">👑 完美全清</div>
-      {/if}
-      <div class="stars" aria-label="{st} 星">
-        {#each [0, 1, 2] as i (i)}
-          <span class="star" class:on={i < st} style="animation-delay: {0.15 + i * 0.13}s">
-            {i < st ? '★' : '☆'}
-          </span>
-        {/each}
-      </div>
-      <div class="score-big">
-        <b>{shownScore}</b>
-        <span class="score-cap">
-          得分{#if engine.newRecord}<i class="rec">新纪录</i>{/if}
-        </span>
-      </div>
-      <div class="stat-row">
-        <span>收集 <b>{got}</b>/{n}（{n ? Math.round((got / n) * 100) : 0}%）</span>
-        {#if engine.lastClearT !== null}
-          <span class="dot">·</span>
-          <span
-            >全清 <b>{engine.lastClearT.toFixed(1)}s</b>{#if engine.newClearRecord}<i class="rec"
-                >最快</i
-              >{/if}</span
-          >
+    <div class="card-body">
+      {#if engine.lastRunSandbox}
+        <div class="stars">🧪</div>
+        <div class="line">沙盒探索结束：收集 {got} / {n} 点 · 得分 {engine.score}</div>
+        <div class="best">沙盒成绩不计入记录——挑战模式见真章！</div>
+      {:else}
+        {#if engine.newExpertClear}
+          <div class="expert-banner">
+            <span class="ex-ico2">💎</span>
+            <span class="ex-txt"><b>专家全清</b><i>无轮廓预览下 100% 收集</i></span>
+          </div>
+        {:else if engine.isExpertClear}
+          <div class="expert-mini">💎 专家全清</div>
         {/if}
-      </div>
-      <div class="best">
-        历史最佳 ★{Math.max(st, best)}
-        {#if engine.bestClear !== null}· 最快全清 {engine.bestClear.toFixed(1)}s{/if}　{words[st]}
-      </div>
-      {#if engine.hintUnlocked && st < 3}
-        <div class="ask-hint">
-          {#if !showHint}
-            <button type="button" class="hint-btn" onclick={() => (showHint = true)}>
-              💡 卡住了？查看精确参数分解
-            </button>
-          {:else}
-            <p class="hint-txt">
-              <b>精确解：</b>{engine.exactSolutionText()}
-            </p>
-            <p class="hint-note">
-              按这些参数设置指针（方向为「逆」的指针需要切到逆时针），再开始旋转即可全清。
-            </p>
+        {#if engine.newExact}
+          <div class="exact-banner">
+            <span class="ex-ico">🎯</span>
+            <span class="ex-txt"><b>精确解认证</b><i>参数与傅立叶分解完全一致</i></span>
+          </div>
+        {:else if engine.isExact}
+          <div class="exact-mini">🎯 精确解</div>
+        {/if}
+        {#if engine.newPerfect}
+          <div class="perfect-banner">
+            <span class="pf-ico">🏆</span>
+            <span class="pf-txt"><b>完美全清</b><i>100% 收集 · 全部命中</i></span>
+          </div>
+        {:else if engine.isPerfect}
+          <div class="perfect-mini">👑 完美全清</div>
+        {/if}
+        <div class="stars" aria-label="{st} 星">
+          {#each [0, 1, 2] as i (i)}
+            <span class="star" class:on={i < st} style="animation-delay: {0.15 + i * 0.13}s">
+              {i < st ? '★' : '☆'}
+            </span>
+          {/each}
+        </div>
+        <div class="score-big">
+          <b>{shownScore}</b>
+          <span class="score-cap">
+            得分{#if engine.newRecord}<i class="rec">新纪录</i>{/if}
+          </span>
+        </div>
+        <div class="stat-row">
+          <span>收集 <b>{got}</b>/{n}（{n ? Math.round((got / n) * 100) : 0}%）</span>
+          {#if engine.lastClearT !== null}
+            <span class="dot">·</span>
+            <span
+              >全清 <b>{engine.lastClearT.toFixed(1)}s</b>{#if engine.newClearRecord}<i class="rec"
+                  >最快</i
+                >{/if}</span
+            >
           {/if}
         </div>
-      {/if}
-      <div class="arms-line">解法：{engine.armsLine()} · 拟合度 {(fit * 100).toFixed(0)}%</div>
-      {#if st === 3 && !engine.newPerfect && !engine.isPerfect && got < n}
-        <div class="to-perfect">再收集 <b>{n - got}</b> 点即可达成 👑 完美全清</div>
-      {/if}
-      {#if engine.streakJustBumped > 1}
-        <div class="streak-line">
-          🔥 每日挑战连续 <b>{engine.streakJustBumped}</b> 天完成
+        <div class="best">
+          历史最佳 ★{Math.max(st, best)}
+          {#if engine.bestClear !== null}· 最快全清 {engine.bestClear.toFixed(1)}s{/if}　{words[st]}
         </div>
-      {/if}
-      {#if engine.newlyUnlockedNext}
-        <button
-          type="button"
-          class="next-unlock"
-          onclick={() => engine.loadLevel(engine.newlyUnlockedNext!)}
-        >
-          <span class="nu-badge">🔓</span>
-          <span class="nu-txt">
-            <b>下一关已解锁</b>
-            <i>{engine.newlyUnlockedNext.name} → 前往挑战</i>
-          </span>
-          <span class="nu-arrow">→</span>
-        </button>
-      {/if}
-      {#if chart}
-        <div class="trend">
-          <span class="tlabel">最近 {trend.length} 局</span>
-          <svg
-            viewBox="0 0 {chart.W} {chart.H}"
-            width={chart.W}
-            height={chart.H}
-            role="img"
-            aria-label="最近成绩趋势"
+        {#if engine.hintUnlocked && st < 3}
+          <div class="ask-hint">
+            {#if !showHint}
+              <button type="button" class="hint-btn" onclick={() => (showHint = true)}>
+                💡 卡住了？查看精确参数分解
+              </button>
+            {:else}
+              <p class="hint-txt">
+                <b>精确解：</b>{engine.exactSolutionText()}
+              </p>
+              <p class="hint-note">
+                按这些参数设置指针（方向为「逆」的指针需要切到逆时针），再开始旋转即可全清。
+              </p>
+            {/if}
+          </div>
+        {/if}
+        <div class="arms-line">解法：{engine.armsLine()} · 拟合度 {(fit * 100).toFixed(0)}%</div>
+        {#if st === 3 && !engine.newPerfect && !engine.isPerfect && got < n}
+          <div class="to-perfect">再收集 <b>{n - got}</b> 点即可达成 👑 完美全清</div>
+        {/if}
+        {#if engine.streakJustBumped > 1}
+          <div class="streak-line">
+            🔥 每日挑战连续 <b>{engine.streakJustBumped}</b> 天完成
+          </div>
+        {/if}
+        {#if engine.newlyUnlockedNext}
+          <button
+            type="button"
+            class="next-unlock"
+            onclick={() => engine.loadLevel(engine.newlyUnlockedNext!)}
           >
-            <polyline
-              points={chart.path}
-              fill="none"
-              stroke="rgba(79,209,197,.65)"
-              stroke-width="1.6"
-            />
-            {#each chart.pts.slice(0, -1) as p (p.x)}
-              <circle cx={p.x} cy={p.y} r="1.8" fill="rgba(139,147,167,.75)" />
-            {/each}
-            <circle cx={chart.last.x} cy={chart.last.y} r="3.4" fill="#fbbf24" />
-          </svg>
-          <span class="tval">本局 {chart.last.e.score}</span>
-        </div>
+            <span class="nu-badge">🔓</span>
+            <span class="nu-txt">
+              <b>下一关已解锁</b>
+              <i>{engine.newlyUnlockedNext.name} → 前往挑战</i>
+            </span>
+            <span class="nu-arrow">→</span>
+          </button>
+        {/if}
+        {#if chart}
+          <div class="trend">
+            <span class="tlabel">最近 {trend.length} 局</span>
+            <svg
+              viewBox="0 0 {chart.W} {chart.H}"
+              width={chart.W}
+              height={chart.H}
+              role="img"
+              aria-label="最近成绩趋势"
+            >
+              <polyline
+                points={chart.path}
+                fill="none"
+                stroke="rgba(79,209,197,.65)"
+                stroke-width="1.6"
+              />
+              {#each chart.pts.slice(0, -1) as p (p.x)}
+                <circle cx={p.x} cy={p.y} r="1.8" fill="rgba(139,147,167,.75)" />
+              {/each}
+              <circle cx={chart.last.x} cy={chart.last.y} r="3.4" fill="#fbbf24" />
+            </svg>
+            <span class="tval">本局 {chart.last.e.score}</span>
+          </div>
+        {/if}
       {/if}
-    {/if}
+    </div>
     <div class="btns">
       <button class="primary" onclick={() => engine.resetRun()}>⟲ 再来一次</button>
       <button onclick={() => (engine.resultDismissed = true)}>👁 查看轨迹</button>
@@ -372,12 +374,10 @@
   .card {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 7px;
+    align-items: stretch;
     width: min(100%, 396px);
     max-height: 100%;
-    overflow-y: auto;
-    padding: 18px 20px 16px;
+    overflow: hidden;
     border-radius: 20px;
     background: linear-gradient(168deg, rgba(24, 30, 56, 0.96), rgba(12, 16, 32, 0.98));
     border: 1px solid rgba(130, 150, 210, 0.22);
@@ -576,6 +576,48 @@
     text-align: left;
   }
 
+  /* 移动端：结算卡只保留核心信息（认证/星级/分数/收集统计），
+     历史最佳、解法与趋势在统计面板里都有——保证分数与按钮不被滚动截断 */
+  @media (max-width: 640px) {
+    .card-body .best,
+    .card-body .arms-line,
+    .card-body .trend,
+    .card-body .perfect-mini,
+    .card-body .exact-mini {
+      display: none;
+    }
+    .card-body {
+      gap: 4px;
+      padding: 10px 14px 6px;
+    }
+    .btns {
+      gap: 6px;
+      padding: 6px 10px 10px;
+    }
+    .btns button {
+      min-height: 34px;
+      font-size: var(--fs-xs);
+      padding: 5px 6px;
+    }
+    .stars {
+      font-size: 30px;
+    }
+    .score-big b {
+      font-size: 34px;
+    }
+  }
+
+  /* 内容区：独立滚动，保证操作按钮始终可见（游戏结算标准） */
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px 18px 10px;
+    text-align: center;
+  }
   /* 星级：逐颗弹出 */
   .stars {
     display: flex;
@@ -733,7 +775,8 @@
     grid-template-columns: 1fr 1fr;
     gap: 8px;
     width: 100%;
-    margin-top: 4px;
+    padding: 8px 14px 12px;
+    flex: 0 0 auto;
   }
   .btns button {
     width: 100%;
@@ -774,5 +817,33 @@
     display: block;
     height: 34px;
     width: auto;
+  }
+
+  /* 移动端结算压缩：按钮 3 行紧凑 + 内容精简，保证分数与主操作同屏 */
+  @media (max-width: 640px) {
+    .btns {
+      gap: 6px;
+      padding: 6px 10px 10px;
+    }
+    .btns button {
+      min-height: 34px;
+      font-size: var(--fs-xs);
+      padding: 5px 6px;
+    }
+    /* 挑战好友不再横跨：与保存成绩图同行，省一行 */
+    .btns button.wide {
+      grid-column: auto;
+    }
+    .card-body {
+      gap: 4px;
+      padding: 10px 14px 6px;
+    }
+    .stars {
+      font-size: 26px;
+      gap: 4px;
+    }
+    .score-big b {
+      font-size: 30px;
+    }
   }
 </style>

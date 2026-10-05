@@ -311,6 +311,26 @@ export class GameEngine {
 
   constructor() {
     this.loadLevel(LEVEL_DEFS[0]);
+    // 静默恢复成就：存档里已有进度（如从备份导入）也应在打开面板时可见，
+    // 且不弹 toast（首次游玩时逐个解锁的演出保留在 checkAchievements）
+    const ctx = {
+      bestStars: this.bestStars,
+      bestScores: this.bestScores,
+      bestClears: this.bestClears,
+      flags: this.flags,
+      levelCount: LEVEL_DEFS.length,
+      perfect: this.perfectLevels,
+      exact: this.exactLevels,
+      expert: this.expertClears,
+    };
+    for (const id of evalAchievements(ctx)) {
+      if (!this.achievements[id]) this.achievements = { ...this.achievements, [id]: Date.now() };
+    }
+    try {
+      localStorage.setItem(ACHV_KEY, JSON.stringify(this.achievements));
+    } catch {
+      /* 存储不可用则忽略 */
+    }
   }
 
   get total(): number {
