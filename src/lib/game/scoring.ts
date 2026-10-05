@@ -116,6 +116,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'all-perfect', name: '完美主义', desc: '全部内置关卡完美全清（100%）' },
   { id: 'exact-award', name: '精确分解', desc: '全部内置关卡达成精确解认证（拟合度 ≥99%）' },
   { id: 'streak-7', name: '日拱一卒', desc: '每日挑战连续完成 7 天' },
+  { id: 'expert-all', name: '盲眼大师', desc: '专家模式（无轮廓预览）下全清全部内置关卡' },
   { id: 'speed-demon', name: '光速谐波', desc: '任意一关 8 秒内全清' },
   { id: 'sandboxer', name: '自由爵士', desc: '体验一次沙盒模式' },
   { id: 'inviter', name: '牵线搭桥', desc: '使用过随机关邀请码' },
@@ -138,6 +139,8 @@ export interface AchievementContext {
   perfect?: Record<string, true>;
   /** 达成精确解认证的关卡集合 */
   exact?: Record<string, true>;
+  /** 专家模式全清的关卡集合 */
+  expert?: Record<string, true>;
 }
 
 /** 按上下文返回全部已达成成就的 id */
@@ -168,5 +171,8 @@ export function evalAchievements(ctx: AchievementContext): string[] {
   // 精确分解：全部内置关卡都达成精确解认证
   const exactCount = Object.keys(ctx.exact ?? {}).length;
   if (exactCount >= ctx.levelCount) unlocked.push('exact-award');
+  // 盲眼大师：全部内置关卡在专家模式下全清
+  const expertCount = Object.keys(ctx.expert ?? {}).length;
+  if (expertCount >= ctx.levelCount) unlocked.push('expert-all');
   return unlocked;
 }

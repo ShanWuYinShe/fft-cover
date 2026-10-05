@@ -177,6 +177,11 @@
         </div>
       {/if}
     </div>
+    {#if engine.expertMode}
+      <div class="expert-tip">
+        💎 <b>专家模式</b>——目标轮廓与预览已隐藏，靠频谱对比和收集反馈来解（全清可得专家认证）
+      </div>
+    {/if}
     {#if engine.remoteChallenge}
       <div class="remote-tip">
         <span>🎁 <b>好友的解法挑战</b>——参数已载入，点「▶ 开始旋转」试试能不能全清</span>
@@ -274,6 +279,13 @@
             onclick={() => engine.redoArms()}
           >
             ↷ 重做
+          </button>
+          <button
+            title="专家模式：隐藏目标轮廓与预览轨迹，只能靠频谱与收集反馈调参——硬核玩家的证明"
+            class:expert={engine.expertMode}
+            onclick={() => engine.toggleExpert()}
+          >
+            💎 专家
           </button>
           <button
             title="在频谱仪上叠加目标曲线的真实频谱（教学用）"

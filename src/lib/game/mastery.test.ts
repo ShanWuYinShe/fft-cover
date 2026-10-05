@@ -87,6 +87,44 @@ describe('精通体系：完美全清与卡关提示', () => {
     expect(engine.exactLevels['ellipse']).toBeUndefined();
   });
 
+  it('专家模式：全清记入专家认证，普通模式不记', () => {
+    const lv = engine.level!;
+    const sol = solveFromSpectrum(lv.spectrum, lv.armLimit);
+    sol.forEach((a, i) => engine.setArm(i, { ...a }));
+    // 专家模式开 → 全清 → 认证
+    engine.expertMode = true;
+    engine.startRun();
+    for (let i = 0; i < 1200; i++) engine.advance(1 / 60);
+    expect(engine.collectedCount).toBe(engine.total);
+    expect(engine.isExpertClear).toBe(true);
+    expect(engine.newExpertClear).toBe(true);
+
+    // 普通模式在另一关全清 → 不记专家
+    engine.expertMode = false;
+    engine.loadLevel(LEVEL_DEFS.find((d) => d.id === 'ellipse')!);
+    const lv2 = engine.level!;
+    const sol2 = solveFromSpectrum(lv2.spectrum, lv2.armLimit);
+    sol2.forEach((a, i) => engine.setArm(i, { ...a }));
+    engine.startRun();
+    for (let i = 0; i < 1200; i++) engine.advance(1 / 60);
+    expect(engine.collectedCount).toBe(engine.total);
+    expect(engine.expertClears['ellipse']).toBeUndefined();
+  });
+
+  it('盲眼大师成就：全部关卡专家全清才解锁', () => {
+    const base = {
+      bestStars: {},
+      bestScores: {},
+      bestClears: {},
+      flags: {},
+      levelCount: LEVEL_DEFS.length,
+    };
+    expect(evalAchievements({ ...base, expert: { circle: true } })).not.toContain('expert-all');
+    const all: Record<string, true> = {};
+    for (const d of LEVEL_DEFS) all[d.id] = true;
+    expect(evalAchievements({ ...base, expert: all })).toContain('expert-all');
+  });
+
   it('每日连胜：首次完成记 1，同日重复不累加，昨天完成则 +1', () => {
     engine.dailyStreak = { streak: 0, last: '' };
     // 首次完成今日挑战 → streak = 1

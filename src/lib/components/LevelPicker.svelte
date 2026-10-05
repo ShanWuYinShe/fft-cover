@@ -26,6 +26,11 @@
   const totalStars = $derived(
     LEVEL_DEFS.reduce((sum, d) => sum + (engine.bestStars[d.id] ?? 0), 0),
   );
+  /** 专家模式全清的关卡数（硬核进度） */
+  const expertCount = $derived(
+    LEVEL_DEFS.reduce((n, d) => n + (engine.expertClears[d.id] ? 1 : 0), 0),
+  );
+
   /** 已达成精确解认证的关卡数（方法层面的精通进度） */
   const exactCount = $derived(
     LEVEL_DEFS.reduce((n, d) => n + (engine.exactLevels[d.id] ? 1 : 0), 0),
@@ -99,7 +104,9 @@
       >
         <span class="nm"
           >{def.name}{#if isLocked(i)}<i class="lock">🔒</i
-            >{/if}{#if engine.perfectLevels[def.id]}<i class="pf">👑</i>{/if}</span
+            >{/if}{#if engine.perfectLevels[def.id]}<i class="pf">👑</i
+            >{/if}{#if engine.exactLevels[def.id]}<i class="pf">🎯</i
+            >{/if}{#if engine.expertClears[def.id]}<i class="pf">💎</i>{/if}</span
         >
         <span class="st">{isLocked(i) ? '' : bestOf(def.id)}</span>
       </button>

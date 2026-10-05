@@ -8,6 +8,7 @@ import {
   COMBO_WINDOW,
   EXACT_FIT,
   EXACT_KEY,
+  EXPERT_KEY,
   FAIL_KEY,
   FLAGS_KEY,
   PERFECT_KEY,
@@ -106,6 +107,14 @@ function loadStreak(): StreakRecord {
     /* 忽略 */
   }
   return { streak: 0, last: '' };
+}
+
+function loadExpert(): Record<string, true> {
+  try {
+    return JSON.parse(localStorage.getItem(EXPERT_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
 }
 
 function loadExact(): Record<string, true> {
@@ -221,6 +230,14 @@ export class GameEngine {
   exactLevels = $state<Record<string, true>>(loadExact());
   /** 本局是否首次达成精确解认证 */
   newExact = $state(false);
+  /** 专家模式：隐藏目标轮廓与预览轨迹，只能靠频谱与收集反馈调参 */
+  expertMode = $state(false);
+  /** 本局开始时的专家模式状态（结算判定用，避免中途切换影响） */
+  private lastRunExpert = false;
+  /** 专家模式全清过的关卡 */
+  expertClears = $state<Record<string, true>>(loadExpert());
+  /** 本局是否首次达成专家全清 */
+  newExpertClear = $state(false);
   /** 各关连续 0 星次数（卡关提示的渐进解锁依据） */
   failCounts = $state<Record<string, number>>(loadFails());
   /** 本局是否首次达成完美全清（结算演出用） */
@@ -474,6 +491,16 @@ export class GameEngine {
   }
 
   /** 本关历史最快全清用时（未全清过返回 null） */
+  /** 切换专家模式（隐藏轮廓与预览，硬核挑战） */
+  toggleExpert(): void {
+    this.expertMode = !this.expertMode;
+  }
+
+  /** 当前关是否已在专家模式下全清 */
+  get isExpertClear(): boolean {
+    return !!this.level && !!this.expertClears[this.level.id];
+  }
+
   /** 当前关是否已达成精确解认证 */
   get isExact(): boolean {
     return !!this.level && !!this.exactLevels[this.level.id];
@@ -552,6 +579,7 @@ export class GameEngine {
       levelCount: LEVEL_DEFS.length,
       perfect: this.perfectLevels,
       exact: this.exactLevels,
+      expert: this.expertClears,
     };
     const now = Date.now();
     for (const id of evalAchievements(ctx)) {
@@ -576,6 +604,7 @@ export class GameEngine {
   /** 从编辑/暂停态开始或继续 */
   startRun(): void {
     this.sandbox = false;
+    this.lastRunExpert = this.expertMode;
     this.phase = 'running';
   }
 
@@ -696,6 +725,22 @@ export class GameEngine {
       this.newPerfect = true;
       try {
         localStorage.setItem(PERFECT_KEY, JSON.stringify(this.perfectLevels));
+      } catch {
+        /* 存储不可用则忽略 */
+      }
+    }
+    // 专家全清（无轮廓预览下全清）：硬核技巧认证
+    this.newExpertClear = false;
+    if (
+      this.lastRunExpert &&
+      this.total > 0 &&
+      this.collectedCount === this.total &&
+      !this.expertClears[id]
+    ) {
+      this.expertClears = { ...this.expertClears, [id]: true };
+      this.newExpertClear = true;
+      try {
+        localStorage.setItem(EXPERT_KEY, JSON.stringify(this.expertClears));
       } catch {
         /* 存储不可用则忽略 */
       }

@@ -220,6 +220,14 @@
       <div class="line">沙盒探索结束：收集 {got} / {n} 点 · 得分 {engine.score}</div>
       <div class="best">沙盒成绩不计入记录——挑战模式见真章！</div>
     {:else}
+      {#if engine.newExpertClear}
+        <div class="expert-banner">
+          <span class="ex-ico2">💎</span>
+          <span class="ex-txt"><b>专家全清</b><i>无轮廓预览下 100% 收集</i></span>
+        </div>
+      {:else if engine.isExpertClear}
+        <div class="expert-mini">💎 专家全清</div>
+      {/if}
       {#if engine.newExact}
         <div class="exact-banner">
           <span class="ex-ico">🎯</span>
@@ -417,6 +425,29 @@
   .streak-line b {
     color: #fb923c;
     font-size: var(--fs-md);
+  }
+  /* 专家全清：无预览硬核认证（紫色） */
+  .expert-banner {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 7px 12px;
+    border-radius: var(--r-md);
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.24), rgba(79, 209, 197, 0.1));
+    border: 1px solid rgba(167, 139, 250, 0.7);
+    box-shadow: 0 0 24px rgba(167, 139, 250, 0.28);
+    animation: perfect-in 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) 0.2s backwards;
+  }
+  .ex-ico2 {
+    font-size: 19px;
+    filter: drop-shadow(0 0 9px rgba(167, 139, 250, 0.8));
+  }
+  .expert-mini {
+    font-size: var(--fs-xs);
+    color: #c4b5fd;
+    letter-spacing: 2px;
+    opacity: 0.85;
   }
   /* 精确解认证：方法层面的精通（参数与 DFT 分解一致） */
   .exact-banner {

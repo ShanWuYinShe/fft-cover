@@ -392,7 +392,8 @@
 
     // 编辑态：目标曲线参考（暗金虚线）+ 幽灵预览轨迹（紫）
     // ghost 按"参数签名"缓存重建，参数未变时零成本复用
-    if (engine.phase === 'edit') {
+    // 专家模式：全部隐藏——只能靠频谱对比与收集反馈推导参数
+    if (engine.phase === 'edit' && !engine.expertMode) {
       const curve = engine.level.curve;
       ctx.strokeStyle = 'rgba(251,191,36,.55)';
       ctx.lineWidth = 1.8;
