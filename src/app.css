@@ -73,14 +73,28 @@ header {
 
 header h1 {
   margin: 0;
-  font-size: 25px;
-  letter-spacing: 7px;
-  font-weight: 700;
+}
+
+/* 标题本身是按钮：点它回看进度概览（用真实 button 保证无障碍） */
+header h1 .title-btn {
+  appearance: none;
   background: linear-gradient(92deg, var(--cyan) 10%, var(--purple) 55%, var(--gold) 95%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: 25px;
+  letter-spacing: 7px;
+  font-weight: 700;
+  cursor: pointer;
   filter: drop-shadow(0 2px 14px rgba(79, 209, 197, 0.18));
+}
+
+header h1 .title-btn:hover {
+  filter: drop-shadow(0 2px 22px rgba(79, 209, 197, 0.42));
 }
 
 header .sub {
@@ -1095,4 +1109,13 @@ button.expert {
 
 .expert-tip b {
   color: #c4b5fd;
+}
+
+/* header 标题可点击：回看进度概览（开始画面） */
+header h1[role='button'] {
+  cursor: pointer;
+}
+
+header h1[role='button']:hover {
+  filter: drop-shadow(0 0 18px rgba(79, 209, 197, 0.4));
 }

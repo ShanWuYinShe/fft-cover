@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import Stage from './lib/components/Stage.svelte';
   import ArmPanel from './lib/components/ArmPanel.svelte';
+  import TitleScreen from './lib/components/TitleScreen.svelte';
   import { readArmsFromHash } from './lib/game/share';
   import LevelPicker from './lib/components/LevelPicker.svelte';
   import ScorePanel from './lib/components/ScorePanel.svelte';
@@ -20,11 +21,18 @@
   } from './lib/game/audio';
 
   let showAchv = $state(false);
+  /** 开始画面：首次访问显示（老玩家直接进游戏，点标题可再看） */
+  let showTitle = $state(false);
   /** 移动端底部标签：关卡 / 指针 / 成绩（桌面端忽略，全部 section 同屏显示） */
   let mobileTab: 'levels' | 'arms' | 'score' = $state('levels');
   /** PWA：有新版本等待接管（main.ts 在 SW 进入 waiting 时派发 pwa-update） */
   let updateReady = $state(false);
   onMount(() => {
+    // 首次访问显示开始画面（有分享码时直接进游戏，避免挡住挑战链接）
+    if (!engine.flags.seenTitle && !readArmsFromHash(location.hash)) {
+      showTitle = true;
+      engine.markFlag('seenTitle');
+    }
     // 好友解法挑战：从 URL hash 载入参数并清除 hash（避免刷新重复提示）
     const code = readArmsFromHash(location.hash);
     if (code && engine.applyArmsCode(code)) {
@@ -127,7 +135,11 @@
 <svelte:window onkeydown={onKeydown} />
 
 <header>
-  <h1>傅立叶指针</h1>
+  <h1>
+    <button type="button" class="title-btn" title="查看进度概览" onclick={() => (showTitle = true)}>
+      傅立叶指针
+    </button>
+  </h1>
   <p class="sub">旋转指针 · 合成曲线 · 收集目标点</p>
 </header>
 
@@ -344,10 +356,14 @@
     <i>🏆</i><span>成绩</span>
   </button>
 </nav>
+{#if showTitle}
+  <TitleScreen onstart={() => (showTitle = false)} />
+{/if}
+
 {#if showAchv}
   <AchievementsModal onclose={() => (showAchv = false)} />
 {/if}
-{#if !tutorialSeen}
+{#if !tutorialSeen && !showTitle}
   <div class="tutorial">
     <div class="tut-box">
       <h2>怎么玩？</h2>
@@ -367,7 +383,7 @@
     </div>
   </div>
 {/if}
-{#if engine.toast}
+{#if engine.toast && !showTitle}
   <div class="toast">🏆 解锁成就：{engine.toast.name}</div>
 {/if}
 {#if updateReady && engine.phase !== 'running'}
