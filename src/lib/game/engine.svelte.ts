@@ -11,6 +11,7 @@ import {
   FAIL_KEY,
   FLAGS_KEY,
   PERFECT_KEY,
+  STREAK_KEY,
   RUN_DUR,
   SOUND_KEY,
   CIRCLED,
@@ -26,6 +27,7 @@ import {
   makeLevel,
   makeRandomLevel,
   todayKey,
+  yesterdayKey,
   type RandomDifficulty,
 } from './levels';
 import { tipAt } from './math';
@@ -87,6 +89,22 @@ function loadPerfect(): Record<string, true> {
   } catch {
     return {};
   }
+}
+
+/** 连胜记录形状 */
+interface StreakRecord {
+  streak: number;
+  last: string;
+}
+
+function loadStreak(): StreakRecord {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STREAK_KEY) ?? 'null');
+    if (raw && typeof raw.streak === 'number' && typeof raw.last === 'string') return raw;
+  } catch {
+    /* 忽略 */
+  }
+  return { streak: 0, last: '' };
 }
 
 function loadExact(): Record<string, true> {
@@ -194,6 +212,10 @@ export class GameEngine {
   bestClears = $state<Record<string, number>>(loadClears());
   /** 完美全清（100% 收集）过的关卡——三星之上的顶端追求 */
   perfectLevels = $state<Record<string, true>>(loadPerfect());
+  /** 每日挑战连胜：{ streak, last } */
+  dailyStreak = $state<StreakRecord>(loadStreak());
+  /** 本局是否刷新了连胜（结算提示用） */
+  streakJustBumped = $state(0);
   /** 达成"精确解"认证的关卡（参数与精确傅立叶分解一致，拟合度 ≥99%） */
   exactLevels = $state<Record<string, true>>(loadExact());
   /** 本局是否首次达成精确解认证 */
@@ -743,7 +765,27 @@ export class GameEngine {
         /* 存储不可用则忽略 */
       }
     }
+    // 每日挑战连胜：今天首次完成即累加（昨天完成过则 +1，否则重新从 1 开始）
+    if (id.startsWith('daily-')) this.bumpDailyStreak();
     this.checkAchievements();
+  }
+
+  /** 每日挑战连胜结算：同一天只记一次 */
+  private bumpDailyStreak(): void {
+    const today = todayKey();
+    if (this.dailyStreak.last === today) {
+      this.streakJustBumped = 0;
+      return;
+    }
+    const streak = this.dailyStreak.last === yesterdayKey() ? this.dailyStreak.streak + 1 : 1;
+    this.dailyStreak = { streak, last: today };
+    this.streakJustBumped = streak;
+    if (streak >= 7) this.markFlag('streak7');
+    try {
+      localStorage.setItem(STREAK_KEY, JSON.stringify(this.dailyStreak));
+    } catch {
+      /* 存储不可用则忽略 */
+    }
   }
 
   /** 载入玩家创作的谐波合成关卡 */

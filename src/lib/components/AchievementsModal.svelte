@@ -25,6 +25,8 @@
         plays: list.length,
         best: engine.bestScores[def.id] ?? 0,
         stars: engine.bestStars[def.id] ?? 0,
+        perfect: !!engine.perfectLevels[def.id],
+        exact: !!engine.exactLevels[def.id],
         trend: list.slice(-12).map((e) => e.score),
       };
     }),
@@ -37,6 +39,9 @@
   );
   const playedLevels = $derived(perLevel.filter((l) => l.plays > 0).length);
   const perfectLevels = $derived(perLevel.filter((l) => l.stars === 3).length);
+  /** 精通进度：完美全清 / 精确解认证 */
+  const perfectClears = $derived(perLevel.filter((l) => l.perfect).length);
+  const exactClears = $derived(perLevel.filter((l) => l.exact).length);
 
   /** 火花线：把一组分数映射成 SVG 折线点串 */
   function spark(pts: number[], w = 64, h = 18): string {
@@ -118,11 +123,25 @@
               >{perfectLevels}<i>/{LEVEL_DEFS.length}</i></span
             >
           </div>
+          <div class="card">
+            <span class="k">👑 完美全清</span><span class="v"
+              >{perfectClears}<i>/{LEVEL_DEFS.length}</i></span
+            >
+          </div>
+          <div class="card">
+            <span class="k">🎯 精确解</span><span class="v"
+              >{exactClears}<i>/{LEVEL_DEFS.length}</i></span
+            >
+          </div>
         </div>
         <div class="lvl-list">
           {#each perLevel as l (l.id)}
             <div class="lvl-row" class:dim={l.plays === 0}>
-              <span class="nm">{l.name}</span>
+              <span class="nm"
+                >{l.name}{#if l.perfect}<i class="badge">👑</i>{/if}{#if l.exact}<i class="badge"
+                    >🎯</i
+                  >{/if}</span
+              >
               <span class="st">{'★'.repeat(l.stars)}{'☆'.repeat(3 - l.stars)}</span>
               {#if l.trend.length > 1}
                 <svg
@@ -281,6 +300,12 @@
   }
   .list.hide {
     display: none;
+  }
+  /* 精通标记（关卡行内小徽章） */
+  .lvl-row .badge {
+    font-style: normal;
+    font-size: 10px;
+    margin-left: 3px;
   }
   /* 统计区 */
   .stats {

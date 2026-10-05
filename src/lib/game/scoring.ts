@@ -115,6 +115,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'all-three', name: '谐波大师', desc: '全部内置关卡三星' },
   { id: 'all-perfect', name: '完美主义', desc: '全部内置关卡完美全清（100%）' },
   { id: 'exact-award', name: '精确分解', desc: '全部内置关卡达成精确解认证（拟合度 ≥99%）' },
+  { id: 'streak-7', name: '日拱一卒', desc: '每日挑战连续完成 7 天' },
   { id: 'speed-demon', name: '光速谐波', desc: '任意一关 8 秒内全清' },
   { id: 'sandboxer', name: '自由爵士', desc: '体验一次沙盒模式' },
   { id: 'inviter', name: '牵线搭桥', desc: '使用过随机关邀请码' },
@@ -156,6 +157,7 @@ export function evalAchievements(ctx: AchievementContext): string[] {
   if (ctx.flags.inviteLoaded) unlocked.push('inviter');
   if (ctx.flags.dragUsed) unlocked.push('drag-master');
   if (ctx.flags.dailyWon) unlocked.push('daily-player');
+  if (ctx.flags.streak7) unlocked.push('streak-7');
   if (ctx.flags.autoTry) unlocked.push('auto-try');
   if (ctx.flags.composerPlayed) unlocked.push('composer');
   const starSum = stars.reduce((a, b) => a + b, 0);

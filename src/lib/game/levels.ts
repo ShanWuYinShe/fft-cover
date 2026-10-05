@@ -251,6 +251,14 @@ export function todayKey(): string {
   return d.getFullYear() + '-' + mm + '-' + dd;
 }
 
+/** 昨天的日期键（本地时区），用于连胜判定 */
+export function yesterdayKey(): string {
+  const d = new Date(Date.now() - 86_400_000);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return d.getFullYear() + '-' + mm + '-' + dd;
+}
+
 /** 每日挑战：seed 由日期+难度决定，同一天同难度的玩家面对同一关卡 */
 export function makeDailyLevel(diff: RandomDifficulty = 'normal'): Level {
   const key = todayKey();

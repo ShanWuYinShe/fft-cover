@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { LEVEL_DEFS } from './levels';
+import { LEVEL_DEFS, yesterdayKey } from './levels';
 import { GameEngine } from './engine.svelte';
 import { solveFromSpectrum } from './scoring';
 import { evalAchievements } from './scoring';
@@ -85,6 +85,41 @@ describe('精通体系：完美全清与卡关提示', () => {
     engine.startRun();
     engine.stopRun();
     expect(engine.exactLevels['ellipse']).toBeUndefined();
+  });
+
+  it('每日连胜：首次完成记 1，同日重复不累加，昨天完成则 +1', () => {
+    engine.dailyStreak = { streak: 0, last: '' };
+    // 首次完成今日挑战 → streak = 1
+    engine.loadDaily();
+    engine.startRun();
+    engine.stopRun();
+    expect(engine.dailyStreak.streak).toBe(1);
+    expect(engine.streakJustBumped).toBe(1);
+
+    // 同日再完成一次 → 不累加
+    engine.resetRun();
+    engine.startRun();
+    engine.stopRun();
+    expect(engine.dailyStreak.streak).toBe(1);
+
+    // 模拟"昨天完成过" → 今天完成累加到 2
+    engine.dailyStreak = { streak: 1, last: yesterdayKey() };
+    engine.resetRun();
+    engine.startRun();
+    engine.stopRun();
+    expect(engine.dailyStreak.streak).toBe(2);
+    expect(engine.streakJustBumped).toBe(2);
+  });
+
+  it('连胜成就：flags.streak7 解锁"日拱一卒"', () => {
+    const base = {
+      bestStars: {},
+      bestScores: {},
+      bestClears: {},
+      levelCount: LEVEL_DEFS.length,
+    };
+    expect(evalAchievements({ ...base, flags: {} })).not.toContain('streak-7');
+    expect(evalAchievements({ ...base, flags: { streak7: true } })).toContain('streak-7');
   });
 
   it('精确分解成就：全部关卡认证才解锁', () => {

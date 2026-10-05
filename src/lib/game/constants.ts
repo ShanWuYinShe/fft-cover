@@ -26,6 +26,8 @@ export const CLEAR_KEY = 'fft-pointers-clear-v1';
 export const PERFECT_KEY = 'fft-pointers-perfect-v1';
 /** 各关连续失败次数（0 星），用于"卡关提示"渐进解锁 */
 export const FAIL_KEY = 'fft-pointers-fails-v1';
+/** 每日挑战连胜记录：{ streak: 连续天数, last: 最近完成的日期 } */
+export const STREAK_KEY = 'fft-pointers-streak-v1';
 /** 达成"精确解"（参数与精确傅立叶分解一致）的关卡集合 */
 export const EXACT_KEY = 'fft-pointers-exact-v1';
 /** 精确解认证的拟合度门槛 */

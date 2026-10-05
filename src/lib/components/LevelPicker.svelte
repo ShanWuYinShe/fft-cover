@@ -115,7 +115,8 @@
           ? '·易'
           : engine.difficulty === 'hard'
             ? '·难'
-            : ''}</span
+            : ''}{#if engine.dailyStreak.streak > 0}<i class="fire">🔥{engine.dailyStreak.streak}</i
+          >{/if}</span
       >
       <span class="st">
         {engine.todayBest > 0 ? engine.todayBest + ' 分 · ' : ''}{dailyCountdown}
@@ -208,6 +209,12 @@
   .lv.locked .nm {
     color: var(--muted-2);
     font-weight: 500;
+  }
+  .lv .fire {
+    font-style: normal;
+    font-size: 9px;
+    margin-left: 2px;
+    color: var(--gold);
   }
   .lv .pf {
     font-style: normal;

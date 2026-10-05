@@ -260,6 +260,11 @@
       {#if st === 3 && !engine.newPerfect && !engine.isPerfect && got < n}
         <div class="to-perfect">再收集 <b>{n - got}</b> 点即可达成 👑 完美全清</div>
       {/if}
+      {#if engine.streakJustBumped > 1}
+        <div class="streak-line">
+          🔥 每日挑战连续 <b>{engine.streakJustBumped}</b> 天完成
+        </div>
+      {/if}
       {#if engine.newlyUnlockedNext}
         <button
           type="button"
@@ -373,6 +378,20 @@
   }
   .to-perfect b {
     color: var(--gold);
+  }
+  /* 每日连胜提示 */
+  .streak-line {
+    width: 100%;
+    padding: 6px 10px;
+    border-radius: var(--r-sm);
+    background: rgba(251, 146, 60, 0.12);
+    border: 1px solid rgba(251, 146, 60, 0.45);
+    font-size: var(--fs-xs);
+    color: var(--text);
+  }
+  .streak-line b {
+    color: #fb923c;
+    font-size: var(--fs-md);
   }
   /* 精确解认证：方法层面的精通（参数与 DFT 分解一致） */
   .exact-banner {
