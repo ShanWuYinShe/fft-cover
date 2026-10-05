@@ -196,6 +196,14 @@
       <div class="line">沙盒探索结束：收集 {got} / {n} 点 · 得分 {engine.score}</div>
       <div class="best">沙盒成绩不计入记录——挑战模式见真章！</div>
     {:else}
+      {#if engine.newExact}
+        <div class="exact-banner">
+          <span class="ex-ico">🎯</span>
+          <span class="ex-txt"><b>精确解认证</b><i>参数与傅立叶分解完全一致</i></span>
+        </div>
+      {:else if engine.isExact}
+        <div class="exact-mini">🎯 精确解</div>
+      {/if}
       {#if engine.newPerfect}
         <div class="perfect-banner">
           <span class="pf-ico">🏆</span>
@@ -365,6 +373,45 @@
   }
   .to-perfect b {
     color: var(--gold);
+  }
+  /* 精确解认证：方法层面的精通（参数与 DFT 分解一致） */
+  .exact-banner {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 7px 12px;
+    border-radius: var(--r-md);
+    background: linear-gradient(135deg, rgba(79, 209, 197, 0.2), rgba(167, 139, 250, 0.14));
+    border: 1px solid rgba(79, 209, 197, 0.6);
+    box-shadow: 0 0 22px rgba(79, 209, 197, 0.2);
+    animation: perfect-in 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) 0.35s backwards;
+  }
+  .ex-ico {
+    font-size: 19px;
+    filter: drop-shadow(0 0 8px rgba(79, 209, 197, 0.7));
+  }
+  .ex-txt {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+  }
+  .ex-txt b {
+    font-size: var(--fs-sm);
+    color: var(--cyan);
+    letter-spacing: 2px;
+  }
+  .ex-txt i {
+    font-style: normal;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .exact-mini {
+    font-size: var(--fs-xs);
+    color: var(--cyan);
+    letter-spacing: 2px;
+    opacity: 0.85;
   }
   /* 完美全清：三星之上的顶端追求 */
   .perfect-banner {

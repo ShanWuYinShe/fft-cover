@@ -6,6 +6,8 @@ import {
   BEST_SCORE_KEY,
   CLEAR_KEY,
   COMBO_WINDOW,
+  EXACT_FIT,
+  EXACT_KEY,
   FAIL_KEY,
   FLAGS_KEY,
   PERFECT_KEY,
@@ -31,6 +33,7 @@ import {
   ACHIEVEMENTS,
   evalAchievements,
   scoreForPoint,
+  fitScore,
   solveFromSpectrum,
   starsFor,
 } from './scoring';
@@ -81,6 +84,14 @@ function loadSound(): boolean {
 function loadPerfect(): Record<string, true> {
   try {
     return JSON.parse(localStorage.getItem(PERFECT_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
+function loadExact(): Record<string, true> {
+  try {
+    return JSON.parse(localStorage.getItem(EXACT_KEY) ?? '{}');
   } catch {
     return {};
   }
@@ -183,6 +194,10 @@ export class GameEngine {
   bestClears = $state<Record<string, number>>(loadClears());
   /** 完美全清（100% 收集）过的关卡——三星之上的顶端追求 */
   perfectLevels = $state<Record<string, true>>(loadPerfect());
+  /** 达成"精确解"认证的关卡（参数与精确傅立叶分解一致，拟合度 ≥99%） */
+  exactLevels = $state<Record<string, true>>(loadExact());
+  /** 本局是否首次达成精确解认证 */
+  newExact = $state(false);
   /** 各关连续 0 星次数（卡关提示的渐进解锁依据） */
   failCounts = $state<Record<string, number>>(loadFails());
   /** 本局是否首次达成完美全清（结算演出用） */
@@ -419,6 +434,11 @@ export class GameEngine {
   }
 
   /** 本关历史最快全清用时（未全清过返回 null） */
+  /** 当前关是否已达成精确解认证 */
+  get isExact(): boolean {
+    return !!this.level && !!this.exactLevels[this.level.id];
+  }
+
   /**
    * 首关手把手引导是否显示：从未完成过引导、当前是圆关、且圆关还没拿过星。
    * 入门容易——第一次打开就知道第一步该做什么。
@@ -491,6 +511,7 @@ export class GameEngine {
       flags: this.flags,
       levelCount: LEVEL_DEFS.length,
       perfect: this.perfectLevels,
+      exact: this.exactLevels,
     };
     const now = Date.now();
     for (const id of evalAchievements(ctx)) {
@@ -637,6 +658,20 @@ export class GameEngine {
         localStorage.setItem(PERFECT_KEY, JSON.stringify(this.perfectLevels));
       } catch {
         /* 存储不可用则忽略 */
+      }
+    }
+    // 精确解认证（精通新维度：方法正确，而不只是结果达标）
+    this.newExact = false;
+    if (this.level && !this.exactLevels[id]) {
+      const fit = fitScore(this.level.spectrum, this.arms);
+      if (fit >= EXACT_FIT) {
+        this.exactLevels = { ...this.exactLevels, [id]: true };
+        this.newExact = true;
+        try {
+          localStorage.setItem(EXACT_KEY, JSON.stringify(this.exactLevels));
+        } catch {
+          /* 存储不可用则忽略 */
+        }
       }
     }
     // 首关引导：圆关跑完一局即视为"已学会"，不再打扰

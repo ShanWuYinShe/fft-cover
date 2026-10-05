@@ -68,6 +68,39 @@ describe('精通体系：完美全清与卡关提示', () => {
     expect(txt).not.toContain('360°');
   });
 
+  it('精确解认证：参数等于精确分解时达成，偏差过大则不认证', () => {
+    const lv = engine.level!;
+    // 精确解参数 → 拟合度 100% → 认证
+    const sol = solveFromSpectrum(lv.spectrum, lv.armLimit);
+    sol.forEach((a, i) => engine.setArm(i, { ...a }));
+    engine.startRun();
+    engine.stopRun();
+    expect(engine.isExact).toBe(true);
+    expect(engine.newExact).toBe(true);
+
+    // 换到椭圆关并把半径调偏（仍能收点但参数不是精确解）
+    const ell = LEVEL_DEFS.find((d) => d.id === 'ellipse')!;
+    engine.loadLevel(ell);
+    engine.setArm(0, { on: true, r: 60, freq: 1, phase: 0 });
+    engine.startRun();
+    engine.stopRun();
+    expect(engine.exactLevels['ellipse']).toBeUndefined();
+  });
+
+  it('精确分解成就：全部关卡认证才解锁', () => {
+    const base = {
+      bestStars: {},
+      bestScores: {},
+      bestClears: {},
+      flags: {},
+      levelCount: LEVEL_DEFS.length,
+    };
+    expect(evalAchievements({ ...base, exact: { circle: true } })).not.toContain('exact-award');
+    const all: Record<string, true> = {};
+    for (const d of LEVEL_DEFS) all[d.id] = true;
+    expect(evalAchievements({ ...base, exact: all })).toContain('exact-award');
+  });
+
   it('完美主义成就：全部内置关卡完美才解锁', () => {
     const base = {
       bestStars: {},

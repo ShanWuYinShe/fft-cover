@@ -26,6 +26,11 @@
   const totalStars = $derived(
     LEVEL_DEFS.reduce((sum, d) => sum + (engine.bestStars[d.id] ?? 0), 0),
   );
+  /** 已达成精确解认证的关卡数（方法层面的精通进度） */
+  const exactCount = $derived(
+    LEVEL_DEFS.reduce((n, d) => n + (engine.exactLevels[d.id] ? 1 : 0), 0),
+  );
+
   /** 已完美全清的关卡数（三星之上的顶端追求进度） */
   const perfectCount = $derived(
     LEVEL_DEFS.reduce((n, d) => n + (engine.perfectLevels[d.id] ? 1 : 0), 0),
@@ -75,7 +80,8 @@
   <h2>
     关卡
     <span class="muted"
-      >总星数 {totalStars} / {LEVEL_DEFS.length * 3}{#if perfectCount > 0}&nbsp;· 👑 {perfectCount}{/if}</span
+      >总星数 {totalStars} / {LEVEL_DEFS.length * 3}{#if perfectCount > 0}&nbsp;· 👑 {perfectCount}{/if}{#if exactCount > 0}&nbsp;·
+        🎯 {exactCount}{/if}</span
     >
   </h2>
   {#if showComposer}

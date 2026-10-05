@@ -26,6 +26,10 @@ export const CLEAR_KEY = 'fft-pointers-clear-v1';
 export const PERFECT_KEY = 'fft-pointers-perfect-v1';
 /** 各关连续失败次数（0 星），用于"卡关提示"渐进解锁 */
 export const FAIL_KEY = 'fft-pointers-fails-v1';
+/** 达成"精确解"（参数与精确傅立叶分解一致）的关卡集合 */
+export const EXACT_KEY = 'fft-pointers-exact-v1';
+/** 精确解认证的拟合度门槛 */
+export const EXACT_FIT = 0.99;
 /** 已解锁成就 localStorage 键名 */
 export const ACHV_KEY = 'fft-pointers-achv-v1';
 /** 行为标记 localStorage 键名（沙盒/邀请码/拖拽等"用过"类成就） */
