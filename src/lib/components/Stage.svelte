@@ -14,6 +14,7 @@
     solveTick,
     starSound,
   } from '../game/audio';
+  import { haptic } from '../game/haptics';
   import { spectrumGaps, starsFor } from '../game/scoring';
 
   let canvas: HTMLCanvasElement | undefined = $state();
@@ -779,22 +780,32 @@
       if (engine.phase === 'running') {
         const { got, finished } = engine.advance(dt);
         if (got > 0) collectSound(engine.collectedCount, engine.soundOn, engine.collectScale);
-        // 升星提示音：本局刚越过一个星级阈值
+        // 升星提示音 + 触感：本局刚越过一个星级阈值
         if (engine.starReached > lastStarTier) {
           lastStarTier = engine.starReached;
           starSound(engine.starReached, engine.soundOn);
+          haptic(engine.starReached >= 3 ? [16, 40, 16] : 14, engine.soundOn);
         }
         if (finished) {
           if (engine.collectedCount === engine.total) perfectArpeggio(engine.soundOn);
           else finishChord(engine.soundOn);
-          // 本局盖了新印：等收尾音落定，一枚一枚盖下去
+          // 本局盖了新印：等收尾音落定，一枚一枚盖下去（音 + 触感）
           engine.newSeals.forEach((_, i) => {
-            setTimeout(() => sealSound(engine.soundOn), 430 + i * 260);
+            setTimeout(
+              () => {
+                sealSound(engine.soundOn);
+                haptic(22, engine.soundOn);
+              },
+              430 + i * 260,
+            );
           });
           // 章节印：所有单枚印盖完之后，再盖一方大印
           if (engine.newChapterSeal) {
             setTimeout(
-              () => chapterSealSound(engine.soundOn),
+              () => {
+                chapterSealSound(engine.soundOn);
+                haptic([18, 50, 30], engine.soundOn);
+              },
               430 + engine.newSeals.length * 260 + 240,
             );
           }

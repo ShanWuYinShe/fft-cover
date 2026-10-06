@@ -24,6 +24,7 @@
     uiClick,
     uiToggle,
   } from './lib/game/audio';
+  import { haptic } from './lib/game/haptics';
   import { musicIntensity } from './lib/game/harmony';
   import { musicLevelArrival, setMusicSuspended, startMusic, updateMusic } from './lib/game/music';
 
@@ -187,11 +188,17 @@
   // 新手引导：首次访问显示（flag 持久化在引擎 flags 里）
   const tutorialSeen = $derived(!!engine.flags['tutorialSeen']);
 
+  // 通关演出出现时给一次较长的触感（移动端）
+  $effect(() => {
+    if (engine.finale) haptic([24, 70, 24, 70, 48], engine.soundOn);
+  });
+
   // 成就解锁 toast：3 秒后自动消失
   let toastTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => {
     if (!engine.toast) return;
     achvSound(engine.soundOn);
+    haptic([14, 40, 14], engine.soundOn);
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => engine.clearToast(), 3000);
   });

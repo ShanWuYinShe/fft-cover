@@ -20,19 +20,22 @@
   /** 全局朱印与章节印（与「本关目标」同一套判定） */
   const seals = $derived(engine.sealSummary);
 
-  /** 战利品墙：全部关卡的真实轮廓 + 星数，按章分组 */
-  const wall = $derived(
-    CHAPTERS.map((ch) => ({
+  /** 战利品墙：全部关卡的真实轮廓 + 星数，按章分组（idx 用于逐关点亮的错峰动画） */
+  const wall = $derived.by(() => {
+    let idx = 0;
+    return CHAPTERS.map((ch) => ({
       id: ch.id,
+      short: ch.name.split('·').pop()?.trim() ?? ch.name,
       seal: ch.seal,
       sealed: engine.chapterSealsOf(ch.id).sealed,
       levels: LEVEL_DEFS.filter((d) => (d.chapter ?? 'basics') === ch.id).map((d) => ({
         id: d.id,
         name: d.name,
         stars: engine.bestStars[d.id] ?? 0,
+        idx: idx++,
       })),
-    })),
-  );
+    }));
+  });
 
   function onKey(e: KeyboardEvent): void {
     if (e.key === 'Escape') engine.dismissFinale();
@@ -90,8 +93,14 @@
     <div class="wall" aria-label="全部关卡的曲线">
       {#each wall as ch (ch.id)}
         <div class="wall-ch">
+          <span class="wall-name">{ch.short}</span>
           {#each ch.levels as lv (lv.id)}
-            <div class="wall-item" class:lit={lv.stars > 0} class:full={lv.stars === 3}>
+            <div
+              class="wall-item"
+              class:lit={lv.stars > 0}
+              class:full={lv.stars === 3}
+              style="animation-delay: {0.15 + lv.idx * 0.055}s"
+            >
               <svg viewBox="0 0 640 640" aria-hidden="true">
                 <polyline points={shapePoints(lv.id)} />
               </svg>
@@ -324,10 +333,36 @@
     flex-direction: column;
     align-items: center;
     gap: 1px;
+    /* 逐关点亮：错峰淡入（opacity 放在子元素上，避免与"未点亮"状态打架） */
+    animation: wall-in 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) backwards;
+  }
+  @keyframes wall-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.72);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  .wall-item svg,
+  .wall-item .wall-st {
     opacity: 0.42;
   }
-  .wall-item.lit {
+  .wall-item.lit svg,
+  .wall-item.lit .wall-st {
     opacity: 1;
+  }
+  .wall-name {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    white-space: nowrap;
   }
   .wall-item svg {
     width: 46px;
