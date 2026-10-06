@@ -22,8 +22,43 @@
     } else if (g.id === 'exact') {
       how = '当前拟合度 ' + (fit * 100).toFixed(0) + '% · 需 ≥99%';
     }
-    return { seal: g.seal, name: g.name, how };
+    return { id: g.id, seal: g.seal, name: g.name, how };
   });
+
+  /**
+   * "下一枚印"对应的立刻可做的动作：
+   * 专 → 开专家模式；准 → 打开频谱对比；星 / 满 → 关掉浮层看轨迹找漏点。
+   */
+  const nextAction = $derived.by(() => {
+    switch (nextSeal?.id) {
+      case 'expert':
+        return { label: '开启专家模式' };
+      case 'exact':
+        return { label: '对比频谱' };
+      case 'stars':
+      case 'perfect':
+        return { label: '看轨迹' };
+      default:
+        return null;
+    }
+  });
+
+  /** 执行"下一枚印"的动作并落到可继续操作的状态 */
+  function doNextAction(): void {
+    switch (nextSeal?.id) {
+      case 'expert':
+        if (!engine.expertMode) engine.toggleExpert();
+        engine.resetRun();
+        break;
+      case 'exact':
+        if (!engine.spectrumCompare) engine.toggleSpectrumCompare();
+        engine.resetRun();
+        break;
+      default:
+        // 看轨迹：只收起结算浮层（点画布可再打开），保留本局轨迹
+        engine.resultDismissed = true;
+    }
+  }
 
   /** 本局若让某一章集齐四印：取出该章的章节印与关卡数（盖大印用） */
   const chapterSeal = $derived.by(() => {
@@ -348,10 +383,16 @@
           </div>
         {/if}
         {#if nextSeal}
-          <div class="next-seal">
+          <button
+            type="button"
+            class="next-seal"
+            title={nextAction ? '点这里：' + nextAction.label : '下一枚印'}
+            onclick={doNextAction}
+          >
             <span class="ns-seal">{nextSeal.seal}</span>
             <span class="ns-txt">下一枚印 <b>{nextSeal.name}</b> · {nextSeal.how}</span>
-          </div>
+            {#if nextAction}<span class="ns-go">{nextAction.label} →</span>{/if}
+          </button>
         {:else}
           <div class="next-seal all-done">
             <span class="ns-seal">印</span>
@@ -512,7 +553,7 @@
     }
   }
 
-  /* 下一枚印：结算页的下一步指引 */
+  /* 下一枚印：结算页的下一步指引（整行可点，直接落到那个动作） */
   .next-seal {
     display: flex;
     align-items: center;
@@ -522,8 +563,32 @@
     border-radius: var(--r-sm);
     background: rgba(251, 191, 36, 0.09);
     border: 1px dashed rgba(251, 191, 36, 0.4);
+    font: inherit;
     font-size: var(--fs-xs);
     color: var(--muted);
+    text-align: left;
+    cursor: pointer;
+    transition:
+      background 0.15s,
+      border-color 0.15s;
+  }
+  button.next-seal:hover {
+    background: rgba(251, 191, 36, 0.16);
+    border-color: rgba(251, 191, 36, 0.7);
+  }
+  .ns-txt {
+    flex: 1;
+    min-width: 0;
+  }
+  .ns-go {
+    flex: none;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(79, 209, 197, 0.5);
+    background: rgba(79, 209, 197, 0.12);
+    color: #8ff2e6;
+    font-size: 10px;
+    white-space: nowrap;
   }
   .ns-txt b {
     color: var(--gold);
