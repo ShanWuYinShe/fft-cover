@@ -12,8 +12,9 @@
     sealSound,
     solveDone,
     solveTick,
+    starSound,
   } from '../game/audio';
-  import { spectrumGaps } from '../game/scoring';
+  import { spectrumGaps, starsFor } from '../game/scoring';
 
   let canvas: HTMLCanvasElement | undefined = $state();
   /** 自动拟合音效的进度档位（-1 = 未在拟合） */
@@ -339,6 +340,8 @@
 
   /** 全清震动是否已触发（本局一次） */
   let shakeDone = false;
+  /** 已播过升星音的档位（编辑态归零） */
+  let lastStarTier = 0;
 
   /** 回纹边框路径（构建一次复用）：中国器物上的连续"回"字纹 */
   let huiPath: Path2D | null = null;
@@ -373,7 +376,10 @@
       void canvas?.offsetWidth; // 强制 reflow 重启动画
       canvas?.classList.add('shake');
     }
-    if (engine.phase === 'edit') shakeDone = false;
+    if (engine.phase === 'edit') {
+      shakeDone = false;
+      lastStarTier = 0;
+    }
 
     ctx.clearRect(0, 0, SIZE, SIZE);
 
@@ -714,6 +720,30 @@
       ctx.fillText('缩放 ' + zoom.toFixed(2) + '×', 12, SIZE - 14);
     }
 
+    // 运行中的星级阈值反馈：越过 35% / 65% / 90% 就在顶部点亮一档（升档时弹一下）
+    if (engine.phase !== 'edit' && !engine.sandbox && engine.total > 0 && engine.starReached > 0) {
+      const pop = Math.max(0, 1 - (now - engine.starReachedAt) / 420);
+      const tier = engine.starReached;
+      const label = '★'.repeat(tier) + '☆'.repeat(3 - tier);
+      ctx.save();
+      ctx.translate(SIZE / 2, 30);
+      const s = 1 + pop * 0.3;
+      ctx.scale(s, s);
+      ctx.font = 'bold 15px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const w = ctx.measureText(label).width;
+      ctx.fillStyle = 'rgba(16,21,42,.85)';
+      ctx.fillRect(-w / 2 - 12, -14, w + 24, 28);
+      ctx.strokeStyle =
+        tier === 3 ? 'rgba(251,191,36,.85)' : 'rgba(251,191,36,' + (0.4 + pop * 0.4) + ')';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(-w / 2 - 12, -14, w + 24, 28);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillText(label, 0, 1);
+      ctx.restore();
+    }
+
     // 编辑态预览计数：当前参数预计能收集多少点（实时反馈，无需开始旋转）
     if (engine.phase === 'edit' && engine.level) {
       const total = engine.level.pts.length;
@@ -749,6 +779,11 @@
       if (engine.phase === 'running') {
         const { got, finished } = engine.advance(dt);
         if (got > 0) collectSound(engine.collectedCount, engine.soundOn, engine.collectScale);
+        // 升星提示音：本局刚越过一个星级阈值
+        if (engine.starReached > lastStarTier) {
+          lastStarTier = engine.starReached;
+          starSound(engine.starReached, engine.soundOn);
+        }
         if (finished) {
           if (engine.collectedCount === engine.total) perfectArpeggio(engine.soundOn);
           else finishChord(engine.soundOn);

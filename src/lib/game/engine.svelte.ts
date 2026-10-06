@@ -336,6 +336,10 @@ export class GameEngine {
   newClearRecord = $state(false);
   /** 本局新盖的朱印（结算演出一枚枚盖下来） */
   newSeals = $state<GoalId[]>([]);
+  /** 本局已达成的星级档位（0~3）：运行中实时点亮，越过阈值时给一次弹动 */
+  starReached = $state(0);
+  /** 最近一次升档的时刻（Stage 用它做弹动动画） */
+  starReachedAt = $state(0);
   /** 本局让某一章的朱印集齐 → 该章盖章节印（结算演出用） */
   newChapterSeal = $state<string | null>(null);
   /** 各关保存的解法参数（上届那局的指针配置） */
@@ -500,6 +504,8 @@ export class GameEngine {
     this.finale = null;
     this.newSeals = [];
     this.newChapterSeal = null;
+    this.starReached = 0;
+    this.starReachedAt = 0;
   }
 
   /** 关闭通关演出（继续挑战 / 回看关卡面板） */
@@ -1376,6 +1382,14 @@ export class GameEngine {
       this.trail.push({ x: p.x, y: p.y });
     }
     if (this.trail.length > 2400) this.trail.splice(0, this.trail.length - 2400);
+    // 星级阈值实时反馈：越过 35% / 65% / 90% 时点亮（Stage 画布上的星条 + 一声提示）
+    if (!this.sandbox && this.total > 0) {
+      const tier = starsFor(this.collectedCount / this.total);
+      if (tier > this.starReached) {
+        this.starReached = tier;
+        this.starReachedAt = performance.now();
+      }
+    }
     let finished = false;
     if (!this.sandbox && this.t >= RUN_DUR) {
       this.stopRun();

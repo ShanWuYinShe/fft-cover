@@ -126,6 +126,25 @@ describe('GameEngine', () => {
     expect(engine.newSeals).toEqual([]);
   });
 
+  it('运行中星级阈值实时点亮，重置后归零', () => {
+    const lv = engine.level!;
+    const sol = solveFromSpectrum(lv.spectrum, lv.armLimit);
+    sol.forEach((a, i) => engine.setArm(i, { ...a }));
+    expect(engine.starReached).toBe(0);
+    engine.startRun();
+    const seen = new Set<number>();
+    for (let i = 0; i < 1500 && engine.phase === 'running'; i++) {
+      engine.advance(1 / 60);
+      if (engine.starReached > 0) seen.add(engine.starReached);
+    }
+    // 全清必然越过三星阈值，且中途应观察到逐档点亮
+    expect(engine.starReached).toBe(3);
+    expect(seen.has(1)).toBe(true);
+    expect(engine.starReachedAt).toBeGreaterThan(0);
+    engine.resetRun();
+    expect(engine.starReached).toBe(0);
+  });
+
   it('sealSummary 汇总全局朱印与章节印', () => {
     expect(engine.sealSummary).toEqual({
       done: 0,

@@ -8,6 +8,23 @@
   /** 本关朱印进度（结算时给一条"这一关还差什么"的落点） */
   const sealProg = $derived(goalProgress(levelGoals(engine.levelGoalState)));
 
+  /**
+   * 下一枚印：按推荐顺序（星 → 满 → 准 → 专）取第一个未达成的，
+   * 并把它"还差什么"说清楚——结算页直接给出下一步该做什么。
+   */
+  const nextSeal = $derived.by(() => {
+    const g = levelGoals(engine.levelGoalState).find((x) => !x.done);
+    if (!g) return null;
+    let how = g.how;
+    if (g.id === 'stars' || g.id === 'perfect') {
+      const left = Math.max(0, n - got);
+      if (left > 0) how = '再收集 ' + left + ' 点即可';
+    } else if (g.id === 'exact') {
+      how = '当前拟合度 ' + (fit * 100).toFixed(0) + '% · 需 ≥99%';
+    }
+    return { seal: g.seal, name: g.name, how };
+  });
+
   /** 本局若让某一章集齐四印：取出该章的章节印与关卡数（盖大印用） */
   const chapterSeal = $derived.by(() => {
     const id = engine.newChapterSeal;
@@ -297,6 +314,17 @@
             </span>
           </div>
         {/if}
+        {#if nextSeal}
+          <div class="next-seal">
+            <span class="ns-seal">{nextSeal.seal}</span>
+            <span class="ns-txt">下一枚印 <b>{nextSeal.name}</b> · {nextSeal.how}</span>
+          </div>
+        {:else}
+          <div class="next-seal all-done">
+            <span class="ns-seal">印</span>
+            <span class="ns-txt">本关四枚朱印已集齐 ✓</span>
+          </div>
+        {/if}
         <div class="stat-row">
           <span>收集 <b>{got}</b>/{n}（{n ? Math.round((got / n) * 100) : 0}%）</span>
           {#if engine.lastClearT !== null}
@@ -342,9 +370,6 @@
           </div>
         {/if}
         <div class="arms-line">解法：{engine.armsLine()} · 拟合度 {(fit * 100).toFixed(0)}%</div>
-        {#if st === 3 && !engine.newPerfect && !engine.isPerfect && got < n}
-          <div class="to-perfect">再收集 <b>{n - got}</b> 点即可达成 👑 完美全清</div>
-        {/if}
         {#if engine.streakJustBumped > 1}
           <div class="streak-line">
             🔥 每日挑战连续 <b>{engine.streakJustBumped}</b> 天完成
@@ -451,8 +476,11 @@
     }
   }
 
-  /* 距完美提示：三星之后的精通目标 */
-  .to-perfect {
+  /* 下一枚印：结算页的下一步指引 */
+  .next-seal {
+    display: flex;
+    align-items: center;
+    gap: 9px;
     width: 100%;
     padding: 7px 10px;
     border-radius: var(--r-sm);
@@ -461,8 +489,32 @@
     font-size: var(--fs-xs);
     color: var(--muted);
   }
-  .to-perfect b {
+  .ns-txt b {
     color: var(--gold);
+  }
+  .ns-seal {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fdece7;
+    background: linear-gradient(160deg, #c0392b, #8e2a1f);
+    box-shadow: 0 1px 8px rgba(192, 57, 43, 0.4);
+  }
+  .next-seal.all-done {
+    background: rgba(47, 158, 127, 0.1);
+    border-color: rgba(47, 158, 127, 0.45);
+  }
+  .next-seal.all-done .ns-seal {
+    background: linear-gradient(160deg, #2f9e7f, #1f6f59);
+    box-shadow: none;
   }
   /* 每日连胜提示 */
   .streak-line {

@@ -160,6 +160,17 @@ export function finishChord(on: boolean): void {
   setTimeout(() => beep(880, 0.2, 'triangle', 0.12, on), 110);
 }
 
+/**
+ * 升星提示音：越过高星阈值时的一声清亮铃音，音高随档位升高。
+ * 短促、不连击（一局最多三次），音量低于收集音。
+ */
+export function starSound(tier: number, on: boolean): void {
+  if (!on) return;
+  const freq = [0, 659.25, 880, 1174.66][Math.min(Math.max(tier, 1), 3)];
+  beep(freq, 0.24, 'triangle', 0.075, true);
+  if (tier >= 3) setTimeout(() => beep(1760, 0.28, 'sine', 0.04, true), 95);
+}
+
 /** 章节印：本章四印集齐时的一声重章 + 两声轻铃（比单枚印更隆重） */
 export function chapterSealSound(on: boolean): void {
   if (!on) return;
