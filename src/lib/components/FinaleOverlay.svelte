@@ -16,6 +16,8 @@
   const expertCount = $derived(
     LEVEL_DEFS.reduce((n, d) => n + (engine.expertClears[d.id] ? 1 : 0), 0),
   );
+  /** 全局朱印与章节印（与「本关目标」同一套判定） */
+  const seals = $derived(engine.sealSummary);
 
   function onKey(e: KeyboardEvent): void {
     if (e.key === 'Escape') engine.dismissFinale();
@@ -61,6 +63,12 @@
       <div class="cell">
         <b>{expertCount}<i>/{LEVEL_DEFS.length}</i></b><span>💎 专家全清</span>
       </div>
+      <div class="cell">
+        <b>{seals.done}<i>/{seals.total}</i></b><span>朱印（星/满/准/专）</span>
+      </div>
+      <div class="cell">
+        <b>{seals.chapters}<i>/{seals.chaptersTotal}</i></b><span>章节印</span>
+      </div>
     </div>
 
     <p class="note">
@@ -69,7 +77,7 @@
         用谐波合成器创作关卡分享给朋友。
       {:else}
         每一关都还留着更高的目标：👑 完美全清（100% 收集）· 🎯 精确解认证（参数与傅立叶分解一致）·
-        💎 专家模式全清（不显示轮廓）。
+        💎 专家模式全清（不显示轮廓）——四枚朱印集齐后，章头还会盖上该章的章节印。
       {/if}
     </p>
 

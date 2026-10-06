@@ -126,6 +126,22 @@ describe('GameEngine', () => {
     expect(engine.newSeals).toEqual([]);
   });
 
+  it('sealSummary 汇总全局朱印与章节印', () => {
+    expect(engine.sealSummary).toEqual({
+      done: 0,
+      total: LEVEL_DEFS.length * 4,
+      chapters: 0,
+      chaptersTotal: 5,
+    });
+    // 集齐第一章（圆 + 椭圆）的全部朱印 → 8 枚印 + 1 方章节印
+    engine.bestStars = { circle: 3, ellipse: 3 };
+    engine.perfectLevels = { circle: true, ellipse: true };
+    engine.exactLevels = { circle: true, ellipse: true };
+    engine.expertClears = { circle: true, ellipse: true };
+    expect(engine.sealSummary.done).toBe(8);
+    expect(engine.sealSummary.chapters).toBe(1);
+  });
+
   it('今日最佳取各难度最高分；7 日格按天标记完成', () => {
     const today = todayKey();
     const yesterday = yesterdayKey();

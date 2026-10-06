@@ -2,13 +2,21 @@
   import { LEVEL_DEFS, makeLevel } from '../game/levels';
   import { chapterProgress, isLevelLocked } from '../game/campaign';
   import { levelGoals } from '../game/goals';
-  import { ACHIEVEMENTS } from '../game/scoring';
+  import { ACHIEVEMENTS, ACHV_GROUPS } from '../game/scoring';
   import { clearSave, exportSave, importSave } from '../game/save';
   import { engine } from '../game/engine.svelte';
 
-  let { onclose }: { onclose: () => void } = $props();
+  let { onclose, onplay }: { onclose: () => void; onplay?: (id: string) => void } = $props();
 
   const unlockedCount = $derived(Object.keys(engine.achievements).length);
+  /** 按分组统计成就（分组展示 + 每组进度条） */
+  const achvGroups = $derived(
+    ACHV_GROUPS.map((g) => {
+      const items = ACHIEVEMENTS.filter((a) => a.group === g.id);
+      const got = items.filter((a) => engine.achievements[a.id]).length;
+      return { ...g, items, got, total: items.length };
+    }),
+  );
   const totalStars = $derived(
     LEVEL_DEFS.reduce((sum, d) => sum + (engine.bestStars[d.id] ?? 0), 0),
   );
@@ -168,7 +176,15 @@
               {#each ch.levels as lv (lv.id)}
                 {@const locked = !ch.unlocked || isLocked(lv.id)}
                 {@const stars = engine.bestStars[lv.id] ?? 0}
-                <div class="dex-item" class:locked class:dim={!locked && stars === 0}>
+                <button
+                  type="button"
+                  class="dex-item"
+                  class:locked
+                  class:dim={!locked && stars === 0}
+                  disabled={locked}
+                  title={locked ? '尚未解锁' : '玩「' + lv.name + '」'}
+                  onclick={() => onplay?.(lv.id)}
+                >
                   <svg class="dex-shape" viewBox="0 0 640 640" aria-hidden="true">
                     {#if locked}
                       <text x="320" y="420" text-anchor="middle" class="dex-q">？</text>
@@ -185,7 +201,7 @@
                       <i class:on={g.done} title={g.name}>{g.seal}</i>
                     {/each}
                   </span>
-                </div>
+                </button>
               {/each}
             </div>
           </div>
@@ -280,15 +296,23 @@
       </div>
     {/if}
     <div class="list" class:hide={tab !== 'achv'}>
-      {#each ACHIEVEMENTS as a (a.id)}
-        {@const got = !!engine.achievements[a.id]}
-        <div class="item" class:got>
-          <span class="icon">{got ? '🏆' : '🔒'}</span>
-          <div class="txt">
-            <div class="nm">{a.name}</div>
-            <div class="desc">{a.desc}</div>
-          </div>
+      {#each achvGroups as g (g.id)}
+        <div class="ag-head">
+          <b>{g.name}</b>
+          <span class="ag-count">{g.got}/{g.total}</span>
+          <span class="ag-bar"><i style="width: {g.total ? (g.got / g.total) * 100 : 0}%"></i></span
+          >
         </div>
+        {#each g.items as a (a.id)}
+          {@const got = !!engine.achievements[a.id]}
+          <div class="item" class:got>
+            <span class="icon">{got ? '🏆' : '🔒'}</span>
+            <div class="txt">
+              <div class="nm">{a.name}</div>
+              <div class="desc">{a.desc}</div>
+            </div>
+          </div>
+        {/each}
       {/each}
     </div>
     <div class="hint">当前总星数 {totalStars} / {LEVEL_DEFS.length * 3}（随机关不计星）</div>
@@ -379,6 +403,19 @@
     border: 1px solid var(--line);
     border-radius: 9px;
     background: rgba(255, 255, 255, 0.02);
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      transform 0.15s;
+  }
+  .dex-item:not(:disabled):hover {
+    border-color: rgba(79, 209, 197, 0.55);
+    transform: translateY(-1px);
+  }
+  .dex-item:disabled {
+    cursor: default;
   }
   .dex-item.locked {
     opacity: 0.45;
@@ -441,6 +478,39 @@
     max-height: 46vh;
     overflow-y: auto;
     text-align: left;
+  }
+  /* 成就分组标题：组名 + 计数 + 细进度条 */
+  .ag-head {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 6px 0 1px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .ag-head:first-child {
+    margin-top: 0;
+  }
+  .ag-head b {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--cyan);
+  }
+  .ag-count {
+    font-variant-numeric: tabular-nums;
+  }
+  .ag-bar {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.07);
+    overflow: hidden;
+  }
+  .ag-bar i {
+    display: block;
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, rgba(79, 209, 197, 0.7), rgba(251, 191, 36, 0.75));
   }
   .item {
     display: flex;

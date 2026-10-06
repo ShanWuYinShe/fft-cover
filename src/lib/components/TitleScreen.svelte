@@ -15,6 +15,8 @@
     LEVEL_DEFS.reduce((n, d) => n + (engine.expertClears[d.id] ? 1 : 0), 0),
   );
   const hasProgress = $derived(totalStars > 0 || engine.dailyStreak.streak > 0);
+  /** 全局朱印进度（与「本关目标」同一套判定） */
+  const seals = $derived(engine.sealSummary);
 
   function start(): void {
     onstart();
@@ -32,6 +34,14 @@
     {#if hasProgress}
       <div class="ts-progress">
         <div class="p-item"><b>{totalStars}</b><i>/{LEVEL_DEFS.length * 3} 星</i></div>
+        <div class="p-item" title="四枚朱印：星 / 满 / 准 / 专">
+          <b>{seals.done}</b><i>/{seals.total} 印</i>
+        </div>
+        {#if seals.chapters > 0}
+          <div class="p-item" title="章节印：一章四印集齐">
+            <b>{seals.chapters}</b><i>/{seals.chaptersTotal} 章节印</i>
+          </div>
+        {/if}
         <div class="p-item"><b>{perfectCount}</b><i>👑 完美</i></div>
         <div class="p-item"><b>{exactCount}</b><i>🎯 精确解</i></div>
         {#if expertCount > 0}

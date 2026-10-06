@@ -51,6 +51,7 @@ import { campaignState, type CampaignState } from './campaign';
 import {
   chapterSealState,
   levelGoals,
+  sealsDone,
   type ChapterSealState,
   type GoalId,
   type GoalState,
@@ -542,6 +543,20 @@ export class GameEngine {
   chapterSealsOf(chapterId: string): ChapterSealState {
     const ids = LEVEL_DEFS.filter((d) => (d.chapter ?? 'basics') === chapterId).map((d) => d.id);
     return chapterSealState(ids, (id) => this.goalStateOf(id));
+  }
+
+  /** 全局朱印进度：全部内置关卡的印章数 + 已集齐的章节印数（标题页/结局/统计共用） */
+  get sealSummary(): { done: number; total: number; chapters: number; chaptersTotal: number } {
+    let done = 0;
+    for (const d of LEVEL_DEFS) done += sealsDone(this.goalStateOf(d.id));
+    let chapters = 0;
+    for (const ch of CHAPTERS) if (this.chapterSealsOf(ch.id).sealed) chapters++;
+    return {
+      done,
+      total: LEVEL_DEFS.length * 4,
+      chapters,
+      chaptersTotal: CHAPTERS.length,
+    };
   }
 
   /** 沙盒转速档位循环 0.5× → 1× → 2× */

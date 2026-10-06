@@ -100,33 +100,68 @@ export function solveFromSpectrum(spectrum: SpectrumEntry[], limit: number, slot
   return out;
 }
 
+/** 成就分组（面板按组展示，一眼看清自己还差什么） */
+export interface AchievementGroup {
+  id: string;
+  name: string;
+}
+
+export const ACHV_GROUPS: AchievementGroup[] = [
+  { id: 'start', name: '初识' },
+  { id: 'mastery', name: '精通' },
+  { id: 'collect', name: '收藏' },
+  { id: 'challenge', name: '挑战' },
+];
+
 /** 成就定义 */
 export interface AchievementDef {
   id: string;
   name: string;
   desc: string;
+  /** 所属分组（ACHV_GROUPS 的 id） */
+  group: string;
 }
 
 /** 全部成就 */
 export const ACHIEVEMENTS: AchievementDef[] = [
-  { id: 'first-star', name: '初露锋芒', desc: '获得第一颗星' },
-  { id: 'first-clear', name: '首次全清', desc: '收集齐任意一关的全部点' },
-  { id: 'combo-king', name: '连击之王', desc: '单局得分达到 30000' },
-  { id: 'all-three', name: '谐波大师', desc: '全部内置关卡三星' },
-  { id: 'all-perfect', name: '完美主义', desc: '全部内置关卡完美全清（100%）' },
-  { id: 'exact-award', name: '精确分解', desc: '全部内置关卡达成精确解认证（拟合度 ≥99%）' },
-  { id: 'streak-7', name: '日拱一卒', desc: '每日挑战连续完成 7 天' },
-  { id: 'expert-all', name: '盲眼大师', desc: '专家模式（无轮廓预览）下全清全部内置关卡' },
-  { id: 'speed-demon', name: '光速谐波', desc: '任意一关 8 秒内全清' },
-  { id: 'sandboxer', name: '自由爵士', desc: '体验一次沙盒模式' },
-  { id: 'inviter', name: '牵线搭桥', desc: '使用过随机关邀请码' },
-  { id: 'drag-master', name: '机械臂大师', desc: '用画布拖拽调过指针' },
-  { id: 'daily-player', name: '每日一练', desc: '每日挑战中拿到得分' },
-  { id: 'half-stars', name: '半程大师', desc: '总星数达到满分一半' },
-  { id: 'auto-try', name: '数学魔法', desc: '体验过自动拟合演示' },
-  { id: 'composer', name: '造物主', desc: '用谐波合成器创作过关卡' },
-  { id: 'chapter-seal', name: '一方之印', desc: '集齐任意一章的全部朱印（章节印）' },
-  { id: 'all-chapter-seals', name: '印满山河', desc: '五章的章节印全部集齐' },
+  { id: 'first-star', name: '初露锋芒', desc: '获得第一颗星', group: 'start' },
+  { id: 'first-clear', name: '首次全清', desc: '收集齐任意一关的全部点', group: 'start' },
+  { id: 'sandboxer', name: '自由爵士', desc: '体验一次沙盒模式', group: 'start' },
+  { id: 'drag-master', name: '机械臂大师', desc: '用画布拖拽调过指针', group: 'start' },
+  { id: 'auto-try', name: '数学魔法', desc: '体验过自动拟合演示', group: 'start' },
+  { id: 'composer', name: '造物主', desc: '用谐波合成器创作过关卡', group: 'start' },
+  { id: 'combo-king', name: '连击之王', desc: '单局得分达到 30000', group: 'mastery' },
+  { id: 'half-stars', name: '半程大师', desc: '总星数达到满分一半', group: 'mastery' },
+  { id: 'all-three', name: '谐波大师', desc: '全部内置关卡三星', group: 'mastery' },
+  { id: 'all-perfect', name: '完美主义', desc: '全部内置关卡完美全清（100%）', group: 'mastery' },
+  {
+    id: 'exact-award',
+    name: '精确分解',
+    desc: '全部内置关卡达成精确解认证（拟合度 ≥99%）',
+    group: 'mastery',
+  },
+  {
+    id: 'expert-all',
+    name: '盲眼大师',
+    desc: '专家模式（无轮廓预览）下全清全部内置关卡',
+    group: 'mastery',
+  },
+  {
+    id: 'chapter-seal',
+    name: '一方之印',
+    desc: '集齐任意一章的全部朱印（章节印）',
+    group: 'collect',
+  },
+  {
+    id: 'all-chapter-seals',
+    name: '印满山河',
+    desc: '五章的章节印全部集齐',
+    group: 'collect',
+  },
+  { id: 'daily-player', name: '每日一练', desc: '每日挑战中拿到得分', group: 'challenge' },
+  { id: 'streak-7', name: '日拱一卒', desc: '每日挑战连续完成 7 天', group: 'challenge' },
+  { id: 'inviter', name: '牵线搭桥', desc: '使用过随机关邀请码', group: 'challenge' },
+  { id: 'speed-demon', name: '光速谐波', desc: '任意一关 8 秒内全清', group: 'challenge' },
 ];
 
 /** 成就判定上下文（全部来自引擎的持久化数据） */

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ACHIEVEMENTS,
+  ACHV_GROUPS,
   evalAchievements,
   fitScore,
   scoreForPoint,
@@ -33,6 +35,15 @@ describe('evalAchievements', () => {
   const base = { bestStars: {}, bestScores: {}, bestClears: {}, flags: {}, levelCount: 9 };
   it('空数据无成就', () => {
     expect(evalAchievements(base)).toEqual([]);
+  });
+  it('每个成就都归入已知分组，且每组都非空（面板分组展示）', () => {
+    const ids = ACHV_GROUPS.map((g) => g.id);
+    for (const a of ACHIEVEMENTS) expect(ids).toContain(a.group);
+    for (const g of ACHV_GROUPS) {
+      expect(ACHIEVEMENTS.some((a) => a.group === g.id)).toBe(true);
+    }
+    // 成就 id 不重复
+    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(ACHIEVEMENTS.length);
   });
   it('章节印成就：集齐任意一章 / 全部章节', () => {
     expect(evalAchievements({ ...base, chapterSeals: { basics: false } })).not.toContain(

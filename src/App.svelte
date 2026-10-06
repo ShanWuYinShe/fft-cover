@@ -109,6 +109,14 @@
     chapterIntro = ch;
   });
 
+  /** 图鉴里点一格：直接进那一关（未解锁的格子不可点） */
+  function playFromDex(id: string): void {
+    const def = LEVEL_DEFS.find((d) => d.id === id);
+    if (!def) return;
+    engine.loadLevel(def);
+    showAchv = false;
+  }
+
   function dismissChapterIntro(): void {
     if (chapterIntro) engine.markFlag('chapterIntro:' + chapterIntro.id);
     chapterIntro = null;
@@ -485,7 +493,7 @@
 {/if}
 
 {#if showAchv}
-  <AchievementsModal onclose={() => (showAchv = false)} />
+  <AchievementsModal onclose={() => (showAchv = false)} onplay={playFromDex} />
 {/if}
 {#if !tutorialSeen && !showTitle}
   <div class="tutorial">
