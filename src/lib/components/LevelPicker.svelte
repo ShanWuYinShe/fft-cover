@@ -1,7 +1,8 @@
 <script lang="ts">
   import { engine } from '../game/engine.svelte';
   import { decodeCoeffs, LEVEL_DEFS, todayKey } from '../game/levels';
-  import { chapterProgress, isLevelLocked } from '../game/campaign';
+  import { chapterProgress, isLevelLocked, type ChapterProgress } from '../game/campaign';
+  import { goalProgress, levelGoals } from '../game/goals';
   import { keyForChapter } from '../game/harmony';
   import ComposerModal from './ComposerModal.svelte';
 
@@ -12,6 +13,28 @@
 
   /** 战役章节进度（章内星数 / 满星 / 解锁 / 全通） */
   const chapters = $derived(chapterProgress(LEVEL_DEFS, engine.bestStars));
+
+  /** 某关已盖的朱印数（与「本关目标」面板同一套判定） */
+  const sealsOf = (id: string): number =>
+    goalProgress(
+      levelGoals({
+        stars: engine.bestStars[id] ?? 0,
+        perfect: !!engine.perfectLevels[id],
+        exact: !!engine.exactLevels[id],
+        expert: !!engine.expertClears[id],
+      }),
+    ).done;
+
+  /** 每章朱印收集进度：把"精通"也变成地图上看得见的一条进度 */
+  const chapterSeals = $derived.by(() => {
+    const out: Record<string, { done: number; total: number }> = {};
+    for (const ch of chapters as ChapterProgress[]) {
+      let done = 0;
+      for (const l of ch.levels) done += sealsOf(l.id);
+      out[ch.id] = { done, total: ch.levels.length * 4 };
+    }
+    return out;
+  });
 
   /** 战役状态：🏁 已通关 / 🏆 全三星（👑 已用于"完美全清"，换图标避免歧义） */
   const campaignBadge = $derived(
@@ -129,8 +152,11 @@
     >
     <div class="nav-mid">
       <b>{view?.name ?? ''}</b>
-      <span
-        >{view ? view.stars : 0}/{view ? view.maxStars : 0} ★{#if view?.cleared}&nbsp;· 全通 ✓{/if}</span
+      <span>
+        {view ? view.stars : 0}/{view ? view.maxStars : 0} ★{#if view}&nbsp;· 印
+          {chapterSeals[view.id]?.done ?? 0}/{chapterSeals[view.id]?.total ??
+            0}{/if}{#if view?.cleared}
+          &nbsp;· 全通 ✓{/if}</span
       >
     </div>
     <button

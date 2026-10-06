@@ -10,6 +10,9 @@
   import AchievementsModal from './lib/components/AchievementsModal.svelte';
   import FinaleOverlay from './lib/components/FinaleOverlay.svelte';
   import GoalPanel from './lib/components/GoalPanel.svelte';
+  import ChapterIntroOverlay from './lib/components/ChapterIntroOverlay.svelte';
+  import { LEVEL_DEFS } from './lib/game/levels';
+  import { chapterProgress, type ChapterProgress } from './lib/game/campaign';
   import { engine } from './lib/game/engine.svelte';
   import {
     achvSound,
@@ -85,6 +88,31 @@
     const d = engine.ghostDelta;
     return d > 0 ? '👻 +' + d + ' 领先' : d < 0 ? '👻 ' + d + ' 落后' : '👻 持平';
   });
+
+  /* ---------- 章节入场卡：第一次进入某一章时介绍这一章教什么 ---------- */
+
+  const chapters = $derived(chapterProgress(LEVEL_DEFS, engine.bestStars));
+  /** 当前关卡所属章节 */
+  const currentChapter = $derived(
+    chapters.find((c) => c.levels.some((l) => l.id === engine.level?.id)) ?? null,
+  );
+  /** 正在展示的入场卡（null = 不展示） */
+  let chapterIntro = $state<ChapterProgress | null>(null);
+
+  $effect(() => {
+    const ch = currentChapter;
+    // 第一章交给新手引导；已看过的、未解锁的、标题页/引导页期间都不弹
+    if (!ch || ch.id === 'basics' || !ch.unlocked) return;
+    if (engine.flags['chapterIntro:' + ch.id]) return;
+    if (showTitle || !engine.flags['tutorialSeen']) return;
+    if (chapterIntro?.id === ch.id) return;
+    chapterIntro = ch;
+  });
+
+  function dismissChapterIntro(): void {
+    if (chapterIntro) engine.markFlag('chapterIntro:' + chapterIntro.id);
+    chapterIntro = null;
+  }
 
   function syncMusic(): void {
     updateMusic(
@@ -478,6 +506,9 @@
       </button>
     </div>
   </div>
+{/if}
+{#if chapterIntro}
+  <ChapterIntroOverlay chapter={chapterIntro} onclose={dismissChapterIntro} />
 {/if}
 {#if engine.finale}
   <FinaleOverlay />
