@@ -25,6 +25,24 @@ function vol(): number {
   return volume;
 }
 
+/**
+ * 取得（必要时创建）全局唯一的 AudioContext。
+ * 音效与背景音乐共用同一个上下文，避免多实例互相抢占。
+ * 音频不可用时返回 null（不抛错，不影响游戏）。
+ */
+export function getAudioContext(): AudioContext | null {
+  try {
+    const Ctor =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!Ctor) return null;
+    audioCtx = audioCtx ?? new Ctor();
+    return audioCtx;
+  } catch {
+    return null;
+  }
+}
+
 /** 播放一声短音。on=false 时静默；音频不可用时静默失败。 */
 export function beep(
   freq: number,
@@ -35,20 +53,18 @@ export function beep(
 ): void {
   if (!on) return;
   try {
-    const Ctor =
-      window.AudioContext ??
-      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    audioCtx = audioCtx ?? new Ctor();
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
+    const ac = getAudioContext();
+    if (!ac) return;
+    const o = ac.createOscillator();
+    const g = ac.createGain();
     o.type = type;
     o.frequency.value = freq;
-    g.gain.setValueAtTime(gain * vol(), audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    g.gain.setValueAtTime(gain * vol(), ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
     o.connect(g);
-    g.connect(audioCtx.destination);
+    g.connect(ac.destination);
     o.start();
-    o.stop(audioCtx.currentTime + dur);
+    o.stop(ac.currentTime + dur);
   } catch {
     /* 音频不可用则忽略 */
   }

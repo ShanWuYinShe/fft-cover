@@ -282,6 +282,19 @@ button:disabled {
   flex-wrap: wrap;
 }
 
+/* 应用级图标（音量/音乐/成就）成组换行：避免最后一个按钮孤零零独占一行 */
+.run-icons {
+  display: flex;
+  gap: 8px;
+}
+
+/* 窄屏运行栏是网格布局：图标组"溶解"为其子项，直接参与网格排布 */
+@media (max-width: 640px) {
+  .run-icons {
+    display: contents;
+  }
+}
+
 /* ---------- 侧栏 ---------- */
 .side {
   display: flex;
@@ -371,10 +384,17 @@ button:disabled {
   color: var(--cyan);
 }
 
-.tools-row button.gold {
+/* 金色态：运行栏（2× 快进、音乐开关）与指针工具栏共用 */
+button.gold {
   border-color: rgba(251, 191, 36, 0.55);
   color: var(--gold);
   background: var(--gold-dim);
+}
+
+/* 音乐开关关闭态：压暗（图标不变，避免与音量图标混淆） */
+.run-row button.music-off {
+  color: var(--muted-2);
+  opacity: 0.55;
 }
 
 /* ---------- 指针卡网格 ---------- */
@@ -882,6 +902,10 @@ input[type='checkbox'] {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 6px;
+  }
+
+  .run-icons {
+    display: contents;
   }
 
   .run-row button {

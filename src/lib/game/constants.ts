@@ -20,6 +20,8 @@ export const COMBO_WINDOW = 1200;
 export const BEST_SCORE_KEY = 'fft-pointers-best-score-v1';
 /** 音效开关 localStorage 键名 */
 export const SOUND_KEY = 'fft-pointers-sound-v1';
+/** 背景音乐开关 localStorage 键名 */
+export const MUSIC_KEY = 'fft-pointers-music-v1';
 /** 最快全清用时 localStorage 键名 */
 export const CLEAR_KEY = 'fft-pointers-clear-v1';
 /** 完美全清（100% 收集）记录：关卡 id → true */

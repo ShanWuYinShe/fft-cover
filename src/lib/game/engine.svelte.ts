@@ -13,6 +13,7 @@ import {
   FLAGS_KEY,
   PERFECT_KEY,
   STREAK_KEY,
+  MUSIC_KEY,
   RUN_DUR,
   SOUND_KEY,
   CIRCLED,
@@ -80,6 +81,15 @@ function loadScores(): Record<string, number> {
 function loadSound(): boolean {
   try {
     return localStorage.getItem(SOUND_KEY) !== '0';
+  } catch {
+    return true;
+  }
+}
+
+/** 背景音乐开关（默认开：游戏该有配乐，且可一键关闭） */
+function loadMusic(): boolean {
+  try {
+    return localStorage.getItem(MUSIC_KEY) !== '0';
   } catch {
     return true;
   }
@@ -206,6 +216,8 @@ export class GameEngine {
   lastCollectAt = -Infinity;
   /** 音效开关（持久化） */
   soundOn = $state(loadSound());
+  /** 背景音乐开关（持久化）：把指针参数实时合成为和声垫音 */
+  musicOn = $state(loadMusic());
   /** 沙盒模式：无限时长自由旋转，成绩不计入记录 */
   sandbox = $state(false);
   /** 刚结束的一局是否为沙盒（结算浮层展示用） */
@@ -651,6 +663,16 @@ export class GameEngine {
     this.soundOn = on;
     try {
       localStorage.setItem(SOUND_KEY, on ? '1' : '0');
+    } catch {
+      /* 存储不可用则忽略 */
+    }
+  }
+
+  /** 背景音乐开关（持久化） */
+  setMusic(on: boolean): void {
+    this.musicOn = on;
+    try {
+      localStorage.setItem(MUSIC_KEY, on ? '1' : '0');
     } catch {
       /* 存储不可用则忽略 */
     }

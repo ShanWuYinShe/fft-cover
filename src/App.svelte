@@ -19,6 +19,8 @@
     uiClick,
     uiToggle,
   } from './lib/game/audio';
+  import { musicIntensity } from './lib/game/harmony';
+  import { setMusicSuspended, startMusic, updateMusic } from './lib/game/music';
 
   let showAchv = $state(false);
   /** 开始画面：首次访问显示（老玩家直接进游戏，点标题可再看） */
@@ -46,15 +48,40 @@
       if (el.closest('button')) uiClick(engine.soundOn);
     };
     document.addEventListener('click', onUiClick, true);
+    // 浏览器自动播放策略：音频必须在用户手势后起播（首次交互即开始配乐）
+    const onFirstGesture = () => {
+      startMusic();
+      syncMusic(); // 手势本身不改变响应式状态，建图后需立即落地一次当前声部
+    };
+    document.addEventListener('pointerdown', onFirstGesture, { capture: true, once: true });
+    document.addEventListener('keydown', onFirstGesture, { capture: true, once: true });
+    // 切到后台挂起音频（省电，也不会在后台继续响）
+    const onVisibility = () => setMusicSuspended(document.hidden);
+    document.addEventListener('visibilitychange', onVisibility);
     return () => {
       window.removeEventListener('pwa-update', onUpdate);
       document.removeEventListener('click', onUiClick, true);
+      document.removeEventListener('pointerdown', onFirstGesture, true);
+      document.removeEventListener('keydown', onFirstGesture, true);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   });
   function applyPwaUpdate(): void {
     void import('./main').then((m) => m.applyUpdate());
   }
   let volume = $state(getVolume());
+
+  /**
+   * 背景音乐跟随游戏状态：指针参数（引擎响应式）变化即刷新声部，
+   * 阶段变化即调整动态强度。参数未变时 updateMusic 内部直接返回。
+   */
+  function syncMusic(): void {
+    updateMusic(engine.arms, musicIntensity(engine.phase, engine.sandbox), engine.musicOn, volume);
+  }
+
+  $effect(() => {
+    syncMusic();
+  });
 
   /** 音量三态循环 1 → 0.5 → 0（静音时同步引擎开关） */
   function cycleVolume(): void {
@@ -227,10 +254,24 @@
         </button>
         <button title="沙盒转速档位" onclick={() => engine.cycleSpeed()}>⚡ {engine.speed}×</button>
         <button onclick={() => engine.resetRun()}>⟲ 重置点</button>
-        <button title="音量（点击循环 全/半/静）" onclick={cycleVolume}>
-          {volIcon}
-        </button>
-        <button title="成就" onclick={() => (showAchv = true)}>🏆</button>
+        <span class="run-icons">
+          <button title="音量（点击循环 全/半/静）" onclick={cycleVolume}>
+            {volIcon}
+          </button>
+          <button
+            class:music-off={!engine.musicOn}
+            class:gold={engine.musicOn}
+            aria-pressed={engine.musicOn}
+            title={engine.musicOn
+              ? '背景音乐：你的指针正在实时合成和声（频率→音高、半径→音量、相位→左右）'
+              : '背景音乐已关闭，点击开启'}
+            onclick={() => {
+              engine.setMusic(!engine.musicOn);
+              uiToggle(engine.soundOn);
+            }}>🎵</button
+          >
+          <button title="成就" onclick={() => (showAchv = true)}>🏆</button>
+        </span>
       {:else}
         <button class="primary" onclick={toggleRun}>{engine.runLabel}</button>
         <button
@@ -257,10 +298,24 @@
         >
           🧪 沙盒
         </button>
-        <button title="音量（点击循环 全/半/静）" onclick={cycleVolume}>
-          {volIcon}
-        </button>
-        <button title="成就" onclick={() => (showAchv = true)}>🏆</button>
+        <span class="run-icons">
+          <button title="音量（点击循环 全/半/静）" onclick={cycleVolume}>
+            {volIcon}
+          </button>
+          <button
+            class:music-off={!engine.musicOn}
+            class:gold={engine.musicOn}
+            aria-pressed={engine.musicOn}
+            title={engine.musicOn
+              ? '背景音乐：你的指针正在实时合成和声（频率→音高、半径→音量、相位→左右）'
+              : '背景音乐已关闭，点击开启'}
+            onclick={() => {
+              engine.setMusic(!engine.musicOn);
+              uiToggle(engine.soundOn);
+            }}>🎵</button
+          >
+          <button title="成就" onclick={() => (showAchv = true)}>🏆</button>
+        </span>
       {/if}
     </div>
   </section>
