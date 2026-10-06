@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { LEVEL_DEFS } from '../game/levels';
+  import { LEVEL_DEFS, makeLevel } from '../game/levels';
+  import { chapterProgress, isLevelLocked } from '../game/campaign';
+  import { levelGoals } from '../game/goals';
   import { ACHIEVEMENTS } from '../game/scoring';
   import { clearSave, exportSave, importSave } from '../game/save';
   import { engine } from '../game/engine.svelte';
@@ -11,8 +13,31 @@
     LEVEL_DEFS.reduce((sum, d) => sum + (engine.bestStars[d.id] ?? 0), 0),
   );
 
+  /* ---------- 图鉴：每关轮廓的缩略 SVG ---------- */
+  /** 轮廓点串缓存（打开图鉴时才构建，之后复用） */
+  const shapeCache = new Map<string, string>();
+  function shapePath(id: string): string {
+    const hit = shapeCache.get(id);
+    if (hit !== undefined) return hit;
+    const def = LEVEL_DEFS.find((d) => d.id === id);
+    if (!def) return '';
+    const curve = makeLevel(def).curve;
+    const step = Math.max(1, Math.round(curve.length / 120));
+    const pts = curve
+      .filter((_, i) => i % step === 0)
+      .map((q) => q.x.toFixed(1) + ',' + q.y.toFixed(1))
+      .join(' ');
+    shapeCache.set(id, pts);
+    return pts;
+  }
+
+  const chapters = $derived(chapterProgress(LEVEL_DEFS, engine.bestStars));
+  /** 已点亮（拿到过星）的关卡数 */
+  const litLevels = $derived(LEVEL_DEFS.filter((d) => (engine.bestStars[d.id] ?? 0) > 0).length);
+  const isLocked = (id: string): boolean => isLevelLocked(LEVEL_DEFS, id, engine.bestStars);
+
   /* ---------- 存档（备份/恢复/清空） ---------- */
-  let tab: 'achv' | 'stats' | 'save' = $state('achv');
+  let tab: 'achv' | 'dex' | 'stats' | 'save' = $state('achv');
 
   /* ---------- 统计 ---------- */
   /** 各关明细：局数、最佳分、星数、最近趋势（用于迷你火花线） */
@@ -111,13 +136,62 @@
 >
   <div class="box">
     <h2>
-      🏆 成就 <span class="muted">{unlockedCount} / {ACHIEVEMENTS.length}</span>
+      {#if tab === 'dex'}
+        📖 图鉴 <span class="muted">{litLevels} / {LEVEL_DEFS.length} 关已点亮</span>
+      {:else}
+        🏆 成就 <span class="muted">{unlockedCount} / {ACHIEVEMENTS.length}</span>
+      {/if}
     </h2>
     <div class="tabs">
       <button type="button" class:on={tab === 'achv'} onclick={() => (tab = 'achv')}>成就</button>
+      <button type="button" class:on={tab === 'dex'} onclick={() => (tab = 'dex')}>图鉴</button>
       <button type="button" class:on={tab === 'stats'} onclick={() => (tab = 'stats')}>统计</button>
       <button type="button" class:on={tab === 'save'} onclick={() => (tab = 'save')}>存档</button>
     </div>
+    {#if tab === 'dex'}
+      <div class="dex">
+        {#each chapters as ch (ch.id)}
+          {@const seal = engine.chapterSealsOf(ch.id)}
+          <div class="dex-ch">
+            <div class="dex-ch-head">
+              <b>{ch.unlocked ? ch.name : '？？？'}</b>
+              {#if ch.unlocked}
+                <span class="dex-count">{seal.done}/{seal.total} 印</span>
+                {#if seal.sealed}
+                  <span class="dex-ch-seal" title={'章节印「' + ch.seal + '」'}>{ch.seal}</span>
+                {/if}
+              {:else}
+                <span class="dex-count">通关上一章后解锁</span>
+              {/if}
+            </div>
+            <div class="dex-grid">
+              {#each ch.levels as lv (lv.id)}
+                {@const locked = !ch.unlocked || isLocked(lv.id)}
+                {@const stars = engine.bestStars[lv.id] ?? 0}
+                <div class="dex-item" class:locked class:dim={!locked && stars === 0}>
+                  <svg class="dex-shape" viewBox="0 0 640 640" aria-hidden="true">
+                    {#if locked}
+                      <text x="320" y="420" text-anchor="middle" class="dex-q">？</text>
+                    {:else}
+                      <polyline points={shapePath(lv.id)} />
+                    {/if}
+                  </svg>
+                  <span class="dex-nm">{locked ? '？？？' : lv.name}</span>
+                  <span class="dex-st"
+                    >{locked ? '' : '★'.repeat(stars) + '☆'.repeat(3 - stars)}</span
+                  >
+                  <span class="dex-seals">
+                    {#each levelGoals(engine.goalStateOf(lv.id)) as g (g.id)}
+                      <i class:on={g.done} title={g.name}>{g.seal}</i>
+                    {/each}
+                  </span>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/each}
+      </div>
+    {/if}
     {#if tab === 'stats'}
       <div class="stats">
         <div class="cards">
@@ -251,6 +325,114 @@
     font-size: 13px;
     letter-spacing: 0;
   }
+  /* ---------- 图鉴 ---------- */
+  .dex {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 12px;
+    max-height: 46vh;
+    overflow-y: auto;
+    text-align: left;
+  }
+  .dex-ch-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 5px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .dex-ch-head b {
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
+  .dex-count {
+    font-variant-numeric: tabular-nums;
+  }
+  .dex-ch-seal {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fdece7;
+    background: linear-gradient(160deg, #c0392b, #8e2a1f);
+  }
+  .dex-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .dex-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 5px 4px 6px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .dex-item.locked {
+    opacity: 0.45;
+  }
+  .dex-shape {
+    width: 100%;
+    height: 60px;
+  }
+  .dex-shape polyline {
+    fill: none;
+    stroke: rgba(79, 209, 197, 0.9);
+    stroke-width: 7;
+    stroke-linejoin: round;
+  }
+  .dex-item.dim .dex-shape polyline {
+    stroke: rgba(150, 170, 200, 0.4);
+  }
+  .dex-q {
+    fill: var(--muted);
+    font-size: 180px;
+  }
+  .dex-nm {
+    font-size: 11px;
+    color: var(--text);
+  }
+  .dex-st {
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 1px;
+    min-height: 12px;
+  }
+  .dex-seals {
+    display: flex;
+    gap: 2px;
+  }
+  .dex-seals i {
+    width: 13px;
+    height: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    border: 1px solid var(--line-2);
+    font-style: normal;
+    font-size: 9px;
+    line-height: 1;
+    color: var(--muted);
+  }
+  .dex-seals i.on {
+    border-color: rgba(192, 57, 43, 0.6);
+    background: linear-gradient(160deg, #c0392b, #8e2a1f);
+    color: #fdece7;
+  }
+
   .list {
     display: flex;
     flex-direction: column;
