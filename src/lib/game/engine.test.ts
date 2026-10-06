@@ -218,6 +218,52 @@ describe('GameEngine', () => {
     expect(engine.lastGhostDelta).toBe(null);
   });
 
+  /** 把圆关跑满一局（r=120 全清），返回结算后的引擎 */
+  function runCircle(engine2: GameEngine): GameEngine {
+    engine2.setArm(0, { r: 120 });
+    engine2.phase = 'running';
+    let guard = 0;
+    while (engine2.collectedCount < engine2.total && guard < 2000) {
+      engine2.advance(0.016);
+      guard++;
+    }
+    engine2.stopRun();
+    return engine2;
+  }
+
+  it('通关演出：补上最后一关的星才触发，重复游玩不再弹', () => {
+    const stars: Record<string, number> = {};
+    for (const d of LEVEL_DEFS) stars[d.id] = 1;
+    delete stars.circle; // 只差圆关
+    engine.bestStars = stars;
+    expect(engine.campaign).toBe('none');
+
+    runCircle(engine);
+    expect(engine.campaign).toBe('cleared');
+    expect(engine.finale).toBe('cleared');
+    engine.dismissFinale();
+    expect(engine.finale).toBe(null);
+
+    // 再玩一次同一关：战役状态没跨级 → 不再弹
+    engine.resetRun();
+    runCircle(engine);
+    expect(engine.finale).toBe(null);
+  });
+
+  it('全三星触发精通结局，resetRun 会收起结局', () => {
+    const stars: Record<string, number> = {};
+    for (const d of LEVEL_DEFS) stars[d.id] = 3;
+    stars.circle = 0;
+    engine.bestStars = stars;
+    expect(engine.campaign).toBe('none');
+
+    runCircle(engine);
+    expect(engine.campaign).toBe('mastered');
+    expect(engine.finale).toBe('mastered');
+    engine.resetRun();
+    expect(engine.finale).toBe(null);
+  });
+
   it('切到上限更低的关卡时裁剪超出指针', () => {
     engine.loadLevel(LEVEL_DEFS.find((d) => d.id === 'heart')!); // 心形上限 8
     engine.setArm(2, { on: true });

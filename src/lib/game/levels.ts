@@ -13,6 +13,24 @@ const C = Math.cos;
 const S = Math.sin;
 
 /**
+ * 战役章节：把内置关卡组织成一条有节奏的通关路线。
+ * 每章一个主题（对应一类傅立叶结构），章内关卡线性解锁、章间递进。
+ */
+export interface ChapterDef {
+  id: string;
+  name: string;
+  tagline: string;
+}
+
+/** 四个章节（顺序即解锁顺序） */
+export const CHAPTERS: ChapterDef[] = [
+  { id: 'basics', name: '第一章 · 单一频率', tagline: '一根指针就是一个旋转向量' },
+  { id: 'petals', name: '第二章 · 花瓣与齿轮', tagline: '⟲ 反转的那一根，才是关键' },
+  { id: 'pairs', name: '第三章 · 频率对', tagline: '正频与负频总是成对出现' },
+  { id: 'summit', name: '第四章 · 谐波之巅', tagline: '高次谐波，以及故意不让你拟合的曲线' },
+];
+
+/**
  * 内置关卡（难度递进）。
  * armLimit 为本关指针上限——每关都存在按傅立叶精确分解可达成的高分路径。
  * hint 给出目标曲线的谐波分解线索（含负频率项）。
@@ -20,6 +38,7 @@ const S = Math.sin;
 export const LEVEL_DEFS: LevelDef[] = [
   {
     id: 'circle',
+    chapter: 'basics',
     name: '圆',
     hint: '一根 1× 指针就能画圆（半径约 120，相位随意）——单一频率项，这是傅立叶级数最简单的形式。',
     n: 24,
@@ -28,6 +47,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   },
   {
     id: 'ellipse',
+    chapter: 'basics',
     name: '椭圆',
     hint: '精确分解含 <b>1× 与 −1×（⟲ 反转）</b>两根：一正一反两个旋转向量叠加，把圆压成椭圆。相位很重要！',
     n: 24,
@@ -36,6 +56,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   },
   {
     id: 'clover',
+    chapter: 'petals',
     name: '三叶草',
     hint: 'r=cos3θ 的复数分解：e^{iθ}·cos3θ = ½e^{i4θ} + ½e^{−i2θ}——只要 <b>4× 与 −2× 两根</b>！负频率＝<b>反向旋转</b>：把 −2× 那根的方向按钮切到 <b>⟲（紫色）</b>即可。',
     n: 27,
@@ -47,6 +68,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   },
   {
     id: 'flower5',
+    chapter: 'petals',
     name: '五瓣花',
     hint: 'r=1+0.38cos5θ → e^{iθ} + 0.19e^{i6θ} + 0.19e^{−i4θ}：需要 <b>1×、6×、−4×（⟲ 反转）</b>三根。',
     n: 30,
@@ -58,6 +80,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   },
   {
     id: 'gear8',
+    chapter: 'petals',
     name: '八齿齿轮',
     hint: 'e^{iθ}(1+0.22cos8θ) = e^{iθ} + 0.11e^{i9θ} + 0.11e^{−i7θ}：<b>1× 主臂 + 9× 与 −7×（⟲ 反转）</b>小半径副臂。9× 转得飞快！',
     n: 30,
@@ -69,6 +92,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   },
   {
     id: 'inf8',
+    chapter: 'pairs',
     name: '无穷 ∞',
     hint: '别被"两根"骗了！x=cosθ/(1+sin²θ) 自含 <b>±1× 与 ±3×</b> 谐波，y 又需要 ±2×——<b>±1× 与 ±2× 四根</b>起步，3× 微调贴合交叉处。',
     n: 24,
@@ -81,6 +105,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   },
   {
     id: 'lissajous',
+    chapter: 'pairs',
     name: '利萨茹 3:2',
     hint: 'x=cos3t、y=sin2t 的复数分解含 <b>±3× 与 ±2×</b> 四根——同频率的正反两根相位差 90°，这就是"频率对"。',
     n: 26,
@@ -89,6 +114,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   },
   {
     id: 'liss54',
+    chapter: 'pairs',
     name: '利萨茹 5:4',
     hint: '频率对 <b>±5× 与 ±4×</b>——更密的结，四根指针缺一不可。最后一课：频率对的长度各不相同。',
     n: 30,
@@ -97,6 +123,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   },
   {
     id: 'rose9',
+    chapter: 'summit',
     name: '九瓣花',
     hint: 'e^{iθ}(1+0.22cos9θ) = e^{iθ} + 0.11e^{i10θ} + 0.11e^{−i8θ}：<b>1×、10× 与 −8×（⟲ 反转）</b>三根即可完美——越高频的花，需要的谐波越高。',
     n: 30,
@@ -108,6 +135,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   },
   {
     id: 'star5',
+    chapter: 'summit',
     name: '五角星',
     hint: '尖角是无限高频率，5 根指针也难完全贴合——优先保证五条边中段，尽力收集！',
     n: 30,
@@ -125,6 +153,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   },
   {
     id: 'heart',
+    chapter: 'summit',
     name: '心形',
     hint: '终极考验：心形的精确分解需要 <b>±1×、±2×、±3×、±4× 全部 8 根</b>（⟲ 反转组合一个不能少）——通关它，你就真正理解了傅立叶级数！',
     n: 30,
@@ -136,6 +165,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   },
   {
     id: 'ripple12',
+    chapter: 'summit',
     name: '十二波纹',
     hint: '⚠️ 收官挑战：r=1+0.14cos12θ 的精确分解含 <b>13× 与 −11×</b>——都超出了 10× 上限，<b>无法完美拟合</b>。用 1× 撑起主体，再用 10× 尽量压出波纹，比比谁更接近！',
     n: 34,

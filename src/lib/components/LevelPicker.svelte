@@ -1,6 +1,7 @@
 <script lang="ts">
   import { engine } from '../game/engine.svelte';
   import { decodeCoeffs, LEVEL_DEFS, todayKey } from '../game/levels';
+  import { chapterProgress, isLevelLocked } from '../game/campaign';
   import ComposerModal from './ComposerModal.svelte';
 
   let showComposer = $state(false);
@@ -10,9 +11,16 @@
     return st ? '★'.repeat(st) : '';
   };
 
-  /** 线性解锁：前一关 ≥1★ 才能进入（随机关不受限） */
-  const isLocked = (i: number): boolean =>
-    i > 0 && (engine.bestStars[LEVEL_DEFS[i - 1].id] ?? 0) < 1;
+  /** 线性解锁：前一关 ≥1★ 才能进入（规则集中在 campaign.ts） */
+  const isLocked = (id: string): boolean => isLevelLocked(LEVEL_DEFS, id, engine.bestStars);
+
+  /** 战役章节进度（章内星数 / 满星 / 解锁 / 全通） */
+  const chapters = $derived(chapterProgress(LEVEL_DEFS, engine.bestStars));
+
+  /** 战役状态：🏁 已通关 / 🏆 全三星（👑 已用于"完美全清"，换图标避免歧义） */
+  const campaignBadge = $derived(
+    engine.campaign === 'mastered' ? '🏆 全三星' : engine.campaign === 'cleared' ? '🏁 已通关' : '',
+  );
 
   let seedInput = $state('');
   const DIFFS = [
@@ -85,32 +93,49 @@
   <h2>
     关卡
     <span class="muted"
-      >总星数 {totalStars} / {LEVEL_DEFS.length * 3}{#if perfectCount > 0}&nbsp;· 👑 {perfectCount}{/if}{#if exactCount > 0}&nbsp;·
-        🎯 {exactCount}{/if}</span
+      >总星数 {totalStars} / {LEVEL_DEFS.length * 3}{#if campaignBadge}&nbsp;· {campaignBadge}{/if}{#if perfectCount > 0}&nbsp;·
+        👑
+        {perfectCount}{/if}{#if exactCount > 0}&nbsp;· 🎯 {exactCount}{/if}</span
     >
   </h2>
   {#if showComposer}
     <ComposerModal onclose={() => (showComposer = false)} />
   {/if}
-  <div class="levels">
-    {#each LEVEL_DEFS as def, i (def.id)}
-      <button
-        class="lv"
-        class:active={engine.level?.id === def.id}
-        class:locked={isLocked(i)}
-        disabled={isLocked(i)}
-        title={isLocked(i) ? '获得前一关至少 1★ 后解锁' : ''}
-        onclick={() => engine.loadLevel(def)}
-      >
-        <span class="nm"
-          >{def.name}{#if isLocked(i)}<i class="lock">🔒</i
-            >{/if}{#if engine.perfectLevels[def.id]}<i class="pf">👑</i
-            >{/if}{#if engine.exactLevels[def.id]}<i class="pf">🎯</i
-            >{/if}{#if engine.expertClears[def.id]}<i class="pf">💎</i>{/if}</span
+  <!-- 章节化关卡表：一条通关路线，而不是一串并列的按钮 -->
+  {#each chapters as ch (ch.id)}
+    <div class="chapter" class:locked={!ch.unlocked} class:cleared={ch.cleared}>
+      <div class="ch-head">
+        <span class="ch-name"
+          >{ch.name}{#if !ch.unlocked}<i class="lock">🔒</i>{/if}{#if ch.cleared}<i class="ok">✓</i
+            >{/if}</span
         >
-        <span class="st">{isLocked(i) ? '' : bestOf(def.id)}</span>
-      </button>
-    {/each}
+        <span class="ch-stars" title="本章星数"><b>{ch.stars}</b>/{ch.maxStars} ★</span>
+      </div>
+      <p class="ch-tag">{ch.tagline}</p>
+      <div class="levels">
+        {#each ch.levels as def (def.id)}
+          <button
+            class="lv"
+            class:active={engine.level?.id === def.id}
+            class:locked={isLocked(def.id)}
+            disabled={isLocked(def.id)}
+            title={isLocked(def.id) ? '获得前一关至少 1★ 后解锁' : ''}
+            onclick={() => engine.loadLevel(def)}
+          >
+            <span class="nm"
+              >{def.name}{#if isLocked(def.id)}<i class="lock">🔒</i
+                >{/if}{#if engine.perfectLevels[def.id]}<i class="pf">👑</i
+                >{/if}{#if engine.exactLevels[def.id]}<i class="pf">🎯</i
+                >{/if}{#if engine.expertClears[def.id]}<i class="pf">💎</i>{/if}</span
+            >
+            <span class="st">{isLocked(def.id) ? '' : bestOf(def.id)}</span>
+          </button>
+        {/each}
+      </div>
+    </div>
+  {/each}
+
+  <div class="levels daily-levels">
     <button
       class="lv"
       class:active={engine.level?.id === makeDailyId(engine.difficulty)}
@@ -181,6 +206,64 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+  }
+  /* 章节：把关卡表读成一条通关路线 */
+  .chapter {
+    margin-bottom: 9px;
+    padding: 8px 9px 9px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--line-2);
+    background: rgba(255, 255, 255, 0.016);
+  }
+  .chapter.locked {
+    opacity: 0.6;
+  }
+  .chapter.cleared {
+    border-color: rgba(79, 209, 197, 0.26);
+    background: rgba(79, 209, 197, 0.045);
+  }
+  .ch-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .ch-name {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
+  .ch-name .lock {
+    font-style: normal;
+    font-size: 9px;
+    margin-left: 3px;
+    opacity: 0.8;
+  }
+  .ch-name .ok {
+    font-style: normal;
+    font-size: 10px;
+    margin-left: 4px;
+    color: var(--cyan);
+  }
+  .ch-stars {
+    font-size: var(--fs-xs);
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .ch-stars b {
+    color: var(--gold);
+    font-size: var(--fs-sm);
+  }
+  .ch-tag {
+    margin: 3px 0 8px;
+    font-size: var(--fs-xs);
+    color: var(--muted-2);
+    line-height: 1.5;
+  }
+  .daily-levels {
+    margin-top: 3px;
   }
   .lv {
     padding: 7px 11px;

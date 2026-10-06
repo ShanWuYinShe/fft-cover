@@ -8,6 +8,7 @@
   import ScorePanel from './lib/components/ScorePanel.svelte';
   import ResultOverlay from './lib/components/ResultOverlay.svelte';
   import AchievementsModal from './lib/components/AchievementsModal.svelte';
+  import FinaleOverlay from './lib/components/FinaleOverlay.svelte';
   import { engine } from './lib/game/engine.svelte';
   import {
     achvSound,
@@ -459,6 +460,9 @@
       </button>
     </div>
   </div>
+{/if}
+{#if engine.finale}
+  <FinaleOverlay />
 {/if}
 {#if engine.toast && !showTitle}
   <div class="toast">🏆 解锁成就：{engine.toast.name}</div>

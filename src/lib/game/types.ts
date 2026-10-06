@@ -52,6 +52,8 @@ export interface LevelDef {
   id: string;
   name: string;
   hint: string;
+  /** 所属章节 id（见 levels.CHAPTERS）——内置关卡的战役分组 */
+  chapter: string;
   /** 目标点数量 */
   n: number;
   /** 本关可用指针上限（缺省 10） */

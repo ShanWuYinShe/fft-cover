@@ -43,6 +43,7 @@ import {
   solveFromSpectrum,
   starsFor,
 } from './scoring';
+import { campaignState, type CampaignState } from './campaign';
 import { ghostProgressAt, paceDelta, paceRatio, sanitizePace, type Pace } from './pace';
 import type { Arm, Floater, GamePhase, HistoryEntry, Level, LevelDef, Vec } from './types';
 
@@ -330,6 +331,8 @@ export class GameEngine {
   history = $state<Record<string, HistoryEntry[]>>(loadHistory());
   /** 本局竞速结果：结束时相对上届的领先（+）/落后（−）点数；无上届为 null */
   lastGhostDelta = $state<number | null>(null);
+  /** 通关演出：本局刚刚达成战役里程碑时置位（'cleared' 全关 ≥1★ / 'mastered' 全关 3★） */
+  finale = $state<CampaignState | null>(null);
   /** 本局全清时刻（秒）；null = 未全清 */
   private clearT: number | null = null;
   /** 结算快照：全清用时 */
@@ -439,6 +442,17 @@ export class GameEngine {
     this.newClearRecord = false;
     this.newRecord = false;
     this.lastGhostDelta = null;
+    this.finale = null;
+  }
+
+  /** 关闭通关演出（继续挑战 / 回看关卡面板） */
+  dismissFinale(): void {
+    this.finale = null;
+  }
+
+  /** 当前战役状态：未通关 / 已通关 / 全三星精通 */
+  get campaign(): CampaignState {
+    return campaignState(this.bestStars, LEVEL_DEFS);
   }
 
   /** 沙盒转速档位循环 0.5× → 1× → 2× */
@@ -846,6 +860,7 @@ export class GameEngine {
     } catch {
       /* 存储不可用则忽略 */
     }
+    const starsBeforeThisRun = this.bestStars;
     if (st > (this.bestStars[id] ?? 0)) {
       this.bestStars = { ...this.bestStars, [id]: st };
       try {
@@ -854,6 +869,13 @@ export class GameEngine {
         /* 存储不可用则忽略 */
       }
     }
+    // 通关演出：本局让战役状态发生了跨级（未通关 → 通关 → 精通）才触发，
+    // 之后重复游玩不会反复弹（before === after）
+    this.finale = null;
+    const before = campaignState(starsBeforeThisRun, LEVEL_DEFS);
+    const after = campaignState(this.bestStars, LEVEL_DEFS);
+    if (after !== before) this.finale = after === 'mastered' ? 'mastered' : 'cleared';
+
     if (this.score > (this.bestScores[id] ?? 0)) {
       this.bestScores = { ...this.bestScores, [id]: this.score };
       this.newRecord = true;
