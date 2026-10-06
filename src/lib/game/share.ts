@@ -82,3 +82,22 @@ export function readRandomFromHash(hash: string): { seed: number; diff: RandomDi
   if (!m) return null;
   return parseRandomSpec(decodeURIComponent(m[1]));
 }
+
+const DIFFS = ['easy', 'normal', 'hard'] as const;
+
+/**
+ * 每日挑战分享链接：每日关由"日期 + 难度"决定，所以链接里只需要难度——
+ * 好友打开即进入**当天**的同一关（今天分享、明天打开就是明天那关）。
+ */
+export function buildDailyUrl(base: string, diff: RandomDifficulty = 'normal'): string {
+  const u = base.split('#')[0];
+  return u + '#d=' + diff;
+}
+
+/** 从 URL hash 里取每日挑战难度（无则返回 null） */
+export function readDailyFromHash(hash: string): RandomDifficulty | null {
+  const m = /(?:^#|&)d=([^&]+)/.exec(hash);
+  if (!m) return null;
+  const d = decodeURIComponent(m[1]);
+  return (DIFFS as readonly string[]).includes(d) ? (d as RandomDifficulty) : null;
+}

@@ -4,7 +4,7 @@
   import { chapterProgress, isLevelLocked } from '../game/campaign';
   import type { ChapterSealState } from '../game/goals';
   import { keyForChapter } from '../game/harmony';
-  import { buildRandomUrl } from '../game/share';
+  import { buildDailyUrl, buildRandomUrl } from '../game/share';
   import ComposerModal from './ComposerModal.svelte';
 
   let showComposer = $state(false);
@@ -30,6 +30,8 @@
   let seedInput = $state('');
   /** 分享链接已复制（按钮短暂反馈） */
   let shareCopied = $state(false);
+  /** 每日挑战分享链接已复制 */
+  let dailyShared = $state(false);
   const DIFFS = [
     { id: 'easy', nm: '简单' },
     { id: 'normal', nm: '普通' },
@@ -96,6 +98,23 @@
       await navigator.clipboard.writeText(seed);
     } catch {
       /* 剪贴板不可用则忽略 */
+    }
+  }
+
+  /** 分享今日每日挑战：每日关由日期+难度决定，链接里只需难度 */
+  async function shareDaily(): Promise<void> {
+    const url = buildDailyUrl(location.origin + location.pathname, engine.difficulty);
+    const text = '今日《傅立叶指针》每日挑战，来比比谁收得多？';
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: '傅立叶指针 · 每日挑战', text, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        dailyShared = true;
+        setTimeout(() => (dailyShared = false), 1800);
+      }
+    } catch {
+      /* 取消分享 / 剪贴板不可用：忽略 */
     }
   }
 
@@ -269,22 +288,33 @@
 
   <!-- 更多玩法：每日 / 随机 / 创作 -->
   <div class="more">
-    <button
-      type="button"
-      class="more-daily"
-      class:active={engine.level?.id === makeDailyId(engine.difficulty)}
-      title="按当前随机难度生成今日关卡"
-      onclick={() => engine.loadDaily()}
-    >
-      <span class="md-left"
-        >📅 每日挑战{#if engine.dailyStreak.streak > 0}<i class="fire"
-            >🔥{engine.dailyStreak.streak}</i
-          >{/if}</span
+    <div class="daily-row">
+      <button
+        type="button"
+        class="more-daily"
+        class:active={engine.level?.id === makeDailyId(engine.difficulty)}
+        title="按当前随机难度生成今日关卡"
+        onclick={() => engine.loadDaily()}
       >
-      <span class="md-right"
-        >{engine.todayBest > 0 ? engine.todayBest + ' 分 · ' : ''}{dailyCountdown}</span
+        <span class="md-left"
+          >📅 每日挑战{#if engine.dailyStreak.streak > 0}<i class="fire"
+              >🔥{engine.dailyStreak.streak}</i
+            >{/if}</span
+        >
+        <span class="md-right"
+          >{engine.todayBest > 0 ? engine.todayBest + ' 分 · ' : ''}{dailyCountdown}</span
+        >
+      </button>
+      <button
+        type="button"
+        class="mini daily-share"
+        title="分享今日挑战——好友打开即玩同一天的关卡"
+        aria-label="分享每日挑战"
+        onclick={shareDaily}
       >
-    </button>
+        {dailyShared ? '✓' : '📤'}
+      </button>
+    </div>
     <!-- 最近 7 天：完成的格子填朱砂，今天描边——连胜变成看得见的一排 -->
     <div class="dweek" aria-label="最近 7 天的每日挑战">
       {#each engine.dailyWeek as d (d.date)}
@@ -329,7 +359,8 @@
     </div>
   </div>
 
-  {#if engine.level?.random}
+  <!-- 邀请码行只给随机关：每日关由日期决定，没有可输入的邀请码（它有自己的分享按钮） -->
+  {#if engine.level?.random && !engine.level.id.startsWith('daily-')}
     <div class="seed-row">
       <span>邀请码 <b>{seed}</b></span>
       <button class="mini" title="复制邀请码——好友载入后生成同一关卡" onclick={copySeed}>
@@ -636,6 +667,22 @@
     display: flex;
     flex-direction: column;
     gap: 7px;
+  }
+  /* 每日挑战一行：主按钮 + 分享按钮 */
+  .daily-row {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .daily-row .more-daily {
+    flex: 1;
+    min-width: 0;
+  }
+  .daily-share {
+    flex: none;
+    width: 34px;
+    font-size: 14px;
+    line-height: 1;
   }
   .more-daily {
     display: flex;

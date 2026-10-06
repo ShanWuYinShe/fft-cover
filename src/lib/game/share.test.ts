@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildDailyUrl,
   buildRandomUrl,
   buildShareUrl,
   decodeArms,
   encodeArms,
   readArmsFromHash,
+  readDailyFromHash,
   readRandomFromHash,
 } from './share';
 import type { Arm } from './types';
@@ -60,6 +62,18 @@ describe('解法分享码', () => {
     // 非法输入不抛错
     expect(readRandomFromHash('#r=random-abc')).toBeNull();
     expect(readRandomFromHash('#arms=v1-0:1:1:1')).toBeNull();
+  });
+
+  it('每日挑战链接只带难度（日期由打开那天决定）', () => {
+    expect(buildDailyUrl('https://game.chaoset.com/', 'hard')).toBe(
+      'https://game.chaoset.com/#d=hard',
+    );
+    expect(buildDailyUrl('https://game.chaoset.com/')).toBe('https://game.chaoset.com/#d=normal');
+    expect(readDailyFromHash('#d=easy')).toBe('easy');
+    expect(readDailyFromHash('#d=normal')).toBe('normal');
+    // 非法难度 / 其它 hash 都返回 null，不抛错
+    expect(readDailyFromHash('#d=impossible')).toBeNull();
+    expect(readDailyFromHash('#r=random-1-normal')).toBeNull();
   });
 
   it('解法码与随机关链接可以共存于同一个 hash', () => {

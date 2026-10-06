@@ -3,7 +3,7 @@
   import Stage from './lib/components/Stage.svelte';
   import ArmPanel from './lib/components/ArmPanel.svelte';
   import TitleScreen from './lib/components/TitleScreen.svelte';
-  import { readArmsFromHash, readRandomFromHash } from './lib/game/share';
+  import { readArmsFromHash, readDailyFromHash, readRandomFromHash } from './lib/game/share';
   import LevelPicker from './lib/components/LevelPicker.svelte';
   import ScorePanel from './lib/components/ScorePanel.svelte';
   import ResultOverlay from './lib/components/ResultOverlay.svelte';
@@ -38,7 +38,7 @@
   let shareNote = $state<string | null>(null);
 
   onMount(() => {
-    const sharedLevel = readRandomFromHash(location.hash);
+    const sharedLevel = readRandomFromHash(location.hash) ?? readDailyFromHash(location.hash);
     // 首次访问显示开始画面（有分享链接时直接进游戏，避免挡住挑战链接）
     if (!engine.flags.seenTitle && !readArmsFromHash(location.hash) && !sharedLevel) {
       showTitle = true;
@@ -81,15 +81,21 @@
    */
   function applyHashShare(): void {
     const shared = readRandomFromHash(location.hash);
+    const sharedDaily = readDailyFromHash(location.hash);
     if (shared) {
       engine.loadRandomSeed(shared.seed, shared.diff);
       shareNote = '已载入好友分享的随机关卡（邀请码 ' + shared.seed + '）';
+      setTimeout(() => (shareNote = null), 5200);
+    } else if (sharedDaily) {
+      engine.setDifficulty(sharedDaily);
+      engine.loadDaily();
+      shareNote = '已载入好友分享的每日挑战（' + sharedDaily + '）';
       setTimeout(() => (shareNote = null), 5200);
     }
     const code = readArmsFromHash(location.hash);
     if (code && engine.applyArmsCode(code)) {
       history.replaceState(null, '', location.pathname + location.search);
-    } else if (shared) {
+    } else if (shared || sharedDaily) {
       history.replaceState(null, '', location.pathname + location.search);
     }
   }
