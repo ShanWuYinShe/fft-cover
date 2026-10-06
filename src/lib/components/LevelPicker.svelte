@@ -32,6 +32,8 @@
   let shareCopied = $state(false);
   /** 每日挑战分享链接已复制 */
   let dailyShared = $state(false);
+  /** 最近 7 天全部完成（本周全勤） */
+  const weekFull = $derived(engine.dailyWeek.every((d) => d.done));
   const DIFFS = [
     { id: 'easy', nm: '简单' },
     { id: 'normal', nm: '普通' },
@@ -84,13 +86,17 @@
     const timer = setInterval(() => (now = Date.now()), 30_000);
     return () => clearInterval(timer);
   });
+  /** 今日剩余时间（小时/分钟），短格式给按钮用，长格式给 title 提示 */
   const dailyCountdown = $derived.by(() => {
     const t = new Date(now);
     t.setHours(24, 0, 0, 0);
     const ms = t.getTime() - now;
     const h = Math.floor(ms / 3_600_000);
     const m = Math.floor((ms % 3_600_000) / 60_000);
-    return h + ' 时 ' + m + ' 分';
+    return {
+      short: String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'),
+      long: h + ' 时 ' + m + ' 分',
+    };
   });
 
   async function copySeed(): Promise<void> {
@@ -301,8 +307,8 @@
               >🔥{engine.dailyStreak.streak}</i
             >{/if}</span
         >
-        <span class="md-right"
-          >{engine.todayBest > 0 ? engine.todayBest + ' 分 · ' : ''}{dailyCountdown}</span
+        <span class="md-right" title={'今日挑战剩余 ' + dailyCountdown.long}
+          >{engine.todayBest > 0 ? engine.todayBest + ' 分 · ' : ''}{dailyCountdown.short}</span
         >
       </button>
       <button
@@ -328,8 +334,14 @@
           {#if d.done}<b>✓</b>{/if}
         </span>
       {/each}
-      <span class="dweek-cap">
-        {engine.dailyStreak.streak > 0 ? '连续 ' + engine.dailyStreak.streak + ' 天' : '每天一练'}
+      <span class="dweek-cap" class:full={weekFull}>
+        {#if weekFull}
+          🎉 本周全勤
+        {:else if engine.dailyStreak.streak > 0}
+          连续 {engine.dailyStreak.streak} 天
+        {:else}
+          每天一练
+        {/if}
       </span>
     </div>
     <div class="gen-row">
@@ -759,6 +771,10 @@
     font-size: var(--fs-xs);
     color: var(--muted);
     white-space: nowrap;
+  }
+  .dweek-cap.full {
+    color: var(--gold);
+    font-weight: 600;
   }
   .gen-row {
     display: flex;

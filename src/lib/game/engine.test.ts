@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { LEVEL_DEFS, makeRandomLevel, todayKey, yesterdayKey } from './levels';
 import { LAST_LEVEL_KEY } from './constants';
 import { GameEngine } from './engine.svelte';
-import { solveFromSpectrum } from './scoring';
+import { fitScore, solveFromSpectrum } from './scoring';
 
 /** 内存 Storage 实现（Node 环境没有 localStorage） */
 function memStore(): Storage {
@@ -130,6 +130,24 @@ describe('GameEngine', () => {
     for (const p of pts) engine.tryCollect(p);
     engine.stopRun();
     expect(engine.newSeals).toEqual([]);
+  });
+
+  it('一键套用精确解：参数与分解一致，可达成精确解认证', () => {
+    // 先把指针调乱（单指针、错的频率与相位）
+    engine.setArm(0, { on: true, r: 30, freq: 3, phase: 1 });
+    const applied = engine.applyExactSolution();
+    const lv = engine.level!;
+    expect(applied).toBeGreaterThan(0);
+    // 启用根数不超过本关上限，且与返回值一致
+    expect(engine.arms.filter((a) => a.on).length).toBe(applied);
+    expect(applied).toBeLessThanOrEqual(lv.armLimit);
+    // 拟合度达到精确解认证线
+    expect(fitScore(lv.spectrum, engine.arms)).toBeGreaterThanOrEqual(0.99);
+    // 跑一局全清 → 认证成立
+    engine.startRun();
+    for (let i = 0; i < 1500 && engine.phase === 'running'; i++) engine.advance(1 / 60);
+    expect(engine.collectedCount).toBe(engine.total);
+    expect(engine.isExact).toBe(true);
   });
 
   it('运行中星级阈值实时点亮，重置后归零', () => {

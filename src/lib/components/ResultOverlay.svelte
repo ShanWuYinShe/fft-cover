@@ -38,6 +38,17 @@
   type CopyState = 'idle' | 'ok' | 'fail';
   let copyState = $state<CopyState>('idle');
   let shareState: 'idle' | 'ok' = $state('idle');
+  /** 卡关提示里"一键套用精确解"是否已执行 */
+  let applied = $state(false);
+
+  /** 把精确分解参数落到编辑态，稍后自动回到调参界面让玩家直接开跑 */
+  function applyExact(): void {
+    if (applied) return;
+    if (engine.applyExactSolution() > 0) {
+      applied = true;
+      setTimeout(() => engine.resetRun(), 700);
+    }
+  }
   let imgState: 'idle' | 'ok' = $state('idle');
 
   /** 兼容降级：旧式 execCommand 复制 */
@@ -364,8 +375,11 @@
                 <b>精确解：</b>{engine.exactSolutionText()}
               </p>
               <p class="hint-note">
-                按这些参数设置指针（方向为「逆」的指针需要切到逆时针），再开始旋转即可全清。
+                按这些参数设置指针（方向为「逆」的指针需要切到逆时针），再开始旋转即可全清；也可以直接套用。
               </p>
+              <button type="button" class="apply-btn" disabled={applied} onclick={applyExact}>
+                {applied ? '✓ 已套用，回到调参界面…' : '✨ 一键套用这些参数'}
+              </button>
             {/if}
           </div>
         {/if}
@@ -800,6 +814,26 @@
   }
   .hint-txt b {
     color: var(--cyan);
+  }
+  /* 一键套用精确解（卡关求助的最后一步） */
+  .apply-btn {
+    margin-top: 6px;
+    width: 100%;
+    min-height: 38px;
+    border-radius: var(--r-sm);
+    border: 1px solid rgba(79, 209, 197, 0.55);
+    background: rgba(79, 209, 197, 0.12);
+    color: #8ff2e6;
+    font-size: var(--fs-sm);
+    letter-spacing: 1px;
+    cursor: pointer;
+  }
+  .apply-btn:hover:not(:disabled) {
+    background: rgba(79, 209, 197, 0.2);
+  }
+  .apply-btn:disabled {
+    opacity: 0.75;
+    cursor: default;
   }
   .hint-note {
     margin: 5px 0 0;

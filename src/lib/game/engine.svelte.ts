@@ -608,6 +608,21 @@ export class GameEngine {
     this.autoTo = null;
   }
 
+  /**
+   * 一键套用精确分解参数（卡关求助用：提示解锁后由玩家主动点）。
+   * 与"回放解法"不同，这个直接在编辑态落地参数，让卡住的玩家能立刻继续。
+   * 返回套用了多少根指针（0 = 没有关卡）。
+   */
+  applyExactSolution(): number {
+    if (!this.level) return 0;
+    const sol = solveFromSpectrum(this.level.spectrum, this.level.armLimit);
+    this.cancelAutoSolve();
+    this.pushArmHistory(true); // 可撤销
+    this.arms = sol.map((a) => ({ ...a }));
+    this.trimArmsToLimit();
+    return sol.filter((a) => a.on).length;
+  }
+
   startAutoSolve(): void {
     if (!this.sandbox || !this.level || this.autoSolve) return;
     this.autoFrom = this.arms.map((a) => ({ ...a }));
