@@ -75,6 +75,15 @@
    * 背景音乐跟随游戏状态：指针参数（引擎响应式）变化即刷新声部，
    * 阶段变化即调整动态强度。参数未变时 updateMusic 内部直接返回。
    */
+  /** 幽灵竞速差值文案：领先/落后上届多少点（无可比对象时为空） */
+  const ghostLabel = $derived.by(() => {
+    if (!engine.ghostComparable) return '';
+    // 只在跑动中显示：结算后由结算卡的"上届同期"接手
+    if (engine.phase !== 'running' && engine.phase !== 'paused') return '';
+    const d = engine.ghostDelta;
+    return d > 0 ? '👻 +' + d + ' 领先' : d < 0 ? '👻 ' + d + ' 落后' : '👻 持平';
+  });
+
   function syncMusic(): void {
     updateMusic(engine.arms, musicIntensity(engine.phase, engine.sandbox), engine.musicOn, volume);
   }
@@ -176,12 +185,25 @@
       <Stage />
       <div class="hud">
         <span class="lvl">{engine.level?.name ?? ''}{engine.sandbox ? ' 🧪' : ''}</span>
-        <span
-          class="score"
-          style="--progress: {engine.total ? (engine.collectedCount / engine.total) * 100 : 0}%"
-          >收集 {#key engine.collectedCount}<b class="hud-pulse">{engine.collectedCount}</b
-            >{/key}/{engine.total}</span
-        >
+        <div class="hud-right">
+          <span
+            class="score"
+            style="--progress: {engine.total ? (engine.collectedCount / engine.total) * 100 : 0}%"
+            >收集 {#key engine.collectedCount}<b class="hud-pulse">{engine.collectedCount}</b
+              >{/key}/{engine.total}{#if ghostLabel}<i
+                class="ghost-tick"
+                style="left: {engine.ghostRatio * 100}%"
+              ></i>{/if}</span
+          >
+          {#if ghostLabel}
+            <span
+              class="ghost-chip"
+              class:ahead={engine.ghostDelta > 0}
+              class:behind={engine.ghostDelta < 0}
+              title="与上届同一时刻的收集数对比（金色刻度线标在上方进度条上）">{ghostLabel}</span
+            >
+          {/if}
+        </div>
       </div>
       {#if engine.phase === 'done' && !engine.resultDismissed}
         <ResultOverlay />

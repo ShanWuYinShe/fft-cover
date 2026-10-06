@@ -12,6 +12,7 @@ import {
   FAIL_KEY,
   FLAGS_KEY,
   PERFECT_KEY,
+  PACE_KEY,
   STREAK_KEY,
   MUSIC_KEY,
   RUN_DUR,
@@ -42,9 +43,22 @@ import {
   solveFromSpectrum,
   starsFor,
 } from './scoring';
+import { ghostProgressAt, paceDelta, paceRatio, sanitizePace, type Pace } from './pace';
 import type { Arm, Floater, GamePhase, HistoryEntry, Level, LevelDef, Vec } from './types';
 
 export { starsFor };
+
+/**
+ * 指针组签名：判断"当前参数是否等于上届解法"。
+ * 含启用状态——只改开关也是不同的解法，幽灵轨迹必须重画。
+ */
+function armSignature(arms: Arm[]): string {
+  return arms
+    .map(
+      (a) => (a.on ? '1' : '0') + a.r + ':' + a.freq + ':' + Math.round((a.phase * 180) / Math.PI),
+    )
+    .join('|');
+}
 
 /** 指针初始参数：默认启用 1×、2×，其余关闭待玩家启用 */
 function armDefaults(): Arm[] {
@@ -176,6 +190,15 @@ function loadHistory(): Record<string, HistoryEntry[]> {
   }
 }
 
+/** 读取上届节奏存档（脏数据丢弃，见 pace.sanitizePace） */
+function loadPace(): Record<string, Pace> {
+  try {
+    return sanitizePace(JSON.parse(localStorage.getItem(PACE_KEY) ?? '{}'));
+  } catch {
+    return {};
+  }
+}
+
 function loadAchv(): Record<string, number> {
   try {
     return JSON.parse(localStorage.getItem(ACHV_KEY) ?? '{}');
@@ -297,12 +320,16 @@ export class GameEngine {
   private autoTo: Arm[] | null = null;
   /** 结算浮层是否显示"全清新纪录" */
   newClearRecord = $state(false);
-  /** 各关保存的解法参数（最佳得分那局的指针配置） */
+  /** 各关保存的解法参数（上届那局的指针配置） */
   armsSaves = $state<Record<string, Arm[]>>(loadArmsSaves());
+  /** 各关上届节奏：每个点的收集时刻（与 armsSaves 同源，都是"上届"那一局） */
+  paceSaves = $state<Record<string, Pace>>(loadPace());
   /** 每日挑战历史最佳得分（key = 日期） */
   dailyBest = $state<Record<string, number>>(loadDailyBest());
   /** 每关历史成绩（key = 关卡 id，最多 HISTORY_MAX 条，用于趋势展示） */
   history = $state<Record<string, HistoryEntry[]>>(loadHistory());
+  /** 本局竞速结果：结束时相对上届的领先（+）/落后（−）点数；无上届为 null */
+  lastGhostDelta = $state<number | null>(null);
   /** 本局全清时刻（秒）；null = 未全清 */
   private clearT: number | null = null;
   /** 结算快照：全清用时 */
@@ -310,6 +337,8 @@ export class GameEngine {
 
   /** 已收集点索引（画布渲染用，无需响应式） */
   readonly collected = new Set<number>();
+  /** 本局每个点的收集时刻（游戏时间，秒）——结算时存入 paceSaves */
+  collectTimes: number[] = [];
   /** 收集时刻（发光动画） */
   readonly collectAnim = new Map<number, number>();
   /** 运行尾迹 */
@@ -400,6 +429,7 @@ export class GameEngine {
     this.combo = 0;
     this.collected.clear();
     this.collectAnim.clear();
+    this.collectTimes = [];
     this.collectedCount = 0;
     this.score = 0;
     this.resultDismissed = false;
@@ -408,6 +438,7 @@ export class GameEngine {
     this.clearT = null;
     this.newClearRecord = false;
     this.newRecord = false;
+    this.lastGhostDelta = null;
   }
 
   /** 沙盒转速档位循环 0.5× → 1× → 2× */
@@ -850,13 +881,25 @@ export class GameEngine {
       /* 存储不可用则忽略 */
     }
 
-    // 最佳得分那局的解法参数入档（"载入上届解法"用）
+    // 竞速结果快照：必须赶在覆盖上届节奏之前算，否则就成了自己跟自己比
+    this.lastGhostDelta = this.ghostComparable ? this.ghostDelta : null;
+
+    // 上届那局的解法参数与节奏入档（"载入上届解法" + "上届节奏"竞速用）
+    // 两者必须同源：同一条金色虚线轨迹，配上同一局的时间线
     if (this.score > 0) {
       this.armsSaves = { ...this.armsSaves, [id]: this.arms.map((a) => ({ ...a })) };
       try {
         localStorage.setItem(ARMS_SAVE_KEY, JSON.stringify(this.armsSaves));
       } catch {
         /* 存储不可用则忽略 */
+      }
+      if (this.collectTimes.length > 0) {
+        this.paceSaves = { ...this.paceSaves, [id]: [...this.collectTimes] };
+        try {
+          localStorage.setItem(PACE_KEY, JSON.stringify(this.paceSaves));
+        } catch {
+          /* 存储不可用则忽略 */
+        }
       }
     }
     // 每日挑战：刷新今日最佳
@@ -931,6 +974,47 @@ export class GameEngine {
   hasSavedArms(): boolean {
     const id = this.level?.id;
     return !!(id && this.armsSaves[id]);
+  }
+
+  /* ---------- 上届节奏（幽灵竞速） ---------- */
+
+  /** 上届节奏：每个点的收集时刻（未存过则 undefined） */
+  get savedPace(): Pace | undefined {
+    const id = this.level?.id;
+    return id ? this.paceSaves[id] : undefined;
+  }
+
+  /** 当前指针组是否与上届解法一致（一致则轨迹必然同步，无需竞速显示） */
+  get sameArmsAsSaved(): boolean {
+    const id = this.level?.id;
+    const saved = id ? this.armsSaves[id] : undefined;
+    if (!saved) return false;
+    return armSignature(saved) === armSignature(this.arms);
+  }
+
+  /** 是否处于可与上届竞速的状态：非编辑态 + 有上届节奏 + 参数与上届不同 */
+  get ghostComparable(): boolean {
+    return this.phase !== 'edit' && !!this.savedPace?.length && !this.sameArmsAsSaved;
+  }
+
+  /** 是否绘制上届解法的幽灵轨迹（有解法存档且当前参数不同；老存档无节奏也照画） */
+  get ghostPathVisible(): boolean {
+    return this.phase !== 'edit' && this.hasSavedArms() && !this.sameArmsAsSaved;
+  }
+
+  /** 当前时刻上届已收集的点数 */
+  get ghostProgress(): number {
+    return ghostProgressAt(this.savedPace, this.t);
+  }
+
+  /** 当前领先（+）/落后（−）上届的点数 */
+  get ghostDelta(): number {
+    return paceDelta(this.savedPace, this.t, this.collectedCount);
+  }
+
+  /** 上届在当前时刻的进度比例（0~1，画布进度条刻度用） */
+  get ghostRatio(): number {
+    return paceRatio(this.savedPace, this.t, this.total);
   }
 
   /** 启用指针的解法参数串（如 ①120/1×/0° + ②60/2×/90°） */
@@ -1068,6 +1152,7 @@ export class GameEngine {
         this.score += scoreForPoint(this.combo);
         this.collected.add(i);
         this.collectAnim.set(i, now);
+        this.collectTimes.push(this.t);
         this.collectedCount++;
         this.floaters.push({
           x: pts[i].x,

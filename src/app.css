@@ -190,6 +190,50 @@ canvas {
   backdrop-filter: blur(6px);
 }
 
+/* 右上角：收集数 + 上届竞速差值（差值只在可与上届比较时出现） */
+.hud-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.hud .ghost-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(16, 21, 42, 0.72);
+  border: 1px solid rgba(251, 191, 36, 0.38);
+  font-size: var(--fs-xs);
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(6px);
+}
+
+/* 上届节奏刻度：画在收集进度条（同一坐标轴：收集比例）上 */
+.hud .score .ghost-tick {
+  position: absolute;
+  bottom: 0;
+  width: 2px;
+  height: 7px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--gold);
+  box-shadow: 0 0 6px rgba(251, 191, 36, 0.8);
+}
+
+.hud .ghost-chip.ahead {
+  border-color: rgba(79, 209, 197, 0.55);
+  color: var(--cyan);
+}
+
+.hud .ghost-chip.behind {
+  border-color: rgba(248, 113, 113, 0.55);
+  color: #f87171;
+}
+
 .hud .score {
   display: inline-flex;
   align-items: baseline;

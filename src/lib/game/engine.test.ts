@@ -162,6 +162,62 @@ describe('GameEngine', () => {
     expect(engine.arms[0].r).toBe(120);
     expect(engine.phase).toBe('edit');
   });
+  it('上届节奏：结算时存下每个点的收集时刻（升序、落在本局时长内）', () => {
+    engine.setArm(0, { r: 120 });
+    engine.phase = 'running';
+    let guard = 0;
+    while (engine.collectedCount < engine.total && guard < 2000) {
+      engine.advance(0.016);
+      guard++;
+    }
+    engine.stopRun();
+    const pace = engine.savedPace;
+    expect(pace).toBeTruthy();
+    expect(pace).toHaveLength(engine.total);
+    for (let i = 1; i < pace!.length; i++) {
+      expect(pace![i]).toBeGreaterThanOrEqual(pace![i - 1]);
+    }
+    expect(pace![pace!.length - 1]).toBeLessThanOrEqual(16);
+  });
+
+  it('与上届竞速：参数一致时不比较，改参数后可比且结算快照早于节奏覆盖', () => {
+    // 第一局：全清 → 存入上届节奏
+    engine.setArm(0, { r: 120 });
+    engine.phase = 'running';
+    let guard = 0;
+    while (engine.collectedCount < engine.total && guard < 2000) {
+      engine.advance(0.016);
+      guard++;
+    }
+    engine.stopRun();
+    const total = engine.total;
+    // 参数与上届完全一致：轨迹必然同步，不做竞速显示
+    engine.resetRun();
+    engine.phase = 'running';
+    expect(engine.ghostComparable).toBe(false);
+    // 改参数 → 进入竞速状态，时刻 0 双方都是 0 点
+    engine.setArm(0, { r: 55 });
+    expect(engine.ghostComparable).toBe(true);
+    expect(engine.ghostProgress).toBe(0);
+    expect(engine.ghostDelta).toBe(0);
+    // 跑满一局：r=55 扫不到目标点 → 全程落后上届
+    let finished = false;
+    guard = 0;
+    while (!finished && guard < 2000) {
+      finished = engine.advance(0.05).finished;
+      guard++;
+    }
+    expect(engine.phase).toBe('done');
+    expect(engine.collectedCount).toBeLessThan(total);
+    // 竞速快照用的是"覆盖前"的上届节奏，而不是本局刚存进去的
+    expect(engine.lastGhostDelta).toBe(engine.collectedCount - total);
+    expect(engine.lastGhostDelta!).toBeLessThan(0);
+    // 本局得分为 0 → 上届节奏不被覆盖，仍是第一局那条
+    expect(engine.savedPace).toHaveLength(total);
+    engine.resetRun();
+    expect(engine.lastGhostDelta).toBe(null);
+  });
+
   it('切到上限更低的关卡时裁剪超出指针', () => {
     engine.loadLevel(LEVEL_DEFS.find((d) => d.id === 'heart')!); // 心形上限 8
     engine.setArm(2, { on: true });

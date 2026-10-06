@@ -555,15 +555,9 @@
     }
 
     // 幽灵竞速：上届解法的轨迹同屏（金色虚线），直观对比当前方案
-    if (engine.phase !== 'edit' && engine.hasSavedArms() && engine.level) {
+    if (engine.ghostPathVisible && engine.level) {
       const saved = engine.armsSaves[engine.level.id];
-      const cur = engine.arms
-        .map((a) => a.r + ':' + a.freq + ':' + Math.round((a.phase * 180) / Math.PI))
-        .join();
-      const sv = saved
-        .map((a) => a.r + ':' + a.freq + ':' + Math.round((a.phase * 180) / Math.PI))
-        .join();
-      if (cur !== sv) {
+      if (saved) {
         const ghost = new Path2D();
         const M = 480;
         const from = Math.max(0, engine.t - T0);

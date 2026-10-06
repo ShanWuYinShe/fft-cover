@@ -273,6 +273,16 @@
           历史最佳 ★{Math.max(st, best)}
           {#if engine.bestClear !== null}· 最快全清 {engine.bestClear.toFixed(1)}s{/if}　{words[st]}
         </div>
+        {#if engine.lastGhostDelta !== null}
+          <div
+            class="ghost-line"
+            class:ahead={engine.lastGhostDelta > 0}
+            class:even={engine.lastGhostDelta === 0}
+          >
+            👻 上届同期
+            <b>{engine.lastGhostDelta > 0 ? '+' : ''}{engine.lastGhostDelta}</b> 点（同一时长内）
+          </div>
+        {/if}
         {#if engine.hintUnlocked && st < 3}
           <div class="ask-hint">
             {#if !showHint}
@@ -731,6 +741,35 @@
   .best {
     font-size: 13px;
     color: var(--muted);
+  }
+  /* 上届竞速结果：与上届同一时刻相比多收/少收了多少点 */
+  .ghost-line {
+    width: 100%;
+    padding: 6px 10px;
+    border-radius: var(--r-sm);
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    font-size: var(--fs-xs);
+    color: var(--muted);
+  }
+  .ghost-line b {
+    color: #f87171;
+    font-size: var(--fs-md);
+    font-variant-numeric: tabular-nums;
+  }
+  .ghost-line.ahead {
+    background: rgba(79, 209, 197, 0.1);
+    border-color: rgba(79, 209, 197, 0.42);
+  }
+  .ghost-line.ahead b {
+    color: var(--cyan);
+  }
+  .ghost-line.even {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: var(--line);
+  }
+  .ghost-line.even b {
+    color: var(--text);
   }
   .next-unlock {
     display: flex;
