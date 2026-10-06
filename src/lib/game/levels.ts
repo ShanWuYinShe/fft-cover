@@ -364,20 +364,38 @@ export function decodeCoeffs(code: string): HarmonicCoeff[] | null {
   return out.length > 0 ? out : null;
 }
 
-/** 今日日期串（本地时区，YYYY-MM-DD） */
-export function todayKey(): string {
-  const d = new Date();
+/** 日期键（本地时区，YYYY-MM-DD） */
+export function dayKey(d: Date): string {
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
   return d.getFullYear() + '-' + mm + '-' + dd;
 }
 
+/** 今日日期串（本地时区） */
+export function todayKey(): string {
+  return dayKey(new Date());
+}
+
 /** 昨天的日期键（本地时区），用于连胜判定 */
 export function yesterdayKey(): string {
-  const d = new Date(Date.now() - 86_400_000);
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return d.getFullYear() + '-' + mm + '-' + dd;
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return dayKey(d);
+}
+
+/**
+ * 最近 n 天的日期键（从旧到新，最后一项是今天）。
+ * 用 setDate 做日期运算而不是减毫秒——跨夏令时也不会漏/重一天。
+ */
+export function lastNDays(n: number): string[] {
+  const out: string[] = [];
+  const d = new Date();
+  d.setDate(d.getDate() - (n - 1));
+  for (let i = 0; i < n; i++) {
+    out.push(dayKey(d));
+    d.setDate(d.getDate() + 1);
+  }
+  return out;
 }
 
 /** 每日挑战：seed 由日期+难度决定，同一天同难度的玩家面对同一关卡 */

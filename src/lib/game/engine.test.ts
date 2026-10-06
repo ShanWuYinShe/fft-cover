@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { LEVEL_DEFS } from './levels';
+import { LEVEL_DEFS, todayKey, yesterdayKey } from './levels';
 import { LAST_LEVEL_KEY } from './constants';
 import { GameEngine } from './engine.svelte';
 import { solveFromSpectrum } from './scoring';
@@ -124,6 +124,25 @@ describe('GameEngine', () => {
     for (const p of pts) engine.tryCollect(p);
     engine.stopRun();
     expect(engine.newSeals).toEqual([]);
+  });
+
+  it('今日最佳取各难度最高分；7 日格按天标记完成', () => {
+    const today = todayKey();
+    const yesterday = yesterdayKey();
+    engine.dailyBest = {
+      ['daily-' + today + '-normal']: 1200,
+      ['daily-' + today + '-hard']: 3400,
+      ['daily-' + yesterday + '-easy']: 800,
+    };
+    // 每日关卡 id 带难度后缀，今日最佳必须跨难度取最高
+    expect(engine.todayBest).toBe(3400);
+    const week = engine.dailyWeek;
+    expect(week).toHaveLength(7);
+    expect(week[6].today).toBe(true);
+    expect(week[6].done).toBe(true);
+    expect(week[5].done).toBe(true);
+    expect(week[0].done).toBe(false);
+    expect(week.every((d) => d.label.length === 1)).toBe(true);
   });
 
   it('章节印：本局集齐本章最后一枚印时盖章节印，之后不重复盖', () => {

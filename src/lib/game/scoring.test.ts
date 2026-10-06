@@ -34,6 +34,20 @@ describe('evalAchievements', () => {
   it('空数据无成就', () => {
     expect(evalAchievements(base)).toEqual([]);
   });
+  it('章节印成就：集齐任意一章 / 全部章节', () => {
+    expect(evalAchievements({ ...base, chapterSeals: { basics: false } })).not.toContain(
+      'chapter-seal',
+    );
+    expect(evalAchievements({ ...base, chapterSeals: { basics: true } })).toContain('chapter-seal');
+    expect(evalAchievements({ ...base, chapterSeals: { basics: true } })).not.toContain(
+      'all-chapter-seals',
+    );
+    const all = { basics: true, petals: true, pairs: true, summit: true, china: true };
+    expect(evalAchievements({ ...base, chapterSeals: all, chapterCount: 5 })).toContain(
+      'all-chapter-seals',
+    );
+  });
+
   it('首星/首清/连击/竞速按数据判定', () => {
     expect(evalAchievements({ ...base, bestStars: { circle: 1 } })).toContain('first-star');
     expect(evalAchievements({ ...base, bestClears: { circle: 7.5 } })).toContain('first-clear');

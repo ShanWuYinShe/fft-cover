@@ -24,12 +24,14 @@ import {
   LAST_LEVEL_KEY,
 } from './constants';
 import {
+  CHAPTERS,
   decodeCoeffs,
   LEVEL_DEFS,
   levelFromCoeffs,
   makeDailyLevel,
   makeLevel,
   makeRandomLevel,
+  lastNDays,
   todayKey,
   yesterdayKey,
   type RandomDifficulty,
@@ -43,6 +45,7 @@ import {
   fitScore,
   solveFromSpectrum,
   starsFor,
+  type AchievementContext,
 } from './scoring';
 import { campaignState, type CampaignState } from './campaign';
 import {
@@ -371,17 +374,7 @@ export class GameEngine {
     if (!this.restoreLastLevel()) this.loadLevel(LEVEL_DEFS[0]);
     // 静默恢复成就：存档里已有进度（如从备份导入）也应在打开面板时可见，
     // 且不弹 toast（首次游玩时逐个解锁的演出保留在 checkAchievements）
-    const ctx = {
-      bestStars: this.bestStars,
-      bestScores: this.bestScores,
-      bestClears: this.bestClears,
-      flags: this.flags,
-      levelCount: LEVEL_DEFS.length,
-      perfect: this.perfectLevels,
-      exact: this.exactLevels,
-      expert: this.expertClears,
-    };
-    for (const id of evalAchievements(ctx)) {
+    for (const id of evalAchievements(this.achievementContext())) {
       if (!this.achievements[id]) this.achievements = { ...this.achievements, [id]: Date.now() };
     }
     try {
@@ -742,9 +735,11 @@ export class GameEngine {
     this.checkAchievements();
   }
 
-  /** 重新判定成就，新解锁的依次弹出提示 */
-  checkAchievements(): void {
-    const ctx = {
+  /** 成就判定上下文（进度 + 各章朱印是否集齐），构造与重判共用一份 */
+  private achievementContext(): AchievementContext {
+    const chapterSeals: Record<string, boolean> = {};
+    for (const ch of CHAPTERS) chapterSeals[ch.id] = this.chapterSealsOf(ch.id).sealed;
+    return {
       bestStars: this.bestStars,
       bestScores: this.bestScores,
       bestClears: this.bestClears,
@@ -753,9 +748,15 @@ export class GameEngine {
       perfect: this.perfectLevels,
       exact: this.exactLevels,
       expert: this.expertClears,
+      chapterSeals,
+      chapterCount: CHAPTERS.length,
     };
+  }
+
+  /** 重新判定成就，新解锁的依次弹出提示 */
+  checkAchievements(): void {
     const now = Date.now();
-    for (const id of evalAchievements(ctx)) {
+    for (const id of evalAchievements(this.achievementContext())) {
       if (this.achievements[id]) continue;
       const def = ACHIEVEMENTS.find((a) => a.id === id);
       if (!def) continue;
@@ -1092,9 +1093,35 @@ export class GameEngine {
     this.rememberLevel(this.level.id);
   }
 
-  /** 今日最佳得分 */
+  /** 某天是否打过每日挑战（任意难度有得分即算） */
+  dailyDoneOn(date: string): boolean {
+    const prefix = 'daily-' + date + '-';
+    return Object.entries(this.dailyBest).some(([k, v]) => k.startsWith(prefix) && v > 0);
+  }
+
+  /**
+   * 今日最佳得分（同一天的各难度取最高）。
+   * 注意每日关卡的 id 是 daily-<日期>-<难度>，不能只按日期前缀取键。
+   */
   get todayBest(): number {
-    return this.dailyBest['daily-' + todayKey()] ?? 0;
+    const prefix = 'daily-' + todayKey() + '-';
+    let best = 0;
+    for (const [k, v] of Object.entries(this.dailyBest)) {
+      if (k.startsWith(prefix) && v > best) best = v;
+    }
+    return best;
+  }
+
+  /** 最近 7 天的每日挑战完成情况（旧 → 新，最后一项是今天） */
+  get dailyWeek(): { date: string; label: string; done: boolean; today: boolean }[] {
+    const today = todayKey();
+    const labels = ['日', '一', '二', '三', '四', '五', '六'];
+    return lastNDays(7).map((date) => ({
+      date,
+      label: labels[new Date(date + 'T00:00:00').getDay()],
+      done: this.dailyDoneOn(date),
+      today: date === today,
+    }));
   }
 
   /** 载入本关已保存的解法参数（无存档则不动） */

@@ -125,6 +125,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'half-stars', name: '半程大师', desc: '总星数达到满分一半' },
   { id: 'auto-try', name: '数学魔法', desc: '体验过自动拟合演示' },
   { id: 'composer', name: '造物主', desc: '用谐波合成器创作过关卡' },
+  { id: 'chapter-seal', name: '一方之印', desc: '集齐任意一章的全部朱印（章节印）' },
+  { id: 'all-chapter-seals', name: '印满山河', desc: '五章的章节印全部集齐' },
 ];
 
 /** 成就判定上下文（全部来自引擎的持久化数据） */
@@ -141,6 +143,10 @@ export interface AchievementContext {
   exact?: Record<string, true>;
   /** 专家模式全清的关卡集合 */
   expert?: Record<string, true>;
+  /** 各章是否已集齐全部朱印（章节印），key = 章节 id */
+  chapterSeals?: Record<string, boolean>;
+  /** 章节总数（判断"五章全印"用） */
+  chapterCount?: number;
 }
 
 /** 按上下文返回全部已达成成就的 id */
@@ -174,5 +180,9 @@ export function evalAchievements(ctx: AchievementContext): string[] {
   // 盲眼大师：全部内置关卡在专家模式下全清
   const expertCount = Object.keys(ctx.expert ?? {}).length;
   if (expertCount >= ctx.levelCount) unlocked.push('expert-all');
+  // 章节印：集齐任意一章 / 全部章节
+  const sealedCount = Object.values(ctx.chapterSeals ?? {}).filter(Boolean).length;
+  if (sealedCount >= 1) unlocked.push('chapter-seal');
+  if (sealedCount >= (ctx.chapterCount ?? 5)) unlocked.push('all-chapter-seals');
   return unlocked;
 }

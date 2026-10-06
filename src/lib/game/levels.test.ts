@@ -1,6 +1,7 @@
 import {
   decodeCoeffs,
   encodeCoeffs,
+  lastNDays,
   levelFromCoeffs,
   LEVEL_DEFS,
   makeDailyLevel,
@@ -116,6 +117,18 @@ describe('谐波合成器编解码', () => {
     expect(lv.armLimit).toBe(1);
     expect(lv.spectrum.find((s) => s.k === 1)?.mag).toBeGreaterThan(50);
     expect(lv.pts.length).toBeGreaterThan(0);
+  });
+});
+
+describe('lastNDays', () => {
+  it('返回从旧到新的 n 天，互不相同且最后一项是今天', () => {
+    const days = lastNDays(7);
+    expect(days).toHaveLength(7);
+    expect(days[6]).toBe(todayKey());
+    expect(new Set(days).size).toBe(7);
+    // 升序（日期键按字典序即时间序）
+    expect([...days].sort()).toEqual(days);
+    expect(days.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))).toBe(true);
   });
 });
 

@@ -263,6 +263,23 @@
         >{engine.todayBest > 0 ? engine.todayBest + ' 分 · ' : ''}{dailyCountdown}</span
       >
     </button>
+    <!-- 最近 7 天：完成的格子填朱砂，今天描边——连胜变成看得见的一排 -->
+    <div class="dweek" aria-label="最近 7 天的每日挑战">
+      {#each engine.dailyWeek as d (d.date)}
+        <span
+          class="dcell"
+          class:done={d.done}
+          class:today={d.today}
+          title={d.date + (d.done ? ' · 已完成' : ' · 未完成')}
+        >
+          <i>{d.label}</i>
+          {#if d.done}<b>✓</b>{/if}
+        </span>
+      {/each}
+      <span class="dweek-cap">
+        {engine.dailyStreak.streak > 0 ? '连续 ' + engine.dailyStreak.streak + ' 天' : '每天一练'}
+      </span>
+    </div>
     <div class="gen-row">
       <span class="gen-label">随机生成</span>
       <div class="diff-chips">
@@ -624,6 +641,52 @@
     font-size: 9px;
     margin-left: 3px;
     color: var(--gold);
+  }
+  /* 最近 7 天：小方格 + 连续天数说明 */
+  .dweek {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 2px;
+  }
+  .dcell {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    border: 1px solid var(--line-2);
+    background: rgba(255, 255, 255, 0.02);
+    font-size: 10px;
+    color: var(--muted-2, var(--muted));
+  }
+  .dcell i {
+    font-style: normal;
+  }
+  .dcell.done {
+    border-color: rgba(192, 57, 43, 0.6);
+    background: linear-gradient(160deg, rgba(192, 57, 43, 0.5), rgba(142, 42, 31, 0.45));
+    color: #fdece7;
+  }
+  .dcell.done b {
+    position: absolute;
+    right: 1px;
+    bottom: 0;
+    font-size: 8px;
+    color: #fdece7;
+  }
+  .dcell.today {
+    border-color: rgba(79, 209, 197, 0.85);
+    box-shadow: 0 0 0 1px rgba(79, 209, 197, 0.35);
+    color: var(--text);
+  }
+  .dweek-cap {
+    margin-left: 3px;
+    font-size: var(--fs-xs);
+    color: var(--muted);
+    white-space: nowrap;
   }
   .gen-row {
     display: flex;
