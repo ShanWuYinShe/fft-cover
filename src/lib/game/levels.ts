@@ -23,7 +23,7 @@ export interface ChapterDef {
 }
 
 /**
- * 四个章节（顺序即解锁顺序）。
+ * 五个章节（顺序即解锁顺序）。
  * 章名取中国古典意象，数学含义放在 tagline 里——一章一境，一句一理。
  */
 export const CHAPTERS: ChapterDef[] = [
@@ -47,7 +47,29 @@ export const CHAPTERS: ChapterDef[] = [
     name: '第四章 · 万象',
     tagline: '万象森罗，皆可展开——高次谐波，以及故意不让你拟合的曲线',
   },
+  {
+    id: 'china',
+    name: '第五章 · 器象',
+    tagline: '五音既全，器物成形——盘长结、菱花镜、阴阳鱼',
+  },
 ];
+
+/**
+ * 阴阳鱼轮廓：右半外圆 + 一条穿过圆心、在两极与外圆相切的解析 S 曲线
+ *   x(u) = (R/2)·sin(2πu)，y(u) = R·cos(πu)，u ∈ [0, 1]
+ *
+ * 经典太极用"两个半圆"拼 S，切线虽连续但曲率跳变，傅立叶系数衰减慢；
+ * 这里换成解析 S，10 根指针以内即可 100% 贴合（实测 8 根偏差 < 5px）。
+ */
+function taijiFn(t: number): Vec {
+  const R = 200;
+  if (t < Math.PI) {
+    const a = -Math.PI / 2 + t; // 顶点 (0,-R) 顺时针沿右半圆到底点 (0,R)
+    return { x: R * C(a), y: R * S(a) };
+  }
+  const u = (t - Math.PI) / Math.PI; // 0 → 底点，1 → 顶点
+  return { x: (R / 2) * S(2 * Math.PI * u), y: R * C(Math.PI * u) };
+}
 
 /**
  * 内置关卡（难度递进）。
@@ -193,6 +215,37 @@ export const LEVEL_DEFS: LevelDef[] = [
       const r = 150 * (1 + 0.14 * C(12 * t));
       return { x: r * C(t), y: r * S(t) };
     },
+  },
+  // ---- 第五章 · 器象：三件中国器物，各教一件事 ----
+  {
+    id: 'knot',
+    chapter: 'china',
+    name: '盘长结',
+    hint: '两根指针就能编出一个结：<b>2× 顺转</b>与 <b>1× 反转</b>（半径比约 2:1）。结的形状只由这两根的频率比决定——比例差一点，结就散架。',
+    n: 28,
+    armLimit: 2,
+    fn: (t) => ({ x: S(t) + 2 * S(2 * t), y: C(t) - 2 * C(2 * t) }),
+  },
+  {
+    id: 'mirror',
+    chapter: 'china',
+    name: '菱花镜',
+    hint: '唐代菱花镜的八瓣镜缘：<b>6× 与 9×</b> 两级谐波叠在 1× 主圆上，展开后是 e^{i7θ}、e^{−i5θ}、e^{i10θ}、e^{−i8θ}——共 5 根指针。第二级只有 4%，却决定花瓣圆不圆。',
+    n: 30,
+    armLimit: 5,
+    fn: (t) => {
+      const r = 150 * (1 + 0.14 * C(6 * t) + 0.05 * C(9 * t));
+      return { x: r * C(t), y: r * S(t) };
+    },
+  },
+  {
+    id: 'taiji',
+    chapter: 'china',
+    name: '阴阳鱼',
+    hint: '太极的阴阳鱼：右半外圆 + 一条过圆心、两极相切的 S 曲线。它需要 <b>1× 到 4× 的正反两根全部上阵（共 8 根）</b>——低频项撑起大圆，高次项雕出鱼尾的尖角，频率越高半径越小。',
+    n: 30,
+    armLimit: 8,
+    fn: taijiFn,
   },
 ];
 

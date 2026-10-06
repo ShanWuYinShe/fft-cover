@@ -36,13 +36,14 @@ export interface MusicalKey {
  * 切章时整条配乐一起转调（环境音、指针声部、收集音阶全部跟随）。
  *
  * 五声调式天然没有半音与导音，听感温润——这也是"不刺耳"的底子。
- * 徵调式留给下一章（若要加"第五章 · 五音"，直接用这个音阶即可）。
+ * 五章各取一调，宫商角徵羽至此齐全。
  */
 export const CHAPTER_KEYS: Record<string, MusicalKey> = {
   basics: { id: 'basics', name: 'C 宫五声', root: 130.81, steps: [0, 2, 4, 7, 9] },
   petals: { id: 'petals', name: 'A 羽五声', root: 110.0, steps: [0, 3, 5, 7, 10] },
   pairs: { id: 'pairs', name: 'D 商五声', root: 146.83, steps: [0, 2, 5, 7, 10] },
   summit: { id: 'summit', name: 'E 角五声', root: 164.81, steps: [0, 3, 5, 8, 10] },
+  china: { id: 'china', name: 'G 徵五声', root: 196.0, steps: [0, 2, 5, 7, 9] },
 };
 
 /** 默认调性：无章节的关卡（随机关 / 每日 / 创作关）回落到这里 */

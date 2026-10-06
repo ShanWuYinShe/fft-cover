@@ -221,8 +221,10 @@
     {/if}
   {/if}
 
+  <!-- 关卡提示自带 <b> 强调；文案全部写死在本仓库（内置关卡与生成关卡都不含
+       用户输入），所以用 @html 渲染而不是转义成字面标签 -->
   <p id="hint">
-    {#if engine.level}{engine.level.hint}{/if}
+    {#if engine.level}{@html engine.level.hint}{/if}
   </p>
 
   <!-- 更多玩法：每日 / 随机 / 创作 -->

@@ -70,8 +70,8 @@ describe('makeDailyLevel', () => {
     expect(a.random).toBe(true);
   });
 
-  it('内置关卡总数为 12', () => {
-    expect(LEVEL_DEFS).toHaveLength(12);
+  it('内置关卡总数为 15（五章）', () => {
+    expect(LEVEL_DEFS).toHaveLength(15);
   });
 
   it('九瓣花的显著频谱都在 10× 以内（可完美拟合）', () => {
