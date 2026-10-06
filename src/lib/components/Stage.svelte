@@ -564,6 +564,19 @@
         ctx.arc(p.x, p.y, engine.level.tol, 0, Math.PI * 2);
         ctx.stroke();
         ctx.lineWidth = 1 / zoom;
+      } else if (engine.phase === 'done' && engine.resultDismissed) {
+        // 看轨迹：把本局漏掉的点脉冲高亮（红圈），一眼看清差在哪几个
+        const pulse = 0.5 + 0.5 * Math.sin(now / 320);
+        ctx.strokeStyle = 'rgba(248,113,113,' + (0.4 + pulse * 0.5).toFixed(3) + ')';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 6 + pulse * 3.5, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(248,113,113,.9)';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.lineWidth = 1 / zoom;
       } else {
         ctx.fillStyle = 'rgba(220,228,255,.55)';
         ctx.beginPath();
@@ -712,6 +725,25 @@
         ctx.fillRect(cxr - 78, cyr + 6, 78 * remain, 3);
         ctx.textAlign = 'start';
       }
+    }
+
+    // 看轨迹状态：漏点提示 + 怎么回到结算（点画布）
+    if (engine.phase === 'done' && engine.resultDismissed && engine.level) {
+      const missed = engine.total - engine.collectedCount;
+      const label =
+        missed > 0 ? '漏了 ' + missed + ' 点（红圈）· 点画布返回结算' : '全部收齐 · 点画布返回结算';
+      ctx.font = 'bold 12px sans-serif';
+      const w = ctx.measureText(label).width;
+      const bx = SIZE / 2 - w / 2 - 10;
+      // 放在画布底部：顶部会与成就 toast 打架
+      const by = SIZE - 46;
+      ctx.fillStyle = 'rgba(16,21,42,.85)';
+      ctx.fillRect(bx, by, w + 20, 24);
+      ctx.strokeStyle = missed > 0 ? 'rgba(248,113,113,.55)' : 'rgba(47,158,127,.55)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(bx, by, w + 20, 24);
+      ctx.fillStyle = missed > 0 ? '#fca5a5' : '#7fe3c4';
+      ctx.fillText(label, bx + 10, by + 17);
     }
 
     // 缩放指示（非 1× 时显示）

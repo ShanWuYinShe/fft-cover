@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { uiToggle } from '../game/audio';
   import { engine } from '../game/engine.svelte';
   import { goalById, goalProgress, levelGoals } from '../game/goals';
+  import { haptic } from '../game/haptics';
   import { CHAPTERS, LEVEL_DEFS } from '../game/levels';
   import { buildShareUrl, encodeArms } from '../game/share';
   import { fitScore, starsFor } from '../game/scoring';
@@ -45,6 +47,8 @@
 
   /** 执行"下一枚印"的动作并落到可继续操作的状态 */
   function doNextAction(): void {
+    uiToggle(engine.soundOn);
+    haptic(12, engine.soundOn);
     switch (nextSeal?.id) {
       case 'expert':
         if (!engine.expertMode) engine.toggleExpert();
