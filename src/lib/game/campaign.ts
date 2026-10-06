@@ -72,6 +72,7 @@ export function chapterProgress(
         name: id,
         tagline: '',
         intro: '',
+        seal: id.slice(0, 1),
       };
       const levels = defs.filter((d) => groupOf(d) === id);
       const first = levels[0];

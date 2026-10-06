@@ -67,3 +67,27 @@ export function levelGoals(state: GoalState): LevelGoal[] {
 export function goalProgress(goals: LevelGoal[]): { done: number; total: number } {
   return { done: goals.filter((g) => g.done).length, total: goals.length };
 }
+
+/** 一关已盖的朱印数（0~4） */
+export function sealsDone(state: GoalState): number {
+  return goalProgress(levelGoals(state)).done;
+}
+
+/** 一章的朱印收集状态：集满即盖"章节印" */
+export interface ChapterSealState {
+  done: number;
+  total: number;
+  /** 本章全部关卡的 4 枚印都集齐 */
+  sealed: boolean;
+}
+
+/** 汇总一章的朱印进度（stateOf 给出各关的目标状态） */
+export function chapterSealState(
+  levelIds: string[],
+  stateOf: (id: string) => GoalState,
+): ChapterSealState {
+  let done = 0;
+  for (const id of levelIds) done += sealsDone(stateOf(id));
+  const total = levelIds.length * 4;
+  return { done, total, sealed: total > 0 && done === total };
+}

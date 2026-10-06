@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { LEVEL_DEFS } from './levels';
 import { LAST_LEVEL_KEY } from './constants';
 import { GameEngine } from './engine.svelte';
+import { solveFromSpectrum } from './scoring';
 
 /** 内存 Storage 实现（Node 环境没有 localStorage） */
 function memStore(): Storage {
@@ -123,6 +124,33 @@ describe('GameEngine', () => {
     for (const p of pts) engine.tryCollect(p);
     engine.stopRun();
     expect(engine.newSeals).toEqual([]);
+  });
+
+  it('章节印：本局集齐本章最后一枚印时盖章节印，之后不重复盖', () => {
+    // 第一章（basics）= 圆 + 椭圆；先只差椭圆的「星」「满」
+    engine.bestStars = { circle: 3, ellipse: 2 };
+    engine.perfectLevels = { circle: true };
+    engine.exactLevels = { circle: true, ellipse: true };
+    engine.expertClears = { circle: true, ellipse: true };
+    expect(engine.chapterSealsOf('basics').done).toBe(6);
+    expect(engine.chapterSealsOf('basics').sealed).toBe(false);
+
+    engine.loadLevel(LEVEL_DEFS.find((d) => d.id === 'ellipse')!);
+    const lv = engine.level!;
+    const sol = solveFromSpectrum(lv.spectrum, lv.armLimit);
+    sol.forEach((a, i) => engine.setArm(i, { ...a }));
+    engine.startRun();
+    for (let i = 0; i < 1500 && engine.phase === 'running'; i++) engine.advance(1 / 60);
+    expect(engine.collectedCount).toBe(engine.total);
+    expect(engine.newSeals).toContain('perfect');
+    expect(engine.chapterSealsOf('basics').sealed).toBe(true);
+    expect(engine.newChapterSeal).toBe('basics');
+
+    // 已经集齐，再跑一局不再重复盖
+    engine.resetRun();
+    engine.startRun();
+    for (let i = 0; i < 1500 && engine.phase === 'running'; i++) engine.advance(1 / 60);
+    expect(engine.newChapterSeal).toBeNull();
   });
 
   it('stopRun 结算最佳分，resetRun 清零', () => {

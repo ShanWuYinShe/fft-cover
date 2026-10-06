@@ -160,6 +160,14 @@ export function finishChord(on: boolean): void {
   setTimeout(() => beep(880, 0.2, 'triangle', 0.12, on), 110);
 }
 
+/** 章节印：本章四印集齐时的一声重章 + 两声轻铃（比单枚印更隆重） */
+export function chapterSealSound(on: boolean): void {
+  if (!on) return;
+  beep(110, 0.3, 'sine', 0.16, true);
+  setTimeout(() => beep(784, 0.24, 'triangle', 0.06, true), 60);
+  setTimeout(() => beep(1046.5, 0.3, 'triangle', 0.05, true), 260);
+}
+
 /**
  * 盖章音：低沉的"咚"（印面落纸）+ 一声轻铃（印泥边）。
  * 结算时一枚朱印盖一次——奖励音要短、要闷，不能盖过收尾和弦。

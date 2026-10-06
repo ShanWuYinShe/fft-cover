@@ -5,6 +5,7 @@
   import type { Vec } from '../game/types';
   import { COMBO_WINDOW, RUN_DUR, SIZE, T0 } from '../game/constants';
   import {
+    chapterSealSound,
     collectSound,
     finishChord,
     perfectArpeggio,
@@ -755,6 +756,13 @@
           engine.newSeals.forEach((_, i) => {
             setTimeout(() => sealSound(engine.soundOn), 430 + i * 260);
           });
+          // 章节印：所有单枚印盖完之后，再盖一方大印
+          if (engine.newChapterSeal) {
+            setTimeout(
+              () => chapterSealSound(engine.soundOn),
+              430 + engine.newSeals.length * 260 + 240,
+            );
+          }
         }
         // 自动拟合进度音：每跨过 20% 播一个上行音符，呼应逐项逼近
         if (engine.autoSolve) {

@@ -22,6 +22,8 @@ export interface ChapterDef {
   tagline: string;
   /** 章节入场卡上的"本章要点"（一句话说清这一章教什么） */
   intro: string;
+  /** 章节印单字：本章全部朱印集齐后，章头盖上这一方大印 */
+  seal: string;
 }
 
 /**
@@ -34,6 +36,7 @@ export const CHAPTERS: ChapterDef[] = [
     name: '第一章 · 一画',
     tagline: '易有太极，是生两仪——一根指针就是一个旋转向量',
     intro: '一根指针画一个圆。这一章只需要理解一件事：指针转一圈，指尖就画出一条曲线。',
+    seal: '画',
   },
   {
     id: 'petals',
@@ -41,6 +44,7 @@ export const CHAPTERS: ChapterDef[] = [
     tagline: '花信有风，开合有时——反着转的那一根，才是花瓣的关键',
     intro:
       '本章要点：<b>负频率</b>。把某根指针切到 ⟲ 反转，它就和顺转的那根叠出花瓣——花瓣的数目由两根的频率差决定。',
+    seal: '信',
   },
   {
     id: 'pairs',
@@ -48,6 +52,7 @@ export const CHAPTERS: ChapterDef[] = [
     tagline: '一阴一阳之谓道——正频与负频总是成对出现',
     intro:
       '本章要点：<b>频率对</b>。同一频率的正反两根相位差 90°，合起来才是一条闭合的实曲线——这就是"阴阳"。',
+    seal: '阳',
   },
   {
     id: 'summit',
@@ -55,6 +60,7 @@ export const CHAPTERS: ChapterDef[] = [
     tagline: '万象森罗，皆可展开——高次谐波，以及故意不让你拟合的曲线',
     intro:
       '本章要点：<b>高次谐波与截断</b>。频率越高，半径越小；10 根指针装不下无限高的频率，于是要学会"逼近"。',
+    seal: '象',
   },
   {
     id: 'china',
@@ -62,6 +68,7 @@ export const CHAPTERS: ChapterDef[] = [
     tagline: '五音既全，器物成形——盘长结、菱花镜、阴阳鱼',
     intro:
       '本章要点：<b>谐波的不同写法</b>。两根能编结、五根能开菱花、八根能游出阴阳鱼——器物不过是谐波换了一种排法。',
+    seal: '器',
   },
 ];
 

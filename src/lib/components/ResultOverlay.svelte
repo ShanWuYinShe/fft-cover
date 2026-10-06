@@ -1,11 +1,22 @@
 <script lang="ts">
   import { engine } from '../game/engine.svelte';
   import { goalById, goalProgress, levelGoals } from '../game/goals';
+  import { CHAPTERS, LEVEL_DEFS } from '../game/levels';
   import { buildShareUrl, encodeArms } from '../game/share';
   import { fitScore, starsFor } from '../game/scoring';
 
   /** 本关朱印进度（结算时给一条"这一关还差什么"的落点） */
   const sealProg = $derived(goalProgress(levelGoals(engine.levelGoalState)));
+
+  /** 本局若让某一章集齐四印：取出该章的章节印与关卡数（盖大印用） */
+  const chapterSeal = $derived.by(() => {
+    const id = engine.newChapterSeal;
+    if (!id) return null;
+    const def = CHAPTERS.find((c) => c.id === id);
+    if (!def) return null;
+    const count = LEVEL_DEFS.filter((d) => (d.chapter ?? 'basics') === id).length;
+    return { seal: def.seal, name: def.name, count };
+  });
 
   type CopyState = 'idle' | 'ok' | 'fail';
   let copyState = $state<CopyState>('idle');
@@ -262,6 +273,17 @@
             得分{#if engine.newRecord}<i class="rec">新纪录</i>{/if}
           </span>
         </div>
+        {#if chapterSeal}
+          <div class="chapter-seal-banner">
+            <span class="cs-seal">{chapterSeal.seal}</span>
+            <span class="cs-txt">
+              <b>章节印 · {chapterSeal.seal}</b>
+              <i
+                >{chapterSeal.name} 全部 {chapterSeal.count} 关、共 {chapterSeal.count * 4} 枚朱印集齐</i
+              >
+            </span>
+          </div>
+        {/if}
         {#if engine.newSeals.length > 0}
           <div class="seal-row">
             <span class="sr-label">本局新盖 {engine.newSeals.length} 枚</span>
@@ -518,6 +540,64 @@
     letter-spacing: 2px;
     opacity: 0.85;
   }
+  /* 章节印：本章四印集齐，盖一方大印（比单枚印更隆重） */
+  .chapter-seal-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: var(--r-md);
+    background: linear-gradient(135deg, rgba(192, 57, 43, 0.22), rgba(251, 191, 36, 0.1));
+    border: 1px solid rgba(192, 57, 43, 0.62);
+    box-shadow: 0 0 28px rgba(192, 57, 43, 0.22);
+    animation: ch-banner-in 0.36s ease-out 0.25s backwards;
+  }
+  @keyframes ch-banner-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .cs-seal {
+    flex: none;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    font-size: 23px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fdece7;
+    background: linear-gradient(160deg, #c0392b, #8e2a1f);
+    box-shadow: 0 3px 16px rgba(192, 57, 43, 0.5);
+    animation: seal-stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s backwards;
+  }
+  .cs-txt {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: left;
+    min-width: 0;
+  }
+  .cs-txt b {
+    font-size: var(--fs-sm);
+    color: #f6c9a8;
+    letter-spacing: 1px;
+  }
+  .cs-txt i {
+    font-style: normal;
+    font-size: var(--fs-xs);
+    color: var(--muted);
+  }
+
   /* 本局新盖的朱印：结算时一枚一枚盖下来（与「本关目标」面板同一套字形） */
   .seal-row {
     display: flex;

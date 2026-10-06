@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { goalById, goalProgress, levelGoals } from './goals';
+import { chapterSealState, goalById, goalProgress, levelGoals, sealsDone } from './goals';
 
 const state = (patch: Partial<Parameters<typeof levelGoals>[0]> = {}) => ({
   stars: 0,
@@ -44,6 +44,16 @@ describe('levelGoals', () => {
 
   it('星级超过 3（脏数据）也只算达成', () => {
     expect(goalProgress(levelGoals(state({ stars: 9 }))).done).toBe(1);
+  });
+
+  it('章节印：一章四印集满才 sealed', () => {
+    const full = () => ({ stars: 3, perfect: true, exact: true, expert: true });
+    expect(chapterSealState(['a', 'b'], full)).toEqual({ done: 8, total: 8, sealed: true });
+    const half = () => ({ stars: 3, perfect: true, exact: false, expert: false });
+    expect(chapterSealState(['a', 'b'], half)).toEqual({ done: 4, total: 8, sealed: false });
+    expect(sealsDone(half())).toBe(2);
+    // 空章节（没有关卡）不算集齐
+    expect(chapterSealState([], full).sealed).toBe(false);
   });
 
   it('goalById 与 levelGoals 用同一份定义（结算盖印按 id 取字形）', () => {

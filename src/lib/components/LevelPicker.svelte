@@ -1,8 +1,8 @@
 <script lang="ts">
   import { engine } from '../game/engine.svelte';
   import { decodeCoeffs, LEVEL_DEFS, todayKey } from '../game/levels';
-  import { chapterProgress, isLevelLocked, type ChapterProgress } from '../game/campaign';
-  import { goalProgress, levelGoals } from '../game/goals';
+  import { chapterProgress, isLevelLocked } from '../game/campaign';
+  import type { ChapterSealState } from '../game/goals';
   import { keyForChapter } from '../game/harmony';
   import ComposerModal from './ComposerModal.svelte';
 
@@ -14,25 +14,10 @@
   /** 战役章节进度（章内星数 / 满星 / 解锁 / 全通） */
   const chapters = $derived(chapterProgress(LEVEL_DEFS, engine.bestStars));
 
-  /** 某关已盖的朱印数（与「本关目标」面板同一套判定） */
-  const sealsOf = (id: string): number =>
-    goalProgress(
-      levelGoals({
-        stars: engine.bestStars[id] ?? 0,
-        perfect: !!engine.perfectLevels[id],
-        exact: !!engine.exactLevels[id],
-        expert: !!engine.expertClears[id],
-      }),
-    ).done;
-
-  /** 每章朱印收集进度：把"精通"也变成地图上看得见的一条进度 */
+  /** 每章朱印进度与"章节印"（本章四印集齐）：把精通变成地图上看得见的一条进度 */
   const chapterSeals = $derived.by(() => {
-    const out: Record<string, { done: number; total: number }> = {};
-    for (const ch of chapters as ChapterProgress[]) {
-      let done = 0;
-      for (const l of ch.levels) done += sealsOf(l.id);
-      out[ch.id] = { done, total: ch.levels.length * 4 };
-    }
+    const out: Record<string, ChapterSealState> = {};
+    for (const ch of chapters) out[ch.id] = engine.chapterSealsOf(ch.id);
     return out;
   });
 
@@ -151,7 +136,14 @@
       onclick={() => (viewIdx = Math.max(0, viewIdx - 1))}>◀</button
     >
     <div class="nav-mid">
-      <b>{view?.name ?? ''}</b>
+      <div class="ch-title">
+        <b>{view?.name ?? ''}</b>
+        {#if view && chapterSeals[view.id]?.sealed}
+          <span class="ch-seal" title={'本章朱印集齐 · 章节印「' + view.seal + '」'}
+            >{view.seal}</span
+          >
+        {/if}
+      </div>
       <span>
         {view ? view.stars : 0}/{view ? view.maxStars : 0} ★{#if view}&nbsp;· 印
           {chapterSeals[view.id]?.done ?? 0}/{chapterSeals[view.id]?.total ??
@@ -356,6 +348,46 @@
     font-size: var(--fs-xs);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
+  }
+  .ch-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    max-width: 100%;
+    min-width: 0;
+  }
+  /* 章节印：本章四印集齐才出现的一方朱印 */
+  .ch-seal {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fdece7;
+    background: linear-gradient(160deg, #c0392b, #8e2a1f);
+    box-shadow: 0 1px 8px rgba(192, 57, 43, 0.45);
+    animation: ch-seal-stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  }
+  @keyframes ch-seal-stamp {
+    from {
+      opacity: 0;
+      transform: scale(1.8) rotate(-16deg);
+    }
+    60% {
+      opacity: 1;
+      transform: scale(0.92) rotate(3deg);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) rotate(0);
+    }
   }
   .dots {
     display: flex;

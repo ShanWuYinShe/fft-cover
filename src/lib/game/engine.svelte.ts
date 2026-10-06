@@ -45,7 +45,13 @@ import {
   starsFor,
 } from './scoring';
 import { campaignState, type CampaignState } from './campaign';
-import { levelGoals, type GoalId, type GoalState } from './goals';
+import {
+  chapterSealState,
+  levelGoals,
+  type ChapterSealState,
+  type GoalId,
+  type GoalState,
+} from './goals';
 import { keyForLevel, scaleNotes, type MusicalKey } from './harmony';
 import { ghostProgressAt, paceDelta, paceRatio, sanitizePace, type Pace } from './pace';
 import type { Arm, Floater, GamePhase, HistoryEntry, Level, LevelDef, Vec } from './types';
@@ -326,6 +332,8 @@ export class GameEngine {
   newClearRecord = $state(false);
   /** 本局新盖的朱印（结算演出一枚枚盖下来） */
   newSeals = $state<GoalId[]>([]);
+  /** 本局让某一章的朱印集齐 → 该章盖章节印（结算演出用） */
+  newChapterSeal = $state<string | null>(null);
   /** 各关保存的解法参数（上届那局的指针配置） */
   armsSaves = $state<Record<string, Arm[]>>(loadArmsSaves());
   /** 各关上届节奏：每个点的收集时刻（与 armsSaves 同源，都是"上届"那一局） */
@@ -497,6 +505,7 @@ export class GameEngine {
     this.lastGhostDelta = null;
     this.finale = null;
     this.newSeals = [];
+    this.newChapterSeal = null;
   }
 
   /** 关闭通关演出（继续挑战 / 回看关卡面板） */
@@ -519,16 +528,27 @@ export class GameEngine {
     return scaleNotes(this.musicalKey);
   }
 
-  /** 本关四个目标的达成状态（目标清单用，全部来自持久化进度） */
-  get levelGoalState(): GoalState {
-    const id = this.level?.id;
-    if (!id) return { stars: 0, perfect: false, exact: false, expert: false };
+  /** 指定关卡四个目标的达成状态（全部来自持久化进度） */
+  goalStateOf(id: string): GoalState {
     return {
       stars: this.bestStars[id] ?? 0,
       perfect: !!this.perfectLevels[id],
       exact: !!this.exactLevels[id],
       expert: !!this.expertClears[id],
     };
+  }
+
+  /** 本关四个目标的达成状态（目标清单用） */
+  get levelGoalState(): GoalState {
+    return this.level
+      ? this.goalStateOf(this.level.id)
+      : { stars: 0, perfect: false, exact: false, expert: false };
+  }
+
+  /** 指定章节的朱印收集状态（集满则该章盖"章节印"） */
+  chapterSealsOf(chapterId: string): ChapterSealState {
+    const ids = LEVEL_DEFS.filter((d) => (d.chapter ?? 'basics') === chapterId).map((d) => d.id);
+    return chapterSealState(ids, (id) => this.goalStateOf(id));
   }
 
   /** 沙盒转速档位循环 0.5× → 1× → 2× */
@@ -881,12 +901,14 @@ export class GameEngine {
     const ratio = this.total ? this.collectedCount / this.total : 0;
     const st = starsFor(ratio);
     this.newRecord = false;
-    // 结算前的印章状态：用来算"本局新盖了哪几枚"
+    // 结算前的印章状态：用来算"本局新盖了哪几枚"、以及本章是否刚集齐
     const sealsBefore = new Set(
       levelGoals(this.levelGoalState)
         .filter((g) => g.done)
         .map((g) => g.id),
     );
+    const chapterId = this.level?.chapter ?? '';
+    const chapterSealedBefore = chapterId !== '' && this.chapterSealsOf(chapterId).sealed;
     // 完美全清（100%）：三星之上的顶端追求，首次达成给特殊演出
     this.newPerfect = false;
     if (this.total > 0 && this.collectedCount === this.total && !this.perfectLevels[id]) {
@@ -955,6 +977,11 @@ export class GameEngine {
     this.newSeals = levelGoals(this.levelGoalState)
       .filter((g) => g.done && !sealsBefore.has(g.id))
       .map((g) => g.id);
+    // 章节印：本局的最后一枚印正好把本章四印集齐 → 盖章节大印
+    this.newChapterSeal =
+      chapterId !== '' && !chapterSealedBefore && this.chapterSealsOf(chapterId).sealed
+        ? chapterId
+        : null;
 
     // 通关演出：本局让战役状态发生了跨级（未通关 → 通关 → 精通）才触发，
     // 之后重复游玩不会反复弹（before === after）
