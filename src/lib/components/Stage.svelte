@@ -711,7 +711,7 @@
       last = now;
       if (engine.phase === 'running') {
         const { got, finished } = engine.advance(dt);
-        if (got > 0) collectSound(engine.collectedCount, engine.soundOn);
+        if (got > 0) collectSound(engine.collectedCount, engine.soundOn, engine.collectScale);
         if (finished) {
           if (engine.collectedCount === engine.total) perfectArpeggio(engine.soundOn);
           else finishChord(engine.soundOn);
@@ -721,7 +721,7 @@
           const step = Math.min(4, Math.floor(engine.autoProgress * 5));
           if (step !== lastSolveStep) {
             lastSolveStep = step;
-            solveTick(step, engine.soundOn);
+            solveTick(step, engine.soundOn, engine.collectScale.slice(0, 5));
           }
         } else if (lastSolveStep >= 0) {
           lastSolveStep = -1;

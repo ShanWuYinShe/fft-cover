@@ -44,6 +44,7 @@ import {
   starsFor,
 } from './scoring';
 import { campaignState, type CampaignState } from './campaign';
+import { keyForLevel, scaleNotes, type MusicalKey } from './harmony';
 import { ghostProgressAt, paceDelta, paceRatio, sanitizePace, type Pace } from './pace';
 import type { Arm, Floater, GamePhase, HistoryEntry, Level, LevelDef, Vec } from './types';
 
@@ -453,6 +454,16 @@ export class GameEngine {
   /** 当前战役状态：未通关 / 已通关 / 全三星精通 */
   get campaign(): CampaignState {
     return campaignState(this.bestStars, LEVEL_DEFS);
+  }
+
+  /** 本关调性：内置关按章节，随机关/每日/创作关按 id 稳定散列 */
+  get musicalKey(): MusicalKey {
+    return keyForLevel(this.level);
+  }
+
+  /** 本关音阶（约两个八度）：收集音效与拟合音都跟着调性走 */
+  get collectScale(): number[] {
+    return scaleNotes(this.musicalKey);
   }
 
   /** 沙盒转速档位循环 0.5× → 1× → 2× */

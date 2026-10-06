@@ -10,16 +10,92 @@ import type { Arm, GamePhase } from './types';
  * - 半径 r  → 声部音量（分量越大，听得越响）
  * - 相位 φ  → 声像 sin(φ)（左右位置）
  * - 旋转方向 → ±音分失谐（正反两根之间产生缓慢拍音）
+ *
+ * 根音由**关卡所属章节**决定（见下方 CHAPTER_KEYS）：切关即转调，
+ * 于是每一章有自己的和声色彩，而声部之间的相对关系仍然是谐波关系。
  */
 
 /** 音乐根音 C3（130.81 Hz）：第 k 根指针恰好落在第 k 次谐波上 */
 export const ROOT_HZ = 130.81;
+
+/* ---------- 调性：每个章节有自己的根音与音阶 ---------- */
+
+/** 一个调性：根音 + 音阶半音表（相对根音，升序、以 0 开头） */
+export interface MusicalKey {
+  id: string;
+  /** 显示名（关卡面板与调试用） */
+  name: string;
+  /** 根音（Hz）——第 k 根指针落在它的第 k 次谐波上 */
+  root: number;
+  /** 音阶（半音，一个八度内） */
+  steps: number[];
+}
+
+/**
+ * 章节调性：四章四种色彩，切关时整条配乐一起转调
+ * （低音垫音、指针声部、收集音阶全部跟随）。
+ */
+export const CHAPTER_KEYS: Record<string, MusicalKey> = {
+  basics: { id: 'basics', name: 'C 宫五声', root: 130.81, steps: [0, 2, 4, 7, 9] },
+  petals: { id: 'petals', name: 'A 羽五声', root: 110.0, steps: [0, 3, 5, 7, 10] },
+  pairs: { id: 'pairs', name: 'D 多利亚', root: 146.83, steps: [0, 2, 3, 5, 7, 9, 10] },
+  summit: { id: 'summit', name: 'F 利底亚', root: 174.61, steps: [0, 2, 4, 6, 7, 9, 11] },
+};
+
+/** 默认调性：无章节的关卡（随机关 / 每日 / 创作关）回落到这里 */
+export const DEFAULT_KEY: MusicalKey = CHAPTER_KEYS.basics;
+
+/** 章节 id → 调性；未知章节回落默认调性 */
+export function keyForChapter(chapter?: string): MusicalKey {
+  return (chapter && CHAPTER_KEYS[chapter]) || DEFAULT_KEY;
+}
+
+/**
+ * 关卡 → 调性：内置关按章节；随机关/每日挑战/创作关没有章节，
+ * 就按关卡 id 稳定散列挑一个——同一邀请码每次进来听到的都是同一个调。
+ */
+export function keyForLevel(
+  level: { id: string; chapter?: string } | null | undefined,
+): MusicalKey {
+  if (!level) return DEFAULT_KEY;
+  if (level.chapter) return keyForChapter(level.chapter);
+  const ids = Object.keys(CHAPTER_KEYS);
+  let h = 0;
+  for (let i = 0; i < level.id.length; i++) h = (h * 31 + level.id.charCodeAt(i)) >>> 0;
+  return CHAPTER_KEYS[ids[h % ids.length]];
+}
+
+/**
+ * 由调性生成音阶音高（默认约两个八度，供收集音效逐点递进）。
+ * 默认调性（C 宫五声）的结果与旧的 PENTATONIC 常量一致。
+ */
+export function scaleNotes(key: MusicalKey = DEFAULT_KEY, count = 11): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < count; i++) {
+    const octave = Math.floor(i / key.steps.length);
+    const step = key.steps[i % key.steps.length];
+    out.push(key.root * 2 * Math.pow(2, (step + octave * 12) / 12));
+  }
+  return out;
+}
 
 /** ±k 频率对的失谐量（音分）：一升一降才听得出"拍" */
 export const DETUNE_CENTS = 7;
 
 /** 可听见的谐波次数上限（防止极端参数把音高推到刺耳区） */
 export const MAX_HARMONIC = 16;
+
+/**
+ * 高次谐波的音量衰减：第 k 次谐波乘以 1 / (1 + ROLLOFF × (k-1))。
+ * 越高的泛音越轻——这既是物理共鸣器的自然行为，
+ * 也是"不刺耳"的关键：2~3 kHz 的纯音叠起来最容易扎耳朵。
+ */
+export const HARMONIC_ROLLOFF = 0.3;
+
+/** 第 k 次谐波的音量系数（k=1 为 1.0，单调下降） */
+export function harmonicRolloff(k: number): number {
+  return 1 / (1 + HARMONIC_ROLLOFF * Math.max(0, k - 1));
+}
 
 /** 一个声部：由一根指针映射而来 */
 export interface Voice {
@@ -36,26 +112,36 @@ export interface Voice {
 }
 
 /** 单根指针 → 声部；未启用或半径为 0 的指针不发声（返回 null） */
-export function armToVoice(arm: Arm, index: number): Voice | null {
+export function armToVoice(arm: Arm, index: number, root = ROOT_HZ): Voice | null {
   if (!arm.on || arm.r <= 0) return null;
   const k = Math.min(MAX_HARMONIC, Math.max(1, Math.abs(arm.freq)));
   return {
     index,
-    freq: ROOT_HZ * k,
-    gain: 0.04 + 0.2 * Math.min(1, arm.r / 170),
+    freq: root * k,
+    gain: (0.04 + 0.2 * Math.min(1, arm.r / 170)) * harmonicRolloff(k),
     pan: Math.max(-1, Math.min(1, Math.sin(arm.phase))),
     detune: arm.freq < 0 ? -DETUNE_CENTS : DETUNE_CENTS,
   };
 }
 
 /** 指针组 → 声部表（按指针序号升序，未启用的位不占声部） */
-export function armsToVoices(arms: Arm[]): Voice[] {
+export function armsToVoices(arms: Arm[], root = ROOT_HZ): Voice[] {
   const out: Voice[] = [];
   for (let i = 0; i < arms.length; i++) {
-    const v = armToVoice(arms[i], i);
+    const v = armToVoice(arms[i], i, root);
     if (v) out.push(v);
   }
   return out;
+}
+
+/**
+ * 探索环境音的下一个音符间隔（秒）。
+ * 越"在玩"越密（运行/结算），编辑思考时更稀疏——留白本身就是氛围的一部分。
+ */
+export function nextNoteDelay(rnd: number, intensity: number): number {
+  const i = Math.max(0, Math.min(1, intensity));
+  const base = 7 - 4 * i; // 编辑态 ≈7s、运行态 ≈3s
+  return base * (0.55 + 0.9 * Math.max(0, Math.min(1, rnd)));
 }
 
 /**

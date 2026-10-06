@@ -69,6 +69,8 @@ export interface Level {
   id: string;
   name: string;
   hint: string;
+  /** 所属章节（内置关；随机/每日/创作关没有 → 调性按 id 散列） */
+  chapter?: string;
   pts: Vec[];
   tol: number;
   /** 目标曲线光滑采样（画布坐标，编辑态作参考轮廓） */

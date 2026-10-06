@@ -1,120 +1,336 @@
 import { getAudioContext } from './audio';
-import { armsToVoices, ROOT_HZ, type Voice } from './harmony';
+import {
+  armsToVoices,
+  DEFAULT_KEY,
+  nextNoteDelay,
+  scaleNotes,
+  type MusicalKey,
+  type Voice,
+} from './harmony';
 import type { Arm } from './types';
 
 /**
- * 和声背景音乐：玩家的指针参数实时合成为一条垫音。
+ * 「探索未知」环境声。
  *
- * 与音效（audio.ts 的一次性 beep）分开：这里是常驻的振荡器组，
- * 参数变化用 setTargetAtTime 平滑过渡（不产生爆音）。
+ * 刻意**不做**持续低鸣/长音垫：那种声音听久了就是嗡嗡嗡。
+ * 这里给出的是一片有空旷混响的空间，声音是稀疏、偶发、慢慢涨落的：
  *
- * 音频图：
- *   指针声部 osc → gain → pan ─┐
- *   垫音（根音 + 五度 + 呼吸 LFO）┴→ bus → lowpass → compressor → master → 输出
+ * - 远方信号：每隔几秒从本关调性音阶里飘出一个长起长落的音（随机声像）
+ * - 你的指针：启用中的指针是缓慢呼吸的声部（频率→谐波、半径→音量、相位→声像）
+ * - 空气：极轻的带通噪声，像空间本身在流动
  *
- * 浏览器自动播放策略要求用户手势后才能出声，故由 App 在首次
- * pointerdown/keydown 时调用 startMusic()。
+ * 干声 + 混响 + 延迟三条支路汇入总线；静下来的时候几乎只剩空间感。
+ * 声部链构建、总线构建、排程三个函数都与离线渲染自检共用。
  */
 
-/** 声部节点链（实时播放与离线渲染自测共用同一构建函数） */
+/** 单个"远方信号"的音量基数 */
+const NOTE_GAIN = 0.07;
+/**
+ * 环境音的音高上限（Hz）。高频是"刺耳"的主要来源：
+ * 一切都压在 900 Hz 以下，听感是温暖、遥远、留白，而不是尖锐的哨音。
+ */
+const NOTE_MAX_HZ = 900;
+/** 总线低通：整体削掉高频毛刺（刺耳段主要是 1.5~4 kHz 的纯音） */
+const BUS_LOWPASS_HZ = 1300;
+/** 空气层音量基数 */
+const AIR_LEVEL = 0.04;
+/** 总线总音量上限 */
+const MASTER_LEVEL = 0.5;
+
+/** 单条声部链（实时播放与离线渲染自测共用同一构建函数） */
 export interface VoiceChain {
   osc: OscillatorNode;
   gain: GainNode;
+  breath: GainNode;
+  lfo: OscillatorNode;
   pan: StereoPannerNode | null;
   /** 淡出并停声 */
   dispose(at: number): void;
 }
 
-/** 在给定音频上下文上构建一条声部链。gain 从 0 起，由调用方淡入。 */
+/**
+ * 构建一条声部链：osc → gain（包络）→ breath（极慢涨落）→ pan → dest。
+ * gain 从 0 起，由调用方淡入；breath 让声部一直缓慢起伏，不会变成一条长音。
+ */
 export function buildVoiceChain(ac: BaseAudioContext, dest: AudioNode, voice: Voice): VoiceChain {
   const osc = ac.createOscillator();
   osc.type = 'sine';
   osc.frequency.value = voice.freq;
   osc.detune.value = voice.detune;
   const gain = ac.createGain();
-  gain.gain.value = 0; // 从静音起，避免开关瞬间的爆音
+  gain.gain.value = 0;
+  const breath = ac.createGain();
+  breath.gain.value = 1;
+  // 每根指针一个不同的慢周期（11~33 秒）：声部明显涨落、时隐时现，
+  // 而不是一条持续的长音（深度 0.7 → 音量在 0.3~1.7 倍之间起伏）
+  const lfo = ac.createOscillator();
+  lfo.frequency.value = 0.03 + (voice.index % 5) * 0.015;
+  const depth = ac.createGain();
+  depth.gain.value = 0.7;
+  lfo.connect(depth);
+  depth.connect(breath.gain);
+  lfo.start();
   osc.connect(gain);
+  gain.connect(breath);
   // Safari 老版本无 StereoPanner：退化为单声道
   const maybePan = ac as BaseAudioContext & { createStereoPanner?: () => StereoPannerNode };
   let pan: StereoPannerNode | null = null;
   if (typeof maybePan.createStereoPanner === 'function') {
     pan = maybePan.createStereoPanner();
     pan.pan.value = voice.pan;
-    gain.connect(pan);
+    breath.connect(pan);
     pan.connect(dest);
   } else {
-    gain.connect(dest);
+    breath.connect(dest);
   }
   osc.start();
   return {
     osc,
     gain,
+    breath,
+    lfo,
     pan,
     dispose(at: number): void {
       gain.gain.cancelScheduledValues(at);
-      gain.gain.setTargetAtTime(0, at, 0.25);
-      osc.stop(at + 1.5);
+      gain.gain.setTargetAtTime(0, at, 1.1); // 慢慢消散，不要"咔"的一声
+      osc.stop(at + 6);
+      lfo.stop(at + 6);
     },
   };
 }
 
-/** 垫音音量（相对值，之后再乘动态强度） */
-const DRONE_LEVEL = 0.55;
-/** 声部与垫音的总线音量上限 */
-const MASTER_LEVEL = 0.42;
+/** 混响脉冲响应：指数衰减噪声（空间感的来源） */
+export function makeImpulse(ac: BaseAudioContext, seconds = 3.6, decay = 2.3): AudioBuffer {
+  const len = Math.max(1, Math.floor(ac.sampleRate * seconds));
+  const buf = ac.createBuffer(2, len, ac.sampleRate);
+  for (let ch = 0; ch < buf.numberOfChannels; ch++) {
+    const data = buf.getChannelData(ch);
+    for (let i = 0; i < len; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+    }
+  }
+  return buf;
+}
 
-let ctx: AudioContext | null = null;
-let bus: GainNode | null = null;
-let master: GainNode | null = null;
-let droneLevel: GainNode | null = null;
-let chains = new Map<number, VoiceChain>();
-/** 上一次落地的参数签名：未变化则完全跳过，避免每帧重设音频参数 */
-let lastSig = '';
+/** 循环噪声缓冲（"空气"层用） */
+function makeNoise(ac: BaseAudioContext, seconds = 4): AudioBuffer {
+  const len = Math.max(1, Math.floor(ac.sampleRate * seconds));
+  const buf = ac.createBuffer(1, len, ac.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  return buf;
+}
 
-/** 构建总线（低通 + 压缩 + 总音量 + 垫音），只做一次 */
-function buildBus(ac: AudioContext): void {
-  bus = ac.createGain();
+/** 环境声总线：干声 + 混响 + 延迟，压缩后输出 */
+export interface AmbientBus {
+  /** 所有声源接这里 */
+  input: GainNode;
+  /** 总音量（0 = 静音） */
+  master: GainNode;
+}
+
+/**
+ * 构建总线：input → 低通 → 压缩 → 总音量 → 输出，
+ * 并联混响（Convolver，长尾）与延迟（带阻尼反馈的回声）。
+ */
+export function buildAmbientBus(ac: BaseAudioContext): AmbientBus {
+  const input = ac.createGain();
   const lp = ac.createBiquadFilter();
   lp.type = 'lowpass';
-  lp.frequency.value = 1700;
-  lp.Q.value = 0.6;
+  lp.frequency.value = BUS_LOWPASS_HZ;
+  lp.Q.value = 0.5;
   const comp = ac.createDynamicsCompressor();
-  comp.threshold.value = -20;
-  comp.knee.value = 24;
-  comp.ratio.value = 4;
-  comp.attack.value = 0.01;
-  comp.release.value = 0.3;
-  master = ac.createGain();
+  comp.threshold.value = -22;
+  comp.knee.value = 26;
+  comp.ratio.value = 3.5;
+  comp.attack.value = 0.02;
+  comp.release.value = 0.4;
+  const master = ac.createGain();
   master.gain.value = 0;
-  bus.connect(lp);
+  input.connect(lp);
   lp.connect(comp);
   comp.connect(master);
   master.connect(ac.destination);
 
-  // 垫音：根音 + 纯五度，8 秒周期的极慢呼吸
-  // 呼吸起伏放在开关节点之前：droneLevel = 0 时才是真的静音
-  droneLevel = ac.createGain();
-  droneLevel.gain.value = 0;
-  droneLevel.connect(bus);
-  const breath = ac.createGain();
-  breath.gain.value = 1;
-  breath.connect(droneLevel);
+  // 混响支路：空旷空间
+  const conv = ac.createConvolver();
+  conv.buffer = makeImpulse(ac);
+  const wet = ac.createGain();
+  wet.gain.value = 0.6;
+  input.connect(conv);
+  conv.connect(wet);
+  wet.connect(lp);
+
+  // 延迟支路：带阻尼的反馈回声，声音像从远处回来
+  const delay = ac.createDelay(1.5);
+  delay.delayTime.value = 0.42;
+  const damp = ac.createBiquadFilter();
+  damp.type = 'lowpass';
+  damp.frequency.value = 1300;
+  const fb = ac.createGain();
+  fb.gain.value = 0.34;
+  const echo = ac.createGain();
+  echo.gain.value = 0.32;
+  input.connect(delay);
+  delay.connect(damp);
+  damp.connect(fb);
+  fb.connect(delay);
+  delay.connect(echo);
+  echo.connect(lp);
+
+  return { input, master };
+}
+
+/** 一个长起长落的音：探索环境的基本单位（慢起音、慢消散、可定位声像） */
+function playSwell(
+  ac: BaseAudioContext,
+  dest: AudioNode,
+  freq: number,
+  gain: number,
+  at: number,
+  attack: number,
+  release: number,
+  pan: number,
+): void {
+  const osc = ac.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  const g = ac.createGain();
+  g.gain.setValueAtTime(0, at);
+  g.gain.linearRampToValueAtTime(gain, at + attack);
+  g.gain.setTargetAtTime(0, at + attack, release / 3);
+  osc.connect(g);
+  const maybePan = ac as BaseAudioContext & { createStereoPanner?: () => StereoPannerNode };
+  if (typeof maybePan.createStereoPanner === 'function') {
+    const p = maybePan.createStereoPanner();
+    p.pan.value = Math.max(-1, Math.min(1, pan));
+    g.connect(p);
+    p.connect(dest);
+  } else {
+    g.connect(dest);
+  }
+  osc.start(at);
+  osc.stop(at + attack + release * 2.4 + 0.5);
+}
+
+/** 排程游标 */
+export interface AmbientState {
+  /** 下一个音符的 AudioContext 时间 */
+  nextAt: number;
+}
+
+/**
+ * 在 [state.nextAt, until) 之间排入若干"远方信号"。
+ * rnd 可注入（测试用），返回本次排入的音符数。
+ */
+export function scheduleAmbient(
+  ac: BaseAudioContext,
+  bus: AmbientBus,
+  state: AmbientState,
+  key: MusicalKey,
+  intensity: number,
+  rnd: () => number,
+  until: number,
+): number {
+  // 只在 900 Hz 以下取音：这是"温暖/遥远"与"尖锐"的分界
+  const pool = scaleNotes(key, 14).filter((f) => f <= NOTE_MAX_HZ);
+  if (pool.length === 0) pool.push(key.root * 2);
+  let count = 0;
+  while (state.nextAt < until && count < 32) {
+    const at = Math.max(state.nextAt, 0.02);
+    const idx = Math.min(pool.length - 1, Math.floor(rnd() * pool.length));
+    // 偶尔沉到低八度（更深、更远），不再往上飘——上方八度正是刺耳区
+    const octave = rnd() < 0.3 ? 0.5 : 1;
+    const freq = pool[idx] * octave;
+    const gain = NOTE_GAIN * (0.55 + 0.45 * rnd()) * (0.6 + 0.4 * intensity);
+    const attack = 0.8 + rnd() * 1.8;
+    const release = 4 + rnd() * 5;
+    const pan = (rnd() * 2 - 1) * 0.8;
+    playSwell(ac, bus.input, freq, gain, at, attack, release, pan);
+    // 偶尔在高五度叠一层更远的泛音（仍压在上限内）
+    if (freq * 1.5 <= NOTE_MAX_HZ && rnd() < 0.22) {
+      playSwell(
+        ac,
+        bus.input,
+        freq * 1.5,
+        gain * 0.55,
+        at + 0.3 + rnd(),
+        attack * 1.2,
+        release * 0.9,
+        -pan * 0.7,
+      );
+    }
+    state.nextAt = at + nextNoteDelay(rnd(), intensity);
+    count++;
+  }
+  return count;
+}
+
+/* ---------- 实时播放 ---------- */
+
+let ctx: AudioContext | null = null;
+let bus: AmbientBus | null = null;
+let airGain: GainNode | null = null;
+let chains = new Map<number, VoiceChain>();
+/** 上一次落地的参数签名：未变化则完全跳过，避免每帧重设音频参数 */
+let lastSig = '';
+/** 排程用的当前调性与强度（updateMusic 时更新） */
+let curKey: MusicalKey = DEFAULT_KEY;
+let curIntensity = 0.55;
+const schedState: AmbientState = { nextAt: 0 };
+let schedTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** 空气层：极轻的带通噪声 + 极慢的滤波摆动 */
+function startAir(ac: AudioContext, dest: AudioNode): GainNode {
+  const src = ac.createBufferSource();
+  src.buffer = makeNoise(ac);
+  src.loop = true;
+  const bp = ac.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.value = 420;
+  bp.Q.value = 0.9;
+  // 再低通一次：噪声的宽带高频听起来是"嘶嘶"，不是"空气"
+  const hiss = ac.createBiquadFilter();
+  hiss.type = 'lowpass';
+  hiss.frequency.value = 900;
+  hiss.Q.value = 0.5;
+  const g = ac.createGain();
+  g.gain.value = 0;
   const lfo = ac.createOscillator();
-  lfo.frequency.value = 0.12;
-  const lfoDepth = ac.createGain();
-  lfoDepth.gain.value = 0.35;
-  lfo.connect(lfoDepth);
-  lfoDepth.connect(breath.gain);
+  lfo.frequency.value = 0.03;
+  const depth = ac.createGain();
+  depth.gain.value = 260;
+  lfo.connect(depth);
+  depth.connect(bp.frequency);
   lfo.start();
-  for (const f of [ROOT_HZ, ROOT_HZ * 1.5]) {
-    const o = ac.createOscillator();
-    o.type = 'sine';
-    o.frequency.value = f;
-    const g = ac.createGain();
-    g.gain.value = DRONE_LEVEL;
-    o.connect(g);
-    g.connect(breath);
-    o.start();
+  src.connect(bp);
+  bp.connect(hiss);
+  hiss.connect(g);
+  g.connect(dest);
+  src.start();
+  return g;
+}
+
+/** 排程循环：提前 2.5 秒把"远方信号"排进音频时钟 */
+function pumpScheduler(): void {
+  if (!ctx || !bus) return;
+  scheduleAmbient(ctx, bus, schedState, curKey, curIntensity, Math.random, ctx.currentTime + 2.5);
+}
+
+function startScheduler(): void {
+  if (schedTimer !== null || !ctx) return;
+  schedState.nextAt = Math.max(schedState.nextAt, ctx.currentTime + 0.3);
+  const tick = (): void => {
+    pumpScheduler();
+    schedTimer = setTimeout(tick, 900);
+  };
+  schedTimer = setTimeout(tick, 250);
+}
+
+function stopScheduler(): void {
+  if (schedTimer !== null) {
+    clearTimeout(schedTimer);
+    schedTimer = null;
   }
 }
 
@@ -128,10 +344,13 @@ export function startMusic(): void {
     if (!ac) return;
     if (!bus || ctx !== ac) {
       ctx = ac;
-      buildBus(ac);
+      bus = buildAmbientBus(ac);
+      airGain = startAir(ac, bus.input);
+      schedState.nextAt = 0;
       lastSig = '';
     }
     if (ac.state === 'suspended') void ac.resume();
+    startScheduler();
   } catch {
     /* 音频不可用则忽略 */
   }
@@ -141,11 +360,37 @@ export function startMusic(): void {
 export function setMusicSuspended(suspended: boolean): void {
   if (!ctx) return;
   try {
-    if (suspended) void ctx.suspend();
-    else void ctx.resume();
+    if (suspended) {
+      stopScheduler(); // 挂起时 currentTime 停走，继续排程会在同一时刻堆叠
+      void ctx.suspend();
+    } else {
+      void ctx.resume();
+      startScheduler();
+    }
   } catch {
     /* 忽略 */
   }
+}
+
+/** 切关"抵达"音：一串极柔和的上行泛音，提示进入了新的音景 */
+export function musicLevelArrival(key: MusicalKey): void {
+  const ac = ctx;
+  const target = bus;
+  if (!ac || !target) return;
+  const pool = scaleNotes(key, 7);
+  const now = ac.currentTime + 0.05;
+  [0, 2, 4].forEach((slot, i) => {
+    playSwell(
+      ac,
+      target.input,
+      pool[slot % pool.length],
+      0.05 - i * 0.009,
+      now + i * 0.42,
+      0.5,
+      4.5 + i,
+      (i - 1) * 0.5,
+    );
+  });
 }
 
 /** 释放全部声部（关音乐/静音时调用，避免空转耗电） */
@@ -160,20 +405,35 @@ function releaseVoices(at: number): void {
  * @param intensity 动态强度 0~1（见 harmony.musicIntensity）
  * @param on 音乐开关
  * @param volume 全局音量 0~1（与音效共用）
+ * @param key 本关调性（章节决定；随机关按 id 稳定散列）
+ * @param voiced 是否让指针发声：只有指针真的在转（运行/暂停/结算）时才唱，
+ *   编辑思考时保持安静——"嗡嗡"的长音正是要避免的东西
  */
-export function updateMusic(arms: Arm[], intensity: number, on: boolean, volume: number): void {
+export function updateMusic(
+  arms: Arm[],
+  intensity: number,
+  on: boolean,
+  volume: number,
+  key: MusicalKey = DEFAULT_KEY,
+  voiced = true,
+): void {
   const ac = ctx;
-  if (!ac || !bus || !master || !droneLevel) return; // 尚未获得用户手势
+  if (!ac || !bus || !airGain) return; // 尚未获得用户手势
+  curKey = key;
+  curIntensity = intensity;
   const audible = on && volume > 0;
-  const voices = audible ? armsToVoices(arms) : [];
-  const sig = audible ? JSON.stringify([intensity, volume, voices]) : 'muted';
+  const voices = audible && voiced ? armsToVoices(arms, key.root) : [];
+  const sig = audible ? JSON.stringify([intensity, volume, key.root, voiced, voices]) : 'muted';
   if (sig === lastSig) return;
   lastSig = sig;
 
   const now = ac.currentTime;
-  const fade = audible ? 0.6 : 0.3;
-  master.gain.setTargetAtTime(audible ? MASTER_LEVEL * intensity * volume : 0, now, fade);
-  droneLevel.gain.setTargetAtTime(audible ? 0.5 * (0.4 + 0.6 * intensity) : 0, now, 0.9);
+  bus.master.gain.setTargetAtTime(
+    audible ? MASTER_LEVEL * intensity * volume : 0,
+    now,
+    audible ? 0.8 : 0.4,
+  );
+  airGain.gain.setTargetAtTime(audible ? AIR_LEVEL * intensity * volume : 0, now, 1.2);
 
   if (!audible) {
     releaseVoices(now);
@@ -190,14 +450,14 @@ export function updateMusic(arms: Arm[], intensity: number, on: boolean, volume:
   for (const v of voices) {
     const existing = chains.get(v.index);
     if (existing) {
-      existing.osc.frequency.setTargetAtTime(v.freq, now, 0.08);
-      existing.osc.detune.setTargetAtTime(v.detune, now, 0.15);
-      existing.gain.gain.setTargetAtTime(v.gain * 0.75, now, 0.35);
-      if (existing.pan) existing.pan.pan.setTargetAtTime(v.pan, now, 0.3);
+      existing.osc.frequency.setTargetAtTime(v.freq, now, 0.25);
+      existing.osc.detune.setTargetAtTime(v.detune, now, 0.2);
+      existing.gain.gain.setTargetAtTime(v.gain * 0.6, now, 1.4);
+      if (existing.pan) existing.pan.pan.setTargetAtTime(v.pan, now, 0.6);
     } else {
-      const chain = buildVoiceChain(ac, bus, v);
-      // 新声部：柔和进入（1.2s 起来，避免"咔"的一声）
-      chain.gain.gain.setTargetAtTime(v.gain * 0.75, now + 0.02, 0.4);
+      const chain = buildVoiceChain(ac, bus.input, v);
+      // 新声部：2.4 秒缓缓浮现，像从远处出现
+      chain.gain.gain.setTargetAtTime(v.gain * 0.6, now + 0.05, 2.4);
       chains.set(v.index, chain);
     }
   }

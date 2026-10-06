@@ -21,7 +21,7 @@
     uiToggle,
   } from './lib/game/audio';
   import { musicIntensity } from './lib/game/harmony';
-  import { setMusicSuspended, startMusic, updateMusic } from './lib/game/music';
+  import { musicLevelArrival, setMusicSuspended, startMusic, updateMusic } from './lib/game/music';
 
   let showAchv = $state(false);
   /** 开始画面：首次访问显示（老玩家直接进游戏，点标题可再看） */
@@ -86,10 +86,26 @@
   });
 
   function syncMusic(): void {
-    updateMusic(engine.arms, musicIntensity(engine.phase, engine.sandbox), engine.musicOn, volume);
+    updateMusic(
+      engine.arms,
+      musicIntensity(engine.phase, engine.sandbox),
+      engine.musicOn,
+      volume,
+      engine.musicalKey,
+      // 指针只在真的转起来时发声（编辑态保持安静，避免长音嗡鸣）
+      engine.phase !== 'edit',
+    );
   }
 
+  /** 上一次已"抵达"的关卡：切关时给一声柔和的抵达音（Exploring 的仪式感） */
+  let arrivedLevelId = '';
+
   $effect(() => {
+    const id = engine.level?.id ?? '';
+    if (id !== arrivedLevelId) {
+      arrivedLevelId = id;
+      if (id) musicLevelArrival(engine.musicalKey);
+    }
     syncMusic();
   });
 

@@ -185,6 +185,7 @@ export function makeLevel(def: LevelDef): Level {
     id: def.id,
     name: def.name,
     hint: def.hint,
+    chapter: def.chapter,
     pts,
     tol: 13,
     curve,

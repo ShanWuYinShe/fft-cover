@@ -71,11 +71,12 @@ export function beep(
 }
 
 /**
- * 收集音效：主音按五声音阶随收集序号递进，
+ * 收集音效：主音按音阶随收集序号递进，
  * 叠加低八度纯五度和声（更丰满）。count 为已收集总数（从 1 开始）。
+ * scale 为本关调性的音阶（默认 C 宫五声，见 harmony.scaleNotes）。
  */
-export function collectSound(count: number, on: boolean): void {
-  const f = PENTATONIC[(count - 1) % PENTATONIC.length];
+export function collectSound(count: number, on: boolean, scale: number[] = PENTATONIC): void {
+  const f = scale[(count - 1) % scale.length];
   beep(f, 0.12, 'sine', 0.14, on);
   beep(f / 1.5, 0.14, 'sine', 0.08, on);
 }
@@ -84,8 +85,11 @@ export function collectSound(count: number, on: boolean): void {
  * 自动拟合进度音：每跨过 20% 进度播放一个上行五声音阶音符，
  * 呼应"傅立叶逐项逼近"的过程。step 0..4。
  */
-export function solveTick(step: number, on: boolean): void {
-  const scale = [261.63, 329.63, 392.0, 523.25, 659.26];
+export function solveTick(
+  step: number,
+  on: boolean,
+  scale = [261.63, 329.63, 392.0, 523.25, 659.26],
+): void {
   beep(scale[Math.min(step, scale.length - 1)], 0.18, 'triangle', 0.09, on);
 }
 
