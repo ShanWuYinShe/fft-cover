@@ -119,18 +119,24 @@
   async function saveImage(): Promise<void> {
     const src = document.querySelector('canvas');
     if (!src) return;
+    const FOOTER = 152;
     const off = document.createElement('canvas');
     off.width = src.width;
-    off.height = src.height + 120;
+    off.height = src.height + FOOTER;
     const octx = off.getContext('2d');
     if (!octx) return;
     octx.drawImage(src, 0, 0);
     const h = src.height;
     octx.fillStyle = 'rgba(8,10,20,.92)';
-    octx.fillRect(0, h, off.width, 120);
+    octx.fillRect(0, h, off.width, FOOTER);
+    // 第一行：关卡名 + 得分 + 星级
     octx.fillStyle = '#fbbf24';
     octx.font = 'bold 44px sans-serif';
-    octx.fillText((engine.level?.name ?? '') + '  ' + engine.score + ' 分', 40, h + 52);
+    const head = (engine.level?.name ?? '') + '  ' + engine.score + ' 分';
+    octx.fillText(head, 40, h + 52);
+    const headW = octx.measureText(head).width;
+    octx.font = 'bold 38px sans-serif';
+    octx.fillText('★'.repeat(st) + '☆'.repeat(3 - st), 40 + headW + 16, h + 52);
     octx.fillStyle = '#8b93a7';
     octx.font = '30px sans-serif';
     // 进步对比：与上一局得分差（历史中倒数第二条为本局之前的一局）
@@ -155,7 +161,7 @@
         '% · 傅立叶指针' +
         deltaText,
       40,
-      h + 98,
+      h + 100,
     );
     const levelId = engine.level?.id ?? '';
     let invite: string | null = null;
@@ -165,10 +171,26 @@
       // custom id 格式 k-mag-phaseDeg（_ 分隔）→ 转回 k:mag:phaseDeg（, 分隔）系数串
       invite = levelId.replace('custom-', '').replaceAll('_', ',').replaceAll('-', ':');
     }
+    // 第三行：本关四枚朱印（达成的填朱砂）+ 邀请码
+    const imgGoals = levelGoals(engine.levelGoalState);
+    imgGoals.forEach((g, i) => {
+      const x = 40 + i * 44;
+      const y = h + 110;
+      octx.fillStyle = g.done ? '#c0392b' : 'rgba(255,255,255,.05)';
+      octx.fillRect(x, y, 34, 34);
+      octx.strokeStyle = g.done ? 'rgba(192,57,43,.9)' : 'rgba(255,255,255,.16)';
+      octx.lineWidth = 1;
+      octx.strokeRect(x, y, 34, 34);
+      octx.fillStyle = g.done ? '#fdece7' : 'rgba(139,147,167,.65)';
+      octx.font = 'bold 20px "STKaiti", "KaiTi", serif';
+      octx.textAlign = 'center';
+      octx.fillText(g.seal, x + 17, y + 24);
+    });
+    octx.textAlign = 'start';
     if (invite) {
       octx.fillStyle = '#4fd1c5';
-      octx.font = '30px sans-serif';
-      octx.fillText('邀请码 ' + invite, 40, h + 118);
+      octx.font = '28px sans-serif';
+      octx.fillText('邀请码 ' + invite, 40 + imgGoals.length * 44 + 10, h + 136);
     }
     // 优先 Web Share files（移动端可直接分享图片到社交 App）
     const dataUrl = off.toDataURL('image/png');

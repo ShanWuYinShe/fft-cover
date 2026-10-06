@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { LEVEL_DEFS, makeLevel } from '../game/levels';
+  import { LEVEL_DEFS } from '../game/levels';
   import { chapterProgress, isLevelLocked } from '../game/campaign';
   import { levelGoals } from '../game/goals';
+  import { shapePoints } from '../game/shapes';
   import { ACHIEVEMENTS, ACHV_GROUPS } from '../game/scoring';
   import { clearSave, exportSave, importSave } from '../game/save';
   import { engine } from '../game/engine.svelte';
@@ -21,24 +22,7 @@
     LEVEL_DEFS.reduce((sum, d) => sum + (engine.bestStars[d.id] ?? 0), 0),
   );
 
-  /* ---------- 图鉴：每关轮廓的缩略 SVG ---------- */
-  /** 轮廓点串缓存（打开图鉴时才构建，之后复用） */
-  const shapeCache = new Map<string, string>();
-  function shapePath(id: string): string {
-    const hit = shapeCache.get(id);
-    if (hit !== undefined) return hit;
-    const def = LEVEL_DEFS.find((d) => d.id === id);
-    if (!def) return '';
-    const curve = makeLevel(def).curve;
-    const step = Math.max(1, Math.round(curve.length / 120));
-    const pts = curve
-      .filter((_, i) => i % step === 0)
-      .map((q) => q.x.toFixed(1) + ',' + q.y.toFixed(1))
-      .join(' ');
-    shapeCache.set(id, pts);
-    return pts;
-  }
-
+  /* ---------- 图鉴：每关轮廓的缩略 SVG（与结局面板共用 shapes.ts） ---------- */
   const chapters = $derived(chapterProgress(LEVEL_DEFS, engine.bestStars));
   /** 已点亮（拿到过星）的关卡数 */
   const litLevels = $derived(LEVEL_DEFS.filter((d) => (engine.bestStars[d.id] ?? 0) > 0).length);
@@ -189,7 +173,7 @@
                     {#if locked}
                       <text x="320" y="420" text-anchor="middle" class="dex-q">？</text>
                     {:else}
-                      <polyline points={shapePath(lv.id)} />
+                      <polyline points={shapePoints(lv.id)} />
                     {/if}
                   </svg>
                   <span class="dex-nm">{locked ? '？？？' : lv.name}</span>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { engine } from '../game/engine.svelte';
-  import { LEVEL_DEFS } from '../game/levels';
+  import { CHAPTERS, LEVEL_DEFS } from '../game/levels';
+  import { shapePoints } from '../game/shapes';
 
   /** 本次达成的是"全三星精通"还是"首次通关" */
   const mastered = $derived(engine.finale === 'mastered');
@@ -18,6 +19,20 @@
   );
   /** 全局朱印与章节印（与「本关目标」同一套判定） */
   const seals = $derived(engine.sealSummary);
+
+  /** 战利品墙：全部关卡的真实轮廓 + 星数，按章分组 */
+  const wall = $derived(
+    CHAPTERS.map((ch) => ({
+      id: ch.id,
+      seal: ch.seal,
+      sealed: engine.chapterSealsOf(ch.id).sealed,
+      levels: LEVEL_DEFS.filter((d) => (d.chapter ?? 'basics') === ch.id).map((d) => ({
+        id: d.id,
+        name: d.name,
+        stars: engine.bestStars[d.id] ?? 0,
+      })),
+    })),
+  );
 
   function onKey(e: KeyboardEvent): void {
     if (e.key === 'Escape') engine.dismissFinale();
@@ -69,6 +84,25 @@
       <div class="cell">
         <b>{seals.chapters}<i>/{seals.chaptersTotal}</i></b><span>章节印</span>
       </div>
+    </div>
+
+    <!-- 战利品墙：这一路画过的曲线全在这里，拿过星的点亮 -->
+    <div class="wall" aria-label="全部关卡的曲线">
+      {#each wall as ch (ch.id)}
+        <div class="wall-ch">
+          {#each ch.levels as lv (lv.id)}
+            <div class="wall-item" class:lit={lv.stars > 0} class:full={lv.stars === 3}>
+              <svg viewBox="0 0 640 640" aria-hidden="true">
+                <polyline points={shapePoints(lv.id)} />
+              </svg>
+              <span class="wall-st">{'★'.repeat(lv.stars)}{'☆'.repeat(3 - lv.stars)}</span>
+            </div>
+          {/each}
+          {#if ch.sealed}
+            <span class="wall-seal" title={'章节印「' + ch.seal + '」'}>{ch.seal}</span>
+          {/if}
+        </div>
+      {/each}
     </div>
 
     <p class="note">
@@ -264,6 +298,77 @@
   .cell span {
     font-size: var(--fs-xs);
     color: var(--muted);
+  }
+
+  /* 战利品墙：按章排列全部曲线的缩略轮廓 */
+  .wall {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    width: 100%;
+    margin: 4px 0 2px;
+    padding: 10px 10px 12px;
+    border-radius: var(--r-md);
+    border: 1px solid rgba(130, 150, 210, 0.2);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .wall-ch {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .wall-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    opacity: 0.42;
+  }
+  .wall-item.lit {
+    opacity: 1;
+  }
+  .wall-item svg {
+    width: 46px;
+    height: 46px;
+  }
+  .wall-item polyline {
+    fill: none;
+    stroke: rgba(150, 170, 200, 0.6);
+    stroke-width: 8;
+    stroke-linejoin: round;
+  }
+  .wall-item.lit polyline {
+    stroke: rgba(79, 209, 197, 0.9);
+  }
+  .wall-item.full polyline {
+    stroke: rgba(251, 191, 36, 0.95);
+    filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5));
+  }
+  .wall-st {
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .wall-seal {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fdece7;
+    background: linear-gradient(160deg, #c0392b, #8e2a1f);
   }
 
   .note {
