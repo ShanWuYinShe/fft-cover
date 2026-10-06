@@ -248,6 +248,9 @@ export class GameEngine {
   score = $state(0);
   /** 结算浮层是否被折叠（点画布恢复） */
   resultDismissed = $state(false);
+  /** 上一局漏掉的点（只对同一关有效）：编辑态用来提示"上届漏了哪几个" */
+  private lastMissedLevel = '';
+  private lastMissedIdx: number[] = [];
   /** 结算时是否刷新了本关最佳得分 */
   newRecord = $state(false);
   /** 各关卡历史最佳得分 */
@@ -542,6 +545,15 @@ export class GameEngine {
       exact: !!this.exactLevels[id],
       expert: !!this.expertClears[id],
     };
+  }
+
+  /**
+   * 上一局漏掉的点索引（仅当仍是同一关时有效）。
+   * 编辑态用它画"上届漏点"提示——配合预览命中，一眼看出这次能不能补上。
+   */
+  get lastMissedSet(): Set<number> {
+    if (!this.level || this.lastMissedLevel !== this.level.id) return new Set();
+    return new Set(this.lastMissedIdx);
   }
 
   /** 本关四个目标的达成状态（目标清单用） */
@@ -1033,6 +1045,12 @@ export class GameEngine {
       }
     }
     // 本局新盖的朱印：与"本关目标"面板同一套判定，结算时一枚枚盖下来
+    // 记录本局漏掉的点（编辑态"上届漏点"提示用）
+    this.lastMissedLevel = id;
+    this.lastMissedIdx = [];
+    for (let i = 0; i < this.total; i++) {
+      if (!this.collected.has(i)) this.lastMissedIdx.push(i);
+    }
     this.newSeals = levelGoals(this.levelGoalState)
       .filter((g) => g.done && !sealsBefore.has(g.id))
       .map((g) => g.id);

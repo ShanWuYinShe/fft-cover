@@ -132,6 +132,29 @@ describe('GameEngine', () => {
     expect(engine.newSeals).toEqual([]);
   });
 
+  it('记录上一局漏点，换关后失效', () => {
+    engine.setArm(0, { on: true, r: 120, freq: 1, phase: 0 });
+    engine.startRun();
+    let g = 0;
+    while (engine.collectedCount / engine.total < 0.5 && g < 1500) {
+      engine.advance(1 / 60);
+      g++;
+    }
+    engine.stopRun();
+    const missed = engine.lastMissedSet;
+    expect(missed.size).toBe(engine.total - engine.collectedCount);
+    expect(missed.size).toBeGreaterThan(0);
+    // 索引都落在合法范围，且都不是已收集的点
+    for (const i of missed) {
+      expect(i).toBeGreaterThanOrEqual(0);
+      expect(i).toBeLessThan(engine.total);
+      expect(engine.collected.has(i)).toBe(false);
+    }
+    // 换关后失效，避免把上一关的漏点画到新关上
+    engine.loadLevel(LEVEL_DEFS.find((d) => d.id === 'ellipse')!);
+    expect(engine.lastMissedSet.size).toBe(0);
+  });
+
   it('setFlag 可开可关，且不影响其它标记', () => {
     engine.setFlag('reduceMotion', true);
     expect(engine.flags.reduceMotion).toBe(true);

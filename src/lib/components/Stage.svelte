@@ -540,6 +540,8 @@
 
     // 目标点
     const pts = engine.level.pts;
+    // 上届漏点（编辑态提示）：这次预览能扫到的会先被金色分支接管
+    const missedSet = engine.phase === 'edit' ? engine.lastMissedSet : null;
     for (let i = 0; i < pts.length; i++) {
       const p = pts[i];
       if (engine.collected.has(i)) {
@@ -563,6 +565,20 @@
         ctx.beginPath();
         ctx.arc(p.x, p.y, engine.level.tol, 0, Math.PI * 2);
         ctx.stroke();
+        ctx.lineWidth = 1 / zoom;
+      } else if (missedSet && missedSet.has(i)) {
+        // 上届漏点：红色虚线圈（这次能扫到的会被上面的金色预览分支接管）
+        ctx.strokeStyle = 'rgba(248,113,113,.6)';
+        ctx.lineWidth = 1.6;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(248,113,113,.55)';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fill();
         ctx.lineWidth = 1 / zoom;
       } else if (engine.phase === 'done' && engine.resultDismissed) {
         // 看轨迹：把本局漏掉的点脉冲高亮（红圈），一眼看清差在哪几个
@@ -785,7 +801,14 @@
       const total = engine.level.pts.length;
       const got = engine.collected.size;
       const willHit = previewHits.size;
-      const label = '预览收集 ' + willHit + '/' + total + (got > 0 ? '（已收 ' + got + '）' : '');
+      const missed = engine.lastMissedSet.size;
+      const label =
+        '预览收集 ' +
+        willHit +
+        '/' +
+        total +
+        (got > 0 ? '（已收 ' + got + '）' : '') +
+        (missed > 0 ? ' · 上届漏 ' + missed + ' 点（红圈）' : '');
       ctx.font = 'bold 12px sans-serif';
       const w = ctx.measureText(label).width;
       const bx = SIZE / 2 - w / 2 - 10;
