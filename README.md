@@ -113,7 +113,9 @@
 - 服务器目录 `~/games/`，compose 挂 `ipvlan_docker` 外部网络，静态 IPv6 `…:1::60`（next free was ::60；::10 面板 / ::12 xray / ::20 hotspot / ::30 ops / ::40 media / ::50 music）
 - 证书：chaoset.com 通配符（CF Origin CA），归档 `~/work/dogod/cf_token_and_cert/chaoset.com/`；另有 Cloudflare origin-pull CA（`cloudflare-origin-pull-ca.pem`，CF 公开证书）放服务器 `~/games/cert/cloudflare-origin-pull.pem`，供 `ssl_verify_client`（Authenticated Origin Pulls）校验 CF 回源
 - DNS：`game.chaoset.com` AAAA → `…:1::60`（橙云）。**服务器 IPv6 前缀轮换时需更新此记录**（可参照 workwork 面板的轮换同步逻辑）
-- 新增游戏：`sites/` 下加 `<game>/` 静态目录，复制 `deploy/nginx-game.chaoset.com.conf` 中 server 块改 root/server_name，`docker compose exec nginx nginx -s reload`
+- 新增游戏（两种方式）：
+  - 子路径（推荐）：`sites/` 下加 `<game>/` 静态目录，游戏构建时以 `/<game>/` 为 base（Vite 系 `VITE_BASE=/<game>/` 或 `vite build --base=/<game>/`），在 `deploy/nginx-game.chaoset.com.conf` 加一段 `location ^~ /<game>/ `（alias + try_files + 无尾斜杠 301，参照现有 travel/cnm/wave-warden 三段），`docker compose exec nginx nginx -s reload`
+  - 独立子域：复制 server 块改 root/server_name，另配 DNS 记录
 
 更新上线流程：
 
