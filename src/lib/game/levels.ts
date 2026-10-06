@@ -22,12 +22,31 @@ export interface ChapterDef {
   tagline: string;
 }
 
-/** 四个章节（顺序即解锁顺序） */
+/**
+ * 四个章节（顺序即解锁顺序）。
+ * 章名取中国古典意象，数学含义放在 tagline 里——一章一境，一句一理。
+ */
 export const CHAPTERS: ChapterDef[] = [
-  { id: 'basics', name: '第一章 · 单一频率', tagline: '一根指针就是一个旋转向量' },
-  { id: 'petals', name: '第二章 · 花瓣与齿轮', tagline: '⟲ 反转的那一根，才是关键' },
-  { id: 'pairs', name: '第三章 · 频率对', tagline: '正频与负频总是成对出现' },
-  { id: 'summit', name: '第四章 · 谐波之巅', tagline: '高次谐波，以及故意不让你拟合的曲线' },
+  {
+    id: 'basics',
+    name: '第一章 · 一画',
+    tagline: '易有太极，是生两仪——一根指针就是一个旋转向量',
+  },
+  {
+    id: 'petals',
+    name: '第二章 · 花信',
+    tagline: '花信有风，开合有时——反着转的那一根，才是花瓣的关键',
+  },
+  {
+    id: 'pairs',
+    name: '第三章 · 阴阳',
+    tagline: '一阴一阳之谓道——正频与负频总是成对出现',
+  },
+  {
+    id: 'summit',
+    name: '第四章 · 万象',
+    tagline: '万象森罗，皆可展开——高次谐波，以及故意不让你拟合的曲线',
+  },
 ];
 
 /**
@@ -69,7 +88,7 @@ export const LEVEL_DEFS: LevelDef[] = [
   {
     id: 'flower5',
     chapter: 'petals',
-    name: '五瓣花',
+    name: '梅花',
     hint: 'r=1+0.38cos5θ → e^{iθ} + 0.19e^{i6θ} + 0.19e^{−i4θ}：需要 <b>1×、6×、−4×（⟲ 反转）</b>三根。',
     n: 30,
     armLimit: 3,

@@ -29,7 +29,7 @@ const NOTE_GAIN = 0.07;
  * 环境音的音高上限（Hz）。高频是"刺耳"的主要来源：
  * 一切都压在 900 Hz 以下，听感是温暖、遥远、留白，而不是尖锐的哨音。
  */
-const NOTE_MAX_HZ = 900;
+const NOTE_MAX_HZ = 700;
 /** 总线低通：整体削掉高频毛刺（刺耳段主要是 1.5~4 kHz 的纯音） */
 const BUS_LOWPASS_HZ = 1300;
 /** 空气层音量基数 */
@@ -181,6 +181,16 @@ export function buildAmbientBus(ac: BaseAudioContext): AmbientBus {
   return { input, master };
 }
 
+/**
+ * 编钟式泛音：钟的经典分音比（2.0 八度、2.76 近似小十度），
+ * 但高次压得很轻——有"钟"的味，不扎耳朵。
+ */
+const BELL_PARTIALS: Array<[number, number]> = [
+  [1, 1],
+  [2, 0.22],
+  [2.76, 0.08],
+];
+
 /** 一个长起长落的音：探索环境的基本单位（慢起音、慢消散、可定位声像） */
 function playSwell(
   ac: BaseAudioContext,
@@ -191,26 +201,29 @@ function playSwell(
   attack: number,
   release: number,
   pan: number,
+  partials: Array<[number, number]> = [[1, 1]],
 ): void {
-  const osc = ac.createOscillator();
-  osc.type = 'sine';
-  osc.frequency.value = freq;
-  const g = ac.createGain();
-  g.gain.setValueAtTime(0, at);
-  g.gain.linearRampToValueAtTime(gain, at + attack);
-  g.gain.setTargetAtTime(0, at + attack, release / 3);
-  osc.connect(g);
   const maybePan = ac as BaseAudioContext & { createStereoPanner?: () => StereoPannerNode };
+  let out: AudioNode = dest;
   if (typeof maybePan.createStereoPanner === 'function') {
     const p = maybePan.createStereoPanner();
     p.pan.value = Math.max(-1, Math.min(1, pan));
-    g.connect(p);
     p.connect(dest);
-  } else {
-    g.connect(dest);
+    out = p;
   }
-  osc.start(at);
-  osc.stop(at + attack + release * 2.4 + 0.5);
+  for (const [mult, pg] of partials) {
+    const osc = ac.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq * mult;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0, at);
+    g.gain.linearRampToValueAtTime(gain * pg, at + attack);
+    g.gain.setTargetAtTime(0, at + attack, release / 3);
+    osc.connect(g);
+    g.connect(out);
+    osc.start(at);
+    osc.stop(at + attack + release * 2.4 + 0.5);
+  }
 }
 
 /** 排程游标 */
@@ -246,7 +259,7 @@ export function scheduleAmbient(
     const attack = 0.8 + rnd() * 1.8;
     const release = 4 + rnd() * 5;
     const pan = (rnd() * 2 - 1) * 0.8;
-    playSwell(ac, bus.input, freq, gain, at, attack, release, pan);
+    playSwell(ac, bus.input, freq, gain, at, attack, release, pan, BELL_PARTIALS);
     // 偶尔在高五度叠一层更远的泛音（仍压在上限内）
     if (freq * 1.5 <= NOTE_MAX_HZ && rnd() < 0.22) {
       playSwell(
@@ -389,6 +402,7 @@ export function musicLevelArrival(key: MusicalKey): void {
       0.5,
       4.5 + i,
       (i - 1) * 0.5,
+      BELL_PARTIALS,
     );
   });
 }

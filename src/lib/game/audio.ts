@@ -71,14 +71,54 @@ export function beep(
 }
 
 /**
- * 收集音效：主音按音阶随收集序号递进，
- * 叠加低八度纯五度和声（更丰满）。count 为已收集总数（从 1 开始）。
- * scale 为本关调性的音阶（默认 C 宫五声，见 harmony.scaleNotes）。
+ * 拨弦音（古筝／琵琶意象）：极快起音 + 指数衰减 + 三个泛音。
+ * 泛音按 1 : 0.3 : 0.12 递弱、并整体低通，既像"弦"又不刺耳。
+ */
+export function pluck(freq: number, on: boolean, dur = 0.55, gain = 0.13): void {
+  if (!on) return;
+  try {
+    const ac = getAudioContext();
+    if (!ac) return;
+    const t0 = ac.currentTime;
+    // 一次拨弦共用一个低通，压掉高次泛音的毛刺
+    const lp = ac.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 3000;
+    lp.Q.value = 0.4;
+    lp.connect(ac.destination);
+    const partials: Array<[number, number]> = [
+      [1, 1],
+      [2, 0.3],
+      [3, 0.12],
+    ];
+    for (const [mult, pg] of partials) {
+      const o = ac.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = freq * mult;
+      const g = ac.createGain();
+      const peak = Math.max(0.0002, gain * pg * vol());
+      const decay = dur * (mult === 1 ? 1 : 0.55); // 高次泛音衰减更快
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.linearRampToValueAtTime(peak, t0 + 0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + decay);
+      o.connect(g);
+      g.connect(lp);
+      o.start(t0);
+      o.stop(t0 + decay + 0.05);
+    }
+  } catch {
+    /* 音频不可用则忽略 */
+  }
+}
+
+/**
+ * 收集音效：按本关音阶随收集序号递进，用古筝式拨弦（比纯正弦更有"弦"味）。
+ * count 为已收集总数（从 1 开始）；scale 为本关调性音阶（默认 C 宫五声）。
  */
 export function collectSound(count: number, on: boolean, scale: number[] = PENTATONIC): void {
   const f = scale[(count - 1) % scale.length];
-  beep(f, 0.12, 'sine', 0.14, on);
-  beep(f / 1.5, 0.14, 'sine', 0.08, on);
+  pluck(f, on, 0.6, 0.13);
+  pluck(f / 2, on, 0.85, 0.05); // 低八度当"共鸣箱"
 }
 
 /**

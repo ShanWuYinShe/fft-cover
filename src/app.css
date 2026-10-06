@@ -20,6 +20,13 @@
   --muted: #8b93a7;
   --muted-2: #666e80;
 
+  /* 中国色：朱砂（印章／里程碑）、鎏金、黛青、月白 */
+  --cinnabar: #c0392b;
+  --cinnabar-dim: rgba(192, 57, 43, 0.14);
+  --cinnabar-line: rgba(192, 57, 43, 0.45);
+  --jade: #2f9e7f;
+  --moon: #dfe6f2;
+
   /* 圆角 */
   --r-sm: 8px;
   --r-md: 10px;
@@ -837,6 +844,7 @@ input[type='checkbox'] {
   }
   main[data-tab='levels'] .sides .side-left > section:nth-of-type(1),
   main[data-tab='score'] .sides .side-left > section:nth-of-type(2),
+  main[data-tab='score'] .sides .side-left > section:nth-of-type(3),
   main[data-tab='arms'] .sides section.sec-arms,
   main[data-tab='score'] .sides section.sec-tips {
     display: block;

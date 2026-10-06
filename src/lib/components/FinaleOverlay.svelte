@@ -33,6 +33,8 @@
 >
   <div class="card">
     <div class="glow"></div>
+    <!-- 落款朱印：书画收尾的那一方印 -->
+    <div class="seal" aria-hidden="true">{mastered ? '大成' : '通关'}</div>
     <div class="burst">{mastered ? '👑' : '🏁'}</div>
     <h2>{mastered ? '谐波大师' : '通关！'}</h2>
     <p class="sub">
@@ -150,6 +152,39 @@
     50% {
       opacity: 1;
       transform: scale(1.12);
+    }
+  }
+
+  /* 落款朱印：竖排两字，微斜，盖上时有"啪"的一下 */
+  .seal {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 44px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    letter-spacing: 3px;
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fdece7;
+    background: linear-gradient(160deg, #c0392b, #8e2a1f);
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(192, 57, 43, 0.45);
+    animation: seal-stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.55s backwards;
+  }
+  @keyframes seal-stamp {
+    from {
+      opacity: 0;
+      transform: rotate(-16deg) scale(1.6);
+    }
+    to {
+      opacity: 1;
+      transform: rotate(-6deg) scale(1);
     }
   }
 

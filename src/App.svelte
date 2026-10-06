@@ -9,6 +9,7 @@
   import ResultOverlay from './lib/components/ResultOverlay.svelte';
   import AchievementsModal from './lib/components/AchievementsModal.svelte';
   import FinaleOverlay from './lib/components/FinaleOverlay.svelte';
+  import GoalPanel from './lib/components/GoalPanel.svelte';
   import { engine } from './lib/game/engine.svelte';
   import {
     achvSound,
@@ -363,6 +364,7 @@
     <aside class="side side-left">
       <LevelPicker />
       <ScorePanel />
+      <GoalPanel />
     </aside>
 
     <aside class="side side-right">

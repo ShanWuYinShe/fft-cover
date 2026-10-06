@@ -25,7 +25,7 @@
   <div class="ts-inner">
     <div class="ts-logo">
       <span class="ts-eyebrow">傅立叶级数 · 旋转连杆</span>
-      <h1>傅立叶指针</h1>
+      <h1>傅立叶指针<span class="ts-seal" title="朱印：旋">旋</span></h1>
       <p class="ts-sub">转动指针，让指尖的轨迹贴合目标曲线</p>
     </div>
 
@@ -107,6 +107,29 @@
     background-clip: text;
     color: transparent;
     filter: drop-shadow(0 6px 26px rgba(79, 209, 197, 0.28));
+  }
+
+  /* 朱印：标题旁的方形印章（篆刻样式）。h1 用了 background-clip:text，
+     印面必须显式还原背景与字色，否则会跟着标题一起变透明 */
+  h1 .ts-seal {
+    display: inline-block;
+    vertical-align: 2px;
+    margin-left: 10px;
+    width: 26px;
+    height: 26px;
+    line-height: 24px;
+    text-align: center;
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0;
+    background: linear-gradient(160deg, #c0392b, #8e2a1f);
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    color: #fdece7;
+    border-radius: 4px;
+    box-shadow: 0 2px 12px rgba(192, 57, 43, 0.45);
+    filter: none;
   }
 
   .ts-sub {

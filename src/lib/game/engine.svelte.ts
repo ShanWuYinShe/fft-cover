@@ -44,6 +44,7 @@ import {
   starsFor,
 } from './scoring';
 import { campaignState, type CampaignState } from './campaign';
+import type { GoalState } from './goals';
 import { keyForLevel, scaleNotes, type MusicalKey } from './harmony';
 import { ghostProgressAt, paceDelta, paceRatio, sanitizePace, type Pace } from './pace';
 import type { Arm, Floater, GamePhase, HistoryEntry, Level, LevelDef, Vec } from './types';
@@ -464,6 +465,18 @@ export class GameEngine {
   /** 本关音阶（约两个八度）：收集音效与拟合音都跟着调性走 */
   get collectScale(): number[] {
     return scaleNotes(this.musicalKey);
+  }
+
+  /** 本关四个目标的达成状态（目标清单用，全部来自持久化进度） */
+  get levelGoalState(): GoalState {
+    const id = this.level?.id;
+    if (!id) return { stars: 0, perfect: false, exact: false, expert: false };
+    return {
+      stars: this.bestStars[id] ?? 0,
+      perfect: !!this.perfectLevels[id],
+      exact: !!this.exactLevels[id],
+      expert: !!this.expertClears[id],
+    };
   }
 
   /** 沙盒转速档位循环 0.5× → 1× → 2× */
