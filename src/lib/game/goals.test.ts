@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { goalProgress, levelGoals } from './goals';
+import { goalById, goalProgress, levelGoals } from './goals';
 
 const state = (patch: Partial<Parameters<typeof levelGoals>[0]> = {}) => ({
   stars: 0,
@@ -44,5 +44,14 @@ describe('levelGoals', () => {
 
   it('星级超过 3（脏数据）也只算达成', () => {
     expect(goalProgress(levelGoals(state({ stars: 9 }))).done).toBe(1);
+  });
+
+  it('goalById 与 levelGoals 用同一份定义（结算盖印按 id 取字形）', () => {
+    for (const g of levelGoals(state())) {
+      const def = goalById(g.id);
+      expect(def.seal).toBe(g.seal);
+      expect(def.name).toBe(g.name);
+      expect(def.icon).toBe(g.icon);
+    }
   });
 });

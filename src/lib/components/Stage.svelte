@@ -4,7 +4,14 @@
   import { chainAt, tipAt } from '../game/math';
   import type { Vec } from '../game/types';
   import { COMBO_WINDOW, RUN_DUR, SIZE, T0 } from '../game/constants';
-  import { collectSound, finishChord, perfectArpeggio, solveDone, solveTick } from '../game/audio';
+  import {
+    collectSound,
+    finishChord,
+    perfectArpeggio,
+    sealSound,
+    solveDone,
+    solveTick,
+  } from '../game/audio';
   import { spectrumGaps } from '../game/scoring';
 
   let canvas: HTMLCanvasElement | undefined = $state();
@@ -744,6 +751,10 @@
         if (finished) {
           if (engine.collectedCount === engine.total) perfectArpeggio(engine.soundOn);
           else finishChord(engine.soundOn);
+          // 本局盖了新印：等收尾音落定，一枚一枚盖下去
+          engine.newSeals.forEach((_, i) => {
+            setTimeout(() => sealSound(engine.soundOn), 430 + i * 260);
+          });
         }
         // 自动拟合进度音：每跨过 20% 播一个上行音符，呼应逐项逼近
         if (engine.autoSolve) {

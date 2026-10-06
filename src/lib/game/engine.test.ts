@@ -108,6 +108,23 @@ describe('GameEngine', () => {
     expect(engine.score).toBe(100);
   });
 
+  it('结算记下本局新盖的朱印，第二次达成不再重复盖', () => {
+    const pts = engine.level!.pts;
+    engine.setArm(0, { on: true, r: 120, freq: 1, phase: 0 });
+    engine.phase = 'running';
+    for (const p of pts) engine.tryCollect(p);
+    engine.stopRun();
+    expect(engine.newSeals).toContain('stars');
+    expect(engine.newSeals).toContain('perfect');
+    // 同一关再拿同样的成绩：没有新印可盖
+    engine.resetRun();
+    expect(engine.newSeals).toEqual([]);
+    engine.phase = 'running';
+    for (const p of pts) engine.tryCollect(p);
+    engine.stopRun();
+    expect(engine.newSeals).toEqual([]);
+  });
+
   it('stopRun 结算最佳分，resetRun 清零', () => {
     const pts = engine.level!.pts;
     engine.phase = 'running';

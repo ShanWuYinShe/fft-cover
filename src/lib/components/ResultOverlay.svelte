@@ -1,7 +1,11 @@
 <script lang="ts">
   import { engine } from '../game/engine.svelte';
+  import { goalById, goalProgress, levelGoals } from '../game/goals';
   import { buildShareUrl, encodeArms } from '../game/share';
   import { fitScore, starsFor } from '../game/scoring';
+
+  /** 本关朱印进度（结算时给一条"这一关还差什么"的落点） */
+  const sealProg = $derived(goalProgress(levelGoals(engine.levelGoalState)));
 
   type CopyState = 'idle' | 'ok' | 'fail';
   let copyState = $state<CopyState>('idle');
@@ -258,6 +262,19 @@
             得分{#if engine.newRecord}<i class="rec">新纪录</i>{/if}
           </span>
         </div>
+        {#if engine.newSeals.length > 0}
+          <div class="seal-row">
+            <span class="sr-label">本局新盖 {engine.newSeals.length} 枚</span>
+            <span class="sr-seals">
+              {#each engine.newSeals as id, i (id)}
+                {@const def = goalById(id)}
+                <span class="seal" style="animation-delay: {0.3 + i * 0.18}s" title={def.name}
+                  >{def.seal}</span
+                >
+              {/each}
+            </span>
+          </div>
+        {/if}
         <div class="stat-row">
           <span>收集 <b>{got}</b>/{n}（{n ? Math.round((got / n) * 100) : 0}%）</span>
           {#if engine.lastClearT !== null}
@@ -268,6 +285,9 @@
                 >{/if}</span
             >
           {/if}
+        </div>
+        <div class="seal-line">
+          本关朱印 <b>{sealProg.done}</b>/{sealProg.total} · 星/满/准/专
         </div>
         <div class="best">
           历史最佳 ★{Math.max(st, best)}
@@ -498,6 +518,76 @@
     letter-spacing: 2px;
     opacity: 0.85;
   }
+  /* 本局新盖的朱印：结算时一枚一枚盖下来（与「本关目标」面板同一套字形） */
+  .seal-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: var(--r-md);
+    background: linear-gradient(180deg, rgba(192, 57, 43, 0.16), rgba(192, 57, 43, 0.05));
+    border: 1px solid rgba(192, 57, 43, 0.42);
+    animation: seal-row-in 0.34s ease-out 0.2s backwards;
+  }
+  @keyframes seal-row-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .sr-label {
+    font-size: var(--fs-xs);
+    color: #e9a99f;
+    letter-spacing: 1px;
+  }
+  .sr-seals {
+    display: inline-flex;
+    gap: 6px;
+  }
+  .seal {
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fdece7;
+    background: linear-gradient(160deg, #c0392b, #8e2a1f);
+    box-shadow: 0 2px 10px rgba(192, 57, 43, 0.42);
+    animation: seal-stamp 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  }
+  @keyframes seal-stamp {
+    from {
+      opacity: 0;
+      transform: scale(1.7) rotate(-14deg);
+    }
+    60% {
+      opacity: 1;
+      transform: scale(0.94) rotate(2deg);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) rotate(0);
+    }
+  }
+  .seal-line {
+    font-size: var(--fs-xs);
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+  .seal-line b {
+    color: #e9a99f;
+  }
+
   /* 完美全清：三星之上的顶端追求 */
   .perfect-banner {
     display: flex;

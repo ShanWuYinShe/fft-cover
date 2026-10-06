@@ -160,6 +160,16 @@ export function finishChord(on: boolean): void {
   setTimeout(() => beep(880, 0.2, 'triangle', 0.12, on), 110);
 }
 
+/**
+ * 盖章音：低沉的"咚"（印面落纸）+ 一声轻铃（印泥边）。
+ * 结算时一枚朱印盖一次——奖励音要短、要闷，不能盖过收尾和弦。
+ */
+export function sealSound(on: boolean): void {
+  if (!on) return;
+  beep(150, 0.18, 'sine', 0.14, true);
+  setTimeout(() => beep(784, 0.26, 'triangle', 0.05, true), 40);
+}
+
 /* ---------- UI 音效（业界标准：交互反馈音，音量远低于游戏音） ---------- */
 
 /** UI 按钮点击：短促轻音 */

@@ -31,42 +31,36 @@ export interface LevelGoal {
   done: boolean;
 }
 
-/** 本关的四个目标（顺序即推荐顺序：先三星，再逐项精通） */
+/** 目标定义（不含达成状态）——顺序即推荐顺序：先三星，再逐项精通 */
+export type GoalDef = Omit<LevelGoal, 'done'>;
+
+const DEFS: GoalDef[] = [
+  { id: 'stars', icon: '⭐', seal: '星', name: '三星通关', how: '单局收集 ≥90%' },
+  { id: 'perfect', icon: '👑', seal: '满', name: '完美全清', how: '单局 100% 收集' },
+  {
+    id: 'exact',
+    icon: '🎯',
+    seal: '准',
+    name: '精确解',
+    how: '参数与傅立叶分解一致（拟合度 ≥99%）',
+  },
+  { id: 'expert', icon: '💎', seal: '专', name: '专家全清', how: '开启专家模式后 100% 收集' },
+];
+
+/** 按 id 取目标定义（结算演出盖印时按 id 取字形） */
+export function goalById(id: GoalId): GoalDef {
+  return DEFS.find((d) => d.id === id) ?? DEFS[0];
+}
+
+/** 本关的四个目标 */
 export function levelGoals(state: GoalState): LevelGoal[] {
-  return [
-    {
-      id: 'stars',
-      icon: '⭐',
-      seal: '星',
-      name: '三星通关',
-      how: '单局收集 ≥90%',
-      done: state.stars >= 3,
-    },
-    {
-      id: 'perfect',
-      icon: '👑',
-      seal: '满',
-      name: '完美全清',
-      how: '单局 100% 收集',
-      done: state.perfect,
-    },
-    {
-      id: 'exact',
-      icon: '🎯',
-      seal: '准',
-      name: '精确解',
-      how: '参数与傅立叶分解一致（拟合度 ≥99%）',
-      done: state.exact,
-    },
-    {
-      id: 'expert',
-      icon: '💎',
-      seal: '专',
-      name: '专家全清',
-      how: '开启专家模式后 100% 收集',
-      done: state.expert,
-    },
-  ];
+  const done: Record<GoalId, boolean> = {
+    stars: state.stars >= 3,
+    perfect: state.perfect,
+    exact: state.exact,
+    expert: state.expert,
+  };
+  return DEFS.map((d) => ({ ...d, done: done[d.id] }));
 }
 
 /** 已达成 / 总数 */
