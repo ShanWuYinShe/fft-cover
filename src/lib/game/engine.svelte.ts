@@ -765,6 +765,22 @@ export class GameEngine {
     return this.level ? (this.bestClears[this.level.id] ?? null) : null;
   }
 
+  /**
+   * 设置某个开关型标记（flags 只存 true，关掉即删除）。
+   * 与 markFlag 的区别：可以关掉，且不触发成就重查（用于"减少动画"这类偏好）。
+   */
+  setFlag(key: string, on: boolean): void {
+    const next = { ...this.flags };
+    if (on) next[key] = true;
+    else delete next[key];
+    this.flags = next;
+    try {
+      localStorage.setItem(FLAGS_KEY, JSON.stringify(this.flags));
+    } catch {
+      /* 存储不可用则忽略 */
+    }
+  }
+
   /** 标记一个行为标志并重查成就 */
   markFlag(key: string): void {
     if (this.flags[key]) return;

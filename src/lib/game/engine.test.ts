@@ -132,6 +132,18 @@ describe('GameEngine', () => {
     expect(engine.newSeals).toEqual([]);
   });
 
+  it('setFlag 可开可关，且不影响其它标记', () => {
+    engine.setFlag('reduceMotion', true);
+    expect(engine.flags.reduceMotion).toBe(true);
+    engine.setFlag('reduceMotion', false);
+    expect(engine.flags.reduceMotion).toBeUndefined();
+    // 其它标记不受影响
+    engine.markFlag('sandboxUsed');
+    engine.setFlag('reduceMotion', true);
+    engine.setFlag('reduceMotion', false);
+    expect(engine.flags.sandboxUsed).toBe(true);
+  });
+
   it('每日打卡日历与连续天数统计', () => {
     const best: Record<string, number> = {};
     // 最近 5 天连续 + 更早的孤立一天（中间断开）

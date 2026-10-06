@@ -2,6 +2,29 @@
  * 傅立叶指针 · 全局样式
  * 设计令牌 → 基础 → 布局 → 组件 → 响应式
  * ============================================================ */
+
+/**
+ * 减少动画：设置里可开，也默认跟随系统的"减弱动态效果"。
+ * 用一个全局兜底把所有入场/弹动/抖动动画压到瞬时——不需要逐个组件去改，
+ * 也不会漏掉以后新增的动画。
+ */
+:root.reduce-motion *,
+:root.reduce-motion *::before,
+:root.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-delay: 0ms !important;
+  transition-duration: 0.001ms !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 :root {
   /* 色板 */
   --bg: #0a0d18;

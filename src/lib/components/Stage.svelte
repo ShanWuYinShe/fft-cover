@@ -723,7 +723,10 @@
 
     // 运行中的星级阈值反馈：越过 35% / 65% / 90% 就在顶部点亮一档（升档时弹一下）
     if (engine.phase !== 'edit' && !engine.sandbox && engine.total > 0 && engine.starReached > 0) {
-      const pop = Math.max(0, 1 - (now - engine.starReachedAt) / 420);
+      // 减少动画时不做弹动（只静态显示当前档位）
+      const pop = engine.flags.reduceMotion
+        ? 0
+        : Math.max(0, 1 - (now - engine.starReachedAt) / 420);
       const tier = engine.starReached;
       const label = '★'.repeat(tier) + '☆'.repeat(3 - tier);
       ctx.save();

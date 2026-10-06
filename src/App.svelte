@@ -11,6 +11,7 @@
   import FinaleOverlay from './lib/components/FinaleOverlay.svelte';
   import GoalPanel from './lib/components/GoalPanel.svelte';
   import ChapterIntroOverlay from './lib/components/ChapterIntroOverlay.svelte';
+  import SettingsModal from './lib/components/SettingsModal.svelte';
   import { LEVEL_DEFS } from './lib/game/levels';
   import { chapterProgress, type ChapterProgress } from './lib/game/campaign';
   import { engine } from './lib/game/engine.svelte';
@@ -29,6 +30,7 @@
   import { musicLevelArrival, setMusicSuspended, startMusic, updateMusic } from './lib/game/music';
 
   let showAchv = $state(false);
+  let showSettings = $state(false);
   /** 开始画面：首次访问显示（老玩家直接进游戏，点标题可再看） */
   let showTitle = $state(false);
   /** 移动端底部标签：关卡 / 指针 / 成绩（桌面端忽略，全部 section 同屏显示） */
@@ -38,7 +40,20 @@
   /** 分享链接载入提示（几秒后自动消失） */
   let shareNote = $state<string | null>(null);
 
+  /** 减少动画：优先尊重系统的"减弱动态效果"，其次看设置里的开关 */
+  $effect(() => {
+    document.documentElement.classList.toggle('reduce-motion', !!engine.flags.reduceMotion);
+  });
+
   onMount(() => {
+    // 系统开了"减弱动态效果"且用户没手动设过 → 默认打开减少动画
+    if (
+      engine.flags.reduceMotion === undefined &&
+      typeof matchMedia === 'function' &&
+      matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      engine.setFlag('reduceMotion', true);
+    }
     const sharedLevel = readRandomFromHash(location.hash) ?? readDailyFromHash(location.hash);
     // 首次访问显示开始画面（有分享链接时直接进游戏，避免挡住挑战链接）
     if (!engine.flags.seenTitle && !readArmsFromHash(location.hash) && !sharedLevel) {
@@ -383,6 +398,7 @@
             }}>🎵</button
           >
           <button title="成就" onclick={() => (showAchv = true)}>🏆</button>
+          <button title="设置" onclick={() => (showSettings = true)}>⚙️</button>
         </span>
       {:else}
         <button class="primary" onclick={toggleRun}>{engine.runLabel}</button>
@@ -427,6 +443,7 @@
             }}>🎵</button
           >
           <button title="成就" onclick={() => (showAchv = true)}>🏆</button>
+          <button title="设置" onclick={() => (showSettings = true)}>⚙️</button>
         </span>
       {/if}
     </div>
@@ -530,6 +547,9 @@
 
 {#if showAchv}
   <AchievementsModal onclose={() => (showAchv = false)} onplay={playFromDex} />
+{/if}
+{#if showSettings}
+  <SettingsModal onclose={() => (showSettings = false)} {volume} onCycleVolume={cycleVolume} />
 {/if}
 {#if !tutorialSeen && !showTitle}
   <div class="tutorial">
