@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { LEVEL_DEFS, makeRandomLevel, todayKey, yesterdayKey } from './levels';
+import { dayKey, LEVEL_DEFS, makeRandomLevel, todayKey, yesterdayKey } from './levels';
 import { LAST_LEVEL_KEY } from './constants';
 import { GameEngine } from './engine.svelte';
 import { fitScore, solveFromSpectrum } from './scoring';
@@ -130,6 +130,37 @@ describe('GameEngine', () => {
     for (const p of pts) engine.tryCollect(p);
     engine.stopRun();
     expect(engine.newSeals).toEqual([]);
+  });
+
+  it('每日打卡日历与连续天数统计', () => {
+    const best: Record<string, number> = {};
+    // 最近 5 天连续 + 更早的孤立一天（中间断开）
+    for (let i = 0; i < 5; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      best['daily-' + dayKey(d) + '-normal'] = 1000;
+    }
+    const older = new Date();
+    older.setDate(older.getDate() - 7);
+    best['daily-' + dayKey(older) + '-easy'] = 500;
+    engine.dailyBest = best;
+
+    expect(engine.dailyDaysTotal).toBe(6);
+    expect(engine.longestDailyStreak).toBe(5);
+
+    const cal = engine.dailyCalendar(5);
+    expect(cal).toHaveLength(5);
+    expect(cal.every((row) => row.length === 7)).toBe(true);
+    const flat = cal.flat();
+    expect(flat.filter((c) => c.done)).toHaveLength(6);
+    // 今天在日历里，且已完成
+    const todayCell = flat.find((c) => c.today);
+    expect(todayCell?.done).toBe(true);
+    // 还没到的日期不会被标记为已完成
+    expect(flat.every((c) => !(c.future && c.done))).toBe(true);
+    // 日历按日期升序
+    const dates = flat.map((c) => c.date);
+    expect([...dates].sort()).toEqual(dates);
   });
 
   it('一键套用精确解：参数与分解一致，可达成精确解认证', () => {

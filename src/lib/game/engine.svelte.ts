@@ -31,6 +31,7 @@ import {
   makeDailyLevel,
   makeLevel,
   makeRandomLevel,
+  dayKey,
   lastNDays,
   parseRandomSpec,
   randomSpec,
@@ -1151,6 +1152,73 @@ export class GameEngine {
       if (k.startsWith(prefix) && v > best) best = v;
     }
     return best;
+  }
+
+  /** 打过每日挑战的全部日期（任意难度有得分即算），升序去重 */
+  private dailyPlayedDates(): string[] {
+    const set = new Set<string>();
+    for (const [k, v] of Object.entries(this.dailyBest)) {
+      if (v > 0) set.add(k.replace(/^daily-/, '').replace(/-(easy|normal|hard)$/, ''));
+    }
+    return [...set].sort();
+  }
+
+  /** 累计打过每日挑战的天数 */
+  get dailyDaysTotal(): number {
+    return this.dailyPlayedDates().length;
+  }
+
+  /** 历史最长连续天数（从每日成绩反推） */
+  get longestDailyStreak(): number {
+    const dates = this.dailyPlayedDates();
+    let best = 0;
+    let run = 0;
+    let prev = '';
+    for (const d of dates) {
+      if (prev) {
+        const gap =
+          (new Date(d + 'T00:00:00').getTime() - new Date(prev + 'T00:00:00').getTime()) /
+          86_400_000;
+        run = Math.abs(gap - 1) < 0.01 ? run + 1 : 1;
+      } else {
+        run = 1;
+      }
+      best = Math.max(best, run);
+      prev = d;
+    }
+    return best;
+  }
+
+  /**
+   * 每日挑战日历：最近 weeks 周（按周一对齐，最后一行包含今天）。
+   * 统计页的"打卡墙"用——比 7 日格更能看出长期习惯。
+   */
+  dailyCalendar(
+    weeks = 5,
+  ): { date: string; day: number; done: boolean; today: boolean; future: boolean }[][] {
+    const today = todayKey();
+    const d = new Date();
+    const dow = (d.getDay() + 6) % 7; // 0 = 周一
+    d.setDate(d.getDate() - dow - (weeks - 1) * 7);
+    const rows: { date: string; day: number; done: boolean; today: boolean; future: boolean }[][] =
+      [];
+    for (let w = 0; w < weeks; w++) {
+      const row: { date: string; day: number; done: boolean; today: boolean; future: boolean }[] =
+        [];
+      for (let i = 0; i < 7; i++) {
+        const date = dayKey(d);
+        row.push({
+          date,
+          day: d.getDate(),
+          done: this.dailyDoneOn(date),
+          today: date === today,
+          future: date > today,
+        });
+        d.setDate(d.getDate() + 1);
+      }
+      rows.push(row);
+    }
+    return rows;
   }
 
   /** 最近 7 天的每日挑战完成情况（旧 → 新，最后一项是今天） */

@@ -23,6 +23,9 @@
   );
 
   /* ---------- 图鉴：每关轮廓的缩略 SVG（与结局面板共用 shapes.ts） ---------- */
+  /** 每日打卡日历（最近 5 周，按周一对齐） */
+  const calendar = $derived(engine.dailyCalendar(5));
+
   const chapters = $derived(chapterProgress(LEVEL_DEFS, engine.bestStars));
   /** 已点亮（拿到过星）的关卡数 */
   const litLevels = $derived(LEVEL_DEFS.filter((d) => (engine.bestStars[d.id] ?? 0) > 0).length);
@@ -194,6 +197,32 @@
     {/if}
     {#if tab === 'stats'}
       <div class="stats">
+        <!-- 每日打卡墙：最近 5 周（比 7 日格更能看出长期习惯） -->
+        <div class="cal">
+          <div class="cal-head">
+            <b>每日打卡</b>
+            <span class="cal-stat">累计 <i>{engine.dailyDaysTotal}</i> 天</span>
+            <span class="cal-stat">当前连续 <i>{engine.dailyStreak.streak}</i> 天</span>
+            <span class="cal-stat">最长 <i>{engine.longestDailyStreak}</i> 天</span>
+          </div>
+          <div class="cal-grid">
+            {#each ['一', '二', '三', '四', '五', '六', '日'] as w (w)}
+              <span class="cal-dow">{w}</span>
+            {/each}
+            {#each calendar as row, ri (ri)}
+              {#each row as c (c.date)}
+                <span
+                  class="cal-cell"
+                  class:done={c.done}
+                  class:today={c.today}
+                  class:future={c.future}
+                  title={c.date + (c.done ? ' · 已完成' : c.future ? ' · 还没到' : ' · 未完成')}
+                  >{c.day}</span
+                >
+              {/each}
+            {/each}
+          </div>
+        </div>
         <div class="cards">
           <div class="card"><span class="k">总对局</span><span class="v">{totalPlays}</span></div>
           <div class="card">
@@ -562,6 +591,68 @@
     gap: 10px;
     margin-bottom: 12px;
     text-align: left;
+  }
+  /* 每日打卡墙：7 列（周一 → 周日）× 5 行 */
+  .cal {
+    padding: 9px 10px 10px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .cal-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 7px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .cal-head b {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--cyan);
+  }
+  .cal-stat i {
+    font-style: normal;
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+  .cal-dow {
+    text-align: center;
+    font-size: 9px;
+    color: var(--muted);
+    padding-bottom: 1px;
+  }
+  .cal-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    border: 1px solid var(--line-2);
+    background: rgba(255, 255, 255, 0.02);
+    font-size: 10px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .cal-cell.done {
+    border-color: rgba(192, 57, 43, 0.6);
+    background: linear-gradient(160deg, rgba(192, 57, 43, 0.5), rgba(142, 42, 31, 0.42));
+    color: #fdece7;
+  }
+  .cal-cell.today {
+    border-color: rgba(79, 209, 197, 0.9);
+    box-shadow: 0 0 0 1px rgba(79, 209, 197, 0.4);
+    color: var(--text);
+  }
+  .cal-cell.future {
+    opacity: 0.35;
   }
   .stats .cards {
     display: grid;
