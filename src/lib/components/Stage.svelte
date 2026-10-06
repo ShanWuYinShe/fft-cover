@@ -332,6 +332,30 @@
   /** 全清震动是否已触发（本局一次） */
   let shakeDone = false;
 
+  /** 回纹边框路径（构建一次复用）：中国器物上的连续"回"字纹 */
+  let huiPath: Path2D | null = null;
+  function huiBorder(): Path2D {
+    if (huiPath) return huiPath;
+    const cell = 13;
+    const inset = 4;
+    const p = new Path2D();
+    // 连续"回"字：外框几乎相接，读起来是一条纹带而不是一串点
+    const glyph = (x: number, y: number): void => {
+      p.rect(x + 1.5, y + 1.5, cell - 3, cell - 3);
+      p.rect(x + 4.5, y + 4.5, cell - 9, cell - 9);
+    };
+    for (let x = inset; x + cell <= SIZE - inset; x += cell) {
+      glyph(x, inset);
+      glyph(x, SIZE - inset - cell);
+    }
+    for (let y = inset + cell; y + cell <= SIZE - inset - cell; y += cell) {
+      glyph(inset, y);
+      glyph(SIZE - inset - cell, y);
+    }
+    huiPath = p;
+    return p;
+  }
+
   function draw(now: number): void {
     if (!ctx || !engine.level) return;
     // 全清震动：本局首次全清时触发一次 CSS 抖动
@@ -344,6 +368,11 @@
     if (engine.phase === 'edit') shakeDone = false;
 
     ctx.clearRect(0, 0, SIZE, SIZE);
+
+    // 回纹边框：极淡的中国纹样，铺在内容之下（不随缩放平移，只作画框）
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.13)';
+    ctx.lineWidth = 1;
+    ctx.stroke(huiBorder());
 
     // 切关淡入：整画布内容透明度过渡（0.4 秒）
     const fade = Math.min(1, (now - engine.levelSwitchAt) / 400);

@@ -21,6 +21,7 @@ import {
   DAILY_KEY,
   HISTORY_KEY,
   HISTORY_MAX,
+  LAST_LEVEL_KEY,
 } from './constants';
 import {
   decodeCoeffs,
@@ -356,7 +357,8 @@ export class GameEngine {
   fastForward = $state(false);
 
   constructor() {
-    this.loadLevel(LEVEL_DEFS[0]);
+    // "继续游戏"要真的接着上次：能恢复就恢复，否则从第一关开始
+    if (!this.restoreLastLevel()) this.loadLevel(LEVEL_DEFS[0]);
     // 静默恢复成就：存档里已有进度（如从备份导入）也应在打开面板时可见，
     // 且不弹 toast（首次游玩时逐个解锁的演出保留在 checkAchievements）
     const ctx = {
@@ -398,6 +400,52 @@ export class GameEngine {
     this.trimArmsToLimit();
     this.resetRun();
     this.levelSwitchAt = performance.now(); // 切关淡入动画起点
+    this.rememberLevel(def.id);
+  }
+
+  /**
+   * 记住当前关卡，"继续游戏"下次直接回到这里。
+   * 创作关没有保存系数、无法复现，不记住（回落第一关）。
+   */
+  private rememberLevel(id: string): void {
+    if (id.startsWith('custom-')) return;
+    try {
+      localStorage.setItem(LAST_LEVEL_KEY, id);
+    } catch {
+      /* 存储不可用则忽略 */
+    }
+  }
+
+  /**
+   * 恢复上次游玩的关卡：
+   * 内置关直接载入；随机关按邀请码复现；每日挑战按今天的日期重建。
+   * 返回是否恢复成功（失败则调用方回落到第一关）。
+   */
+  private restoreLastLevel(): boolean {
+    let id = '';
+    try {
+      id = localStorage.getItem(LAST_LEVEL_KEY) ?? '';
+    } catch {
+      return false;
+    }
+    if (!id) return false;
+    const def = LEVEL_DEFS.find((d) => d.id === id);
+    if (def) {
+      this.loadLevel(def);
+      return true;
+    }
+    if (id.startsWith('random-')) {
+      const seed = Number(id.slice('random-'.length));
+      if (Number.isFinite(seed)) {
+        this.loadRandomSeed(seed);
+        return true;
+      }
+    }
+    if (id.startsWith('daily-')) {
+      this.loadDaily();
+      return true;
+    }
+    return false;
   }
 
   loadRandom(): void {
@@ -412,6 +460,7 @@ export class GameEngine {
     this.trimArmsToLimit();
     this.resetRun();
     this.markFlag('inviteLoaded');
+    this.rememberLevel(this.level.id);
   }
 
   /** 关卡切换后按上限裁剪已启用指针（保留序号靠前者） */
@@ -999,6 +1048,7 @@ export class GameEngine {
     this.level = makeDailyLevel(this.difficulty);
     this.trimArmsToLimit();
     this.resetRun();
+    this.rememberLevel(this.level.id);
   }
 
   /** 今日最佳得分 */

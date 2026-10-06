@@ -11,6 +11,7 @@ import {
   DAILY_KEY,
   FLAGS_KEY,
   HISTORY_KEY,
+  LAST_LEVEL_KEY,
   SOUND_KEY,
 } from './constants';
 
@@ -36,6 +37,7 @@ export const SAVE_KEYS = [
   DAILY_KEY,
   ARMS_SAVE_KEY,
   HISTORY_KEY,
+  LAST_LEVEL_KEY,
   SOUND_KEY,
 ] as const;
 

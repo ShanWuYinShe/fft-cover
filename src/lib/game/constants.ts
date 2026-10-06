@@ -22,6 +22,8 @@ export const BEST_SCORE_KEY = 'fft-pointers-best-score-v1';
 export const SOUND_KEY = 'fft-pointers-sound-v1';
 /** 背景音乐开关 localStorage 键名 */
 export const MUSIC_KEY = 'fft-pointers-music-v1';
+/** 上次游玩的关卡 localStorage 键名（"继续游戏"用） */
+export const LAST_LEVEL_KEY = 'fft-pointers-last-level-v1';
 /** 最快全清用时 localStorage 键名 */
 export const CLEAR_KEY = 'fft-pointers-clear-v1';
 /** 完美全清（100% 收集）记录：关卡 id → true */

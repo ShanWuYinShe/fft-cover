@@ -1,6 +1,70 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { LEVEL_DEFS } from './levels';
+import { LAST_LEVEL_KEY } from './constants';
 import { GameEngine } from './engine.svelte';
+
+/** 内存 Storage 实现（Node 环境没有 localStorage） */
+function memStore(): Storage {
+  const map = new Map<string, string>();
+  return {
+    get length() {
+      return map.size;
+    },
+    clear: () => map.clear(),
+    getItem: (k: string) => (map.has(k) ? map.get(k)! : null),
+    key: (i: number) => [...map.keys()][i] ?? null,
+    removeItem: (k: string) => void map.delete(k),
+    setItem: (k: string, v: string) => void map.set(k, v),
+  } as Storage;
+}
+
+describe('续玩：记住上次关卡', () => {
+  let original: PropertyDescriptor | undefined;
+
+  beforeEach(() => {
+    original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: memStore(),
+      configurable: true,
+      writable: true,
+    });
+  });
+
+  afterEach(() => {
+    if (original) Object.defineProperty(globalThis, 'localStorage', original);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  });
+
+  it('新实例从上次那一关开始（内置关）', () => {
+    const first = new GameEngine();
+    expect(first.level?.id).toBe('circle');
+    first.loadLevel(LEVEL_DEFS.find((d) => d.id === 'heart')!);
+    expect(localStorage.getItem(LAST_LEVEL_KEY)).toBe('heart');
+    const next = new GameEngine();
+    expect(next.level?.id).toBe('heart');
+  });
+
+  it('随机关按邀请码复现，每日挑战按今天重建', () => {
+    const e = new GameEngine();
+    e.loadRandomSeed(4242);
+    const random = new GameEngine();
+    expect(random.level?.id).toBe('random-4242');
+    expect(random.level?.random).toBe(true);
+
+    e.loadDaily();
+    const daily = new GameEngine();
+    expect(daily.level?.id.startsWith('daily-')).toBe(true);
+  });
+
+  it('创作关无法复现 → 不记住，回落第一关', () => {
+    const e = new GameEngine();
+    e.loadCustomLevel([{ k: 1, mag: 100, phase: 0 }], '测试关');
+    const next = new GameEngine();
+    expect(next.level?.id).toBe('circle');
+    // 也不该把创作关写进"上次关卡"
+    expect(localStorage.getItem(LAST_LEVEL_KEY)).not.toContain('custom-');
+  });
+});
 
 describe('GameEngine', () => {
   let engine: GameEngine;
