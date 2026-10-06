@@ -32,6 +32,8 @@ import {
   makeLevel,
   makeRandomLevel,
   lastNDays,
+  parseRandomSpec,
+  randomSpec,
   todayKey,
   yesterdayKey,
   type RandomDifficulty,
@@ -342,6 +344,8 @@ export class GameEngine {
   starReachedAt = $state(0);
   /** 本局让某一章的朱印集齐 → 该章盖章节印（结算演出用） */
   newChapterSeal = $state<string | null>(null);
+  /** 当前随机关卡生成时用的难度（关卡 id 不含难度，分享链接需要它） */
+  randomDiff = $state<RandomDifficulty>('normal');
   /** 各关保存的解法参数（上届那局的指针配置） */
   armsSaves = $state<Record<string, Arm[]>>(loadArmsSaves());
   /** 各关上届节奏：每个点的收集时刻（与 armsSaves 同源，都是"上届"那一局） */
@@ -442,12 +446,11 @@ export class GameEngine {
       this.loadLevel(def);
       return true;
     }
-    if (id.startsWith('random-')) {
-      const seed = Number(id.slice('random-'.length));
-      if (Number.isFinite(seed)) {
-        this.loadRandomSeed(seed);
-        return true;
-      }
+    // 随机关：标识里带难度（random-<seed>-<难度>），否则换难度会复现出另一条曲线
+    const rand = parseRandomSpec(id);
+    if (rand) {
+      this.loadRandomSeed(rand.seed, rand.diff);
+      return true;
     }
     if (id.startsWith('daily-')) {
       this.loadDaily();
@@ -464,11 +467,13 @@ export class GameEngine {
   loadRandomSeed(seed: number, diff: RandomDifficulty = 'normal'): void {
     this.cancelAutoSolve();
     this.sandbox = false;
+    this.randomDiff = diff;
     this.level = makeRandomLevel(seed, diff);
     this.trimArmsToLimit();
     this.resetRun();
     this.markFlag('inviteLoaded');
-    this.rememberLevel(this.level.id);
+    // 记忆里带上难度：续玩要复现同一条曲线（关卡 id 本身不含难度）
+    this.rememberLevel(randomSpec(seed, diff));
   }
 
   /** 关卡切换后按上限裁剪已启用指针（保留序号靠前者） */

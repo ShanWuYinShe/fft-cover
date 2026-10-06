@@ -3,7 +3,7 @@
   import Stage from './lib/components/Stage.svelte';
   import ArmPanel from './lib/components/ArmPanel.svelte';
   import TitleScreen from './lib/components/TitleScreen.svelte';
-  import { readArmsFromHash } from './lib/game/share';
+  import { readArmsFromHash, readRandomFromHash } from './lib/game/share';
   import LevelPicker from './lib/components/LevelPicker.svelte';
   import ScorePanel from './lib/components/ScorePanel.svelte';
   import ResultOverlay from './lib/components/ResultOverlay.svelte';
@@ -34,17 +34,19 @@
   let mobileTab: 'levels' | 'arms' | 'score' = $state('levels');
   /** PWA：有新版本等待接管（main.ts 在 SW 进入 waiting 时派发 pwa-update） */
   let updateReady = $state(false);
+  /** 分享链接载入提示（几秒后自动消失） */
+  let shareNote = $state<string | null>(null);
+
   onMount(() => {
-    // 首次访问显示开始画面（有分享码时直接进游戏，避免挡住挑战链接）
-    if (!engine.flags.seenTitle && !readArmsFromHash(location.hash)) {
+    const sharedLevel = readRandomFromHash(location.hash);
+    // 首次访问显示开始画面（有分享链接时直接进游戏，避免挡住挑战链接）
+    if (!engine.flags.seenTitle && !readArmsFromHash(location.hash) && !sharedLevel) {
       showTitle = true;
       engine.markFlag('seenTitle');
     }
-    // 好友解法挑战：从 URL hash 载入参数并清除 hash（避免刷新重复提示）
-    const code = readArmsFromHash(location.hash);
-    if (code && engine.applyArmsCode(code)) {
-      history.replaceState(null, '', location.pathname + location.search);
-    }
+    applyHashShare();
+    // 同一标签页里粘贴新链接（只改 hash 不会重新加载文档）也要生效
+    window.addEventListener('hashchange', applyHashShare);
     const onUpdate = () => (updateReady = true);
     window.addEventListener('pwa-update', onUpdate);
     // 全局按钮点击音（capture：先于组件自身 handler，业界标准 UI juice）
@@ -64,6 +66,7 @@
     const onVisibility = () => setMusicSuspended(document.hidden);
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
+      window.removeEventListener('hashchange', applyHashShare);
       window.removeEventListener('pwa-update', onUpdate);
       document.removeEventListener('click', onUiClick, true);
       document.removeEventListener('pointerdown', onFirstGesture, true);
@@ -71,6 +74,26 @@
       document.removeEventListener('visibilitychange', onVisibility);
     };
   });
+  /**
+   * 处理 URL hash 里的分享内容（首次进入与同标签页改 hash 都走这里）：
+   * 随机关卡链接先载关（带难度），解法码再套参数——两者可以同时出现。
+   * 处理完清掉 hash，避免刷新时重复提示。
+   */
+  function applyHashShare(): void {
+    const shared = readRandomFromHash(location.hash);
+    if (shared) {
+      engine.loadRandomSeed(shared.seed, shared.diff);
+      shareNote = '已载入好友分享的随机关卡（邀请码 ' + shared.seed + '）';
+      setTimeout(() => (shareNote = null), 5200);
+    }
+    const code = readArmsFromHash(location.hash);
+    if (code && engine.applyArmsCode(code)) {
+      history.replaceState(null, '', location.pathname + location.search);
+    } else if (shared) {
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+  }
+
   function applyPwaUpdate(): void {
     void import('./main').then((m) => m.applyUpdate());
   }
@@ -523,6 +546,9 @@
 {/if}
 {#if engine.toast && !showTitle}
   <div class="toast">🏆 解锁成就：{engine.toast.name}</div>
+{/if}
+{#if shareNote && !showTitle}
+  <div class="toast share-note">🔗 {shareNote}</div>
 {/if}
 {#if updateReady && engine.phase !== 'running'}
   <div class="update-bar">

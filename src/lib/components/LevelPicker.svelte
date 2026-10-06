@@ -4,6 +4,7 @@
   import { chapterProgress, isLevelLocked } from '../game/campaign';
   import type { ChapterSealState } from '../game/goals';
   import { keyForChapter } from '../game/harmony';
+  import { buildRandomUrl } from '../game/share';
   import ComposerModal from './ComposerModal.svelte';
 
   let showComposer = $state(false);
@@ -27,6 +28,8 @@
   );
 
   let seedInput = $state('');
+  /** 分享链接已复制（按钮短暂反馈） */
+  let shareCopied = $state(false);
   const DIFFS = [
     { id: 'easy', nm: '简单' },
     { id: 'normal', nm: '普通' },
@@ -93,6 +96,25 @@
       await navigator.clipboard.writeText(seed);
     } catch {
       /* 剪贴板不可用则忽略 */
+    }
+  }
+
+  /** 分享随机关卡链接：好友打开即面对同一条曲线（带难度） */
+  async function shareLevel(): Promise<void> {
+    const n = Number(seed);
+    if (!Number.isFinite(n) || seed === '') return;
+    const url = buildRandomUrl(location.origin + location.pathname, n, engine.randomDiff);
+    const text = '我在《傅立叶指针》生成了一条随机曲线，来试试能不能全清？';
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: '傅立叶指针 · 随机关挑战', text, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        shareCopied = true;
+        setTimeout(() => (shareCopied = false), 1800);
+      }
+    } catch {
+      /* 取消分享 / 剪贴板不可用：忽略 */
     }
   }
 
@@ -312,6 +334,9 @@
       <span>邀请码 <b>{seed}</b></span>
       <button class="mini" title="复制邀请码——好友载入后生成同一关卡" onclick={copySeed}>
         🔗 复制
+      </button>
+      <button class="mini" title="分享链接——好友打开直接进入这一关（含难度）" onclick={shareLevel}>
+        {shareCopied ? '✓ 已复制' : '📤 分享'}
       </button>
       <input
         class="seed-input"

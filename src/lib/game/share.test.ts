@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { buildShareUrl, decodeArms, encodeArms, readArmsFromHash } from './share';
+import {
+  buildRandomUrl,
+  buildShareUrl,
+  decodeArms,
+  encodeArms,
+  readArmsFromHash,
+  readRandomFromHash,
+} from './share';
 import type { Arm } from './types';
 
 const arm = (on: boolean, r: number, freq: number, deg: number): Arm => ({
@@ -42,5 +49,22 @@ describe('解法分享码', () => {
     expect(url).toBe('https://game.chaoset.com/#arms=v1-0:120:1:0');
     expect(readArmsFromHash('#arms=v1-0:120:1:0')).toBe('v1-0:120:1:0');
     expect(readArmsFromHash('#other=1')).toBeNull();
+  });
+
+  it('随机关卡链接往返一致，并保留难度', () => {
+    const url = buildRandomUrl('https://game.chaoset.com/play', 987654, 'hard');
+    expect(url).toBe('https://game.chaoset.com/play#r=random-987654-hard');
+    expect(readRandomFromHash('#r=random-987654-hard')).toEqual({ seed: 987654, diff: 'hard' });
+    // 不带难度时按普通难度
+    expect(readRandomFromHash('#r=random-42')).toEqual({ seed: 42, diff: 'normal' });
+    // 非法输入不抛错
+    expect(readRandomFromHash('#r=random-abc')).toBeNull();
+    expect(readRandomFromHash('#arms=v1-0:1:1:1')).toBeNull();
+  });
+
+  it('解法码与随机关链接可以共存于同一个 hash', () => {
+    const hash = '#r=random-777-easy&arms=v1-0:120:1:0';
+    expect(readRandomFromHash(hash)).toEqual({ seed: 777, diff: 'easy' });
+    expect(readArmsFromHash(hash)).toBe('v1-0:120:1:0');
   });
 });

@@ -398,6 +398,24 @@ export function lastNDays(n: number): string[] {
   return out;
 }
 
+/**
+ * 随机关卡的"可复现标识"：random-<seed>-<难度>。
+ * 关卡自身的 id 仍是 random-<seed>（进度键不变），这份标识只用于
+ * 续玩记忆与分享链接——**难度必须带上**，否则换难度复现的会是另一条曲线。
+ */
+export function randomSpec(seed: number, diff: RandomDifficulty = 'normal'): string {
+  return 'random-' + Math.abs(Math.trunc(seed)) + '-' + diff;
+}
+
+/** 解析随机关卡标识；兼容早期只存 seed 的格式（按普通难度） */
+export function parseRandomSpec(spec: string): { seed: number; diff: RandomDifficulty } | null {
+  const m = /^random-(\d{1,12})(?:-(easy|normal|hard))?$/.exec(spec);
+  if (!m) return null;
+  const seed = Number(m[1]);
+  if (!Number.isFinite(seed)) return null;
+  return { seed, diff: (m[2] as RandomDifficulty | undefined) ?? 'normal' };
+}
+
 /** 每日挑战：seed 由日期+难度决定，同一天同难度的玩家面对同一关卡 */
 export function makeDailyLevel(diff: RandomDifficulty = 'normal'): Level {
   const key = todayKey();

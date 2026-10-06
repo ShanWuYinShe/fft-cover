@@ -8,6 +8,8 @@ import {
   makeLevel,
   makeRandomLevel,
   mulberry32,
+  parseRandomSpec,
+  randomSpec,
   todayKey,
 } from './levels';
 import { describe, expect, it } from 'vitest';
@@ -117,6 +119,19 @@ describe('谐波合成器编解码', () => {
     expect(lv.armLimit).toBe(1);
     expect(lv.spectrum.find((s) => s.k === 1)?.mag).toBeGreaterThan(50);
     expect(lv.pts.length).toBeGreaterThan(0);
+  });
+});
+
+describe('随机关卡标识', () => {
+  it('randomSpec / parseRandomSpec 往返一致，并保留难度', () => {
+    expect(randomSpec(1234, 'hard')).toBe('random-1234-hard');
+    expect(parseRandomSpec('random-1234-hard')).toEqual({ seed: 1234, diff: 'hard' });
+    // 兼容早期只存 seed 的格式（按普通难度）
+    expect(parseRandomSpec('random-1234')).toEqual({ seed: 1234, diff: 'normal' });
+    expect(parseRandomSpec('random-abc')).toBeNull();
+    expect(parseRandomSpec('daily-2026-10-07-normal')).toBeNull();
+    // 负数/小数也归一化成非负整数
+    expect(randomSpec(-42.7)).toBe('random-42-normal');
   });
 });
 

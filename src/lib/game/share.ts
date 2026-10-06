@@ -1,3 +1,4 @@
+import { parseRandomSpec, randomSpec, type RandomDifficulty } from './levels';
 import type { Arm } from './types';
 
 /**
@@ -60,4 +61,24 @@ export function buildShareUrl(base: string, code: string): string {
 export function readArmsFromHash(hash: string): string | null {
   const m = /(?:^#|&)arms=([^&]+)/.exec(hash);
   return m ? decodeURIComponent(m[1]) : null;
+}
+
+/**
+ * 随机关卡分享链接：把"邀请码 + 难度"拼进 hash，好友打开即面对同一条曲线。
+ * 与解法码共用同一个 hash 通道，互不冲突（也可以同时带上）。
+ */
+export function buildRandomUrl(
+  base: string,
+  seed: number,
+  diff: RandomDifficulty = 'normal',
+): string {
+  const u = base.split('#')[0];
+  return u + '#r=' + randomSpec(seed, diff);
+}
+
+/** 从 URL hash 里取随机关卡标识（无则返回 null） */
+export function readRandomFromHash(hash: string): { seed: number; diff: RandomDifficulty } | null {
+  const m = /(?:^#|&)r=([^&]+)/.exec(hash);
+  if (!m) return null;
+  return parseRandomSpec(decodeURIComponent(m[1]));
 }

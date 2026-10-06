@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { LEVEL_DEFS, todayKey, yesterdayKey } from './levels';
+import { LEVEL_DEFS, makeRandomLevel, todayKey, yesterdayKey } from './levels';
 import { LAST_LEVEL_KEY } from './constants';
 import { GameEngine } from './engine.svelte';
 import { solveFromSpectrum } from './scoring';
@@ -45,12 +45,18 @@ describe('续玩：记住上次关卡', () => {
     expect(next.level?.id).toBe('heart');
   });
 
-  it('随机关按邀请码复现，每日挑战按今天重建', () => {
+  it('随机关按邀请码复现（含难度），每日挑战按今天重建', () => {
     const e = new GameEngine();
     e.loadRandomSeed(4242);
     const random = new GameEngine();
     expect(random.level?.id).toBe('random-4242');
     expect(random.level?.random).toBe(true);
+
+    // 难度也要复现：同一 seed 在困难档是另一条曲线
+    e.loadRandomSeed(4242, 'hard');
+    const hard = new GameEngine();
+    expect(hard.randomDiff).toBe('hard');
+    expect(hard.level?.pts).toEqual(makeRandomLevel(4242, 'hard').pts);
 
     e.loadDaily();
     const daily = new GameEngine();
