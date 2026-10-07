@@ -1,11 +1,9 @@
 <script lang="ts">
   import { engine } from '../game/engine.svelte';
   import { encodeCoeffs, type HarmonicCoeff } from '../game/levels';
-  import { CIRCLED } from '../game/constants';
+  import { CIRCLED, DRAFT_KEY } from '../game/constants';
 
   let { onclose }: { onclose: () => void } = $props();
-
-  const DRAFT_KEY = 'fft-pointers-composer-draft-v1';
 
   /** 恢复上次编辑的草稿（无草稿时给一个 1×=100 的起点） */
   function loadDraft(): HarmonicCoeff[] {

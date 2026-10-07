@@ -1,4 +1,4 @@
-import { PENTATONIC } from './constants';
+import { PENTATONIC, VOLUME_KEY } from './constants';
 
 let audioCtx: AudioContext | null = null;
 /** 全局音量（0/0.5/1 三态），由 App 切换并持久化 */
@@ -7,7 +7,7 @@ let volume = 1;
 export function setVolume(v: number): void {
   volume = v;
   try {
-    localStorage.setItem('fft-pointers-volume-v1', String(v));
+    localStorage.setItem(VOLUME_KEY, String(v));
   } catch {
     /* 忽略 */
   }
@@ -15,7 +15,7 @@ export function setVolume(v: number): void {
 
 export function getVolume(): number {
   try {
-    return Number(localStorage.getItem('fft-pointers-volume-v1') ?? '1') || 1;
+    return Number(localStorage.getItem(VOLUME_KEY) ?? '1') || 1;
   } catch {
     return 1;
   }

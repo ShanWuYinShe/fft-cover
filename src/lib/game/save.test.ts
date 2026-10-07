@@ -1,6 +1,17 @@
 import { describe, expect, it, beforeEach } from 'vitest';
-import { BEST_KEY, ACHV_KEY, BEST_SCORE_KEY } from './constants';
-import { clearSave, exportSave, importSave, SAVE_PREFIX } from './save';
+import * as C from './constants';
+import {
+  BEST_KEY,
+  ACHV_KEY,
+  BEST_SCORE_KEY,
+  DRAFT_KEY,
+  FAIL_KEY,
+  HISTORY_KEY,
+  MUSIC_KEY,
+  PACE_KEY,
+  VOLUME_KEY,
+} from './constants';
+import { clearSave, exportSave, importSave, PREF_KEYS, SAVE_KEYS, SAVE_PREFIX } from './save';
 
 /** 内存 Storage 实现，避免依赖 jsdom */
 function memStore(): Storage {
@@ -75,5 +86,46 @@ describe('存档导出/导入', () => {
     clearSave(store);
     expect(store.getItem(BEST_KEY)).toBeNull();
     expect(store.getItem(ACHV_KEY)).toBeNull();
+  });
+
+  it('卡关次数 / 节奏记录 / 合成器草稿 / 音乐开关也在存档里（别漏了新数据）', () => {
+    store.setItem(FAIL_KEY, JSON.stringify({ heart: 2 }));
+    store.setItem(PACE_KEY, JSON.stringify({ circle: [1, 2, 3] }));
+    store.setItem(DRAFT_KEY, JSON.stringify([{ k: 1, mag: 100, phase: 0 }]));
+    store.setItem(MUSIC_KEY, '0');
+    const text = exportSave(store);
+
+    const fresh = memStore();
+    expect(importSave(text, fresh).ok).toBe(true);
+    expect(fresh.getItem(FAIL_KEY)).toBe(JSON.stringify({ heart: 2 }));
+    expect(fresh.getItem(PACE_KEY)).toBe(JSON.stringify({ circle: [1, 2, 3] }));
+    expect(fresh.getItem(DRAFT_KEY)).toBe(JSON.stringify([{ k: 1, mag: 100, phase: 0 }]));
+    expect(fresh.getItem(MUSIC_KEY)).toBe('0');
+  });
+
+  it('clearSave 清进度但保留偏好（音量 / 音效 / 音乐）', () => {
+    store.setItem(FAIL_KEY, JSON.stringify({ heart: 2 }));
+    store.setItem(PACE_KEY, '{}');
+    store.setItem(DRAFT_KEY, '[]');
+    store.setItem(HISTORY_KEY, '{}');
+    store.setItem(VOLUME_KEY, '0.5');
+    store.setItem(MUSIC_KEY, '1');
+    clearSave(store);
+    // 进度类：清掉
+    for (const k of [FAIL_KEY, PACE_KEY, DRAFT_KEY, HISTORY_KEY, BEST_KEY]) {
+      expect(store.getItem(k), k).toBeNull();
+    }
+    // 偏好类：留着
+    expect(store.getItem(VOLUME_KEY)).toBe('0.5');
+    expect(store.getItem(MUSIC_KEY)).toBe('1');
+  });
+
+  it('constants 里声明的每个存储键都登记进了存档表（新增数据别忘登记）', () => {
+    const declared = Object.entries(C)
+      .filter(([name, v]) => name.endsWith('_KEY') && typeof v === 'string')
+      .map(([, v]) => v as string);
+    const registered = new Set<string>([...SAVE_KEYS, ...PREF_KEYS]);
+    const missing = declared.filter((k) => !registered.has(k));
+    expect(missing, '未登记的存储键：' + missing.join(', ')).toEqual([]);
   });
 });

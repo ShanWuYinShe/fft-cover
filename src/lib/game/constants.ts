@@ -52,6 +52,10 @@ export const DAILY_KEY = 'fft-pointers-daily-v1';
 export const HISTORY_KEY = 'fft-pointers-history-v1';
 /** 每关保留的历史记录条数上限 */
 export const HISTORY_MAX = 30;
+/** 谐波合成器的草稿（未发布的创作关）localStorage 键名 */
+export const DRAFT_KEY = 'fft-pointers-composer-draft-v1';
+/** 音量（三态 1 / 0.5 / 0）localStorage 键名 */
+export const VOLUME_KEY = 'fft-pointers-volume-v1';
 
 /** 五声音阶频率（C 宫调式，两个八度）：收集音效按收集序号递进 */
 export const PENTATONIC = [

@@ -4,15 +4,20 @@ import {
   BEST_KEY,
   BEST_SCORE_KEY,
   CLEAR_KEY,
-  PERFECT_KEY,
+  DAILY_KEY,
+  DRAFT_KEY,
   EXACT_KEY,
   EXPERT_KEY,
-  STREAK_KEY,
-  DAILY_KEY,
+  FAIL_KEY,
   FLAGS_KEY,
   HISTORY_KEY,
   LAST_LEVEL_KEY,
+  MUSIC_KEY,
+  PACE_KEY,
+  PERFECT_KEY,
   SOUND_KEY,
+  STREAK_KEY,
+  VOLUME_KEY,
 } from './constants';
 
 /**
@@ -23,7 +28,10 @@ import {
  */
 export const SAVE_PREFIX = 'FFTP1:';
 
-/** 参与存档的 localStorage 键（顺序稳定，便于 diff） */
+/**
+ * 进度类键：参与存档，也会被"清空进度"清掉。
+ * 新增持久化数据时务必同步登记，否则备份/恢复会丢、清空也清不干净。
+ */
 export const SAVE_KEYS = [
   BEST_KEY,
   BEST_SCORE_KEY,
@@ -36,14 +44,17 @@ export const SAVE_KEYS = [
   FLAGS_KEY,
   DAILY_KEY,
   ARMS_SAVE_KEY,
+  PACE_KEY,
   HISTORY_KEY,
   LAST_LEVEL_KEY,
-  SOUND_KEY,
+  FAIL_KEY,
+  DRAFT_KEY,
 ] as const;
 
-/** 音量的键在 audio.ts 里使用（避免循环依赖，这里硬编码同一字符串） */
-const VOLUME_KEY = 'fft-pointers-volume-v1';
-const ALL_KEYS = [...SAVE_KEYS, VOLUME_KEY];
+/** 偏好类键：参与存档，但"清空进度"时保留（音量/音效/音乐不该被清） */
+export const PREF_KEYS = [SOUND_KEY, MUSIC_KEY, VOLUME_KEY] as const;
+
+const ALL_KEYS = [...SAVE_KEYS, ...PREF_KEYS];
 
 function toBase64(s: string): string {
   const bytes = new TextEncoder().encode(s);
@@ -111,9 +122,9 @@ export function importSave(text: string, store: Storage = localStorage): ImportR
   return { ok: true, detail: '已恢复 ' + entries.length + ' 项记录' };
 }
 
-/** 清空全部游戏进度（存档、成就、星级等），保留音量等偏好 */
+/** 清空全部游戏进度（存档、成就、星级、卡关次数、草稿等），保留音量等偏好 */
 export function clearSave(store: Storage = localStorage): void {
-  for (const k of ALL_KEYS) {
+  for (const k of SAVE_KEYS) {
     try {
       store.removeItem(k);
     } catch {

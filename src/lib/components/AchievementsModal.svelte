@@ -285,7 +285,11 @@
     {/if}
     {#if tab === 'save'}
       <div class="save">
-        <p class="desc">进度保存在本机浏览器里。换设备或清理浏览器数据前，先导出备份。</p>
+        <p class="desc">
+          进度保存在本机浏览器里。换设备或清理浏览器数据前，先导出备份。<br />
+          备份含：星级 / 最佳分 / 最快全清 / 完美与精确认证 / 每日成绩与连胜 / 成就与标记 / 解法存档 /
+          节奏记录 / 卡关次数 / 合成器草稿 / 音量音效音乐偏好。
+        </p>
         <button type="button" class="mini" onclick={copySave}>📋 导出并复制存档</button>
         {#if saveText}
           <textarea class="io" readonly rows="3" value={saveText}></textarea>
