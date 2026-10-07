@@ -6,32 +6,47 @@
 
   let { onclose }: { onclose: () => void } = $props();
 
-  /** 恢复上次编辑的草稿（无草稿时给一个 1×=100 的起点） */
-  function loadDraft(): HarmonicCoeff[] {
+  /** 恢复上次编辑的草稿（无草稿时给一个 1×=100 的起点）。返回系数 + 每行的旋转方向 */
+  function loadDraft(): { coeffs: HarmonicCoeff[]; dirs: number[] } {
     const base = Array.from({ length: 10 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 }));
+    const dirs = Array.from({ length: 10 }, () => 1);
     try {
       const raw = JSON.parse(localStorage.getItem(DRAFT_KEY) ?? 'null');
       if (Array.isArray(raw)) {
         for (const c of raw) {
-          if (typeof c?.k === 'number' && c.k >= 1 && c.k <= 10) {
-            base[c.k - 1] = { k: c.k, mag: +c.mag || 0, phase: +c.phase || 0 };
+          if (typeof c?.k === 'number' && c.k !== 0 && Math.abs(c.k) <= 10) {
+            const i = Math.abs(c.k) - 1;
+            base[i] = { k: Math.abs(c.k), mag: +c.mag || 0, phase: +c.phase || 0 };
+            dirs[i] = c.k < 0 ? -1 : 1;
           }
         }
-        return base;
+        return { coeffs: base, dirs };
       }
     } catch {
       /* 草稿损坏则用默认 */
     }
     base[0].mag = 100;
-    return base;
+    return { coeffs: base, dirs };
   }
 
-  let coeffs = $state<HarmonicCoeff[]>(loadDraft());
+  const initial = loadDraft();
+  let coeffs = $state<HarmonicCoeff[]>(initial.coeffs);
+  let dirs = $state<number[]>(initial.dirs);
 
-  /** 保存草稿（弹层关闭/参数变化时调用） */
+  function toggleDir(i: number): void {
+    dirs[i] = -dirs[i];
+    saveDraft();
+  }
+
+  /** 带方向的行 → 有符号谐波（负 k = ⟲ 反转，与邀请码/引擎同一表示） */
+  function signedCoeffs(): HarmonicCoeff[] {
+    return coeffs.map((c, i) => ({ k: c.k * (dirs[i] ?? 1), mag: c.mag, phase: c.phase }));
+  }
+
+  /** 保存草稿（弹层关闭/参数变化时调用）。k 存有符号值——符号即旋转方向 */
   function saveDraft(): void {
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(coeffs));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(signedCoeffs()));
     } catch {
       /* 存储不可用则忽略 */
     }
@@ -78,11 +93,16 @@
   function importCurrentLevel(): void {
     const curve = engine.level?.curve;
     if (!curve) return;
-    const top = topHarmonics(curve, 10, 120);
+    const rows = topHarmonics(curve, 10, 120);
     coeffs = Array.from({ length: 10 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 }));
-    for (const h of top) {
-      if (h.k >= 1 && h.k <= 10 && h.mag > 0)
-        coeffs[h.k - 1] = { k: h.k, mag: h.mag, phase: h.phase };
+    dirs = Array.from({ length: 10 }, () => 1);
+    for (const h of rows) {
+      const i = Math.abs(h.k) - 1;
+      if (i >= 0 && i < 10 && h.mag > 0) {
+        // topHarmonics 的相位是弧度；滑杆/存档用角度
+        coeffs[i] = { k: Math.abs(h.k), mag: h.mag, phase: (h.phase * 180) / Math.PI };
+        dirs[i] = h.k < 0 ? -1 : 1;
+      }
     }
     saveDraft();
   }
@@ -91,6 +111,7 @@
     const p = PRESETS[name];
     if (!p) return;
     coeffs = Array.from({ length: 10 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 }));
+    dirs = Array.from({ length: 10 }, () => 1);
     for (const c of p) coeffs[c.k - 1] = { ...c };
     saveDraft();
   }
@@ -98,7 +119,7 @@
   let canvas: HTMLCanvasElement | undefined = $state();
 
   const activeCount = $derived(coeffs.filter((c) => c.mag > 0.5).length);
-  const code = $derived(encodeCoeffs(coeffs));
+  const code = $derived(encodeCoeffs(signedCoeffs()));
 
   $effect(() => {
     // 预览小画布（乘 DPR 保证高分屏清晰）
@@ -121,10 +142,12 @@
       const t = (i / N) * Math.PI * 2;
       let x = 0;
       let y = 0;
-      for (const c of coeffs) {
+      for (let i = 0; i < coeffs.length; i++) {
+        const c = coeffs[i];
         if (c.mag <= 0.5) continue;
-        x += c.mag * Math.cos(c.k * t + (c.phase * Math.PI) / 180);
-        y += c.mag * Math.sin(c.k * t + (c.phase * Math.PI) / 180);
+        const k = c.k * (dirs[i] ?? 1);
+        x += c.mag * Math.cos(k * t + (c.phase * Math.PI) / 180);
+        y += c.mag * Math.sin(k * t + (c.phase * Math.PI) / 180);
       }
       pts.push({ x, y });
     }
@@ -155,7 +178,7 @@
   function play(): void {
     if (activeCount === 0) return;
     engine.loadCustomLevel(
-      coeffs
+      signedCoeffs()
         .filter((c) => c.mag > 0.5)
         .map((c) => ({ k: c.k, mag: c.mag, phase: (c.phase * Math.PI) / 180 })),
       '创作关卡',
@@ -193,8 +216,20 @@
     </div>
     <canvas bind:this={canvas} width="150" height="150"></canvas>
     <div class="sliders">
-      {#each coeffs as c, i (c.k)}
+      {#each coeffs as c, i (i)}
         <div class="row" class:active={c.mag > 0.5}>
+          <button
+            type="button"
+            class="dir {(dirs[i] ?? 1) < 0 ? 'rev' : ''}"
+            class:rev={(dirs[i] ?? 1) < 0}
+            title="反转这根指针（⟲ 反转出花瓣/实曲线的关键）"
+            aria-label={(dirs[i] ?? 1) < 0
+              ? '当前 ⟲ 反转，点击改回 ⟲ 正转'
+              : '当前 ⟳ 正转，点击改为 ⟲ 反转'}
+            onclick={() => toggleDir(i)}
+          >
+            {(dirs[i] ?? 1) < 0 ? '⟲' : '⟳'}
+          </button>
           <span class="k">{CIRCLED[i] || i + 1} {c.k}×</span>
           <input
             type="range"
@@ -202,7 +237,7 @@
             max="150"
             step="2"
             value={c.mag}
-            oninput={(e) => setMag(c.k, +(e.currentTarget as HTMLInputElement).value)}
+            oninput={(e) => setMag(i + 1, +(e.currentTarget as HTMLInputElement).value)}
           />
           <input
             type="range"
@@ -210,7 +245,7 @@
             max="360"
             step="5"
             value={c.phase}
-            oninput={(e) => setPhase(c.k, +(e.currentTarget as HTMLInputElement).value)}
+            oninput={(e) => setPhase(i + 1, +(e.currentTarget as HTMLInputElement).value)}
           />
         </div>
       {/each}
@@ -321,13 +356,27 @@
     flex: 1;
     min-width: 0;
   }
+  /* 每行的 ⟳/⟲ 方向切换（与游戏指针的同款语言） */
+  .row .dir {
+    width: 26px;
+    min-height: 24px;
+    padding: 0;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line-2, rgba(130, 150, 210, 0.3));
+    background: none;
+    color: var(--muted);
+    font-size: var(--fs-sm);
+    line-height: 1;
+    cursor: pointer;
+  }
+  .row .dir.rev {
+    color: #c084fc; /* ⟲ 反转：与指针面板同款紫 */
+    border-color: rgba(192, 132, 252, 0.55);
+  }
   .btns {
     display: flex;
     gap: 8px;
     justify-content: center;
-  }
-  .btns button:disabled {
-    opacity: 0.4;
   }
 
   /* 触屏：预设 chip 的热区补够 */
