@@ -58,6 +58,19 @@ export const PREF_KEYS = [SOUND_KEY, MUSIC_KEY, VOLUME_KEY] as const;
 
 const ALL_KEYS = [...SAVE_KEYS, ...PREF_KEYS];
 
+/**
+ * 从 localStorage 安全读一个 JSON 值：键不存在、存储不可用、脏数据都回落 fallback。
+ * 各引擎字段的 load* 辅助都走这一条路径，避免同样的 try/parse 复制十几份。
+ */
+export function readJson<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw === null ? fallback : (JSON.parse(raw) as T);
+  } catch {
+    return fallback;
+  }
+}
+
 function toBase64(s: string): string {
   const bytes = new TextEncoder().encode(s);
   let bin = '';

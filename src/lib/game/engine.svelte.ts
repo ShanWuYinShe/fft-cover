@@ -51,6 +51,7 @@ import {
   weekRows,
   type StreakRecord,
 } from './daily';
+import { readJson } from './save';
 import { tipAt } from './math';
 import { decodeArms } from './share';
 import {
@@ -106,22 +107,17 @@ function armDefaults(): Arm[] {
   ];
 }
 
+// ---- 存档字段的读取：统一走 save.readJson，一条安全路径替代十几份 try/parse ----
+
 function loadBest(): Record<string, number> {
-  try {
-    return JSON.parse(localStorage.getItem(BEST_KEY) ?? '{}');
-  } catch {
-    return {};
-  }
+  return readJson(BEST_KEY, {});
 }
 
 function loadScores(): Record<string, number> {
-  try {
-    return JSON.parse(localStorage.getItem(BEST_SCORE_KEY) ?? '{}');
-  } catch {
-    return {};
-  }
+  return readJson(BEST_SCORE_KEY, {});
 }
 
+// 音效/音乐开关存的是哨兵 '0'（关）而非 JSON；环境无 localStorage 时默认开
 function loadSound(): boolean {
   try {
     return localStorage.getItem(SOUND_KEY) !== '0';
@@ -140,103 +136,56 @@ function loadMusic(): boolean {
 }
 
 function loadPerfect(): Record<string, true> {
-  try {
-    return JSON.parse(localStorage.getItem(PERFECT_KEY) ?? '{}');
-  } catch {
-    return {};
-  }
+  return readJson(PERFECT_KEY, {});
 }
 
 function loadStreak(): StreakRecord {
-  try {
-    const raw = JSON.parse(localStorage.getItem(STREAK_KEY) ?? 'null');
-    if (raw && typeof raw.streak === 'number' && typeof raw.last === 'string') return raw;
-  } catch {
-    /* 忽略 */
-  }
-  return { streak: 0, last: '' };
+  const raw = readJson<StreakRecord | null>(STREAK_KEY, null);
+  return raw && typeof raw.streak === 'number' && typeof raw.last === 'string'
+    ? raw
+    : { streak: 0, last: '' };
 }
 
 function loadExpert(): Record<string, true> {
-  try {
-    return JSON.parse(localStorage.getItem(EXPERT_KEY) ?? '{}');
-  } catch {
-    return {};
-  }
+  return readJson(EXPERT_KEY, {});
 }
 
 function loadExact(): Record<string, true> {
-  try {
-    return JSON.parse(localStorage.getItem(EXACT_KEY) ?? '{}');
-  } catch {
-    return {};
-  }
+  return readJson(EXACT_KEY, {});
 }
 
 function loadFails(): Record<string, number> {
-  try {
-    return JSON.parse(localStorage.getItem(FAIL_KEY) ?? '{}');
-  } catch {
-    return {};
-  }
+  return readJson(FAIL_KEY, {});
 }
 
 function loadClears(): Record<string, number> {
-  try {
-    return JSON.parse(localStorage.getItem(CLEAR_KEY) ?? '{}');
-  } catch {
-    return {};
-  }
+  return readJson(CLEAR_KEY, {});
 }
 
 function loadArmsSaves(): Record<string, Arm[]> {
-  try {
-    return JSON.parse(localStorage.getItem(ARMS_SAVE_KEY) ?? '{}');
-  } catch {
-    return {};
-  }
+  return readJson(ARMS_SAVE_KEY, {});
 }
 
 function loadDailyBest(): Record<string, number> {
-  try {
-    return JSON.parse(localStorage.getItem(DAILY_KEY) ?? '{}');
-  } catch {
-    return {};
-  }
+  return readJson(DAILY_KEY, {});
 }
 
 function loadHistory(): Record<string, HistoryEntry[]> {
-  try {
-    const raw = JSON.parse(localStorage.getItem(HISTORY_KEY) ?? '{}');
-    return raw && typeof raw === 'object' ? (raw as Record<string, HistoryEntry[]>) : {};
-  } catch {
-    return {};
-  }
+  const raw = readJson<Record<string, HistoryEntry[]> | null>(HISTORY_KEY, null);
+  return raw && typeof raw === 'object' ? raw : {};
 }
 
 /** 读取上届节奏存档（脏数据丢弃，见 pace.sanitizePace） */
 function loadPace(): Record<string, Pace> {
-  try {
-    return sanitizePace(JSON.parse(localStorage.getItem(PACE_KEY) ?? '{}'));
-  } catch {
-    return {};
-  }
+  return sanitizePace(readJson(PACE_KEY, {}));
 }
 
 function loadAchv(): Record<string, number> {
-  try {
-    return JSON.parse(localStorage.getItem(ACHV_KEY) ?? '{}');
-  } catch {
-    return {};
-  }
+  return readJson(ACHV_KEY, {});
 }
 
 function loadFlags(): Record<string, boolean> {
-  try {
-    return JSON.parse(localStorage.getItem(FLAGS_KEY) ?? '{}');
-  } catch {
-    return {};
-  }
+  return readJson(FLAGS_KEY, {});
 }
 
 /**

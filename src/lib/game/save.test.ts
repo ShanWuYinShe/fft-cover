@@ -11,7 +11,15 @@ import {
   PACE_KEY,
   VOLUME_KEY,
 } from './constants';
-import { clearSave, exportSave, importSave, PREF_KEYS, SAVE_KEYS, SAVE_PREFIX } from './save';
+import {
+  clearSave,
+  exportSave,
+  importSave,
+  readJson,
+  PREF_KEYS,
+  SAVE_KEYS,
+  SAVE_PREFIX,
+} from './save';
 
 /** 内存 Storage 实现，避免依赖 jsdom */
 function memStore(): Storage {
@@ -27,6 +35,36 @@ function memStore(): Storage {
     setItem: (k: string, v: string) => void map.set(k, v),
   } as Storage;
 }
+
+describe('readJson：引擎存档字段的统一安全读取', () => {
+  beforeEach(() => {
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: memStore(),
+      configurable: true,
+      writable: true,
+    });
+  });
+
+  it('正常 JSON 读取；键缺失回落 fallback', () => {
+    localStorage.setItem('k1', JSON.stringify({ a: 1 }));
+    expect(readJson('k1', {})).toEqual({ a: 1 });
+    expect(readJson('missing', { d: 7 })).toEqual({ d: 7 });
+  });
+
+  it('脏数据（坏 JSON）回落 fallback，不抛错', () => {
+    localStorage.setItem('bad', '{broken');
+    expect(readJson('bad', { safe: true })).toEqual({ safe: true });
+  });
+
+  it('存储不可用（localStorage 抛错）回落 fallback', () => {
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: undefined,
+      configurable: true,
+      writable: true,
+    });
+    expect(readJson('anything', 42)).toBe(42);
+  });
+});
 
 describe('存档导出/导入', () => {
   let store: Storage;
