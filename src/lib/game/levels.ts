@@ -373,7 +373,8 @@ export function levelFromCoeffs(coeffs: HarmonicCoeff[], name: string, id?: stri
     curve,
     spectrum: dftSpectrum(curve, 16).filter((s) => s.k !== 0),
     armLimit: Math.max(1, active.length),
-    random: true,
+    random: true, // "非战役关"：不参与总星数与章节印
+    custom: true, // 玩家创作：邀请码是系数串，分享链接走 #c=
   };
 }
 
@@ -475,7 +476,7 @@ export function makeDailyLevel(diff: RandomDifficulty = 'normal'): Level {
     hint:
       diff === 'hard'
         ? '⚠️ 今日困难挑战：含有超出 10× 的分量，无法完美拟合——全球玩家同关，比比谁更接近！'
-        : '今天同难度的玩家面对同一关卡（邀请码即日期+难度）。刷新纪录，比比谁的分高！',
+        : '今天同难度的玩家面对同一关卡（邀请码就是难度：easy / normal / hard，或简单 / 普通 / 困难）。刷新纪录，比比谁的分高！',
   };
 }
 

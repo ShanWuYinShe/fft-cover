@@ -211,7 +211,8 @@
     const levelId = engine.level?.id ?? '';
     let invite: string | null = null;
     if (levelId.startsWith('random-')) invite = levelId.replace('random-', '');
-    else if (levelId.startsWith('daily-')) invite = levelId.replace('daily-', '');
+    // 每日关的邀请码只带难度（日期由打开那天决定），写成"日期+难度"没人能用
+    else if (levelId.startsWith('daily-')) invite = levelId.split('-').pop() ?? '';
     else if (levelId.startsWith('custom-')) {
       // custom id 格式 k-mag-phaseDeg（_ 分隔）→ 转回 k:mag:phaseDeg（, 分隔）系数串
       invite = levelId.replace('custom-', '').replaceAll('_', ',').replaceAll('-', ':');

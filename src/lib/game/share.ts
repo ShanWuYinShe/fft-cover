@@ -98,6 +98,48 @@ export function buildArmsUrl(
   return u + '#' + (part ? part + '&' : '') + 'arms=' + code;
 }
 
+/** 邀请码输入的三种含义 */
+export type InviteInput =
+  | { kind: 'seed'; seed: number }
+  | { kind: 'daily'; diff: RandomDifficulty }
+  | { kind: 'custom'; code: string };
+
+const DIFF_ALIASES: Record<string, RandomDifficulty> = {
+  easy: 'easy',
+  normal: 'normal',
+  hard: 'hard',
+  简单: 'easy',
+  普通: 'normal',
+  困难: 'hard',
+};
+
+/**
+ * 解析"邀请码"输入框：
+ * - 系数串（含 `:`）→ 创作关
+ * - 难度词（easy/normal/hard 或 简单/普通/困难）→ 今日每日挑战
+ * - `YYYY-MM-DD-<难度>`（结算页历史上给出的写法）→ 也按今日每日挑战处理
+ * - 其余按随机关种子（正整数）
+ * 认不出返回 null。
+ */
+export function parseInvite(raw: string): InviteInput | null {
+  const s = raw.trim();
+  if (!s) return null;
+  if (s.includes(':')) return { kind: 'custom', code: s };
+  const lower = s.toLowerCase();
+  if (DIFF_ALIASES[lower]) return { kind: 'daily', diff: DIFF_ALIASES[lower] };
+  const legacy = /^\d{4}-\d{2}-\d{2}-([a-z]+)$/.exec(lower);
+  if (legacy && DIFF_ALIASES[legacy[1]]) return { kind: 'daily', diff: DIFF_ALIASES[legacy[1]] };
+  const n = Math.abs(Math.floor(Number(s)));
+  if (Number.isFinite(n) && n > 0) return { kind: 'seed', seed: n };
+  return null;
+}
+
+/** 创作关分享链接：好友打开即载入同一条曲线（系数串） */
+export function buildCustomUrl(base: string, code: string): string {
+  const u = base.split('#')[0];
+  return u + '#c=' + encodeURIComponent(code);
+}
+
 /** 从 URL hash 里取创作关系数串（无则返回 null） */
 export function readCustomFromHash(hash: string): string | null {
   const m = /(?:^#|&)c=([^&]+)/.exec(hash);

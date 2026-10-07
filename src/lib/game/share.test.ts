@@ -7,6 +7,7 @@ import {
   decodeArms,
   encodeArms,
   levelHashPart,
+  parseInvite,
   readArmsFromHash,
   readCustomFromHash,
   readDailyFromHash,
@@ -132,6 +133,19 @@ describe('解法分享链接要带上关卡（否则好友对不上题）', () =
     expect(
       back!.map((c) => [c.k, Math.round(c.mag), Math.round((c.phase * 180) / Math.PI)]),
     ).toEqual(coeffs.map((c) => [c.k, c.mag, c.phase]));
+  });
+
+  it('邀请码解析：系数串 / 难度词 / 日期难度 / 种子', () => {
+    expect(parseInvite('1:80:0,3:55:0')).toEqual({ kind: 'custom', code: '1:80:0,3:55:0' });
+    expect(parseInvite('hard')).toEqual({ kind: 'daily', diff: 'hard' });
+    expect(parseInvite('困难')).toEqual({ kind: 'daily', diff: 'hard' });
+    expect(parseInvite('2026-10-07-easy')).toEqual({ kind: 'daily', diff: 'easy' });
+    expect(parseInvite('777')).toEqual({ kind: 'seed', seed: 777 });
+    expect(parseInvite('-42')).toEqual({ kind: 'seed', seed: 42 });
+    expect(parseInvite('')).toBeNull();
+    expect(parseInvite('0')).toBeNull();
+    expect(parseInvite('乱写的')).toBeNull();
+    expect(parseInvite('2026-10-07-unknown')).toBeNull();
   });
 
   it('认不出的关卡 id 不带关卡段（宁可退化成纯解法码）', () => {

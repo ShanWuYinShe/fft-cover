@@ -80,4 +80,6 @@ export interface Level {
   /** 本关可用指针上限 */
   armLimit: number;
   random?: boolean;
+  /** 玩家用合成器创作的关卡（邀请码是系数串，分享走 #c=） */
+  custom?: boolean;
 }

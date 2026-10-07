@@ -1,6 +1,7 @@
 <script lang="ts">
   import { engine } from '../game/engine.svelte';
   import { decodeCoeffs, LEVEL_DEFS, todayKey } from '../game/levels';
+  import { buildCustomUrl, parseInvite } from '../game/share';
   import { chapterProgress, isLevelLocked } from '../game/campaign';
   import type { ChapterSealState } from '../game/goals';
   import { keyForChapter } from '../game/harmony';
@@ -39,7 +40,19 @@
     { id: 'normal', nm: '普通' },
     { id: 'hard', nm: '困难' },
   ] as const;
-  const seed = $derived(engine.level?.random ? engine.level.id.replace('random-', '') : '');
+  /** 创作关 / 每日关与随机关共用 random 标记，这里显式区分开 */
+  const isCustom = $derived(!!engine.level?.custom);
+  const isDaily = $derived(!!engine.level?.id.startsWith('daily-'));
+  const seed = $derived(
+    engine.level?.random && !isCustom && !isDaily ? engine.level.id.replace('random-', '') : '',
+  );
+  /** 创作关的邀请码：id 里的 k-mag-deg 还原成 k:mag:deg */
+  const customCode = $derived(
+    isCustom
+      ? (engine.level?.id ?? '').replace('custom-', '').replaceAll('_', ',').replaceAll('-', ':')
+      : '',
+  );
+  const dailyDiff = $derived(isDaily ? ((engine.level?.id ?? '').split('-').pop() ?? '') : '');
 
   /** 全关卡总星数 */
   const totalStars = $derived(
@@ -99,9 +112,12 @@
     };
   });
 
+  /** 本关邀请码：随机关是种子、创作关是系数串、每日关是难度 */
+  const inviteCode = $derived(seed || customCode || dailyDiff);
+
   async function copySeed(): Promise<void> {
     try {
-      await navigator.clipboard.writeText(seed);
+      await navigator.clipboard.writeText(inviteCode);
     } catch {
       /* 剪贴板不可用则忽略 */
     }
@@ -124,15 +140,31 @@
     }
   }
 
-  /** 分享随机关卡链接：好友打开即面对同一条曲线（带难度） */
+  /** 分享本关链接：随机关带邀请码+难度、创作关带系数串、每日关带难度 */
   async function shareLevel(): Promise<void> {
-    const n = Number(seed);
-    if (!Number.isFinite(n) || seed === '') return;
-    const url = buildRandomUrl(location.origin + location.pathname, n, engine.randomDiff);
-    const text = '我在《傅立叶指针》生成了一条随机曲线，来试试能不能全清？';
+    const page = location.origin + location.pathname;
+    let url = '';
+    let text = '';
+    let title = '傅立叶指针 · 关卡挑战';
+    if (isCustom) {
+      if (!customCode) return;
+      url = buildCustomUrl(page, customCode);
+      text = '我在《傅立叶指针》合成了一条曲线，来试试能不能全清？';
+      title = '傅立叶指针 · 创作关挑战';
+    } else if (isDaily) {
+      url = buildDailyUrl(page, engine.difficulty);
+      text = '今日《傅立叶指针》每日挑战，来比比谁收得多？';
+      title = '傅立叶指针 · 每日挑战';
+    } else {
+      const n = Number(seed);
+      if (!Number.isFinite(n) || seed === '') return;
+      url = buildRandomUrl(page, n, engine.randomDiff);
+      text = '我在《傅立叶指针》生成了一条随机曲线，来试试能不能全清？';
+      title = '傅立叶指针 · 随机关挑战';
+    }
     try {
       if (navigator.share) {
-        await navigator.share({ title: '傅立叶指针 · 随机关挑战', text, url });
+        await navigator.share({ title, text, url });
       } else {
         await navigator.clipboard.writeText(url);
         shareCopied = true;
@@ -144,18 +176,21 @@
   }
 
   function loadSeed(): void {
-    const raw = seedInput.trim();
-    if (raw === '' || raw === '0') return;
-    // 系数串（含 ':'）= 玩家创作的合成关卡
-    if (raw.includes(':')) {
-      const coeffs = decodeCoeffs(raw);
+    const parsed = parseInvite(seedInput);
+    if (!parsed) return;
+    seedInput = '';
+    if (parsed.kind === 'custom') {
+      const coeffs = decodeCoeffs(parsed.code);
       if (coeffs) engine.loadCustomLevel(coeffs, '创作关卡');
-      seedInput = '';
       return;
     }
-    const n = Math.abs(Math.floor(Number(raw)));
-    if (Number.isFinite(n)) engine.loadRandomSeed(n);
-    seedInput = '';
+    if (parsed.kind === 'daily') {
+      // 每日关由"日期 + 难度"决定，邀请码只带难度——打开的就是今天那一关
+      engine.setDifficulty(parsed.diff);
+      engine.loadDaily();
+      return;
+    }
+    engine.loadRandomSeed(parsed.seed);
   }
 </script>
 
@@ -371,25 +406,33 @@
     </div>
   </div>
 
-  <!-- 邀请码行只给随机关：每日关由日期决定，没有可输入的邀请码（它有自己的分享按钮） -->
-  {#if engine.level?.random && !engine.level.id.startsWith('daily-')}
-    <div class="seed-row">
-      <span>邀请码 <b>{seed}</b></span>
-      <button class="mini" title="复制邀请码——好友载入后生成同一关卡" onclick={copySeed}>
-        🔗 复制
-      </button>
-      <button class="mini" title="分享链接——好友打开直接进入这一关（含难度）" onclick={shareLevel}>
-        {shareCopied ? '✓ 已复制' : '📤 分享'}
-      </button>
-      <input
-        class="seed-input"
-        placeholder="输入邀请码"
-        bind:value={seedInput}
-        onkeydown={(e) => e.key === 'Enter' && loadSeed()}
-      />
-      <button class="mini" onclick={loadSeed}>载入</button>
-    </div>
-  {/if}
+  <!--
+    邀请码行常驻：输入框是"用别人的码进关"的唯一入口，原先只在随机关才渲染，
+    导致收到创作关系数串 / 每日难度码的玩家根本找不到地方粘贴。
+    「复制 / 分享」只对随机关有意义（每日关有自己的分享按钮），单独用条件包起来。
+  -->
+  <div class="seed-row">
+    {#if inviteCode}
+      <span>邀请码 <b>{inviteCode}</b></span>
+      {#if !isDaily}
+        <button class="mini" title="复制邀请码——好友载入后进入同一关" onclick={copySeed}>
+          🔗 复制
+        </button>
+        <button class="mini" title="分享链接——好友打开直接进入这一关" onclick={shareLevel}>
+          {shareCopied ? '✓ 已复制' : '📤 分享'}
+        </button>
+      {/if}
+    {:else}
+      <span class="seed-label">邀请码</span>
+    {/if}
+    <input
+      class="seed-input"
+      placeholder="邀请码 / 种子 / 难度"
+      bind:value={seedInput}
+      onkeydown={(e) => e.key === 'Enter' && loadSeed()}
+    />
+    <button class="mini" onclick={loadSeed}>载入</button>
+  </div>
 </section>
 
 <style>
@@ -844,6 +887,9 @@
     padding: 3px 9px;
     min-height: 26px;
     border-radius: var(--r-sm);
+  }
+  .seed-label {
+    color: var(--muted-2);
   }
   .seed-input {
     width: 108px;
