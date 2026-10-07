@@ -608,10 +608,6 @@ export class GameEngine {
     this.spectrumCompare = !this.spectrumCompare;
   }
 
-  /**
-   * 沙盒自动拟合演示：按目标频谱解出精确参数，
-   * 并在 2 秒内把指针从当前值平滑过渡过去（傅立叶逐项逼近可视化）。
-   */
   /** 朋友分享来的解法是否已载入（提示条展示用） */
   remoteChallenge = $state(false);
 
@@ -651,6 +647,10 @@ export class GameEngine {
     return sol.filter((a) => a.on).length;
   }
 
+  /**
+   * 沙盒自动拟合演示：按目标频谱解出精确参数，
+   * 并在 2 秒内把指针从当前值平滑过渡过去（傅立叶逐项逼近可视化）。
+   */
   startAutoSolve(): void {
     if (!this.sandbox || !this.level || this.autoSolve) return;
     this.autoFrom = this.arms.map((a) => ({ ...a }));
@@ -988,10 +988,10 @@ export class GameEngine {
     }
   }
 
-  /** 停止并结算星级（记录最佳；沙盒不计入记录） */
   /** 结算前的本关星数（判断"首次解锁下一关"用） */
   private starsBeforeRun = 0;
 
+  /** 停止并结算星级（记录最佳；沙盒不计入记录） */
   stopRun(): void {
     if (this.phase !== 'running' && this.phase !== 'paused') return;
     this.starsBeforeRun = this.level ? (this.bestStars[this.level.id] ?? 0) : 0;
