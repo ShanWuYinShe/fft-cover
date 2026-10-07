@@ -64,6 +64,9 @@
     }
   }
 
+  /** 作品名：玩家可给创作关起名，结算卡与续玩存档都用它 */
+  let levelName = $state('');
+
   function setFilterPref(v: boolean): void {
     showOnlyActive = v;
     try {
@@ -206,7 +209,7 @@
       coeffs
         .filter((c) => c.mag > 0.5)
         .map((c) => ({ k: c.k, mag: c.mag, phase: (c.phase * Math.PI) / 180 })),
-      '创作关卡',
+      levelName.trim() || '创作关卡',
     );
     try {
       localStorage.removeItem(DRAFT_KEY); // 已发布，清除草稿
@@ -280,6 +283,12 @@
         {/if}
       {/each}
     </div>
+    <input
+      class="name-input"
+      placeholder="给作品起个名字（可选，最多 12 字）"
+      maxlength="12"
+      bind:value={levelName}
+    />
     <canvas bind:this={canvas} width="150" height="150"></canvas>
     <p class="lead">
       启用谐波 {activeCount} 个 · 邀请码 <b>{code || '—'}</b>
@@ -344,6 +353,17 @@
     font-size: var(--fs-xs);
     color: var(--muted-2);
   }
+  .name-input {
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 7px 9px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line-2);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text);
+    font-size: var(--fs-sm);
+  }
+
   .pchip {
     font-size: var(--fs-xs);
     padding: 3px 10px;
@@ -417,6 +437,17 @@
 
   /* 触屏：预设 chip 的热区补够 */
   @media (pointer: coarse), (max-width: 640px) {
+    .name-input {
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 7px 9px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--line-2);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+      font-size: var(--fs-sm);
+    }
+
     .pchip {
       min-height: 38px;
     }
