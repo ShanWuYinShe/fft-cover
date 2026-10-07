@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { CHAPTERS, LEVEL_DEFS, makeDailyLevel, makeRandomLevel } from './levels';
+import {
+  CHAPTERS,
+  LEVEL_DEFS,
+  makeDailyLevel,
+  makeRandomLevel,
+  decodeCoeffs,
+  encodeCoeffs,
+} from './levels';
 import { dayKey, todayKey, yesterdayKey } from './dates';
 import { HISTORY_KEY, LAST_CUSTOM_KEY, LAST_LEVEL_KEY } from './constants';
 import { GameEngine } from './engine.svelte';
@@ -343,6 +350,26 @@ describe('GameEngine', () => {
     engine.checkAchievements();
     // 成就表里存的是解锁时间戳，只要"有记录"即可
     expect(engine.achievements['all-three']).toBeTruthy();
+  });
+
+  it('创作关支持负频率（⟲）：频谱带符号、邀请码往返保留', () => {
+    engine.loadCustomLevel(
+      [
+        { k: 1, mag: 100, phase: 0 },
+        { k: -2, mag: 60, phase: Math.PI / 2 },
+      ],
+      '反转创作',
+    );
+    const spec = engine.level!.spectrum;
+    expect(spec.find((s) => s.k === -2)!.mag).toBeGreaterThan(0);
+    expect(spec.find((s) => s.k === 1)!.mag).toBeGreaterThan(0);
+    // 邀请码往返：负号保留（合成器 ⟲ 切换的存档表示）
+    const code = encodeCoeffs([
+      { k: 1, mag: 100, phase: 0 },
+      { k: -2, mag: 60, phase: Math.PI / 2 },
+    ]);
+    expect(code).toContain('-2:');
+    expect(decodeCoeffs(code)!.find((c) => c.k === -2)).toBeTruthy();
   });
 
   it('巧变三器：第六章三关全三星才解锁', () => {
