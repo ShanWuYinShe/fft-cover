@@ -122,9 +122,10 @@ describe('makeDailyLevel', () => {
     expect(name).not.toContain('2026');
   });
 
-  it('内置关卡总数为 18（六章）', () => {
-    expect(LEVEL_DEFS).toHaveLength(18);
+  it('内置关卡总数为 21（七章）', () => {
+    expect(LEVEL_DEFS).toHaveLength(21);
     expect(LEVEL_DEFS.filter((d) => d.chapter === 'craft')).toHaveLength(3);
+    expect(LEVEL_DEFS.filter((d) => d.chapter === 'dacheng')).toHaveLength(3);
   });
 
   it('九瓣花的显著频谱都在 10× 以内（可完美拟合）', () => {

@@ -79,6 +79,14 @@ export const CHAPTERS: ChapterDef[] = [
       '本章要点：<b>配比与相位</b>。频率清单不变，只改振幅比例与相位，形状就换了模样——风车靠相位拧出四叶、双旋靠配比定两瓣胖瘦、云纹靠正反成对叠出云头。',
     seal: '巧',
   },
+  {
+    id: 'dacheng',
+    name: '第七章 · 大成',
+    tagline: '集大成也——正负、高低、纵横，诸法合璧',
+    intro:
+      '本章要点：<b>诸法合璧</b>。三项式半径 r = a + b·cos2θ + c·cos4θ + … 展开成 x/y 后会差出成套的频率——灯笼五根、团花七根、古钟七根，把前六章的功夫合起来用。',
+    seal: '成',
+  },
 ];
 
 /**
@@ -310,6 +318,44 @@ export const LEVEL_DEFS: LevelDef[] = [
     fn: (t) => {
       const r = 1 + 0.2 * C(4 * t) + 0.12 * C(7 * t);
       return { x: 200 * r * C(t), y: 200 * r * S(t) };
+    },
+  },
+
+  // ---- 第七章 · 大成：三项式半径 r = a + b·cos2kθ，展开后成套的频率一起上 ----
+  {
+    id: 'lantern',
+    chapter: 'dacheng',
+    name: '灯笼',
+    hint: 'r = 150 + 40cos2θ + 25cos4θ——半径的三项展开乘上 e^{iθ}，展开成 <b>1×、3×、5×</b> 三对频率，<b>5 根</b>正好收齐；纵向略拉，就是一盏圆灯笼。',
+    n: 24,
+    armLimit: 5,
+    fn: (t) => {
+      const r = 150 + 40 * C(2 * t) + 25 * C(4 * t);
+      return { x: r * C(t), y: 1.08 * r * S(t) };
+    },
+  },
+  {
+    id: 'medallion',
+    chapter: 'dacheng',
+    name: '团花',
+    hint: '三重团花 r = 110 + 55cos3θ + 35cos6θ——3× 与 6× 展开后补出 <b>2×、4×、5×、7×</b>，<b>7 根</b>齐发才能描出这朵对称团花纹。',
+    n: 27,
+    armLimit: 7,
+    fn: (t) => {
+      const r = 110 + 55 * C(3 * t) + 35 * C(6 * t);
+      return { x: r * C(t), y: r * S(t) };
+    },
+  },
+  {
+    id: 'bell',
+    chapter: 'dacheng',
+    name: '古钟',
+    hint: 'r = 130 + 45cos2θ + 20cos4θ + 12cos6θ 再纵向拉伸——展开到 <b>7×</b> 共七根，钟口的塌腰与纵向的钟身，就是这个轮廓。',
+    n: 30,
+    armLimit: 7,
+    fn: (t) => {
+      const r = 130 + 45 * C(2 * t) + 20 * C(4 * t) + 12 * C(6 * t);
+      return { x: r * C(t), y: 1.22 * r * S(t) };
     },
   },
 ];

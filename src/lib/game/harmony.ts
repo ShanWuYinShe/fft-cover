@@ -46,6 +46,9 @@ export const CHAPTER_KEYS: Record<string, MusicalKey> = {
   china: { id: 'china', name: 'G 徵五声', root: 196.0, steps: [0, 2, 5, 7, 9] },
   // 五声调式只有五种，第六章起换宫音再取一调：F 商（降 E 宫五声的第二级为主音）
   craft: { id: 'craft', name: 'F 商五声', root: 174.61, steps: [0, 2, 5, 7, 10] },
+  // 第七章 · 大成：升 F 宫（185 Hz）——比 F 商高小二度、比 G 徵低全音，
+  // 且 scaleNotes 第 4 号音（622 Hz）仍在 700 Hz 上限内，抵达音三声俱全
+  dacheng: { id: 'dacheng', name: '升 F 宫五声', root: 185.0, steps: [0, 2, 4, 7, 9] },
 };
 
 /** 默认调性：无章节的关卡（随机关 / 每日 / 创作关）回落到这里 */

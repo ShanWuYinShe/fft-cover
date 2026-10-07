@@ -418,6 +418,21 @@ describe('GameEngine', () => {
     }
   });
 
+  it('第七章三关都能用精确解在指针上限内全清（同上的硬约束）', () => {
+    for (const id of ['lantern', 'medallion', 'bell']) {
+      const def = LEVEL_DEFS.find((d) => d.id === id)!;
+      engine.loadLevel(def);
+      const lv = engine.level!;
+      const sol = solveFromSpectrum(lv.spectrum, lv.armLimit);
+      expect(sol.filter((a) => a.on).length, id).toBeLessThanOrEqual(lv.armLimit);
+      expect(fitScore(lv.spectrum, sol), id).toBeGreaterThanOrEqual(0.99);
+      sol.forEach((a, i) => engine.setArm(i, { ...a }));
+      engine.startRun();
+      for (let i = 0; i < 2000 && engine.phase === 'running'; i++) engine.advance(1 / 60);
+      expect(engine.collectedCount, id).toBe(engine.total);
+    }
+  });
+
   it('一键套用精确解：参数与分解一致，可达成精确解认证', () => {
     // 先把指针调乱（单指针、错的频率与相位）
     engine.setArm(0, { on: true, r: 30, freq: 3, phase: 1 });

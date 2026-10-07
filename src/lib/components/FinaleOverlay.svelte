@@ -61,7 +61,7 @@
       {#if mastered}
         全部 {LEVEL_DEFS.length} 关三星——任意周期曲线，你都能反解出它的傅立叶系数
       {:else}
-        {CHAPTERS.length} 个章节、{LEVEL_DEFS.length} 关全部走完——从一根指针画圆，到八根指针拼出心形与阴阳鱼
+        {CHAPTERS.length} 个章节、{LEVEL_DEFS.length} 关全部走完——从一根指针画圆，到七根齐发的团花与古钟
       {/if}
     </p>
 

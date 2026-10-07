@@ -33,7 +33,7 @@ describe('starsFor', () => {
       bestScores: { circle: 42000 },
       bestClears: {},
       flags: {},
-      levelCount: 18,
+      levelCount: 21,
       perfect: { circle: true },
       exact: {},
       expert: {},
@@ -48,12 +48,12 @@ describe('starsFor', () => {
       need: 30000,
       unit: 'points',
     });
-    // 全部三星：内置关里三星的只有 circle → 1 / 18（随机关不计）
-    expect(achievementProgress('all-three', ctx)).toEqual({ have: 1, need: 18, unit: 'levels' });
-    // 半程大师：内置总星数 5 / 27（18 × 1.5 向上取整）
-    expect(achievementProgress('half-stars', ctx)).toEqual({ have: 5, need: 27, unit: 'stars' });
-    // 完美：只有 circle → 1 / 18
-    expect(achievementProgress('all-perfect', ctx)).toEqual({ have: 1, need: 18, unit: 'levels' });
+    // 全部三星：内置关里三星的只有 circle → 1 / 21（随机关不计）
+    expect(achievementProgress('all-three', ctx)).toEqual({ have: 1, need: 21, unit: 'levels' });
+    // 半程大师：内置总星数 5 / 32（21 × 1.5 向上取整）
+    expect(achievementProgress('half-stars', ctx)).toEqual({ have: 5, need: 32, unit: 'stars' });
+    // 完美：只有 circle → 1 / 21
+    expect(achievementProgress('all-perfect', ctx)).toEqual({ have: 1, need: 21, unit: 'levels' });
     // 章节印：已有 1 方 → 1 / 6
     expect(achievementProgress('all-chapter-seals', ctx)).toEqual({
       have: 1,
