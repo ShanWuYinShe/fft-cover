@@ -31,6 +31,7 @@
     uiToggle,
   } from './lib/game/audio';
   import { haptic } from './lib/game/haptics';
+  import { isTypingTarget } from './lib/game/keys';
   import { musicIntensity } from './lib/game/harmony';
   import { musicLevelArrival, setMusicSuspended, startMusic, updateMusic } from './lib/game/music';
 
@@ -259,8 +260,8 @@
   }
 
   function onKeydown(e: KeyboardEvent): void {
-    const tag = (e.target as HTMLElement).tagName;
-    if (tag === 'INPUT' || tag === 'SELECT') return;
+    // 输入框 / 多行文本 / 下拉框 / contenteditable 里都在打字，全局键让路
+    if (isTypingTarget(e.target)) return;
     if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
       e.preventDefault();
       if (e.shiftKey) engine.redoArms();
