@@ -217,6 +217,13 @@
   }
 </script>
 
+<!-- Esc 关闭：与其他弹层（成就/设置/通关）同一交互 -->
+<svelte:window
+  onkeydown={(e) => {
+    if (e.key === 'Escape') onclose();
+  }}
+/>
+
 <div class="modal">
   <div class="box">
     <h2>🎨 谐波合成器</h2>
