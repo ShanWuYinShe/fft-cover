@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: fft-cover (Vite+Svelte)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      # version 省略时 action-setup 自动读 package.json 的 packageManager(单一真源)
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: install
+        run: pnpm install --frozen-lockfile
+      - name: svelte-check
+        run: pnpm run check
+      - name: unit tests
+        run: pnpm run test
+      - name: production build
+        run: pnpm run build
+
+      # CI 只验证「能构建」不够,再验证「能跑」:起 preview 服务,
+      # 断言首页返回 200 且响应是 HTML,然后关闭。
+      # host 必须显式 127.0.0.1(runner 上 localhost 只落 ::1)、
+      # 必须用 pnpm exec 直调 vite(pnpm run 的 -- 会原样转发导致 flag 失效),
+      # 两个坑均为 travel 仓 CI 实测结论。
+      - name: preview smoke (起 preview 并断言 200 + HTML)
+        run: |
+          pnpm exec vite preview --host 127.0.0.1 &
+          pid=$!
+          code=0
+          for _ in $(seq 1 30); do
+            code=$(curl -s -o /tmp/preview.html -w '%{http_code}' http://127.0.0.1:4173/ || true)
+            if [ "$code" = "200" ]; then break; fi
+            sleep 1
+          done
+          kill "$pid" 2>/dev/null || true
+          test "$code" = "200" || { echo "preview 未返回 200(实际: $code)"; exit 1; }
+          grep -qi '<html' /tmp/preview.html || { echo 'preview 响应非 HTML'; exit 1; }
+          echo "preview smoke 通过 (HTTP 200 + HTML)"
+
+      # 构建产物留档(线上异常时可直接下载对照),保留期短,只为排查用
+      - name: upload dist artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
