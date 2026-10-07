@@ -155,6 +155,36 @@ describe('GameEngine', () => {
     expect(engine.lastMissedSet.size).toBe(0);
   });
 
+  it('成就口径：随机关的成绩不算内置关进度（引擎侧接线也要对）', () => {
+    // 只打随机关，每局三星
+    const stars: Record<string, number> = {};
+    for (let i = 0; i < LEVEL_DEFS.length; i++) stars['random-' + i] = 3;
+    engine.bestStars = stars;
+    engine.checkAchievements();
+    expect(engine.achievements['all-three']).toBeUndefined();
+    expect(engine.achievements['half-stars']).toBeUndefined();
+    // 内置关打满 → 照常解锁
+    const full: Record<string, number> = {};
+    for (const d of LEVEL_DEFS) full[d.id] = 3;
+    engine.bestStars = full;
+    engine.checkAchievements();
+    // 成就表里存的是解锁时间戳，只要"有记录"即可
+    expect(engine.achievements['all-three']).toBeTruthy();
+  });
+
+  it('巧变三器：第六章三关全三星才解锁', () => {
+    const craft = LEVEL_DEFS.filter((d) => d.chapter === 'craft');
+    expect(craft).toHaveLength(3);
+    // 只拿两关三星 → 不解锁
+    engine.bestStars = { [craft[0].id]: 3, [craft[1].id]: 3, [craft[2].id]: 2 };
+    engine.checkAchievements();
+    expect(engine.achievements['craft-master']).toBeUndefined();
+    // 三关全三星 → 解锁
+    engine.bestStars = { [craft[0].id]: 3, [craft[1].id]: 3, [craft[2].id]: 3 };
+    engine.checkAchievements();
+    expect(engine.achievements['craft-master']).toBeTruthy();
+  });
+
   it('setFlag 可开可关，且不影响其它标记', () => {
     engine.setFlag('reduceMotion', true);
     expect(engine.flags.reduceMotion).toBe(true);

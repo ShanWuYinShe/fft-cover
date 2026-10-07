@@ -158,8 +158,15 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     desc: '全部章节印集齐',
     group: 'collect',
   },
+  {
+    id: 'craft-master',
+    name: '巧变三器',
+    desc: '第六章「巧变」三关全部三星',
+    group: 'mastery',
+  },
   { id: 'daily-player', name: '每日一练', desc: '每日挑战中拿到得分', group: 'challenge' },
   { id: 'streak-7', name: '日拱一卒', desc: '每日挑战连续完成 7 天', group: 'challenge' },
+  { id: 'streak-30', name: '月月有余', desc: '每日挑战连续完成 30 天', group: 'challenge' },
   { id: 'inviter', name: '牵线搭桥', desc: '使用过随机关邀请码', group: 'challenge' },
   { id: 'speed-demon', name: '光速谐波', desc: '任意一关 8 秒内全清', group: 'challenge' },
 ];
@@ -182,6 +189,13 @@ export interface AchievementContext {
   chapterSeals?: Record<string, boolean>;
   /** 章节总数（判断"全部章节印"用） */
   chapterCount?: number;
+  /**
+   * 内置关卡 id 集合。"全部内置关卡…"这类成就只看这些关卡——
+   * 随机关/每日关/创作关的成绩也存在同一张表里，不过滤就会被它们冒充进度。
+   */
+  builtInIds?: string[];
+  /** 各章总星数（key = 章节 id），用于"某一章全三星"类成就 */
+  chapterStars?: Record<string, number>;
 }
 
 /** 按上下文返回全部已达成成就的 id */
@@ -193,7 +207,15 @@ export function evalAchievements(ctx: AchievementContext): string[] {
   if (stars.some((s) => s >= 1)) unlocked.push('first-star');
   if (any(ctx.bestClears, () => true)) unlocked.push('first-clear');
   if (any(ctx.bestScores, (s) => s >= 30000)) unlocked.push('combo-king');
-  if (stars.length >= ctx.levelCount && stars.reduce((a, b) => a + b, 0) >= ctx.levelCount * 3) {
+  // "全部内置关卡…"类成就：只看内置关（随机关/每日关的成绩同表存放，必须过滤）
+  const builtIn = new Set(ctx.builtInIds ?? []);
+  const isBuiltIn = (id: string): boolean => builtIn.size === 0 || builtIn.has(id);
+  const builtInStars = Object.entries(ctx.bestStars)
+    .filter(([id]) => isBuiltIn(id))
+    .map(([, v]) => v);
+  const builtInCount = builtIn.size || ctx.levelCount;
+  const builtInStarSum = builtInStars.reduce((a, b) => a + b, 0);
+  if (builtInStars.length >= builtInCount && builtInStarSum >= builtInCount * 3) {
     unlocked.push('all-three');
   }
   if (any(ctx.bestClears, (t) => t <= 8)) unlocked.push('speed-demon');
@@ -202,19 +224,21 @@ export function evalAchievements(ctx: AchievementContext): string[] {
   if (ctx.flags.dragUsed) unlocked.push('drag-master');
   if (ctx.flags.dailyWon) unlocked.push('daily-player');
   if (ctx.flags.streak7) unlocked.push('streak-7');
+  if (ctx.flags.streak30) unlocked.push('streak-30');
   if (ctx.flags.autoTry) unlocked.push('auto-try');
   if (ctx.flags.composerPlayed) unlocked.push('composer');
-  const starSum = stars.reduce((a, b) => a + b, 0);
-  if (starSum >= ctx.levelCount * 1.5) unlocked.push('half-stars');
+  if (builtInStarSum >= builtInCount * 1.5) unlocked.push('half-stars');
+  // 巧变三器：第六章三关全部三星（3 关 × 3 星 = 9）
+  if ((ctx.chapterStars?.craft ?? 0) >= 9) unlocked.push('craft-master');
   // 完美主义：全部内置关卡都达成 100% 全清（顶端追求）
-  const perfectCount = Object.keys(ctx.perfect ?? {}).length;
-  if (perfectCount >= ctx.levelCount) unlocked.push('all-perfect');
+  const perfectCount = Object.keys(ctx.perfect ?? {}).filter(isBuiltIn).length;
+  if (perfectCount >= builtInCount) unlocked.push('all-perfect');
   // 精确分解：全部内置关卡都达成精确解认证
-  const exactCount = Object.keys(ctx.exact ?? {}).length;
-  if (exactCount >= ctx.levelCount) unlocked.push('exact-award');
+  const exactCount = Object.keys(ctx.exact ?? {}).filter(isBuiltIn).length;
+  if (exactCount >= builtInCount) unlocked.push('exact-award');
   // 盲眼大师：全部内置关卡在专家模式下全清
-  const expertCount = Object.keys(ctx.expert ?? {}).length;
-  if (expertCount >= ctx.levelCount) unlocked.push('expert-all');
+  const expertCount = Object.keys(ctx.expert ?? {}).filter(isBuiltIn).length;
+  if (expertCount >= builtInCount) unlocked.push('expert-all');
   // 章节印：集齐任意一章 / 全部章节
   const sealedCount = Object.values(ctx.chapterSeals ?? {}).filter(Boolean).length;
   if (sealedCount >= 1) unlocked.push('chapter-seal');

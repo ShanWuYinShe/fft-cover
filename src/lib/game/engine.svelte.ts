@@ -809,8 +809,17 @@ export class GameEngine {
   private achievementContext(): AchievementContext {
     const chapterSeals: Record<string, boolean> = {};
     for (const ch of CHAPTERS) chapterSeals[ch.id] = this.chapterSealsOf(ch.id).sealed;
+    const chapterStars: Record<string, number> = {};
+    for (const ch of CHAPTERS) {
+      chapterStars[ch.id] = LEVEL_DEFS.filter((d) => (d.chapter ?? 'basics') === ch.id).reduce(
+        (s, d) => s + (this.bestStars[d.id] ?? 0),
+        0,
+      );
+    }
     return {
       bestStars: this.bestStars,
+      builtInIds: LEVEL_DEFS.map((d) => d.id),
+      chapterStars,
       bestScores: this.bestScores,
       bestClears: this.bestClears,
       flags: this.flags,
@@ -1142,6 +1151,7 @@ export class GameEngine {
     this.dailyStreak = { streak, last: today };
     this.streakJustBumped = streak;
     if (streak >= 7) this.markFlag('streak7');
+    if (streak >= 30) this.markFlag('streak30');
     try {
       localStorage.setItem(STREAK_KEY, JSON.stringify(this.dailyStreak));
     } catch {
