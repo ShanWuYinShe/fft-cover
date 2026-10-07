@@ -63,18 +63,5 @@
   location.reload();
   return JSON.stringify(out, null, 1);
 })();
-
 // ---- 第二段：刷新后运行 scripts/e2e-smoke-part2.js ----
 // （续玩 custom-…、成就 22 项、图鉴 7 章；脚本已单独沉淀，无需复制注释代码）
-// (async () => {
-//   const out = {};
-//   const M = await import('/src/lib/game/engine.svelte.ts');
-//   out.resumed = M.engine.level?.id ?? null;   // 应为 custom-…
-//   const b = Array.from(document.querySelectorAll('button')).find(x => x.title === '成就');
-//   b.click(); await new Promise(r => setTimeout(r, 500));
-//   out.achvCount = document.querySelectorAll('.item').length;  // 22
-//   Array.from(document.querySelectorAll('.tabs button')).find(x => x.textContent.trim() === '图鉴').click();
-//   await new Promise(r => setTimeout(r, 400));
-//   out.dexChapters = document.querySelectorAll('.dex-ch').length;  // 7
-//   return JSON.stringify(out, null, 1);
-// })()
