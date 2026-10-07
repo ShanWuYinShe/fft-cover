@@ -21,8 +21,6 @@ import {
   DAILY_KEY,
   HISTORY_KEY,
   HISTORY_MAX,
-  LAST_CUSTOM_KEY,
-  LAST_LEVEL_KEY,
   DIFF_KEY,
 } from './constants';
 import {
@@ -50,7 +48,16 @@ import {
   weekRows,
   type StreakRecord,
 } from './daily';
-import { parseCustomSave, readJson, writeJson } from './save';
+import {
+  clearLastCustom,
+  parseCustomSave,
+  readLastCustomRaw,
+  readLastLevelId,
+  readJson,
+  writeLastCustom,
+  writeLastLevelId,
+  writeJson,
+} from './save';
 import { tipAt } from './math';
 import { decodeArms } from './share';
 import { scoreForPoint, fitScore, solveFromSpectrum, starsFor } from './scoring';
@@ -375,11 +382,7 @@ export class GameEngine {
     if (id.startsWith('custom-')) return;
     // 离开创作关：把它的存档清掉，避免很久之后"继续游戏"跳回一条不相关的创作关
     this.forgetCustomLevel();
-    try {
-      localStorage.setItem(LAST_LEVEL_KEY, id);
-    } catch {
-      /* 存储不可用则忽略 */
-    }
+    writeLastLevelId(id);
   }
 
   /**
@@ -388,12 +391,7 @@ export class GameEngine {
    * 返回是否恢复成功（失败则调用方回落到第一关）。
    */
   private restoreLastLevel(): boolean {
-    let id = '';
-    try {
-      id = localStorage.getItem(LAST_LEVEL_KEY) ?? '';
-    } catch {
-      return false;
-    }
+    const id = readLastLevelId();
     if (!id) return false;
     const def = LEVEL_DEFS.find((d) => d.id === id);
     if (def) {
@@ -1114,31 +1112,19 @@ export class GameEngine {
     name: string,
     coeffs: { k: number; mag: number; phase: number }[],
   ): void {
-    try {
-      writeJson(LAST_CUSTOM_KEY, { id, name, coeffs });
-      localStorage.setItem(LAST_LEVEL_KEY, id);
-    } catch {
-      /* 存储不可用则忽略 */
-    }
+    writeLastCustom(id, name, coeffs);
+    writeLastLevelId(id);
   }
 
   private forgetCustomLevel(): void {
-    try {
-      localStorage.removeItem(LAST_CUSTOM_KEY);
-    } catch {
-      /* 忽略 */
-    }
+    clearLastCustom();
   }
 
   /** 读回最近创作关；结构不对或与期望 id 不符返回 null */
   private readCustomLevel(
     id: string,
   ): { name: string; coeffs: { k: number; mag: number; phase: number }[] } | null {
-    try {
-      return parseCustomSave(localStorage.getItem(LAST_CUSTOM_KEY), id);
-    } catch {
-      return null;
-    }
+    return parseCustomSave(readLastCustomRaw(), id);
   }
   /** 进入今日每日挑战（seed 由日期+难度决定，人人同关） */
   loadDaily(): void {
