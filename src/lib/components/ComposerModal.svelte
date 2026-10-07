@@ -6,47 +6,45 @@
 
   let { onclose }: { onclose: () => void } = $props();
 
-  /** 恢复上次编辑的草稿（无草稿时给一个 1×=100 的起点）。返回系数 + 每行的旋转方向 */
-  function loadDraft(): { coeffs: HarmonicCoeff[]; dirs: number[] } {
-    const base = Array.from({ length: 10 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 }));
-    const dirs = Array.from({ length: 10 }, () => 1);
+  /**
+   * 20 行槽位：0~9 = ⟳ 正转（k = +1..+10），10~19 = ⟲ 反转（k = −1..−10）。
+   * 行的 k 由槽位决定、不可改——⟳/⟲ 成对可同时启用，才能创作出"实曲线"。
+   */
+  function emptyRows(): HarmonicCoeff[] {
+    return Array.from({ length: 20 }, (_, i) => ({
+      k: i < 10 ? i + 1 : -(i - 9),
+      mag: 0,
+      phase: 0,
+    }));
+  }
+
+  /** 恢复上次编辑的草稿（无草稿时给一个 1×=100 的起点） */
+  function loadDraft(): HarmonicCoeff[] {
+    const rows = emptyRows();
     try {
       const raw = JSON.parse(localStorage.getItem(DRAFT_KEY) ?? 'null');
       if (Array.isArray(raw)) {
         for (const c of raw) {
           if (typeof c?.k === 'number' && c.k !== 0 && Math.abs(c.k) <= 10) {
-            const i = Math.abs(c.k) - 1;
-            base[i] = { k: Math.abs(c.k), mag: +c.mag || 0, phase: +c.phase || 0 };
-            dirs[i] = c.k < 0 ? -1 : 1;
+            const i = c.k > 0 ? c.k - 1 : 9 - c.k; // +k → 槽 k−1；−k → 槽 9+(|k|−1)
+            if (i >= 0 && i < 20) rows[i] = { k: c.k, mag: +c.mag || 0, phase: +c.phase || 0 };
           }
         }
-        return { coeffs: base, dirs };
+        return rows;
       }
     } catch {
       /* 草稿损坏则用默认 */
     }
-    base[0].mag = 100;
-    return { coeffs: base, dirs };
+    rows[0].mag = 100;
+    return rows;
   }
 
-  const initial = loadDraft();
-  let coeffs = $state<HarmonicCoeff[]>(initial.coeffs);
-  let dirs = $state<number[]>(initial.dirs);
-
-  function toggleDir(i: number): void {
-    dirs[i] = -dirs[i];
-    saveDraft();
-  }
-
-  /** 带方向的行 → 有符号谐波（负 k = ⟲ 反转，与邀请码/引擎同一表示） */
-  function signedCoeffs(): HarmonicCoeff[] {
-    return coeffs.map((c, i) => ({ k: c.k * (dirs[i] ?? 1), mag: c.mag, phase: c.phase }));
-  }
+  let coeffs = $state<HarmonicCoeff[]>(loadDraft());
 
   /** 保存草稿（弹层关闭/参数变化时调用）。k 存有符号值——符号即旋转方向 */
   function saveDraft(): void {
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(signedCoeffs()));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(coeffs));
     } catch {
       /* 存储不可用则忽略 */
     }
@@ -93,33 +91,29 @@
   function importCurrentLevel(): void {
     const curve = engine.level?.curve;
     if (!curve) return;
-    const rows = topHarmonics(curve, 10, 120);
-    coeffs = Array.from({ length: 10 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 }));
-    dirs = Array.from({ length: 10 }, () => 1);
-    for (const h of rows) {
-      const i = Math.abs(h.k) - 1;
-      if (i >= 0 && i < 10 && h.mag > 0) {
-        // topHarmonics 的相位是弧度；滑杆/存档用角度
-        coeffs[i] = { k: Math.abs(h.k), mag: h.mag, phase: (h.phase * 180) / Math.PI };
-        dirs[i] = h.k < 0 ? -1 : 1;
-      }
-    }
+    // 20 槽正好容纳 ±k 成对分量；相位从弧度转成角度（滑杆/存档口径）
+    coeffs = topHarmonics(curve, 20, 120).map((h) => ({
+      ...h,
+      phase: (h.phase * 180) / Math.PI,
+    }));
     saveDraft();
   }
 
   function applyPreset(name: string): void {
     const p = PRESETS[name];
     if (!p) return;
-    coeffs = Array.from({ length: 10 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 }));
-    dirs = Array.from({ length: 10 }, () => 1);
-    for (const c of p) coeffs[c.k - 1] = { ...c };
+    coeffs = emptyRows();
+    for (const c of p) {
+      const i = c.k > 0 ? c.k - 1 : 9 - c.k;
+      if (i >= 0 && i < 20) coeffs[i] = { ...c };
+    }
     saveDraft();
   }
 
   let canvas: HTMLCanvasElement | undefined = $state();
 
   const activeCount = $derived(coeffs.filter((c) => c.mag > 0.5).length);
-  const code = $derived(encodeCoeffs(signedCoeffs()));
+  const code = $derived(encodeCoeffs(coeffs));
 
   $effect(() => {
     // 预览小画布（乘 DPR 保证高分屏清晰）
@@ -145,9 +139,8 @@
       for (let i = 0; i < coeffs.length; i++) {
         const c = coeffs[i];
         if (c.mag <= 0.5) continue;
-        const k = c.k * (dirs[i] ?? 1);
-        x += c.mag * Math.cos(k * t + (c.phase * Math.PI) / 180);
-        y += c.mag * Math.sin(k * t + (c.phase * Math.PI) / 180);
+        x += c.mag * Math.cos(c.k * t + (c.phase * Math.PI) / 180);
+        y += c.mag * Math.sin(c.k * t + (c.phase * Math.PI) / 180);
       }
       pts.push({ x, y });
     }
@@ -178,7 +171,7 @@
   function play(): void {
     if (activeCount === 0) return;
     engine.loadCustomLevel(
-      signedCoeffs()
+      coeffs
         .filter((c) => c.mag > 0.5)
         .map((c) => ({ k: c.k, mag: c.mag, phase: (c.phase * Math.PI) / 180 })),
       '创作关卡',
@@ -196,12 +189,6 @@
   <div class="box">
     <h2>🎨 谐波合成器</h2>
     <p class="lead">调节各频率的幅值与相位，合成你的专属曲线。生成后好友可用邀请码载入挑战。</p>
-    <button
-      type="button"
-      class="pchip import"
-      title="把当前关卡的傅立叶分解填进滑杆（逆向）"
-      onclick={importCurrentLevel}>⤓ 逆向当前关</button
-    >
     <div class="presets">
       <span class="plabel">预设</span>
       {#each Object.keys(PRESETS) as name (name)}
@@ -214,23 +201,14 @@
         onclick={importCurrentLevel}>⤓ 取当前关主频</button
       >
     </div>
-    <canvas bind:this={canvas} width="150" height="150"></canvas>
     <div class="sliders">
       {#each coeffs as c, i (i)}
+        {#if i === 10}
+          <div class="neg-label">⟲ 反转（负频率）</div>
+        {/if}
         <div class="row" class:active={c.mag > 0.5}>
-          <button
-            type="button"
-            class="dir {(dirs[i] ?? 1) < 0 ? 'rev' : ''}"
-            class:rev={(dirs[i] ?? 1) < 0}
-            title="反转这根指针（⟲ 反转出花瓣/实曲线的关键）"
-            aria-label={(dirs[i] ?? 1) < 0
-              ? '当前 ⟲ 反转，点击改回 ⟲ 正转'
-              : '当前 ⟳ 正转，点击改为 ⟲ 反转'}
-            onclick={() => toggleDir(i)}
-          >
-            {(dirs[i] ?? 1) < 0 ? '⟲' : '⟳'}
-          </button>
-          <span class="k">{CIRCLED[i] || i + 1} {c.k}×</span>
+          <span class="side" class:rev={c.k < 0}>{c.k < 0 ? '⟲' : '⟳'}</span>
+          <span class="k">{CIRCLED[Math.abs(c.k) - 1] || Math.abs(c.k)} {Math.abs(c.k)}×</span>
           <input
             type="range"
             min="0"
@@ -250,6 +228,7 @@
         </div>
       {/each}
     </div>
+    <canvas bind:this={canvas} width="150" height="150"></canvas>
     <p class="lead">启用谐波 {activeCount} 个 · 邀请码 <b>{code || '—'}</b></p>
     <div class="btns">
       <button class="primary" disabled={activeCount === 0} onclick={play}>🎮 生成并游玩</button>
@@ -356,22 +335,9 @@
     flex: 1;
     min-width: 0;
   }
-  /* 每行的 ⟳/⟲ 方向切换（与游戏指针的同款语言） */
-  .row .dir {
-    width: 26px;
-    min-height: 24px;
-    padding: 0;
-    border-radius: var(--r-sm);
-    border: 1px solid var(--line-2, rgba(130, 150, 210, 0.3));
-    background: none;
-    color: var(--muted);
-    font-size: var(--fs-sm);
-    line-height: 1;
-    cursor: pointer;
-  }
-  .row .dir.rev {
-    color: #c084fc; /* ⟲ 反转：与指针面板同款紫 */
-    border-color: rgba(192, 132, 252, 0.55);
+  /* 反转行的 ⟲ 徽标（负频率：与指针面板同款紫） */
+  .row .side.rev {
+    color: #c084fc;
   }
   .btns {
     display: flex;
