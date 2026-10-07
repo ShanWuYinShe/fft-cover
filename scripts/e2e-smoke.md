@@ -18,6 +18,6 @@ agent-browser --session <名> eval "$(cat scripts/e2e-smoke.js)"
 agent-browser --session <名> eval "$(cat scripts/e2e-smoke-part2.js)"
 ````
 
-期望：`resumed` 以 `custom-` 开头；`achvCount=22`；`dexChapters=7`；`composerRows=20`；`negLabel=true`；`nameInput=true`；`filterChipOff=true`；`errs` 为空。
+期望：`resumed` 以 `custom-` 开头；`reopenBtn=true`（结算卡重开）；`resultBack=true`；`achvCount=22`；`dexChapters=7`；`composerRows=20`；`negLabel=true`；`nameInput=true`；`filterChipOff=true`；`errs` 为空。
 
 扩展注意：模拟滑杆/输入框交互时，派发事件必须带 `{ bubbles: true }`（Svelte 5 把 `input` 事件委托到应用根节点，不冒泡的派发不会命中组件的 `oninput`）。
