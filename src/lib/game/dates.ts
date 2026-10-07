@@ -51,3 +51,12 @@ export function weekKey(d = new Date()): string {
   const week = Math.ceil(((t.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
   return t.getUTCFullYear() + '-W' + String(week).padStart(2, '0');
 }
+
+/**
+ * 本 ISO 周还剩几天（含今天，1~7）：周一为一周之始。
+ * 每周挑战的"还剩 N 天"提示用它——与 weekKey 同一周期定义。
+ */
+export function daysLeftInWeek(d = new Date()): number {
+  const day = d.getDay() || 7; // 周日=7
+  return 7 - day + 1;
+}

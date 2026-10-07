@@ -1,7 +1,7 @@
 <script lang="ts">
   import { engine } from '../game/engine.svelte';
   import { decodeCoeffs, LEVEL_DEFS } from '../game/levels';
-  import { todayKey } from '../game/dates';
+  import { daysLeftInWeek, todayKey } from '../game/dates';
   import { buildCustomUrl, parseInvite } from '../game/share';
   import { chapterProgress, isLevelLocked } from '../game/campaign';
   import type { ChapterSealState } from '../game/goals';
@@ -368,7 +368,7 @@
       >
         <span class="md-left">🗓 每周挑战</span>
         <span class="md-right"
-          >{engine.weeklyBest > 0 ? engine.weeklyBest + ' 分' : '本周慢慢磨'}</span
+          >{engine.weeklyBest > 0 ? engine.weeklyBest + ' 分 · ' : ''}还剩 {daysLeftInWeek()} 天</span
         >
       </button>
     </div>

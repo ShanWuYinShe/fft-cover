@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dayKey, lastNDays, todayKey, weekKey, yesterdayKey } from './dates';
+import { dayKey, daysLeftInWeek, lastNDays, todayKey, weekKey, yesterdayKey } from './dates';
 
 describe('dayKey', () => {
   it('本地时区格式 YYYY-MM-DD，个位月/日补零', () => {
@@ -39,5 +39,13 @@ describe('weekKey', () => {
     expect(weekKey(new Date('2026-10-11T12:00:00'))).not.toBe(
       weekKey(new Date('2026-10-12T12:00:00')),
     );
+  });
+});
+
+describe('daysLeftInWeek', () => {
+  it('周一还剩 7 天、周日还剩 1 天（含今天）', () => {
+    expect(daysLeftInWeek(new Date('2026-10-05T12:00:00'))).toBe(7); // 周一
+    expect(daysLeftInWeek(new Date('2026-10-08T12:00:00'))).toBe(4); // 周四
+    expect(daysLeftInWeek(new Date('2026-10-11T12:00:00'))).toBe(1); // 周日
   });
 });
