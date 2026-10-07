@@ -28,5 +28,16 @@
     (x) => x.textContent.replace(/\s+/g, '') === '关闭',
   );
   if (close) close.click();
+  // 合成器回归锚：20 行槽位 + 负频分隔条（20 槽改造）
+  await new Promise((r) => setTimeout(r, 300));
+  const composerBtn = document.querySelector('button[title="用谐波合成器创作自己的关卡"]');
+  composerBtn.click();
+  await new Promise((r) => setTimeout(r, 600));
+  out.composerRows = document.querySelectorAll('.sliders .row').length; // 20
+  out.negLabel = !!document.querySelector('.neg-label');
+  const closeC = Array.from(document.querySelectorAll('.modal button')).find(
+    (x) => x.textContent.replace(/\s+/g, '') === '关闭',
+  );
+  if (closeC) closeC.click();
   return JSON.stringify(out, null, 1);
 })();
