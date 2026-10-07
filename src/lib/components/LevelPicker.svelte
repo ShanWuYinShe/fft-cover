@@ -45,6 +45,7 @@
     { id: 'normal', nm: '普通' },
     { id: 'hard', nm: '困难' },
   ] as const;
+  /** 创作关 / 每日关与随机关共用 random 标记，这里显式区分开 */
   const isCustom = $derived(!!engine.level?.custom);
   const isDaily = $derived(!!engine.level?.id.startsWith('daily-'));
   const seed = $derived(
