@@ -426,15 +426,23 @@ export class GameEngine {
 
   /** 按邀请码（seed）重建随机关卡：同码必同关卡。难度不影响已有关卡复现 */
   loadRandomSeed(seed: number, diff: RandomDifficulty = 'normal'): void {
-    this.cancelAutoSolve();
-    this.sandbox = false;
     this.randomDiff = diff;
-    this.level = makeRandomLevel(seed, diff);
-    this.trimArmsToLimit();
-    this.resetRun();
+    this.enterLevel(makeRandomLevel(seed, diff));
     this.markFlag('inviteLoaded');
     // 记忆里带上难度：续玩要复现同一条曲线（关卡 id 本身不含难度）
     this.rememberLevel(randomSpec(seed, diff));
+  }
+
+  /**
+   * 进入一关的公共路径：停自动求解、退出沙盒、换关卡并复位对局。
+   * 每日/每周/随机关的载入都走这里，只保留各自的差异部分。
+   */
+  private enterLevel(level: Level): void {
+    this.cancelAutoSolve();
+    this.sandbox = false;
+    this.level = level;
+    this.trimArmsToLimit();
+    this.resetRun();
   }
 
   /** 关卡切换后按上限裁剪已启用指针（保留序号靠前者） */
@@ -1128,22 +1136,15 @@ export class GameEngine {
   }
   /** 进入今日每日挑战（seed 由日期+难度决定，人人同关） */
   loadDaily(): void {
-    this.cancelAutoSolve();
-    this.sandbox = false;
-    this.level = makeDailyLevel(this.difficulty);
-    this.trimArmsToLimit();
-    this.resetRun();
-    this.rememberLevel(this.level.id);
+    const lv = makeDailyLevel(this.difficulty);
+    this.enterLevel(lv);
+    this.rememberLevel(lv.id);
   }
 
   /** 进入本周挑战（固定困难档，seed 由 ISO 周键决定，人人同关） */
   loadWeekly(): void {
-    this.cancelAutoSolve();
-    this.sandbox = false;
     const lv = makeWeeklyLevel('hard');
-    this.level = lv;
-    this.trimArmsToLimit();
-    this.resetRun();
+    this.enterLevel(lv);
     this.rememberLevel(lv.id);
   }
 
