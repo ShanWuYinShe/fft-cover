@@ -12,3 +12,11 @@ pnpm dev -- --port 5199
 agent-browser --session <名> eval "$(cat scripts/e2e-smoke.js)"
 # 4) 刷新后运行第二段（续玩 + UI 抽查，见文件尾）
 ```
+
+第二段（刷新后）：
+
+```bash
+agent-browser --session <名> eval "$(cat scripts/e2e-smoke-part2.js)"
+```
+期望：`resumed` 以 `custom-` 开头；`achvCount=22`；`dexChapters=7`；`errs` 为空。
+

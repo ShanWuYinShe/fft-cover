@@ -64,7 +64,8 @@
   return JSON.stringify(out, null, 1);
 })();
 
-// ---- 第二段（刷新后手动跑）：续玩 + UI 抽查 ----
+// ---- 第二段：刷新后运行 scripts/e2e-smoke-part2.js ----
+// （续玩 custom-…、成就 22 项、图鉴 7 章；脚本已单独沉淀，无需复制注释代码）
 // (async () => {
 //   const out = {};
 //   const M = await import('/src/lib/game/engine.svelte.ts');
