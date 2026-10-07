@@ -212,6 +212,10 @@ function playSwell(
     out = p;
   }
   for (const [mult, pg] of partials) {
+    // 上限要卡在**实际发声音高**上，而不只是基频：
+    // 编钟泛音有 ×2 与 ×2.76，700 Hz 的基频会推出 1932 Hz 的刺耳音。
+    // 超限的泛音直接跳过（低音仍保留钟的质感，高音不会扎耳朵）。
+    if (freq * mult > NOTE_MAX_HZ) continue;
     const osc = ac.createOscillator();
     osc.type = 'sine';
     osc.frequency.value = freq * mult;
