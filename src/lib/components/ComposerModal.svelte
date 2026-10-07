@@ -194,7 +194,8 @@
   }
   .box {
     width: min(94vw, 440px);
-    max-height: 90vh;
+    /* 用 dvh：vh 在移动端包含地址栏，会算高导致底部按钮被推出屏幕 */
+    max-height: calc(100dvh - 24px);
     overflow-y: auto;
     background: #10152a;
     border: 1px solid var(--line);

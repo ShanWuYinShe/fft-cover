@@ -72,7 +72,8 @@
 
   .card {
     width: min(94vw, 420px);
-    max-height: 90vh;
+    /* dvh 而非 vh：移动端 vh 含地址栏 */
+    max-height: calc(100dvh - 24px);
     overflow-y: auto;
     display: flex;
     flex-direction: column;

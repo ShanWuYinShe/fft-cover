@@ -128,6 +128,9 @@
   }
   .box {
     width: min(92vw, 380px);
+    /* 矮屏（手机横屏 ~390px 高）里弹层必须能滚 */
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
     background: #10152a;
     border: 1px solid var(--line);
     border-radius: 14px;

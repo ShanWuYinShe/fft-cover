@@ -204,6 +204,13 @@
             <span class="cal-stat">累计 <i>{engine.dailyDaysTotal}</i> 天</span>
             <span class="cal-stat">当前连续 <i>{engine.dailyStreak.streak}</i> 天</span>
             <span class="cal-stat">最长 <i>{engine.longestDailyStreak}</i> 天</span>
+            {#if engine.dailyStreak.streak >= 30}
+              <span class="cal-stat goal done">🏅 月月有余已达成</span>
+            {:else}
+              <span class="cal-stat goal"
+                >距「月月有余」还差 <i>{30 - engine.dailyStreak.streak}</i> 天</span
+              >
+            {/if}
           </div>
           <div class="cal-grid">
             {#each ['一', '二', '三', '四', '五', '六', '日'] as w (w)}
@@ -349,6 +356,9 @@
   }
   .box {
     width: min(92vw, 380px);
+    /* 矮屏（手机横屏 ~390px 高）里弹层必须能滚：否则顶部标签栏与底部按钮都够不着 */
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
     background: #10152a;
     border: 1px solid var(--line);
     border-radius: 14px;
@@ -621,6 +631,19 @@
     font-style: normal;
     color: var(--gold);
     font-variant-numeric: tabular-nums;
+  }
+  .cal-stat.goal {
+    margin-left: auto;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(251, 191, 36, 0.28);
+    background: rgba(251, 191, 36, 0.08);
+    color: var(--muted);
+  }
+  .cal-stat.goal.done {
+    border-color: rgba(47, 158, 127, 0.5);
+    background: rgba(47, 158, 127, 0.12);
+    color: #7fe3c4;
   }
   .cal-grid {
     display: grid;

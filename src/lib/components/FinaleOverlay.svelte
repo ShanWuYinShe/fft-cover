@@ -156,7 +156,8 @@
     position: relative;
     overflow: hidden;
     width: min(94vw, 430px);
-    max-height: 92vh;
+    /* dvh 而非 vh：移动端 vh 含地址栏，会算高导致底部按钮被推出屏幕 */
+    max-height: calc(100dvh - 24px);
     overflow-y: auto;
     padding: 26px 24px 22px;
     display: flex;
