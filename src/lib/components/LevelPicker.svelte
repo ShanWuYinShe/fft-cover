@@ -36,12 +36,15 @@
   let dailyShared = $state(false);
   /** 最近 7 天全部完成（本周全勤） */
   const weekFull = $derived(engine.dailyWeek.every((d) => d.done));
+  /** 连胜处于风险：有连胜但今天还没打——过了今天就会断 */
+  const streakAtRisk = $derived(
+    engine.dailyStreak.streak > 0 && !engine.dailyWeek.some((d) => d.today && d.done),
+  );
   const DIFFS = [
     { id: 'easy', nm: '简单' },
     { id: 'normal', nm: '普通' },
     { id: 'hard', nm: '困难' },
   ] as const;
-  /** 创作关 / 每日关与随机关共用 random 标记，这里显式区分开 */
   const isCustom = $derived(!!engine.level?.custom);
   const isDaily = $derived(!!engine.level?.id.startsWith('daily-'));
   const seed = $derived(
@@ -388,69 +391,71 @@
           {#if d.done}<b>✓</b>{/if}
         </span>
       {/each}
-      <span class="dweek-cap" class:full={weekFull}>
+      <span class="dweek-cap" class:full={weekFull} class:atrisk={streakAtRisk}>
         {#if weekFull}
           🎉 本周全勤
+        {:else if streakAtRisk}
+          ⚠️ 今天不打，连胜就断
         {:else if engine.dailyStreak.streak > 0}
           连续 {engine.dailyStreak.streak} 天
         {:else}
           每天一练
         {/if}
       </span>
-    </div>
-    <div class="gen-row">
-      <span class="gen-label">随机生成</span>
-      <div class="diff-chips">
-        {#each DIFFS as d (d.id)}
-          <button
-            type="button"
-            class="diff-chip"
-            class:active={engine.difficulty === d.id}
-            onclick={() => engine.setDifficulty(d.id)}
-          >
-            {d.nm}
-          </button>
-        {/each}
+      <div class="gen-row">
+        <span class="gen-label">随机生成</span>
+        <div class="diff-chips">
+          {#each DIFFS as d (d.id)}
+            <button
+              type="button"
+              class="diff-chip"
+              class:active={engine.difficulty === d.id}
+              onclick={() => engine.setDifficulty(d.id)}
+            >
+              {d.nm}
+            </button>
+          {/each}
+        </div>
+        <button class="gen-btn" title="按当前难度生成随机关卡" onclick={() => engine.loadRandom()}>
+          🎲 生成
+        </button>
+        <button
+          class="gen-btn"
+          title="用谐波合成器创作自己的关卡"
+          onclick={() => (showComposer = true)}
+        >
+          🎨 创作
+        </button>
       </div>
-      <button class="gen-btn" title="按当前难度生成随机关卡" onclick={() => engine.loadRandom()}>
-        🎲 生成
-      </button>
-      <button
-        class="gen-btn"
-        title="用谐波合成器创作自己的关卡"
-        onclick={() => (showComposer = true)}
-      >
-        🎨 创作
-      </button>
     </div>
-  </div>
 
-  <!--
+    <!--
     邀请码行常驻：输入框是"用别人的码进关"的唯一入口，原先只在随机关才渲染，
     导致收到创作关系数串 / 每日难度码的玩家根本找不到地方粘贴。
     「复制 / 分享」只对随机关有意义（每日关有自己的分享按钮），单独用条件包起来。
   -->
-  <div class="seed-row">
-    {#if inviteCode}
-      <span>邀请码 <b>{inviteCode}</b></span>
-      {#if !isDaily}
-        <button class="mini" title="复制邀请码——好友载入后进入同一关" onclick={copySeed}>
-          🔗 复制
-        </button>
-        <button class="mini" title="分享链接——好友打开直接进入这一关" onclick={shareLevel}>
-          {shareCopied ? '✓ 已复制' : '📤 分享'}
-        </button>
+    <div class="seed-row">
+      {#if inviteCode}
+        <span>邀请码 <b>{inviteCode}</b></span>
+        {#if !isDaily}
+          <button class="mini" title="复制邀请码——好友载入后进入同一关" onclick={copySeed}>
+            🔗 复制
+          </button>
+          <button class="mini" title="分享链接——好友打开直接进入这一关" onclick={shareLevel}>
+            {shareCopied ? '✓ 已复制' : '📤 分享'}
+          </button>
+        {/if}
+      {:else}
+        <span class="seed-label">邀请码</span>
       {/if}
-    {:else}
-      <span class="seed-label">邀请码</span>
-    {/if}
-    <input
-      class="seed-input"
-      placeholder="邀请码 / 种子 / 难度"
-      bind:value={seedInput}
-      onkeydown={(e) => e.key === 'Enter' && loadSeed()}
-    />
-    <button class="mini" onclick={loadSeed}>载入</button>
+      <input
+        class="seed-input"
+        placeholder="邀请码 / 种子 / 难度"
+        bind:value={seedInput}
+        onkeydown={(e) => e.key === 'Enter' && loadSeed()}
+      />
+      <button class="mini" onclick={loadSeed}>载入</button>
+    </div>
   </div>
 </section>
 
@@ -837,6 +842,9 @@
   .dweek-cap.full {
     color: var(--gold);
     font-weight: 600;
+  }
+  .dweek-cap.atrisk {
+    color: var(--gold);
   }
   .gen-row {
     display: flex;
