@@ -100,11 +100,15 @@
               class:lit={lv.stars > 0}
               class:full={lv.stars === 3}
               style="animation-delay: {0.15 + lv.idx * 0.055}s"
+              role="img"
+              aria-label={lv.name + '：' + lv.stars + ' 星'}
             >
               <svg viewBox="0 0 640 640" aria-hidden="true">
                 <polyline points={shapePoints(lv.id)} />
               </svg>
               <span class="wall-st">{'★'.repeat(lv.stars)}{'☆'.repeat(3 - lv.stars)}</span>
+              <!-- 悬停/聚焦才显示关卡名：静态堆 18 个名字会挤成一团 -->
+              <span class="wall-tip" aria-hidden="true">{lv.name}</span>
             </div>
           {/each}
           {#if ch.sealed}
@@ -330,10 +334,12 @@
     gap: 6px;
   }
   .wall-item {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1px;
+    cursor: default;
     /* 逐关点亮：错峰淡入（opacity 放在子元素上，避免与"未点亮"状态打架） */
     animation: wall-in 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) backwards;
   }
@@ -388,6 +394,32 @@
     color: var(--gold);
     line-height: 1;
   }
+  /* 悬停/键盘聚焦时冒出关卡名（否则 18 个名字会把墙挤成一团） */
+  .wall-tip {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 3px);
+    transform: translateX(-50%) translateY(2px);
+    padding: 1px 6px;
+    border-radius: 5px;
+    border: 1px solid rgba(130, 150, 210, 0.35);
+    background: #171d33;
+    color: var(--text);
+    font-size: 10px;
+    line-height: 16px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.15s,
+      transform 0.15s;
+    z-index: 3;
+  }
+  .wall-item:hover .wall-tip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
   .wall-seal {
     position: absolute;
     right: 0;
