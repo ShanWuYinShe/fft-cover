@@ -117,15 +117,42 @@ export function dftSpectrum(curve: Vec[], kMax = 10): SpectrumEntry[] {
   return out;
 }
 
-/** 指针 k 在时刻 tt 的绝对角度（弧度）。freq 可为负 = 反转。 */
 export function armAngle(a: Arm, tt: number): number {
   return ((Math.PI * 2 * a.freq) / T0) * tt + a.phase;
 }
 
 /**
- * 指针链：自画布中心起，第 k 根指针的起点是第 k-1 根的末端（首尾相连）。
- * 只统计启用的指针。返回关节序列，长度 = 启用数 + 1。
+ * 从曲线频谱里提取合成器可用的前 count 个谐波（合成器"逆向导入"用）。
+/**
+ * 从曲线频谱里取幅值最大的前 count 个正频谐波（合成器"逆向导入"用）。
+ * 注意：合成器的每一行是单侧旋转向量 mag·e^{i(kt+φ)}，**无法表示实值曲线**
+ * 的共轭对称谱（那需要 ±k 成对）——导入的是"主频率指纹"，作为再创作起点，
+ * 画布预览即所得。整体缩放到峰值 ≈ targetMax，与预设量级一致。
  */
+export function topHarmonics(
+  curve: Vec[],
+  count = 10,
+  targetMax = 120,
+): { k: number; mag: number; phase: number }[] {
+  const spectrum = dftSpectrum(curve, 10)
+    .filter((s) => s.k >= 1 && s.k <= 10)
+    .sort((a, b) => b.mag - a.mag)
+    .slice(0, count);
+  const max = spectrum.reduce((m, s) => Math.max(m, s.mag), 0);
+  const scale = max > 0 ? targetMax / max : 0;
+  return (
+    spectrum
+      .map((s) => ({
+        k: s.k,
+        mag: Math.round(s.mag * scale),
+        phase: s.phase,
+      }))
+      // 数值残差（DFT 的 ~1e-14 噪声）四舍五入后为 0，直接丢弃
+      .filter((h) => h.mag > 0)
+  );
+}
+
+/** 指针链：自画布中心起，第 k 根指针的起点是第 k-1 根的末端（首尾相连）。 * 只统计启用的指针。返回关节序列，长度 = 启用数 + 1。 */
 export function chainAt(arms: Arm[], tt: number): Vec[] {
   const joints: Vec[] = [{ x: SIZE / 2, y: SIZE / 2 }];
   let x = SIZE / 2;

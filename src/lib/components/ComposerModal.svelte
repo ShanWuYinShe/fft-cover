@@ -2,6 +2,7 @@
   import { engine } from '../game/engine.svelte';
   import { encodeCoeffs, type HarmonicCoeff } from '../game/levels';
   import { CIRCLED, DRAFT_KEY } from '../game/constants';
+  import { topHarmonics } from '../game/math';
 
   let { onclose }: { onclose: () => void } = $props();
 
@@ -69,6 +70,22 @@
       { k: 3, mag: 26, phase: 90 },
     ],
   };
+
+  /**
+   * 逆向导入当前关卡：把它的傅立叶分解填进滑杆——
+   * "看，心形就是这些系数"，改一改就是自己的创作。
+   */
+  function importCurrentLevel(): void {
+    const curve = engine.level?.curve;
+    if (!curve) return;
+    const top = topHarmonics(curve, 10, 120);
+    coeffs = Array.from({ length: 10 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 }));
+    for (const h of top) {
+      if (h.k >= 1 && h.k <= 10 && h.mag > 0)
+        coeffs[h.k - 1] = { k: h.k, mag: h.mag, phase: h.phase };
+    }
+    saveDraft();
+  }
 
   function applyPreset(name: string): void {
     const p = PRESETS[name];
@@ -156,11 +173,23 @@
   <div class="box">
     <h2>🎨 谐波合成器</h2>
     <p class="lead">调节各频率的幅值与相位，合成你的专属曲线。生成后好友可用邀请码载入挑战。</p>
+    <button
+      type="button"
+      class="pchip import"
+      title="把当前关卡的傅立叶分解填进滑杆（逆向）"
+      onclick={importCurrentLevel}>⤓ 逆向当前关</button
+    >
     <div class="presets">
       <span class="plabel">预设</span>
       {#each Object.keys(PRESETS) as name (name)}
         <button type="button" class="pchip" onclick={() => applyPreset(name)}>{name}</button>
       {/each}
+      <button
+        type="button"
+        class="pchip import"
+        title="取当前关卡的主频率填进滑杆——合成器是单侧旋转曲线，画布即所得"
+        onclick={importCurrentLevel}>⤓ 取当前关主频</button
+      >
     </div>
     <canvas bind:this={canvas} width="150" height="150"></canvas>
     <div class="sliders">
@@ -250,6 +279,14 @@
     color: var(--cyan);
     border-color: rgba(79, 209, 197, 0.5);
     box-shadow: none;
+  }
+  /* 逆向导入当前关：与预设同款外框，但用青色系区分"这是分析不是预设" */
+  .pchip.import {
+    border-color: rgba(79, 209, 197, 0.55);
+    color: var(--cyan, #4fd1c5);
+  }
+  .pchip.import:hover:not(:disabled) {
+    border-color: rgba(79, 209, 197, 0.9);
   }
   canvas {
     width: 150px;
