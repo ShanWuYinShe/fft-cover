@@ -339,6 +339,14 @@
   .row .side.rev {
     color: #c084fc;
   }
+  /* ⟲ 反转（负频率）分隔条：把 20 行分成正/反两组 */
+  .neg-label {
+    margin: 4px 0 2px;
+    font-size: var(--fs-xs);
+    color: #c084fc;
+    text-align: center;
+    letter-spacing: 1px;
+  }
   .btns {
     display: flex;
     gap: 8px;
