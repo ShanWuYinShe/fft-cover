@@ -223,7 +223,10 @@
         type="button"
         class="pchip"
         class:rev={showOnlyActive}
-        title="只显示已启用（幅值 > 0）的行"
+        disabled={activeCount === 0}
+        title={activeCount === 0
+          ? '还没有启用的谐波，先拉高某行的幅值'
+          : '只显示已启用（幅值 > 0）的行'}
         aria-pressed={showOnlyActive}
         onclick={() => setFilterPref(!showOnlyActive)}>⦿ 已启用</button
       >
