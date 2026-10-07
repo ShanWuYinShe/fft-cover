@@ -371,6 +371,21 @@ describe('GameEngine', () => {
     expect(engine.achievements['dacheng-master']).toBeTruthy();
   });
 
+  it('nextLevelDef：内置关顺序的下一关（跨章成立；随机关/末关为 null）', () => {
+    // 内置关：圆 → 椭圆
+    engine.loadLevel(LEVEL_DEFS.find((d) => d.id === 'circle')!);
+    expect(engine.nextLevelDef?.id).toBe('ellipse');
+    // 跨章：云纹（craft 末关） → 灯笼（dacheng 首关）
+    engine.loadLevel(LEVEL_DEFS.find((d) => d.id === 'wisp')!);
+    expect(engine.nextLevelDef?.id).toBe('lantern');
+    // 末关：bell 之后没有下一关
+    engine.loadLevel(LEVEL_DEFS.find((d) => d.id === 'bell')!);
+    expect(engine.nextLevelDef).toBeNull();
+    // 随机关不在内置顺序里 → null
+    engine.loadRandomSeed(42);
+    expect(engine.nextLevelDef).toBeNull();
+  });
+
   it('setFlag 可开可关，且不影响其它标记', () => {
     engine.setFlag('reduceMotion', true);
     expect(engine.flags.reduceMotion).toBe(true);

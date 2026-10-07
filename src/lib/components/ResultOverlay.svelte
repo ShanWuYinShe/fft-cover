@@ -476,6 +476,20 @@
             </span>
             <span class="nu-arrow">→</span>
           </button>
+        {:else if engine.nextLevelDef && (engine.bestStars[engine.level?.id ?? ''] ?? 0) >= 1}
+          <!-- 重玩已通关的关卡：没有"新解锁"可庆祝，但推进路径不该断 -->
+          <button
+            type="button"
+            class="next-unlock"
+            onclick={() => engine.loadLevel(engine.nextLevelDef!)}
+          >
+            <span class="nu-badge">→</span>
+            <span class="nu-txt">
+              <b>下一关</b>
+              <i>{engine.nextLevelDef.name} → 继续前进</i>
+            </span>
+            <span class="nu-arrow">→</span>
+          </button>
         {/if}
         {#if chart}
           <div class="trend">
@@ -1145,7 +1159,6 @@
     font-size: 20px;
   }
   .nu-txt {
-    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 1px;

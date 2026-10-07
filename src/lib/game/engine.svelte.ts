@@ -645,6 +645,18 @@ export class GameEngine {
   }
 
   /**
+   * 当前关的下一关（内置关顺序，跨章也成立；无则 null）。
+   * 结算卡的"下一关"入口用：重玩已通关的关卡时，newlyUnlockedNext
+   * 不会触发（下一关早就解锁了），但玩家仍需要一个直接的推进路径。
+   */
+  get nextLevelDef(): LevelDef | null {
+    const id = this.level?.id;
+    if (!id) return null;
+    const idx = LEVEL_DEFS.findIndex((d) => d.id === id);
+    return idx >= 0 ? (LEVEL_DEFS[idx + 1] ?? null) : null;
+  }
+
+  /**
    * 本局拿星后新解锁的下一关（无则 null）——结算浮层引导用。
    * 条件：本局 st>=1、存在下一关、且下一关此前从未拿过星（首次解锁）。
    */
