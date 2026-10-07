@@ -16,6 +16,7 @@ import {
   exportSave,
   importSave,
   readJson,
+  writeJson,
   PREF_KEYS,
   SAVE_KEYS,
   SAVE_PREFIX,
@@ -63,6 +64,17 @@ describe('readJson：引擎存档字段的统一安全读取', () => {
       writable: true,
     });
     expect(readJson('anything', 42)).toBe(42);
+  });
+
+  it('writeJson：正常写入 + 存储不可用时静默放弃', () => {
+    writeJson('wj', { a: 1 });
+    expect(JSON.parse(localStorage.getItem('wj')!)).toEqual({ a: 1 });
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: undefined,
+      configurable: true,
+      writable: true,
+    });
+    expect(() => writeJson('wj', { a: 1 })).not.toThrow();
   });
 });
 

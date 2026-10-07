@@ -23,6 +23,7 @@ import {
   HISTORY_MAX,
   LAST_CUSTOM_KEY,
   LAST_LEVEL_KEY,
+  DIFF_KEY,
 } from './constants';
 import {
   CHAPTERS,
@@ -49,7 +50,7 @@ import {
   weekRows,
   type StreakRecord,
 } from './daily';
-import { readJson } from './save';
+import { readJson, writeJson } from './save';
 import { tipAt } from './math';
 import { decodeArms } from './share';
 import { scoreForPoint, fitScore, solveFromSpectrum, starsFor } from './scoring';
@@ -260,7 +261,7 @@ export class GameEngine {
   difficulty = $state<RandomDifficulty>(
     ((): RandomDifficulty => {
       try {
-        const v = localStorage.getItem('fft-pointers-diff-v1');
+        const v = localStorage.getItem(DIFF_KEY);
         return v === 'easy' || v === 'hard' ? v : 'normal';
       } catch {
         return 'normal';
@@ -272,7 +273,7 @@ export class GameEngine {
   setDifficulty(d: RandomDifficulty): void {
     this.difficulty = d;
     try {
-      localStorage.setItem('fft-pointers-diff-v1', d);
+      localStorage.setItem(DIFF_KEY, d);
     } catch {
       /* 忽略 */
     }
@@ -341,11 +342,7 @@ export class GameEngine {
     for (const id of evalAchievements(this.achievementContext())) {
       if (!this.achievements[id]) this.achievements = { ...this.achievements, [id]: Date.now() };
     }
-    try {
-      localStorage.setItem(ACHV_KEY, JSON.stringify(this.achievements));
-    } catch {
-      /* 存储不可用则忽略 */
-    }
+    writeJson(ACHV_KEY, this.achievements);
   }
 
   get total(): number {
@@ -753,22 +750,14 @@ export class GameEngine {
     if (on) next[key] = true;
     else delete next[key];
     this.flags = next;
-    try {
-      localStorage.setItem(FLAGS_KEY, JSON.stringify(this.flags));
-    } catch {
-      /* 存储不可用则忽略 */
-    }
+    writeJson(FLAGS_KEY, this.flags);
   }
 
   /** 标记一个行为标志并重查成就 */
   markFlag(key: string): void {
     if (this.flags[key]) return;
     this.flags = { ...this.flags, [key]: true };
-    try {
-      localStorage.setItem(FLAGS_KEY, JSON.stringify(this.flags));
-    } catch {
-      /* 存储不可用则忽略 */
-    }
+    writeJson(FLAGS_KEY, this.flags);
     this.checkAchievements();
   }
 
@@ -817,11 +806,7 @@ export class GameEngine {
       const def = ACHIEVEMENTS.find((a) => a.id === id);
       if (!def) continue;
       this.achievements = { ...this.achievements, [id]: now };
-      try {
-        localStorage.setItem(ACHV_KEY, JSON.stringify(this.achievements));
-      } catch {
-        /* 存储不可用则忽略 */
-      }
+      writeJson(ACHV_KEY, this.achievements);
       this.toast = { id, name: def.name };
     }
   }
@@ -949,11 +934,7 @@ export class GameEngine {
     if (this.clearT !== null && this.clearT < (this.bestClears[id] ?? Infinity)) {
       this.bestClears = { ...this.bestClears, [id]: this.clearT };
       this.newClearRecord = true;
-      try {
-        localStorage.setItem(CLEAR_KEY, JSON.stringify(this.bestClears));
-      } catch {
-        /* 存储不可用则忽略 */
-      }
+      writeJson(CLEAR_KEY, this.bestClears);
     }
     const ratio = this.total ? this.collectedCount / this.total : 0;
     const st = starsFor(ratio);
@@ -971,11 +952,7 @@ export class GameEngine {
     if (this.total > 0 && this.collectedCount === this.total && !this.perfectLevels[id]) {
       this.perfectLevels = { ...this.perfectLevels, [id]: true };
       this.newPerfect = true;
-      try {
-        localStorage.setItem(PERFECT_KEY, JSON.stringify(this.perfectLevels));
-      } catch {
-        /* 存储不可用则忽略 */
-      }
+      writeJson(PERFECT_KEY, this.perfectLevels);
     }
     // 专家全清（无轮廓预览下全清）：硬核技巧认证
     this.newExpertClear = false;
@@ -987,11 +964,7 @@ export class GameEngine {
     ) {
       this.expertClears = { ...this.expertClears, [id]: true };
       this.newExpertClear = true;
-      try {
-        localStorage.setItem(EXPERT_KEY, JSON.stringify(this.expertClears));
-      } catch {
-        /* 存储不可用则忽略 */
-      }
+      writeJson(EXPERT_KEY, this.expertClears);
     }
     // 精确解认证（精通新维度：方法正确，而不只是结果达标）
     this.newExact = false;
@@ -1000,11 +973,7 @@ export class GameEngine {
       if (fit >= EXACT_FIT) {
         this.exactLevels = { ...this.exactLevels, [id]: true };
         this.newExact = true;
-        try {
-          localStorage.setItem(EXACT_KEY, JSON.stringify(this.exactLevels));
-        } catch {
-          /* 存储不可用则忽略 */
-        }
+        writeJson(EXACT_KEY, this.exactLevels);
       }
     }
     // 首关引导：圆关跑完一局即视为"已学会"，不再打扰
@@ -1016,19 +985,11 @@ export class GameEngine {
         : { ...this.failCounts };
     if (st > 0) delete nextFails[id];
     this.failCounts = nextFails;
-    try {
-      localStorage.setItem(FAIL_KEY, JSON.stringify(this.failCounts));
-    } catch {
-      /* 存储不可用则忽略 */
-    }
+    writeJson(FAIL_KEY, this.failCounts);
     const starsBeforeThisRun = this.bestStars;
     if (st > (this.bestStars[id] ?? 0)) {
       this.bestStars = { ...this.bestStars, [id]: st };
-      try {
-        localStorage.setItem(BEST_KEY, JSON.stringify(this.bestStars));
-      } catch {
-        /* 存储不可用则忽略 */
-      }
+      writeJson(BEST_KEY, this.bestStars);
     }
     // 本局新盖的朱印：与"本关目标"面板同一套判定，结算时一枚枚盖下来
     // 记录本局漏掉的点（编辑态"上届漏点"提示用）
@@ -1056,11 +1017,7 @@ export class GameEngine {
     if (this.score > (this.bestScores[id] ?? 0)) {
       this.bestScores = { ...this.bestScores, [id]: this.score };
       this.newRecord = true;
-      try {
-        localStorage.setItem(BEST_SCORE_KEY, JSON.stringify(this.bestScores));
-      } catch {
-        /* 存储不可用则忽略 */
-      }
+      writeJson(BEST_SCORE_KEY, this.bestScores);
     }
     // 历史成绩入档（趋势展示；每关保留最近 HISTORY_MAX 局）
     const entry: HistoryEntry = {
@@ -1074,11 +1031,7 @@ export class GameEngine {
     const list = [...(this.history[id] ?? []), entry];
     if (list.length > HISTORY_MAX) list.splice(0, list.length - HISTORY_MAX);
     this.history = { ...this.history, [id]: list };
-    try {
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(this.history));
-    } catch {
-      /* 存储不可用则忽略 */
-    }
+    writeJson(HISTORY_KEY, this.history);
 
     // 竞速结果快照：必须赶在覆盖上届节奏之前算，否则就成了自己跟自己比
     this.lastGhostDelta = this.ghostComparable ? this.ghostDelta : null;
@@ -1087,18 +1040,10 @@ export class GameEngine {
     // 两者必须同源：同一条金色虚线轨迹，配上同一局的时间线
     if (this.score > 0) {
       this.armsSaves = { ...this.armsSaves, [id]: this.arms.map((a) => ({ ...a })) };
-      try {
-        localStorage.setItem(ARMS_SAVE_KEY, JSON.stringify(this.armsSaves));
-      } catch {
-        /* 存储不可用则忽略 */
-      }
+      writeJson(ARMS_SAVE_KEY, this.armsSaves);
       if (this.collectTimes.length > 0) {
         this.paceSaves = { ...this.paceSaves, [id]: [...this.collectTimes] };
-        try {
-          localStorage.setItem(PACE_KEY, JSON.stringify(this.paceSaves));
-        } catch {
-          /* 存储不可用则忽略 */
-        }
+        writeJson(PACE_KEY, this.paceSaves);
       }
     }
     // 每日挑战：刷新今日最佳
@@ -1106,21 +1051,13 @@ export class GameEngine {
       this.dailyBest = { ...this.dailyBest, [id]: this.score };
       this.newRecord = true;
       this.markFlag('dailyWon');
-      try {
-        localStorage.setItem(DAILY_KEY, JSON.stringify(this.dailyBest));
-      } catch {
-        /* 存储不可用则忽略 */
-      }
+      writeJson(DAILY_KEY, this.dailyBest);
     }
     // 本周挑战：同表记录（weekly- 前缀与每日关互不干扰），一周里刷出最好成绩
     if (id.startsWith('weekly-') && this.score > (this.dailyBest[id] ?? 0)) {
       this.dailyBest = { ...this.dailyBest, [id]: this.score };
       this.newRecord = true;
-      try {
-        localStorage.setItem(DAILY_KEY, JSON.stringify(this.dailyBest));
-      } catch {
-        /* 存储不可用则忽略 */
-      }
+      writeJson(DAILY_KEY, this.dailyBest);
     }
     // 每日挑战连胜：今天首次完成即累加（昨天完成过则 +1，否则重新从 1 开始）
     if (id.startsWith('daily-')) this.bumpDailyStreak();
@@ -1138,11 +1075,7 @@ export class GameEngine {
     this.streakJustBumped = next.streak;
     if (next.streak >= 7) this.markFlag('streak7');
     if (next.streak >= 30) this.markFlag('streak30');
-    try {
-      localStorage.setItem(STREAK_KEY, JSON.stringify(this.dailyStreak));
-    } catch {
-      /* 存储不可用则忽略 */
-    }
+    writeJson(STREAK_KEY, this.dailyStreak);
   }
 
   /**
@@ -1170,7 +1103,7 @@ export class GameEngine {
     coeffs: { k: number; mag: number; phase: number }[],
   ): void {
     try {
-      localStorage.setItem(LAST_CUSTOM_KEY, JSON.stringify({ id, name, coeffs }));
+      writeJson(LAST_CUSTOM_KEY, { id, name, coeffs });
       localStorage.setItem(LAST_LEVEL_KEY, id);
     } catch {
       /* 存储不可用则忽略 */

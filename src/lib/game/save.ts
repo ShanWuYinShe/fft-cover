@@ -13,6 +13,7 @@ import {
   HISTORY_KEY,
   LAST_LEVEL_KEY,
   LAST_CUSTOM_KEY,
+  DIFF_KEY,
   MUSIC_KEY,
   PACE_KEY,
   PERFECT_KEY,
@@ -53,8 +54,8 @@ export const SAVE_KEYS = [
   DRAFT_KEY,
 ] as const;
 
-/** 偏好类键：参与存档，但"清空进度"时保留（音量/音效/音乐不该被清） */
-export const PREF_KEYS = [SOUND_KEY, MUSIC_KEY, VOLUME_KEY] as const;
+/** 偏好类键：参与存档，但"清空进度"时保留（音量/音效/音乐/难度不该被清） */
+export const PREF_KEYS = [SOUND_KEY, MUSIC_KEY, VOLUME_KEY, DIFF_KEY] as const;
 
 const ALL_KEYS = [...SAVE_KEYS, ...PREF_KEYS];
 
@@ -68,6 +69,18 @@ export function readJson<T>(key: string, fallback: T): T {
     return raw === null ? fallback : (JSON.parse(raw) as T);
   } catch {
     return fallback;
+  }
+}
+
+/**
+ * writeJson：readJson 的镜像——存储不可用就静默放弃（游戏进度不该因存储挂掉）。
+ * 各引擎字段的写回都走这一条路径。
+ */
+export function writeJson<T>(key: string, value: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* 存储不可用则忽略 */
   }
 }
 
