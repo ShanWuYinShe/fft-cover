@@ -36,8 +36,8 @@
   out.composerRows = document.querySelectorAll('.sliders .row').length; // 20
   out.negLabel = !!document.querySelector('.neg-label');
   // 过滤 chip 回归锚：清存档后偏好重置，chip 应为未按下
-  const filterChip = Array.from(document.querySelectorAll('.pchip')).find(
-    (x) => x.textContent.includes('已启用'),
+  const filterChip = Array.from(document.querySelectorAll('.pchip')).find((x) =>
+    x.textContent.includes('已启用'),
   );
   out.filterChipOff = filterChip?.getAttribute('aria-pressed') === 'false';
   const closeC = Array.from(document.querySelectorAll('.modal button')).find(
@@ -46,4 +46,3 @@
   if (closeC) closeC.click();
   return JSON.stringify(out, null, 1);
 })();
-
