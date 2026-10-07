@@ -452,6 +452,14 @@
         <button onclick={() => engine.resetRun()}
           >⟲ <span class="bt-long">重置点</span><span class="bt-short">重置</span></button
         >
+        {#if engine.phase === 'done' && engine.resultDismissed}
+          <button
+            title="重新打开结算卡（复制战报 / 下一关）"
+            onclick={() => (engine.resultDismissed = false)}
+          >
+            📊 <span class="bt-long">结算卡</span><span class="bt-short">结算</span>
+          </button>
+        {/if}
         <button
           title="无限时自由旋转，实时调参，成绩不计入记录"
           disabled={engine.phase === 'running' || engine.phase === 'paused'}
