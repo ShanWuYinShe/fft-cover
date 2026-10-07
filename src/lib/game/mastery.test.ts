@@ -3,7 +3,7 @@ import { LEVEL_DEFS } from './levels';
 import { yesterdayKey } from './dates';
 import { GameEngine } from './engine.svelte';
 import { solveFromSpectrum } from './scoring';
-import { evalAchievements } from './scoring';
+import { evalAchievements } from './achievements';
 
 describe('精通体系：完美全清与卡关提示', () => {
   let engine: GameEngine;

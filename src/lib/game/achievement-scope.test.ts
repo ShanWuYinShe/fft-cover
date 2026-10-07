@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evalAchievements } from './scoring';
+import { evalAchievements } from './achievements';
 import { LEVEL_DEFS } from './levels';
 
 describe('成就判定：随机关/每日关不能冒充内置关进度（回归）', () => {

@@ -3,7 +3,7 @@
   import { chapterProgress, isLevelLocked } from '../game/campaign';
   import { levelGoals } from '../game/goals';
   import { shapePoints } from '../game/shapes';
-  import { ACHIEVEMENTS, ACHV_GROUPS, achievementProgress } from '../game/scoring';
+  import { ACHIEVEMENTS, ACHV_GROUPS, achievementProgress } from '../game/achievements';
   import { clearSave, exportSave, importSave } from '../game/save';
   import { engine } from '../game/engine.svelte';
 

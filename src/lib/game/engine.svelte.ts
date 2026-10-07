@@ -52,16 +52,13 @@ import {
 import { readJson } from './save';
 import { tipAt } from './math';
 import { decodeArms } from './share';
+import { scoreForPoint, fitScore, solveFromSpectrum, starsFor } from './scoring';
 import {
   ACHIEVEMENTS,
   evalAchievements,
-  scoreForPoint,
-  fitScore,
-  solveFromSpectrum,
-  starsFor,
   achievementProgress,
   type AchievementContext,
-} from './scoring';
+} from './achievements';
 import { campaignState, type CampaignState } from './campaign';
 import {
   chapterSealState,
