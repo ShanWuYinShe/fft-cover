@@ -56,6 +56,8 @@ export const HISTORY_MAX = 30;
 export const DRAFT_KEY = 'fft-pointers-composer-draft-v1';
 /** 音量（三态 1 / 0.5 / 0）localStorage 键名 */
 export const VOLUME_KEY = 'fft-pointers-volume-v1';
+/** 最近一次游玩的创作关（系数串 + 名字），刷新后按它复现创作关 */
+export const LAST_CUSTOM_KEY = 'fft-pointers-last-custom-v1';
 
 /** 五声音阶频率（C 宫调式，两个八度）：收集音效按收集序号递进 */
 export const PENTATONIC = [

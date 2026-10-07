@@ -12,6 +12,7 @@ import {
   FLAGS_KEY,
   HISTORY_KEY,
   LAST_LEVEL_KEY,
+  LAST_CUSTOM_KEY,
   MUSIC_KEY,
   PACE_KEY,
   PERFECT_KEY,
@@ -47,6 +48,7 @@ export const SAVE_KEYS = [
   PACE_KEY,
   HISTORY_KEY,
   LAST_LEVEL_KEY,
+  LAST_CUSTOM_KEY,
   FAIL_KEY,
   DRAFT_KEY,
 ] as const;

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { CHAPTERS, dayKey, LEVEL_DEFS, makeRandomLevel, todayKey, yesterdayKey } from './levels';
-import { LAST_LEVEL_KEY } from './constants';
+import { LAST_CUSTOM_KEY, LAST_LEVEL_KEY } from './constants';
 import { GameEngine } from './engine.svelte';
 import { fitScore, solveFromSpectrum } from './scoring';
 
@@ -63,13 +63,50 @@ describe('续玩：记住上次关卡', () => {
     expect(daily.level?.id.startsWith('daily-')).toBe(true);
   });
 
-  it('创作关无法复现 → 不记住，回落第一关', () => {
+  it('创作关：系数已存档 → 刷新后原样回来', () => {
+    const e = new GameEngine();
+    const coeffs = [
+      { k: 1, mag: 80, phase: 0 },
+      { k: 3, mag: 55, phase: 0 },
+      { k: 5, mag: 28, phase: 0 },
+    ];
+    e.loadCustomLevel(coeffs, '创作关卡');
+    const id = e.level!.id;
+    expect(id.startsWith('custom-')).toBe(true);
+    expect(localStorage.getItem(LAST_LEVEL_KEY)).toBe(id);
+
+    const next = new GameEngine();
+    expect(next.level?.id).toBe(id);
+    expect(next.level?.name).toBe('创作关卡');
+    expect(next.level?.pts).toEqual(e.level!.pts);
+  });
+
+  it('换回非创作关后，创作关记忆被清除（不会很久之后突然跳回去）', () => {
     const e = new GameEngine();
     e.loadCustomLevel([{ k: 1, mag: 100, phase: 0 }], '测试关');
+    expect(localStorage.getItem(LAST_CUSTOM_KEY)).not.toBeNull();
+    e.loadLevel(LEVEL_DEFS.find((d) => d.id === 'heart')!);
+    expect(localStorage.getItem(LAST_CUSTOM_KEY)).toBeNull();
+    const next = new GameEngine();
+    expect(next.level?.id).toBe('heart');
+  });
+
+  it('创作关存档损坏 → 安全回落第一关，不崩', () => {
+    const e = new GameEngine();
+    e.loadCustomLevel([{ k: 1, mag: 100, phase: 0 }], '测试关');
+    localStorage.setItem(LAST_CUSTOM_KEY, '{broken json');
     const next = new GameEngine();
     expect(next.level?.id).toBe('circle');
-    // 也不该把创作关写进"上次关卡"
-    expect(localStorage.getItem(LAST_LEVEL_KEY)).not.toContain('custom-');
+  });
+
+  it('创作关存档结构与期望不符 → 回落第一关', () => {
+    localStorage.setItem(LAST_LEVEL_KEY, 'custom-1-100-0');
+    localStorage.setItem(
+      LAST_CUSTOM_KEY,
+      JSON.stringify({ id: 'custom-1-100-0', name: '测试关', coeffs: [{ k: 'x' }] }),
+    );
+    const next = new GameEngine();
+    expect(next.level?.id).toBe('circle');
   });
 });
 

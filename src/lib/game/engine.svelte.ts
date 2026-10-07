@@ -21,6 +21,7 @@ import {
   DAILY_KEY,
   HISTORY_KEY,
   HISTORY_MAX,
+  LAST_CUSTOM_KEY,
   LAST_LEVEL_KEY,
 } from './constants';
 import {
@@ -421,10 +422,12 @@ export class GameEngine {
 
   /**
    * 记住当前关卡，"继续游戏"下次直接回到这里。
-   * 创作关没有保存系数、无法复现，不记住（回落第一关）。
+   * 创作关的系数由 rememberCustomLevel 另存，这里只负责非创作关。
    */
   private rememberLevel(id: string): void {
     if (id.startsWith('custom-')) return;
+    // 离开创作关：把它的存档清掉，避免很久之后"继续游戏"跳回一条不相关的创作关
+    this.forgetCustomLevel();
     try {
       localStorage.setItem(LAST_LEVEL_KEY, id);
     } catch {
@@ -458,6 +461,15 @@ export class GameEngine {
     }
     if (id.startsWith('daily-')) {
       this.loadDaily();
+      return true;
+    }
+    // 创作关：按存下的系数复现（好友分享的创作关刷新后也能回来）
+    if (id.startsWith('custom-')) {
+      const saved = this.readCustomLevel(id);
+      if (!saved) return false;
+      this.level = levelFromCoeffs(saved.coeffs, saved.name, id);
+      this.trimArmsToLimit();
+      this.resetRun();
       return true;
     }
     return false;
@@ -1159,7 +1171,11 @@ export class GameEngine {
     }
   }
 
-  /** 载入玩家创作的谐波合成关卡 */
+  /**
+   * 载入玩家创作的谐波合成关卡。
+   * 创作关的系数会存下来：刷新后"继续游戏"能回到这一关（否则好友分享的
+   * 创作关在刷新后就没了，只能重新贴邀请码）。
+   */
   loadCustomLevel(coeffs: { k: number; mag: number; phase: number }[], name: string): void {
     this.cancelAutoSolve();
     this.sandbox = false;
@@ -1167,6 +1183,57 @@ export class GameEngine {
     this.trimArmsToLimit();
     this.resetRun();
     this.markFlag('composerPlayed');
+    this.rememberCustomLevel(this.level.id, name, coeffs);
+  }
+
+  /**
+   * 记住最近游玩的创作关（系数串 + 名字）。换到别的关卡时清除，
+   * 避免很久之后"继续游戏"突然跳回一条不相关的创作关。
+   */
+  private rememberCustomLevel(
+    id: string,
+    name: string,
+    coeffs: { k: number; mag: number; phase: number }[],
+  ): void {
+    try {
+      localStorage.setItem(LAST_CUSTOM_KEY, JSON.stringify({ id, name, coeffs }));
+      localStorage.setItem(LAST_LEVEL_KEY, id);
+    } catch {
+      /* 存储不可用则忽略 */
+    }
+  }
+
+  private forgetCustomLevel(): void {
+    try {
+      localStorage.removeItem(LAST_CUSTOM_KEY);
+    } catch {
+      /* 忽略 */
+    }
+  }
+
+  /** 读回最近创作关；结构不对或与期望 id 不符返回 null */
+  private readCustomLevel(
+    id: string,
+  ): { name: string; coeffs: { k: number; mag: number; phase: number }[] } | null {
+    try {
+      const raw = JSON.parse(localStorage.getItem(LAST_CUSTOM_KEY) ?? 'null') as {
+        id?: unknown;
+        name?: unknown;
+        coeffs?: unknown;
+      } | null;
+      if (!raw || raw.id !== id) return null;
+      if (typeof raw.name !== 'string' || !Array.isArray(raw.coeffs)) return null;
+      const coeffs: { k: number; mag: number; phase: number }[] = [];
+      for (const c of raw.coeffs as Array<{ k?: unknown; mag?: unknown; phase?: unknown }>) {
+        if (typeof c?.k !== 'number' || typeof c?.mag !== 'number' || typeof c?.phase !== 'number')
+          return null;
+        coeffs.push({ k: c.k, mag: c.mag, phase: c.phase });
+      }
+      if (coeffs.length === 0) return null;
+      return { name: raw.name, coeffs };
+    } catch {
+      return null;
+    }
   }
 
   /** 进入今日每日挑战（seed 由日期+难度决定，人人同关） */
