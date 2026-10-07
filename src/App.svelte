@@ -270,6 +270,9 @@
   function onKeydown(e: KeyboardEvent): void {
     // 输入框 / 多行文本 / 下拉框 / contenteditable 里都在打字，全局键让路
     if (isTypingTarget(e.target)) return;
+    // 有弹层开着（成就/设置/合成器/标题/教程/通关/入境）时：全局键让路，
+    // 否则会在玩家看不见的画布后面偷偷重开一局
+    if (document.querySelector('.modal, .finale, .ch-intro, .title-screen, .tutorial')) return;
     if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
       e.preventDefault();
       if (e.shiftKey) engine.redoArms();
