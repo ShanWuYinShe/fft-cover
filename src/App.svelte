@@ -3,7 +3,12 @@
   import Stage from './lib/components/Stage.svelte';
   import ArmPanel from './lib/components/ArmPanel.svelte';
   import TitleScreen from './lib/components/TitleScreen.svelte';
-  import { readArmsFromHash, readDailyFromHash, readRandomFromHash } from './lib/game/share';
+  import {
+    readArmsFromHash,
+    readCustomFromHash,
+    readDailyFromHash,
+    readRandomFromHash,
+  } from './lib/game/share';
   import LevelPicker from './lib/components/LevelPicker.svelte';
   import ScorePanel from './lib/components/ScorePanel.svelte';
   import ResultOverlay from './lib/components/ResultOverlay.svelte';
@@ -12,7 +17,7 @@
   import GoalPanel from './lib/components/GoalPanel.svelte';
   import ChapterIntroOverlay from './lib/components/ChapterIntroOverlay.svelte';
   import SettingsModal from './lib/components/SettingsModal.svelte';
-  import { LEVEL_DEFS } from './lib/game/levels';
+  import { decodeCoeffs, LEVEL_DEFS } from './lib/game/levels';
   import { chapterProgress, type ChapterProgress } from './lib/game/campaign';
   import { engine } from './lib/game/engine.svelte';
   import {
@@ -98,6 +103,17 @@
   function applyHashShare(): void {
     const shared = readRandomFromHash(location.hash);
     const sharedDaily = readDailyFromHash(location.hash);
+    const sharedCustom = readCustomFromHash(location.hash);
+    let sharedCustomLoaded = false;
+    if (sharedCustom) {
+      const coeffs = decodeCoeffs(sharedCustom);
+      if (coeffs) {
+        engine.loadCustomLevel(coeffs, '创作关卡');
+        shareNote = '已载入好友分享的创作关卡';
+        setTimeout(() => (shareNote = null), 5200);
+        sharedCustomLoaded = true;
+      }
+    }
     if (shared) {
       engine.loadRandomSeed(shared.seed, shared.diff);
       shareNote = '已载入好友分享的随机关卡（邀请码 ' + shared.seed + '）';
@@ -111,7 +127,7 @@
     const code = readArmsFromHash(location.hash);
     if (code && engine.applyArmsCode(code)) {
       history.replaceState(null, '', location.pathname + location.search);
-    } else if (shared || sharedDaily) {
+    } else if (shared || sharedDaily || sharedCustomLoaded) {
       history.replaceState(null, '', location.pathname + location.search);
     }
   }

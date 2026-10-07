@@ -1,14 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildArmsUrl,
   buildDailyUrl,
   buildRandomUrl,
   buildShareUrl,
   decodeArms,
   encodeArms,
+  levelHashPart,
   readArmsFromHash,
+  readCustomFromHash,
   readDailyFromHash,
   readRandomFromHash,
 } from './share';
+import { decodeCoeffs, encodeCoeffs } from './levels';
 import type { Arm } from './types';
 
 const arm = (on: boolean, r: number, freq: number, deg: number): Arm => ({
@@ -80,5 +84,61 @@ describe('解法分享码', () => {
     const hash = '#r=random-777-easy&arms=v1-0:120:1:0';
     expect(readRandomFromHash(hash)).toEqual({ seed: 777, diff: 'easy' });
     expect(readArmsFromHash(hash)).toBe('v1-0:120:1:0');
+  });
+});
+
+describe('解法分享链接要带上关卡（否则好友对不上题）', () => {
+  it('内置关不带关卡段', () => {
+    expect(buildArmsUrl('https://x/y', 'v1-0:120:1:0', 'circle')).toBe(
+      'https://x/y#arms=v1-0:120:1:0',
+    );
+    expect(levelHashPart('circle')).toBe('');
+  });
+
+  it('随机关：id 只有 seed，难度要另外传（否则会悄悄降级成 normal）', () => {
+    expect(buildArmsUrl('https://x/y', 'v1-0:120:1:0', 'random-777', 'hard')).toBe(
+      'https://x/y#r=random-777-hard&arms=v1-0:120:1:0',
+    );
+    expect(levelHashPart('random-777', 'easy')).toBe('r=random-777-easy');
+  });
+
+  it('随机关带邀请码与难度，好友打开是同一道题', () => {
+    const url = buildArmsUrl('https://x/y', 'v1-0:120:1:0', 'random-777-hard');
+    expect(url).toBe('https://x/y#r=random-777-hard&arms=v1-0:120:1:0');
+    expect(readRandomFromHash(url.slice(url.indexOf('#')))).toEqual({ seed: 777, diff: 'hard' });
+    expect(readArmsFromHash(url.slice(url.indexOf('#')))).toBe('v1-0:120:1:0');
+  });
+
+  it('每日关带难度（日期由打开那天决定）', () => {
+    const url = buildArmsUrl('https://x/y', 'v1-0:120:1:0', 'daily-2026-10-07-easy');
+    expect(url).toBe('https://x/y#d=easy&arms=v1-0:120:1:0');
+    expect(readDailyFromHash(url.slice(url.indexOf('#')))).toBe('easy');
+  });
+
+  it('创作关带系数串，好友端能还原出同一关', () => {
+    const coeffs = [
+      { k: 1, mag: 80, phase: 0 },
+      { k: 3, mag: 55, phase: 0 },
+      { k: 5, mag: 28, phase: 0 },
+    ];
+    const code = encodeCoeffs(coeffs);
+    const id = 'custom-' + code.replaceAll(',', '_').replaceAll(':', '-');
+    const url = buildArmsUrl('https://x/y', 'v1-0:120:1:0', id);
+    const hash = url.slice(url.indexOf('#'));
+    expect(hash.startsWith('#c=')).toBe(true);
+    expect(readArmsFromHash(hash)).toBe('v1-0:120:1:0');
+    const back = decodeCoeffs(readCustomFromHash(hash)!);
+    expect(back).not.toBeNull();
+    expect(
+      back!.map((c) => [c.k, Math.round(c.mag), Math.round((c.phase * 180) / Math.PI)]),
+    ).toEqual(coeffs.map((c) => [c.k, c.mag, c.phase]));
+  });
+
+  it('认不出的关卡 id 不带关卡段（宁可退化成纯解法码）', () => {
+    expect(levelHashPart('random-abc')).toBe('');
+    expect(levelHashPart('custom-')).toBe('');
+    expect(buildArmsUrl('https://x/y', 'v1-1:100:2:0', 'random-abc')).toBe(
+      'https://x/y#arms=v1-1:100:2:0',
+    );
   });
 });

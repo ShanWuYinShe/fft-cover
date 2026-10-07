@@ -57,6 +57,53 @@ export function buildShareUrl(base: string, code: string): string {
   return u + '#arms=' + code;
 }
 
+/**
+ * 关卡 id → hash 里的关卡标识段（内置关返回空串，因为好友本地就有那一关）。
+ * 随机关的 id 只有 seed（`random-777`），难度另存在引擎里，所以要显式传进来——
+ * 否则分享出去会悄悄降级成 normal。
+ */
+export function levelHashPart(levelId: string, diff?: RandomDifficulty): string {
+  if (levelId.startsWith('random-')) {
+    const m = /^(-?\d+)(?:-(easy|normal|hard))?$/.exec(levelId.slice('random-'.length));
+    if (!m) return '';
+    const d = (m[2] as RandomDifficulty | undefined) ?? diff ?? 'normal';
+    return 'r=' + randomSpec(Number(m[1]), d);
+  }
+  if (levelId.startsWith('daily-')) {
+    const diff = levelId.slice('daily-'.length).split('-').pop();
+    return DIFFS.includes(diff as (typeof DIFFS)[number]) ? 'd=' + diff : '';
+  }
+  if (levelId.startsWith('custom-')) {
+    // 创作关：把 id 还原成系数串（与"邀请码"同一种写法，好友端 decodeCoeffs 直接可用）
+    const code = levelId.slice('custom-'.length).replaceAll('_', ',').replaceAll('-', ':');
+    // 空系数串（custom- 后面什么都没有）就当认不出，退化成纯解法码
+    return code ? 'c=' + encodeURIComponent(code) : '';
+  }
+  return '';
+}
+
+/**
+ * 解法分享链接：**带上关卡标识**再带解法码。
+ * 只带 `#arms=` 时，好友打开只是"他自己当前那一关"套上你的参数——
+ * 随机关/每日关/创作关会因此对不上题；内置关无需标识（好友本地就有）。
+ */
+export function buildArmsUrl(
+  base: string,
+  code: string,
+  levelId = '',
+  diff?: RandomDifficulty,
+): string {
+  const u = base.split('#')[0];
+  const part = levelHashPart(levelId, diff);
+  return u + '#' + (part ? part + '&' : '') + 'arms=' + code;
+}
+
+/** 从 URL hash 里取创作关系数串（无则返回 null） */
+export function readCustomFromHash(hash: string): string | null {
+  const m = /(?:^#|&)c=([^&]+)/.exec(hash);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
 /** 从 URL hash 里取解法分享码（无则返回 null） */
 export function readArmsFromHash(hash: string): string | null {
   const m = /(?:^#|&)arms=([^&]+)/.exec(hash);
@@ -83,7 +130,7 @@ export function readRandomFromHash(hash: string): { seed: number; diff: RandomDi
   return parseRandomSpec(decodeURIComponent(m[1]));
 }
 
-const DIFFS = ['easy', 'normal', 'hard'] as const;
+export const DIFFS = ['easy', 'normal', 'hard'] as const;
 
 /**
  * 每日挑战分享链接：每日关由"日期 + 难度"决定，所以链接里只需要难度——
