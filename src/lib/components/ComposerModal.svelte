@@ -7,12 +7,12 @@
 
   /** 恢复上次编辑的草稿（无草稿时给一个 1×=100 的起点） */
   function loadDraft(): HarmonicCoeff[] {
-    const base = Array.from({ length: 6 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 }));
+    const base = Array.from({ length: 10 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 }));
     try {
       const raw = JSON.parse(localStorage.getItem(DRAFT_KEY) ?? 'null');
       if (Array.isArray(raw)) {
         for (const c of raw) {
-          if (typeof c?.k === 'number' && c.k >= 1 && c.k <= 6) {
+          if (typeof c?.k === 'number' && c.k >= 1 && c.k <= 10) {
             base[c.k - 1] = { k: c.k, mag: +c.mag || 0, phase: +c.phase || 0 };
           }
         }
@@ -51,6 +51,18 @@
       { k: 1, mag: 100, phase: 0 },
       { k: 6, mag: 38, phase: 0 },
     ],
+    锯齿: [
+      { k: 1, mag: 120, phase: 0 },
+      { k: 2, mag: 60, phase: 0 },
+      { k: 3, mag: 40, phase: 0 },
+      { k: 4, mag: 30, phase: 0 },
+      { k: 5, mag: 24, phase: 0 },
+      { k: 6, mag: 20, phase: 0 },
+      { k: 7, mag: 17, phase: 0 },
+      { k: 8, mag: 15, phase: 0 },
+      { k: 9, mag: 13, phase: 0 },
+      { k: 10, mag: 12, phase: 0 },
+    ],
     心搏: [
       { k: 1, mag: 80, phase: 90 },
       { k: 2, mag: 50, phase: 180 },
@@ -61,7 +73,7 @@
   function applyPreset(name: string): void {
     const p = PRESETS[name];
     if (!p) return;
-    coeffs = Array.from({ length: 6 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 }));
+    coeffs = Array.from({ length: 10 }, (_, i) => ({ k: i + 1, mag: 0, phase: 0 }));
     for (const c of p) coeffs[c.k - 1] = { ...c };
     saveDraft();
   }
