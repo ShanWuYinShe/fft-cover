@@ -160,12 +160,13 @@ describe('章节调性', () => {
 });
 
 describe('nextNoteDelay（探索环境音的疏密）', () => {
-  it('间隔落在合理区间：0.55~1.45 倍基准，不会密成连音也不会空到失联', () => {
+  it('间隔落在合理区间：0.7~1.5 倍基准，不会密成连音也不会空到失联', () => {
+    // 2026-10 放宽：环境音改得更稀（留白更长），上限从 11s 提到 17s
     for (const intensity of [0, 0.45, 0.55, 0.7, 1]) {
       for (const rnd of [0, 0.25, 0.5, 0.75, 0.999]) {
         const d = nextNoteDelay(rnd, intensity);
         expect(d).toBeGreaterThan(0);
-        expect(d).toBeLessThan(11);
+        expect(d).toBeLessThanOrEqual(17);
       }
     }
   });

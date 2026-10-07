@@ -108,16 +108,15 @@ export function pluck(freq: number, on: boolean, dur = 0.55, gain = 0.13): void 
     const ac = getAudioContext();
     if (!ac) return;
     const t0 = ac.currentTime;
-    // 一次拨弦共用一个低通，压掉高次泛音的毛刺
+    // 一次拨弦共用一个低通：1.6 kHz 以下才不扎耳朵（×2 泛音在限内，×3 去掉）
     const lp = ac.createBiquadFilter();
     lp.type = 'lowpass';
-    lp.frequency.value = 3000;
+    lp.frequency.value = 1600;
     lp.Q.value = 0.4;
     lp.connect(ac.destination);
     const partials: Array<[number, number]> = [
       [1, 1],
-      [2, 0.3],
-      [3, 0.12],
+      [2, 0.22],
     ];
     for (const [mult, pg] of partials) {
       const o = ac.createOscillator();
@@ -194,9 +193,9 @@ export function finishChord(on: boolean): void {
  */
 export function starSound(tier: number, on: boolean): void {
   if (!on) return;
-  const freq = [0, 659.25, 880, 1174.66][Math.min(Math.max(tier, 1), 3)];
+  const freq = [0, 659.25, 783.99, 880][Math.min(Math.max(tier, 1), 3)];
   beep(freq, 0.24, 'triangle', 0.075, true);
-  if (tier >= 3) setTimeout(() => beep(1760, 0.28, 'sine', 0.04, true), 95);
+  if (tier >= 3) setTimeout(() => beep(1046.5, 0.28, 'sine', 0.04, true), 95);
 }
 
 /** 章节印：本章四印集齐时的一声重章 + 两声轻铃（比单枚印更隆重） */

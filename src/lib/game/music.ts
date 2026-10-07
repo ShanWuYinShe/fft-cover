@@ -24,7 +24,7 @@ import type { Arm } from './types';
  */
 
 /** 单个"远方信号"的音量基数 */
-const NOTE_GAIN = 0.07;
+const NOTE_GAIN = 0.05;
 /**
  * 环境音的音高上限（Hz）。高频是"刺耳"的主要来源：
  * 一切都压在 900 Hz 以下，听感是温暖、遥远、留白，而不是尖锐的哨音。
@@ -33,12 +33,10 @@ const NOTE_GAIN = 0.07;
  * 不只是基频——playSwell 里对每个泛音分量都做了判断，所有调用方自动受保护。
  */
 export const NOTE_MAX_HZ = 700;
-/** 总线低通：整体削掉高频毛刺（刺耳段主要是 1.5~4 kHz 的纯音） */
-const BUS_LOWPASS_HZ = 1300;
-/** 空气层音量基数 */
-const AIR_LEVEL = 0.04;
+/** 总线低通：一切都在 900 Hz 以下，刺耳段（1.5~4 kHz）根本进不来 */
+const BUS_LOWPASS_HZ = 900;
 /** 总线总音量上限 */
-const MASTER_LEVEL = 0.5;
+const MASTER_LEVEL = 0.4;
 
 /** 单条声部链（实时播放与离线渲染自测共用同一构建函数） */
 export interface VoiceChain {
@@ -115,15 +113,6 @@ export function makeImpulse(ac: BaseAudioContext, seconds = 3.6, decay = 2.3): A
   return buf;
 }
 
-/** 循环噪声缓冲（"空气"层用） */
-function makeNoise(ac: BaseAudioContext, seconds = 4): AudioBuffer {
-  const len = Math.max(1, Math.floor(ac.sampleRate * seconds));
-  const buf = ac.createBuffer(1, len, ac.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
-  return buf;
-}
-
 /** 环境声总线：干声 + 混响 + 延迟，压缩后输出 */
 export interface AmbientBus {
   /** 所有声源接这里 */
@@ -155,30 +144,26 @@ export function buildAmbientBus(ac: BaseAudioContext): AmbientBus {
   comp.connect(master);
   master.connect(ac.destination);
 
-  // 混响支路：空旷空间
+  // 混响支路：空旷空间（短一些、湿一些收着给——长尾会把稀疏的音糊成持续背景）
   const conv = ac.createConvolver();
-  conv.buffer = makeImpulse(ac);
+  conv.buffer = makeImpulse(ac, 1.8, 3.2);
   const wet = ac.createGain();
-  wet.gain.value = 0.6;
+  wet.gain.value = 0.4;
   input.connect(conv);
   conv.connect(wet);
   wet.connect(lp);
 
-  // 延迟支路：带阻尼的反馈回声，声音像从远处回来
+  // 延迟支路：单次回声即可（反馈会越叠越响，听感就是"嗡嗡"）
   const delay = ac.createDelay(1.5);
   delay.delayTime.value = 0.42;
   const damp = ac.createBiquadFilter();
   damp.type = 'lowpass';
-  damp.frequency.value = 1300;
-  const fb = ac.createGain();
-  fb.gain.value = 0.34;
+  damp.frequency.value = 900;
   const echo = ac.createGain();
-  echo.gain.value = 0.32;
+  echo.gain.value = 0.26;
   input.connect(delay);
   delay.connect(damp);
-  damp.connect(fb);
-  fb.connect(delay);
-  delay.connect(echo);
+  damp.connect(echo);
   echo.connect(lp);
 
   return { input, master };
@@ -267,23 +252,12 @@ export function scheduleAmbient(
     const octave = rnd() < 0.3 ? 0.5 : 1;
     const freq = pool[idx] * octave;
     const gain = NOTE_GAIN * (0.55 + 0.45 * rnd()) * (0.6 + 0.4 * intensity);
-    const attack = 0.8 + rnd() * 1.8;
-    const release = 4 + rnd() * 5;
+    // 短一些、软一些：一条音的生命 ~5 秒，起落分明，不留长长的尾巴
+    const attack = 0.6 + rnd() * 0.9;
+    const release = 1.8 + rnd() * 1.6;
     const pan = (rnd() * 2 - 1) * 0.8;
-    playSwell(ac, bus.input, freq, gain, at, attack, release, pan, BELL_PARTIALS);
-    // 偶尔在高五度叠一层更远的泛音（仍压在上限内）
-    if (freq * 1.5 <= NOTE_MAX_HZ && rnd() < 0.22) {
-      playSwell(
-        ac,
-        bus.input,
-        freq * 1.5,
-        gain * 0.55,
-        at + 0.3 + rnd(),
-        attack * 1.2,
-        release * 0.9,
-        -pan * 0.7,
-      );
-    }
+    // 纯正弦单音：不再叠编钟泛音（高音会扎耳朵），像远处一声轻钟
+    playSwell(ac, bus.input, freq, gain, at, attack, release, pan);
     state.nextAt = at + nextNoteDelay(rnd(), intensity);
     count++;
   }
@@ -294,7 +268,6 @@ export function scheduleAmbient(
 
 let ctx: AudioContext | null = null;
 let bus: AmbientBus | null = null;
-let airGain: GainNode | null = null;
 let chains = new Map<number, VoiceChain>();
 /** 上一次落地的参数签名：未变化则完全跳过，避免每帧重设音频参数 */
 let lastSig = '';
@@ -303,37 +276,6 @@ let curKey: MusicalKey = DEFAULT_KEY;
 let curIntensity = 0.55;
 const schedState: AmbientState = { nextAt: 0 };
 let schedTimer: ReturnType<typeof setTimeout> | null = null;
-
-/** 空气层：极轻的带通噪声 + 极慢的滤波摆动 */
-function startAir(ac: AudioContext, dest: AudioNode): GainNode {
-  const src = ac.createBufferSource();
-  src.buffer = makeNoise(ac);
-  src.loop = true;
-  const bp = ac.createBiquadFilter();
-  bp.type = 'bandpass';
-  bp.frequency.value = 420;
-  bp.Q.value = 0.9;
-  // 再低通一次：噪声的宽带高频听起来是"嘶嘶"，不是"空气"
-  const hiss = ac.createBiquadFilter();
-  hiss.type = 'lowpass';
-  hiss.frequency.value = 900;
-  hiss.Q.value = 0.5;
-  const g = ac.createGain();
-  g.gain.value = 0;
-  const lfo = ac.createOscillator();
-  lfo.frequency.value = 0.03;
-  const depth = ac.createGain();
-  depth.gain.value = 260;
-  lfo.connect(depth);
-  depth.connect(bp.frequency);
-  lfo.start();
-  src.connect(bp);
-  bp.connect(hiss);
-  hiss.connect(g);
-  g.connect(dest);
-  src.start();
-  return g;
-}
 
 /** 排程循环：提前 2.5 秒把"远方信号"排进音频时钟 */
 function pumpScheduler(): void {
@@ -369,7 +311,6 @@ export function startMusic(): void {
     if (!bus || ctx !== ac) {
       ctx = ac;
       bus = buildAmbientBus(ac);
-      airGain = startAir(ac, bus.input);
       schedState.nextAt = 0;
       lastSig = '';
     }
@@ -443,7 +384,7 @@ export function updateMusic(
   voiced = true,
 ): void {
   const ac = ctx;
-  if (!ac || !bus || !airGain) return; // 尚未获得用户手势
+  if (!ac || !bus) return; // 尚未获得用户手势
   curKey = key;
   curIntensity = intensity;
   const audible = on && volume > 0;
@@ -458,7 +399,6 @@ export function updateMusic(
     now,
     audible ? 0.8 : 0.4,
   );
-  airGain.gain.setTargetAtTime(audible ? AIR_LEVEL * intensity * volume : 0, now, 1.2);
 
   if (!audible) {
     releaseVoices(now);

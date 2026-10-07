@@ -146,8 +146,8 @@ export function armsToVoices(arms: Arm[], root = ROOT_HZ): Voice[] {
  */
 export function nextNoteDelay(rnd: number, intensity: number): number {
   const i = Math.max(0, Math.min(1, intensity));
-  const base = 7 - 4 * i; // 编辑态 ≈7s、运行态 ≈3s
-  return base * (0.55 + 0.9 * Math.max(0, Math.min(1, rnd)));
+  const base = 11 - 5 * i; // 编辑态 ≈11s、运行态 ≈6s——留出真正的安静
+  return base * (0.7 + 0.8 * Math.max(0, Math.min(1, rnd)));
 }
 
 /**
