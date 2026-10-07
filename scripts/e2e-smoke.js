@@ -55,8 +55,9 @@
   out.steps.push('weekly:' + e.level.id.slice(0, 16));
   e.loadRandomSeed(77);
   out.steps.push('random');
-  e.loadCustomLevel([{ k: 1, mag: 80, phase: 0 }], '创作');
-  out.steps.push('custom');
+  // 带负 k 的创作关：⟲ 方向/20 槽改造的端到端覆盖（频谱带 −2，续玩要能复现）
+  e.loadCustomLevel([{ k: 1, mag: 80, phase: 0 }, { k: -2, mag: 60, phase: 90 }], '反转创作');
+  out.steps.push('custom-negk:' + (e.level.spectrum ?? []).some((s) => s.k === -2));
 
   // 3) 刷新 → 创作关续玩
   location.hash = '';
