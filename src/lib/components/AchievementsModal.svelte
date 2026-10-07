@@ -3,13 +3,23 @@
   import { chapterProgress, isLevelLocked } from '../game/campaign';
   import { levelGoals } from '../game/goals';
   import { shapePoints } from '../game/shapes';
-  import { ACHIEVEMENTS, ACHV_GROUPS } from '../game/scoring';
+  import { ACHIEVEMENTS, ACHV_GROUPS, achievementProgress } from '../game/scoring';
   import { clearSave, exportSave, importSave } from '../game/save';
   import { engine } from '../game/engine.svelte';
 
   let { onclose, onplay }: { onclose: () => void; onplay?: (id: string) => void } = $props();
 
   const unlockedCount = $derived(Object.keys(engine.achievements).length);
+  /** 可量化成就的进度（锁着的显示"还差多少"）；单位 → 中文 */
+  const UNIT_CN: Record<string, string> = {
+    stars: '星',
+    levels: '关',
+    seals: '方',
+    days: '天',
+    points: '分',
+  };
+  const progressOf = (id: string) => engine.achievementProgressOf(id);
+
   /** 按分组统计成就（分组展示 + 每组进度条） */
   const achvGroups = $derived(
     ACHV_GROUPS.map((g) => {
@@ -334,6 +344,17 @@
             <div class="txt">
               <div class="nm">{a.name}</div>
               <div class="desc">{a.desc}</div>
+              {#if !got}
+                {@const p = progressOf(a.id)}
+                {#if p}
+                  <div class="prog">
+                    <span class="prog-txt">{p.have} / {p.need} {UNIT_CN[p.unit] ?? p.unit}</span>
+                    <span class="prog-bar"
+                      ><i style="width: {Math.min(100, (p.have / p.need) * 100)}%"></i></span
+                    >
+                  </div>
+                {/if}
+              {/if}
             </div>
           </div>
         {/each}
@@ -495,6 +516,33 @@
     border-color: rgba(192, 57, 43, 0.6);
     background: linear-gradient(160deg, #c0392b, #8e2a1f);
     color: #fdece7;
+  }
+
+  /* 可量化成就的进度条（锁着的显示"还差多少"） */
+  .prog {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+  }
+  .prog-txt {
+    font-size: var(--fs-xs);
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .prog-bar {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+  }
+  .prog-bar i {
+    display: block;
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--cyan), var(--gold));
   }
 
   .list {

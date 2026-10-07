@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ACHIEVEMENTS,
   ACHV_GROUPS,
+  achievementProgress,
   evalAchievements,
   fitScore,
   scoreForPoint,
@@ -9,6 +10,8 @@ import {
   spectrumGaps,
   starsFor,
 } from './scoring';
+import { LEVEL_DEFS } from './levels';
+import type { AchievementContext } from './scoring';
 import type { SpectrumEntry } from './types';
 
 describe('成就定义自洽', () => {
@@ -24,6 +27,45 @@ describe('成就定义自洽', () => {
 });
 
 describe('starsFor', () => {
+  it('成就进度：口径与判定一致（含 builtInIds 过滤）', () => {
+    const ctx: AchievementContext = {
+      bestStars: { circle: 3, heart: 2, 'random-1': 3 },
+      bestScores: { circle: 42000 },
+      bestClears: {},
+      flags: {},
+      levelCount: 18,
+      perfect: { circle: true },
+      exact: {},
+      expert: {},
+      chapterSeals: { basics: true },
+      chapterCount: 6,
+      builtInIds: LEVEL_DEFS.map((d) => d.id),
+      dailyStreak: 12,
+    };
+    // 连击之王：任意一关最高分 42000 / 30000（随机关也算，口径与判定一致）
+    expect(achievementProgress('combo-king', ctx)).toEqual({
+      have: 42000,
+      need: 30000,
+      unit: 'points',
+    });
+    // 全部三星：内置关里三星的只有 circle → 1 / 18（随机关不计）
+    expect(achievementProgress('all-three', ctx)).toEqual({ have: 1, need: 18, unit: 'levels' });
+    // 半程大师：内置总星数 5 / 27（18 × 1.5 向上取整）
+    expect(achievementProgress('half-stars', ctx)).toEqual({ have: 5, need: 27, unit: 'stars' });
+    // 完美：只有 circle → 1 / 18
+    expect(achievementProgress('all-perfect', ctx)).toEqual({ have: 1, need: 18, unit: 'levels' });
+    // 章节印：已有 1 方 → 1 / 6
+    expect(achievementProgress('all-chapter-seals', ctx)).toEqual({
+      have: 1,
+      need: 6,
+      unit: 'seals',
+    });
+    // 连胜：12 / 30
+    expect(achievementProgress('streak-30', ctx)).toEqual({ have: 12, need: 30, unit: 'days' });
+    // 不可量化的成就返回 null
+    expect(achievementProgress('first-star', ctx)).toBeNull();
+  });
+
   it('按 90%/65%/35% 阈值定星级', () => {
     expect(starsFor(1)).toBe(3);
     expect(starsFor(0.9)).toBe(3);

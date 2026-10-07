@@ -49,6 +49,7 @@ import {
   fitScore,
   solveFromSpectrum,
   starsFor,
+  achievementProgress,
   type AchievementContext,
 } from './scoring';
 import { campaignState, type CampaignState } from './campaign';
@@ -841,7 +842,16 @@ export class GameEngine {
       expert: this.expertClears,
       chapterSeals,
       chapterCount: CHAPTERS.length,
+      dailyStreak: this.dailyStreak.streak,
     };
+  }
+
+  /**
+   * 某个可量化成就的当前进度（供成就面板展示"还差多少"）。
+   * 不可量化的成就返回 null。
+   */
+  achievementProgressOf(id: string) {
+    return achievementProgress(id, this.achievementContext());
   }
 
   /** 重新判定成就，新解锁的依次弹出提示 */

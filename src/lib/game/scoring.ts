@@ -196,6 +196,65 @@ export interface AchievementContext {
   builtInIds?: string[];
   /** 各章总星数（key = 章节 id），用于"某一章全三星"类成就 */
   chapterStars?: Record<string, number>;
+  /** 每日挑战当前连胜天数（streak 类成就的进度来源） */
+  dailyStreak?: number;
+}
+
+/** 可量化成就的进度（have/need 同单位） */
+export interface AchievementProgress {
+  have: number;
+  need: number;
+  /** 进度单位（星 / 关 / 印 / 天 / 分） */
+  unit: string;
+}
+
+/**
+ * 某个可量化成就的当前进度（未达成的拿来展示"还差多少"）。
+ * 口径与 evalAchievements 完全一致（含 builtInIds 过滤），
+ * 不可量化的成就返回 null。
+ */
+export function achievementProgress(
+  id: string,
+  ctx: AchievementContext,
+): AchievementProgress | null {
+  const builtIn = new Set(ctx.builtInIds ?? []);
+  const isBuiltIn = (x: string): boolean => builtIn.size === 0 || builtIn.has(x);
+  const builtInCount = builtIn.size || ctx.levelCount;
+  const builtInStars = Object.entries(ctx.bestStars)
+    .filter(([k]) => isBuiltIn(k))
+    .map(([, v]) => v);
+  const starSum = builtInStars.reduce((a, b) => a + b, 0);
+  const threeStar = builtInStars.filter((s) => s >= 3).length;
+  const countOf = (m?: Record<string, unknown>): number =>
+    m ? Object.keys(m).filter(isBuiltIn).length : 0;
+  const sealedCount = Object.values(ctx.chapterSeals ?? {}).filter(Boolean).length;
+  const streak = ctx.dailyStreak ?? 0;
+  const bestScore = Object.values(ctx.bestScores).reduce((a, b) => Math.max(a, b), 0);
+
+  switch (id) {
+    case 'combo-king':
+      return { have: bestScore, need: 30000, unit: 'points' };
+    case 'half-stars':
+      return { have: starSum, need: Math.ceil(builtInCount * 1.5), unit: 'stars' };
+    case 'all-three':
+      return { have: threeStar, need: builtInCount, unit: 'levels' };
+    case 'all-perfect':
+      return { have: countOf(ctx.perfect), need: builtInCount, unit: 'levels' };
+    case 'exact-award':
+      return { have: countOf(ctx.exact), need: builtInCount, unit: 'levels' };
+    case 'expert-all':
+      return { have: countOf(ctx.expert), need: builtInCount, unit: 'levels' };
+    case 'chapter-seal':
+      return { have: sealedCount, need: 1, unit: 'seals' };
+    case 'all-chapter-seals':
+      return { have: sealedCount, need: ctx.chapterCount ?? 5, unit: 'seals' };
+    case 'streak-7':
+      return { have: streak, need: 7, unit: 'days' };
+    case 'streak-30':
+      return { have: streak, need: 30, unit: 'days' };
+    default:
+      return null;
+  }
 }
 
 /** 按上下文返回全部已达成成就的 id */
