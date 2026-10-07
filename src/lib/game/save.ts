@@ -114,6 +114,54 @@ export function parseCustomSave(
   }
 }
 
+/**
+ * 续玩域的存储读写：LAST_LEVEL_KEY / LAST_CUSTOM_KEY 的存取，
+ * 引擎只调这些函数，不直接碰这两个键。
+ */
+export function readLastLevelId(): string {
+  try {
+    return localStorage.getItem('fft-pointers-last-level-v1') ?? '';
+  } catch {
+    return '';
+  }
+}
+
+export function writeLastLevelId(id: string): void {
+  try {
+    localStorage.setItem('fft-pointers-last-level-v1', id);
+  } catch {
+    /* 存储不可用则忽略 */
+  }
+}
+
+export function readLastCustomRaw(): string | null {
+  try {
+    return localStorage.getItem('fft-pointers-last-custom-v1');
+  } catch {
+    return null;
+  }
+}
+
+export function writeLastCustom(
+  id: string,
+  name: string,
+  coeffs: { k: number; mag: number; phase: number }[],
+): void {
+  try {
+    localStorage.setItem('fft-pointers-last-custom-v1', JSON.stringify({ id, name, coeffs }));
+  } catch {
+    /* 存储不可用则忽略 */
+  }
+}
+
+export function clearLastCustom(): void {
+  try {
+    localStorage.removeItem('fft-pointers-last-custom-v1');
+  } catch {
+    /* 存储不可用则忽略 */
+  }
+}
+
 function toBase64(s: string): string {
   const bytes = new TextEncoder().encode(s);
   let bin = '';

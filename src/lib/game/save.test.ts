@@ -15,8 +15,13 @@ import {
   clearSave,
   exportSave,
   importSave,
+  clearLastCustom,
   parseCustomSave,
+  readLastCustomRaw,
+  readLastLevelId,
   readJson,
+  writeLastCustom,
+  writeLastLevelId,
   writeJson,
   PREF_KEYS,
   SAVE_KEYS,
@@ -81,6 +86,44 @@ describe('readJson：引擎存档字段的统一安全读取', () => {
 
 describe('存档导出/导入', () => {
   let store: Storage;
+
+  describe('续玩域存储读写', () => {
+    beforeEach(() => {
+      Object.defineProperty(globalThis, 'localStorage', {
+        value: memStore(),
+        configurable: true,
+        writable: true,
+      });
+    });
+
+    it('last-level id 往返', () => {
+      writeLastLevelId('heart');
+      expect(readLastLevelId()).toBe('heart');
+    });
+
+    it('last-custom 写入后可读回原串；清除后为 null', () => {
+      writeLastCustom('custom-1-100-0', '反转创作', [{ k: 1, mag: 100, phase: 0 }]);
+      const raw = readLastCustomRaw();
+      expect(raw).not.toBeNull();
+      expect(parseCustomSave(raw!, 'custom-1-100-0')).toEqual({
+        name: '反转创作',
+        coeffs: [{ k: 1, mag: 100, phase: 0 }],
+      });
+      clearLastCustom();
+      expect(readLastCustomRaw()).toBeNull();
+    });
+
+    it('存储不可用时安全回落', () => {
+      Object.defineProperty(globalThis, 'localStorage', {
+        value: undefined,
+        configurable: true,
+        writable: true,
+      });
+      expect(() => writeLastLevelId('x')).not.toThrow();
+      expect(readLastLevelId()).toBe('');
+      expect(readLastCustomRaw()).toBeNull();
+    });
+  });
   beforeEach(() => {
     store = memStore();
   });
