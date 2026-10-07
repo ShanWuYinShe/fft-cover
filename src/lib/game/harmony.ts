@@ -117,14 +117,24 @@ export interface Voice {
   detune: number;
 }
 
+/**
+ * 声部的音高上限（Hz）：与音乐环境的"温暖上限"同源。
+ * 高次谐波的音高会越过它——持续的高频纯音正是"刺耳"的主要来源，
+ * 所以超出部分按比例衰减音量（物理上高泛音本来就轻），音高映射保持不变。
+ */
+const VOICE_CALM_HZ = 700;
+
 /** 单根指针 → 声部；未启用或半径为 0 的指针不发声（返回 null） */
 export function armToVoice(arm: Arm, index: number, root = ROOT_HZ): Voice | null {
   if (!arm.on || arm.r <= 0) return null;
   const k = Math.min(MAX_HARMONIC, Math.max(1, Math.abs(arm.freq)));
+  const freq = root * k;
+  // 越过 700 Hz 的高次泛音按比例收轻：音高映射不变，听感不刺耳
+  const calm = Math.min(1, VOICE_CALM_HZ / freq);
   return {
     index,
-    freq: root * k,
-    gain: (0.04 + 0.2 * Math.min(1, arm.r / 170)) * harmonicRolloff(k),
+    freq,
+    gain: (0.04 + 0.2 * Math.min(1, arm.r / 170)) * harmonicRolloff(k) * calm,
     pan: Math.max(-1, Math.min(1, Math.sin(arm.phase))),
     detune: arm.freq < 0 ? -DETUNE_CENTS : DETUNE_CENTS,
   };

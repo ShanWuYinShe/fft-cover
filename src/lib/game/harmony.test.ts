@@ -80,6 +80,17 @@ describe('armToVoice', () => {
     }
   });
 
+  it('声部音高越过 700 Hz 后按比例收轻（持续高频是刺耳来源）', () => {
+    // 同一根 10× 指针：根音 65.4（≈654 Hz，限内）vs 根音 130.81（≈1308 Hz，超限）
+    const over = armToVoice(arm({ r: 120, freq: 10 }), 0, 130.81)!;
+    const free = armToVoice(arm({ r: 120, freq: 10 }), 0, 65.4)!;
+    // 频率翻倍 → 衰减约一半（calm = 700/1308 ≈ 0.535）
+    expect(over.gain).toBeLessThan(free.gain);
+    expect(free.gain / over.gain).toBeGreaterThan(1.8);
+    // 音高映射本身不变（×10 关系保持；根音 130.81/65.4 ≈ 2）
+    expect(over.freq / free.freq).toBeCloseTo(2, 2);
+  });
+
   it('相位映射到声像 [-1, 1]（0 居中、π/2 全右）', () => {
     expect(armToVoice(arm({ phase: 0 }), 0)?.pan).toBeCloseTo(0, 6);
     expect(armToVoice(arm({ phase: Math.PI / 2 }), 0)?.pan).toBeCloseTo(1, 6);
