@@ -1,7 +1,6 @@
 import {
   decodeCoeffs,
   encodeCoeffs,
-  lastNDays,
   levelFromCoeffs,
   LEVEL_DEFS,
   makeDailyLevel,
@@ -10,10 +9,9 @@ import {
   mulberry32,
   parseRandomSpec,
   randomSpec,
-  todayKey,
-  weekKey,
   makeWeeklyLevel,
 } from './levels';
+import { todayKey, lastNDays, weekKey } from './dates';
 import { describe, expect, it } from 'vitest';
 import { CHAPTERS } from './levels';
 import { SIZE } from './constants';
@@ -116,6 +114,12 @@ describe('makeDailyLevel', () => {
     expect(b.pts).toEqual(a.pts);
     expect(a.id.startsWith('weekly-')).toBe(true);
     expect(a.armLimit).toBeGreaterThan(0);
+  });
+
+  it('每周挑战的名字不带年份前缀（回归：\\d 转义事故让年份一直显示）', () => {
+    const name = makeWeeklyLevel('hard').name;
+    expect(name).toMatch(/^每周挑战 W\d{2}·难$/);
+    expect(name).not.toContain('2026');
   });
 
   it('内置关卡总数为 18（六章）', () => {

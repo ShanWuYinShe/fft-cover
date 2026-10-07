@@ -1,13 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import {
-  CHAPTERS,
-  dayKey,
-  LEVEL_DEFS,
-  makeDailyLevel,
-  makeRandomLevel,
-  todayKey,
-  yesterdayKey,
-} from './levels';
+import { CHAPTERS, LEVEL_DEFS, makeDailyLevel, makeRandomLevel } from './levels';
+import { dayKey, todayKey, yesterdayKey } from './dates';
 import { HISTORY_KEY, LAST_CUSTOM_KEY, LAST_LEVEL_KEY } from './constants';
 import { GameEngine } from './engine.svelte';
 import { fitScore, solveFromSpectrum } from './scoring';

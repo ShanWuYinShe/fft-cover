@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { LEVEL_DEFS, yesterdayKey } from './levels';
+import { LEVEL_DEFS } from './levels';
+import { yesterdayKey } from './dates';
 import { GameEngine } from './engine.svelte';
 import { solveFromSpectrum } from './scoring';
 import { evalAchievements } from './scoring';

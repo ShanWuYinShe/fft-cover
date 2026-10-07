@@ -33,17 +33,15 @@ import {
   makeLevel,
   makeRandomLevel,
   makeWeeklyLevel,
-  weekKey,
-  dayKey,
   parseRandomSpec,
   randomSpec,
-  todayKey,
-  yesterdayKey,
   type RandomDifficulty,
 } from './levels';
+import { dayKey, todayKey, yesterdayKey, weekKey } from './dates';
 import {
   bestForPrefix,
   calendarRows,
+  dailyTrend,
   longestRun,
   playedDates,
   playedOn,
@@ -671,20 +669,13 @@ export class GameEngine {
 
   /**
    * 本关最近的历史成绩（新的在后），取最近 n 条。
-   * 每日关特殊：每天的 id 都不同（daily-<日期>-<难度>），单看只有一条——
-   * 这里聚合成"同难度跨天"的走势，才能看出每日挑战的进步曲线。
+   * 每日关的"同难度跨天"聚合规则在 daily.ts 的 dailyTrend。
    */
   recentHistory(n = 10): HistoryEntry[] {
     const id = this.level?.id;
     if (!id) return [];
     if (id.startsWith('daily-')) {
-      const diff = id.split('-').pop();
-      const merged: HistoryEntry[] = [];
-      for (const [k, list] of Object.entries(this.history)) {
-        if (k.startsWith('daily-') && k.endsWith('-' + diff)) merged.push(...list);
-      }
-      merged.sort((a, b) => a.t - b.t);
-      return merged.slice(-n);
+      return dailyTrend(this.history, id.split('-').pop() ?? '', n);
     }
     const list = this.history[id] ?? [];
     return list.slice(-n);

@@ -1,4 +1,5 @@
 import { ARMS_MAX } from './constants';
+import { todayKey, weekKey } from './dates';
 import {
   buildPoints,
   buildCurve,
@@ -411,40 +412,6 @@ export function decodeCoeffs(code: string): HarmonicCoeff[] | null {
   return out.length > 0 ? out : null;
 }
 
-/** 日期键（本地时区，YYYY-MM-DD） */
-export function dayKey(d: Date): string {
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return d.getFullYear() + '-' + mm + '-' + dd;
-}
-
-/** 今日日期串（本地时区） */
-export function todayKey(): string {
-  return dayKey(new Date());
-}
-
-/** 昨天的日期键（本地时区），用于连胜判定 */
-export function yesterdayKey(): string {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return dayKey(d);
-}
-
-/**
- * 最近 n 天的日期键（从旧到新，最后一项是今天）。
- * 用 setDate 做日期运算而不是减毫秒——跨夏令时也不会漏/重一天。
- */
-export function lastNDays(n: number): string[] {
-  const out: string[] = [];
-  const d = new Date();
-  d.setDate(d.getDate() - (n - 1));
-  for (let i = 0; i < n; i++) {
-    out.push(dayKey(d));
-    d.setDate(d.getDate() + 1);
-  }
-  return out;
-}
-
 /**
  * 随机关卡的"可复现标识"：random-<seed>-<难度>。
  * 关卡自身的 id 仍是 random-<seed>（进度键不变），这份标识只用于
@@ -480,20 +447,6 @@ export function makeDailyLevel(diff: RandomDifficulty = 'normal'): Level {
   };
 }
 
-/**
- * 本周挑战：seed 由 ISO 周一所在年份+周序号决定，同一周同难度的玩家面对同一关卡。
- * 比每日挑战更大、更难（固定困难档），一周里可以慢慢磨。
- */
-export function weekKey(d = new Date()): string {
-  // ISO 周：周一为一周之始；含 1 月 1 日的那周属于上一年，则归上一年第 52/53 周
-  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const day = t.getUTCDay() || 7; // 周日=7
-  t.setUTCDate(t.getUTCDate() + 4 - day); // 挪到本周的周四（ISO 周的代表日）
-  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
-  const week = Math.ceil(((t.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
-  return t.getUTCFullYear() + '-W' + String(week).padStart(2, '0');
-}
-
 /** 每周挑战：seed 由周键+难度决定，同一周同难度的玩家面对同一关卡 */
 export function makeWeeklyLevel(diff: RandomDifficulty = 'hard'): Level {
   const key = weekKey();
@@ -503,7 +456,7 @@ export function makeWeeklyLevel(diff: RandomDifficulty = 'hard'): Level {
   return {
     ...base,
     id: 'weekly-' + key + '-' + diff,
-    name: '每周挑战 ' + key.replace(/^\\d{4}-/, '') + tag,
+    name: '每周挑战 ' + key.replace(/^\d{4}-/, '') + tag,
     hint: '⚠️ 本周挑战：**固定困难档**，一周里可以慢慢磨——全球玩家同关，比比谁的分高！',
   };
 }

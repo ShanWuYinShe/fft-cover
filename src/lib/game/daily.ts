@@ -5,7 +5,8 @@
  * 引擎持有 $state 并负责持久化，这里只管"算"。
  * 这样这些规则可以脱离引擎做快速单测（daily.test.ts），也方便复用。
  */
-import { dayKey, lastNDays } from './levels';
+import type { HistoryEntry } from './types';
+import { dayKey, lastNDays } from './dates';
 
 /** 连胜记录形状（引擎持久化这个结构） */
 export interface StreakRecord {
@@ -100,6 +101,23 @@ export function calendarRows(
     rows.push(row);
   }
   return rows;
+}
+
+/**
+ * 每日关的走势聚合：每天的 id 都不同（daily-<日期>-<难度>），单看只有一条——
+ * 按"同难度跨天"合并、按时间升序，取最近 n 条。结算页的走势图用。
+ */
+export function dailyTrend(
+  history: Record<string, HistoryEntry[]>,
+  diff: string,
+  n = 10,
+): HistoryEntry[] {
+  const merged: HistoryEntry[] = [];
+  for (const [k, list] of Object.entries(history)) {
+    if (k.startsWith('daily-') && k.endsWith('-' + diff)) merged.push(...list);
+  }
+  merged.sort((a, b) => a.t - b.t);
+  return merged.slice(-n);
 }
 
 /** 最近 7 天的每日挑战完成情况（旧 → 新，最后一项是今天） */

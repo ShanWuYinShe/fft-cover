@@ -1,6 +1,7 @@
 <script lang="ts">
   import { engine } from '../game/engine.svelte';
-  import { decodeCoeffs, LEVEL_DEFS, todayKey } from '../game/levels';
+  import { decodeCoeffs, LEVEL_DEFS } from '../game/levels';
+  import { todayKey } from '../game/dates';
   import { buildCustomUrl, parseInvite } from '../game/share';
   import { chapterProgress, isLevelLocked } from '../game/campaign';
   import type { ChapterSealState } from '../game/goals';
