@@ -780,6 +780,16 @@
     min-height: 32px;
     border-radius: var(--r-sm);
   }
+  /* 触屏：标签页与迷你按钮的热区补够 */
+  @media (pointer: coarse), (max-width: 640px) {
+    .tabs button {
+      min-height: 38px;
+      padding: 8px 16px;
+    }
+    .mini {
+      min-height: 40px;
+    }
+  }
   .mini.danger:hover:not(:disabled) {
     border-color: rgba(248, 113, 113, 0.7);
     color: #f87171;

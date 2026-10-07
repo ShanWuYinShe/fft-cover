@@ -401,4 +401,12 @@
     border-color: rgba(167, 139, 250, 0.6);
     background: var(--purple-dim);
   }
+
+  /* 触屏：复位 / 步进 / 方向这类小按钮的热区补够 */
+  @media (pointer: coarse), (max-width: 640px) {
+    .reset,
+    .dir {
+      min-height: 38px;
+    }
+  }
 </style>

@@ -454,6 +454,13 @@ button:disabled {
   color: var(--muted);
 }
 
+/* 触屏：工具行按钮的热区补够（视觉尺寸不变，点得中才行） */
+@media (pointer: coarse), (max-width: 640px) {
+  .tools-row button {
+    min-height: 40px;
+  }
+}
+
 .tools-row button:hover:not(:disabled) {
   color: var(--cyan);
 }
@@ -942,6 +949,27 @@ input[type='checkbox'] {
   }
   .bt-short {
     display: inline;
+  }
+}
+
+/* 手机竖屏：运行栏重排——5 个功能键一行，4 个图标键独占一行。
+   4 列网格装 9 个按钮会剩一个孤儿（⚙️ 单独占一行），所以竖屏单独定列数 */
+@media (max-width: 640px) and (orientation: portrait) {
+  .run-row {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .run-row button {
+    padding: 7px 6px;
+    white-space: nowrap; /* 69px 宽的格子里"开始旋转"不能折行 */
+  }
+  .run-icons {
+    display: flex;
+    grid-column: 1 / -1;
+    gap: 6px;
+  }
+  .run-icons button {
+    flex: 1;
+    width: auto;
   }
 }
 

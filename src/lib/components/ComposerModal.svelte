@@ -281,4 +281,11 @@
   .btns button:disabled {
     opacity: 0.4;
   }
+
+  /* 触屏：预设 chip 的热区补够 */
+  @media (pointer: coarse), (max-width: 640px) {
+    .pchip {
+      min-height: 38px;
+    }
+  }
 </style>

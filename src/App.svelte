@@ -382,13 +382,18 @@
         <button title="沙盒转速档位" onclick={() => engine.cycleSpeed()}>⚡ {engine.speed}×</button>
         <button onclick={() => engine.resetRun()}>⟲ 重置点</button>
         <span class="run-icons">
-          <button title="音量（点击循环 全/半/静）" onclick={cycleVolume}>
+          <button
+            title="音量（点击循环 全/半/静）"
+            aria-label={'音量：' + (volume === 1 ? '100%' : volume === 0.5 ? '50%' : '静音')}
+            onclick={cycleVolume}
+          >
             {volIcon}
           </button>
           <button
             class:music-off={!engine.musicOn}
             class:gold={engine.musicOn}
             aria-pressed={engine.musicOn}
+            aria-label={engine.musicOn ? '背景音乐：开' : '背景音乐：关'}
             title={engine.musicOn
               ? '背景音乐：你的指针正在实时合成和声（频率→音高、半径→音量、相位→左右）'
               : '背景音乐已关闭，点击开启'}
@@ -397,8 +402,8 @@
               uiToggle(engine.soundOn);
             }}>🎵</button
           >
-          <button title="成就" onclick={() => (showAchv = true)}>🏆</button>
-          <button title="设置" onclick={() => (showSettings = true)}>⚙️</button>
+          <button title="成就" aria-label="成就" onclick={() => (showAchv = true)}>🏆</button>
+          <button title="设置" aria-label="设置" onclick={() => (showSettings = true)}>⚙️</button>
         </span>
       {:else}
         <button class="primary" onclick={toggleRun}>{engine.runLabel}</button>
@@ -427,13 +432,18 @@
           🧪 沙盒
         </button>
         <span class="run-icons">
-          <button title="音量（点击循环 全/半/静）" onclick={cycleVolume}>
+          <button
+            title="音量（点击循环 全/半/静）"
+            aria-label={'音量：' + (volume === 1 ? '100%' : volume === 0.5 ? '50%' : '静音')}
+            onclick={cycleVolume}
+          >
             {volIcon}
           </button>
           <button
             class:music-off={!engine.musicOn}
             class:gold={engine.musicOn}
             aria-pressed={engine.musicOn}
+            aria-label={engine.musicOn ? '背景音乐：开' : '背景音乐：关'}
             title={engine.musicOn
               ? '背景音乐：你的指针正在实时合成和声（频率→音高、半径→音量、相位→左右）'
               : '背景音乐已关闭，点击开启'}
@@ -442,8 +452,8 @@
               uiToggle(engine.soundOn);
             }}>🎵</button
           >
-          <button title="成就" onclick={() => (showAchv = true)}>🏆</button>
-          <button title="设置" onclick={() => (showSettings = true)}>⚙️</button>
+          <button title="成就" aria-label="成就" onclick={() => (showAchv = true)}>🏆</button>
+          <button title="设置" aria-label="设置" onclick={() => (showSettings = true)}>⚙️</button>
         </span>
       {/if}
     </div>

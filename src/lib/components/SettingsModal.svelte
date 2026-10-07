@@ -210,4 +210,12 @@
     width: 100%;
     min-height: 42px;
   }
+
+  /* 触屏：开关与难度 chip 的热区补够（放样式块末尾，靠顺序压过基础规则） */
+  @media (pointer: coarse), (max-width: 640px) {
+    .sw,
+    .chip {
+      min-height: 40px;
+    }
+  }
 </style>

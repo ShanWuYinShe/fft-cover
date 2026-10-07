@@ -874,4 +874,72 @@
       order: 3;
     }
   }
+
+  /**
+   * 触屏：热区补够（视觉可以小，点得中才行）。
+   * 章节圆点原本是 8×8 的按钮本体，手机上根本点不中——把按钮撑成 40×40，
+   * 圆点改由 ::after 画，视觉尺寸不变。
+   * 放在样式块最后：媒体查询里的规则要与基础规则同特异性，靠顺序取胜。
+   */
+  @media (pointer: coarse), (max-width: 640px) {
+    .dots {
+      gap: 0;
+    }
+    .dot,
+    .dot.on {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      min-height: 40px;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .dot::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+      transition:
+        width 0.18s,
+        background 0.18s;
+    }
+    .dot.on::after {
+      width: 20px;
+      border-radius: 4px;
+      background: var(--cyan);
+      box-shadow: 0 0 10px rgba(79, 209, 197, 0.5);
+    }
+    .dot.done::after {
+      background: rgba(251, 191, 36, 0.6);
+    }
+    .dot.done.on::after {
+      background: linear-gradient(90deg, var(--cyan), var(--gold));
+    }
+    .dot.locked::after {
+      background: rgba(255, 255, 255, 0.07);
+    }
+    .nav {
+      width: 40px;
+      min-height: 40px;
+    }
+    .diff-chip {
+      min-height: 40px;
+    }
+    .gen-btn {
+      min-height: 40px;
+    }
+    .mini {
+      min-height: 38px;
+    }
+    .daily-share {
+      min-width: 40px;
+    }
+  }
 </style>
