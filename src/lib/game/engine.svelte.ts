@@ -1102,13 +1102,10 @@ export class GameEngine {
    * 创作关在刷新后就没了，只能重新贴邀请码）。
    */
   loadCustomLevel(coeffs: { k: number; mag: number; phase: number }[], name: string): void {
-    this.cancelAutoSolve();
-    this.sandbox = false;
-    this.level = levelFromCoeffs(coeffs, name);
-    this.trimArmsToLimit();
-    this.resetRun();
+    const lv = levelFromCoeffs(coeffs, name);
+    this.enterLevel(lv);
     this.markFlag('composerPlayed');
-    this.rememberCustomLevel(this.level.id, name, coeffs);
+    this.rememberCustomLevel(lv.id, name, coeffs);
   }
 
   /**
