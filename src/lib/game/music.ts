@@ -28,8 +28,11 @@ const NOTE_GAIN = 0.07;
 /**
  * 环境音的音高上限（Hz）。高频是"刺耳"的主要来源：
  * 一切都压在 900 Hz 以下，听感是温暖、遥远、留白，而不是尖锐的哨音。
+ *
+ * 注意这条上限卡的是**实际发声音高**（含编钟泛音 ×2、×2.76），
+ * 不只是基频——playSwell 里对每个泛音分量都做了判断，所有调用方自动受保护。
  */
-const NOTE_MAX_HZ = 700;
+export const NOTE_MAX_HZ = 700;
 /** 总线低通：整体削掉高频毛刺（刺耳段主要是 1.5~4 kHz 的纯音） */
 const BUS_LOWPASS_HZ = 1300;
 /** 空气层音量基数 */
@@ -191,8 +194,12 @@ const BELL_PARTIALS: Array<[number, number]> = [
   [2.76, 0.08],
 ];
 
-/** 一个长起长落的音：探索环境的基本单位（慢起音、慢消散、可定位声像） */
-function playSwell(
+/**
+ * 一个长起长落的音：探索环境的基本单位（慢起音、慢消散、可定位声像）。
+ *
+ * 导出仅供测试断言"实际发声音高 ≤ NOTE_MAX_HZ"这条设计约束。
+ */
+export function playSwell(
   ac: BaseAudioContext,
   dest: AudioNode,
   freq: number,

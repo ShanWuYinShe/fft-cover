@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { scheduleAmbient, type AmbientState } from './music';
+import { NOTE_MAX_HZ, playSwell, scheduleAmbient, type AmbientState } from './music';
 import { CHAPTER_KEYS, scaleNotes } from './harmony';
 
 /**
@@ -69,6 +69,8 @@ function rng(seed: number): () => number {
 }
 
 const fakeBus = { input: {} as AudioNode } as Parameters<typeof scheduleAmbient>[1];
+/** playSwell 只往 AudioNode 上 connect，给个空壳即可 */
+const fakeDest = {} as AudioNode;
 
 describe('环境声排程：不刺耳、不嗡鸣（设计约束写成测试）', () => {
   for (const [id, key] of Object.entries(CHAPTER_KEYS)) {
@@ -153,6 +155,45 @@ describe('环境声排程：不刺耳、不嗡鸣（设计约束写成测试）'
       100000,
     );
     expect(n).toBeLessThanOrEqual(32);
+  });
+
+  it('泛音上限在 playSwell 内部生效：所有调用方（含切关抵达音）自动受保护', () => {
+    // 真实场景：抵达音取 scaleNotes(key,7) 的 0/2/4 号音再叠编钟泛音，
+    // 最高一项 ×2.76 会把 659 Hz 推到 1820 Hz（修复前实测）。
+    const BELL_PARTIALS: Array<[number, number]> = [
+      [1, 1],
+      [2, 0.22],
+      [2.76, 0.08],
+    ];
+    for (const key of Object.values(CHAPTER_KEYS)) {
+      const pool = scaleNotes(key, 7);
+      for (const slot of [0, 2, 4]) {
+        const f = pool[slot % pool.length];
+        const sink: RecordedOsc[] = [];
+        playSwell(fakeAc(sink), fakeDest, f, 0.05, 0, 0.5, 4.5, 0, BELL_PARTIALS);
+        expect(sink.length).toBeGreaterThan(0);
+        for (const o of sink) {
+          expect(
+            o.freq,
+            key.id + ' 抵达音发声音高 ' + o.freq.toFixed(0) + ' Hz 超限',
+          ).toBeLessThanOrEqual(NOTE_MAX_HZ);
+        }
+      }
+    }
+  });
+
+  it('超限泛音是被跳过（而不是被移调）：基频仍在、多出的高频分量消失', () => {
+    const BELL_PARTIALS: Array<[number, number]> = [
+      [1, 1],
+      [2, 0.22],
+      [2.76, 0.08],
+    ];
+    // 659 Hz：×1 与 ×2 留下（659、1318 中 1318 超限→只剩 659），×2.76 超限
+    const sink: RecordedOsc[] = [];
+    playSwell(fakeAc(sink), fakeDest, 659, 0.05, 0, 0.5, 4.5, 0, BELL_PARTIALS);
+    const freqs = sink.map((o) => Math.round(o.freq));
+    expect(freqs).toContain(659); // 基频保留，"钟"的底子还在
+    expect(freqs.every((f) => f <= NOTE_MAX_HZ)).toBe(true);
   });
 
   it('强度影响密度：运行态（1）比编辑态（0.3）排得更密', () => {
