@@ -27,6 +27,7 @@
     perfectArpeggio,
     setVolume,
     getVolume,
+    initVolumeFromStorage,
     uiClick,
     uiToggle,
   } from './lib/game/audio';
@@ -136,7 +137,9 @@
   function applyPwaUpdate(): void {
     void import('./main').then((m) => m.applyUpdate());
   }
-  let volume = $state(getVolume());
+  // 启动时把存档音量灌进 audio 模块的模块级状态：
+  // 模块变量默认满音量，不初始化的话"上次静音"的玩家刷新后会突然有声音
+  let volume = $state(initVolumeFromStorage());
 
   /**
    * 背景音乐跟随游戏状态：指针参数（引擎响应式）变化即刷新声部，

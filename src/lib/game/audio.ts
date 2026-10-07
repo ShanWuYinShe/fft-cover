@@ -1,7 +1,11 @@
 import { PENTATONIC, VOLUME_KEY } from './constants';
 
 let audioCtx: AudioContext | null = null;
-/** 全局音量（0/0.5/1 三态），由 App 切换并持久化 */
+/**
+ * 全局音量（0/0.5/1 三态），由 App 切换并持久化。
+ * 初值必须由 initVolumeFromStorage() 从存档里恢复——否则每次刷新都会
+ * 从满音量起步，静音的玩家会突然听到声音（模块级变量不会自己读存档）。
+ */
 let volume = 1;
 
 export function setVolume(v: number): void {
@@ -13,9 +17,33 @@ export function setVolume(v: number): void {
   }
 }
 
+/** 当前生效的音量（测试与诊断用；0 是合法值） */
+export function currentVolume(): number {
+  return volume;
+}
+
+/** 从存档恢复音量到模块状态；返回恢复后的值（App 启动时调用一次） */
+export function initVolumeFromStorage(): number {
+  volume = getVolume();
+  return volume;
+}
+
+/** 合法音量档位：满 / 半 / 静音 */
+const VOLUME_STEPS = [1, 0.5, 0];
+
+/**
+ * 读取持久化音量。
+ *
+ * 注意别写成 `Number(x) || 1`——那会把"静音"（0）当成假值回落到满音量，
+ * 玩家静音后一刷新就恢复满音量（0 在这里是合法值，不是缺失）。
+ * 只接受三档合法值，其余（没存过 / 脏数据）一律回落到满音量。
+ */
 export function getVolume(): number {
   try {
-    return Number(localStorage.getItem(VOLUME_KEY) ?? '1') || 1;
+    const raw = localStorage.getItem(VOLUME_KEY);
+    if (raw === null) return 1;
+    const v = Number(raw);
+    return VOLUME_STEPS.includes(v) ? v : 1;
   } catch {
     return 1;
   }
