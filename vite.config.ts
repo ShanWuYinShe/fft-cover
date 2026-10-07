@@ -31,8 +31,31 @@ function swVersionPlugin(): Plugin {
   };
 }
 
+/**
+ * healthz 版本指纹:构建时生成 dist/version.json(nginx /healthz 直接 alias)。
+ * 版本与 swVersionPlugin 同源(GIT_COMMIT,缺失退化为时间戳);曾靠手工维护,
+ * rsync --delete 部署一次就把线上文件清掉了(healthz 404),必须随构建产出。
+ */
+function versionJsonPlugin(): Plugin {
+  const version = process.env.GIT_COMMIT || String(Date.now());
+  return {
+    name: 'version-json',
+    apply: 'build',
+    closeBundle() {
+      const content = JSON.stringify({
+        service: 'games',
+        game: 'fft-cover',
+        status: 'ok',
+        commit: version,
+        built_at: new Date().toISOString(),
+      });
+      writeFileSync(resolve(process.cwd(), 'dist/version.json'), content);
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [svelte(), swVersionPlugin()],
+  plugins: [svelte(), swVersionPlugin(), versionJsonPlugin()],
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
