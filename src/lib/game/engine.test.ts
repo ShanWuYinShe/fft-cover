@@ -96,6 +96,112 @@ describe('GameEngine', () => {
     expect(engine.arms.filter((a) => a.on)).toHaveLength(1);
   });
 
+  it('撤销 / 重做：三次间隔编辑各自一步', async () => {
+    engine.loadLevel(LEVEL_DEFS[0]);
+    engine.setArm(0, { on: true, r: 100, freq: 1, phase: 0 });
+    await new Promise((r) => setTimeout(r, 700));
+    engine.setArm(0, { r: 110 });
+    await new Promise((r) => setTimeout(r, 700));
+    engine.setArm(0, { r: 120 });
+    expect(engine.arms[0].r).toBe(120);
+    engine.undoArms();
+    expect(engine.arms[0].r).toBe(110);
+    engine.undoArms();
+    expect(engine.arms[0].r).toBe(100);
+    engine.undoArms();
+    // 再撤销回到载关后的初始状态（不再是 100）
+    expect(engine.arms[0].r).not.toBe(100);
+    engine.redoArms();
+    expect(engine.arms[0].r).toBe(100);
+  });
+
+  it('撤销 / 重做：600ms 内的连续编辑合并成一步', async () => {
+    engine.loadLevel(LEVEL_DEFS[0]);
+    engine.setArm(0, { on: true, r: 100, freq: 1, phase: 0 });
+    await new Promise((r) => setTimeout(r, 700));
+    const before = engine.armUndoCount;
+    // 模拟拖动 / 长按连发
+    for (let i = 1; i <= 8; i++) engine.setArm(0, { r: 100 + i });
+    expect(engine.arms[0].r).toBe(108);
+    expect(engine.armUndoCount).toBe(before + 1);
+    engine.undoArms();
+    expect(engine.arms[0].r).toBe(100);
+  });
+
+  it('撤销后再编辑：重做栈被清空（不会跳到废弃分支）', () => {
+    engine.loadLevel(LEVEL_DEFS[0]);
+    engine.setArm(0, { on: true, r: 100, freq: 1, phase: 0 });
+    engine.setArm(0, { r: 140 });
+    engine.undoArms();
+    engine.setArm(0, { r: 180 });
+    expect(engine.armRedoCount).toBe(0);
+    engine.redoArms();
+    expect(engine.arms[0].r).toBe(180);
+  });
+
+  it('强制入栈的动作之后，第一次编辑仍然是独立的一步', () => {
+    engine.loadLevel(LEVEL_DEFS[0]);
+    engine.setArm(0, { on: true, r: 100, freq: 1, phase: 0 });
+    engine.clearArms(); // 强制入栈
+    const cleared = engine.arms[0].r;
+    engine.setArm(0, { r: cleared + 5 }); // 紧随其后的编辑
+    // 撤销应当先回到"清零后"的状态，而不是直接跳回清零前
+    engine.undoArms();
+    expect(engine.arms[0].r).toBe(cleared);
+  });
+
+  it('整块动作之后，撤销栈还能继续长（回归：别再用 MAX_SAFE_INTEGER 禁止合并）', async () => {
+    engine.loadLevel(LEVEL_DEFS[0]);
+    engine.setArm(0, { on: true, r: 100, freq: 1, phase: 0 });
+    await new Promise((r) => setTimeout(r, 700));
+    engine.resetAllArms(); // 整块动作
+    const afterForce = engine.armUndoCount;
+    const afterReset = engine.arms[0].r; // 复位后的值（不等于复位前的 100）
+    expect(afterReset).not.toBe(100);
+    await new Promise((r) => setTimeout(r, 700));
+    engine.setArm(0, { r: 150 });
+    await new Promise((r) => setTimeout(r, 700));
+    engine.setArm(0, { r: 160 });
+    // 两步编辑都要入栈（修复前这里只会 +1 甚至 +0）
+    expect(engine.armUndoCount).toBe(afterForce + 2);
+    engine.undoArms();
+    expect(engine.arms[0].r).toBe(150);
+    engine.undoArms();
+    expect(engine.arms[0].r).toBe(afterReset);
+    engine.undoArms();
+    expect(engine.arms[0].r).toBe(100); // 再撤一步回到复位前
+  });
+
+  it('撤销栈上限 60：旧记录被丢弃且不崩', async () => {
+    engine.loadLevel(LEVEL_DEFS[0]);
+    for (let i = 0; i < 80; i++) {
+      await new Promise((r) => setTimeout(r, 0));
+      engine.setArm(0, { on: true, r: 60 + (i % 100), freq: 1, phase: 0 });
+    }
+    expect(engine.armUndoCount).toBeLessThanOrEqual(60);
+    for (let i = 0; i < 80; i++) engine.undoArms();
+    expect(engine.arms[0].r).toBeGreaterThanOrEqual(0);
+  });
+
+  it('空栈上撤销 / 重做是安全的空操作', () => {
+    const fresh = new GameEngine();
+    const before = fresh.arms.map((a) => ({ ...a }));
+    fresh.undoArms();
+    fresh.redoArms();
+    expect(fresh.arms).toEqual(before);
+  });
+
+  it('一键套用精确解可以撤销（求助按钮不该毁掉玩家原参数）', () => {
+    engine.loadLevel(LEVEL_DEFS[0]);
+    engine.setArm(0, { on: true, r: 37, freq: 1, phase: 0 });
+    const mine = engine.arms[0].r;
+    const applied = engine.applyExactSolution();
+    expect(applied).toBeGreaterThan(0);
+    expect(engine.arms[0].r).not.toBe(mine);
+    engine.undoArms();
+    expect(engine.arms[0].r).toBe(mine);
+  });
+
   it('连击计分：窗口内连收 combo 递增', () => {
     const pts = engine.level!.pts;
     engine.phase = 'running';

@@ -1381,6 +1381,8 @@ export class GameEngine {
   private lastArmPushAt = 0;
   /** 拖拽进行中：整段拖动合并为一条记录 */
   private armEditSession = false;
+  /** 上一次入栈是"整块动作"（force）→ 下一次编辑必须另开一步 */
+  private armHistoryBarrier = false;
   armUndoCount = $state(0);
   armRedoCount = $state(0);
 
@@ -1389,18 +1391,35 @@ export class GameEngine {
     this.armRedoCount = this.armRedoStack.length;
   }
 
-  /** 把当前参数压入撤销栈（会话合并：600ms 内或拖拽进行中不重复压） */
+  /**
+   * 把当前参数压入撤销栈。
+   * 合并规则：拖拽进行中（armEditSession）不再压；否则 600ms 内的连续编辑算同一步。
+   *
+   * 注意别再用"把 lastArmPushAt 设成 MAX_SAFE_INTEGER 来表示禁止合并"——
+   * 那样 `now - lastArmPushAt` 变成极大负数，之后**所有**编辑都会被静默合并进同一步，
+   * 撤销栈就再也长不出来了（实测：清零/复位/一键套用之后，撤销只能回到最早的状态）。
+   */
   private pushArmHistory(force = false): void {
     const now = Date.now();
-    if (!force && now - this.lastArmPushAt < 600) {
-      this.lastArmPushAt = now;
-      return;
+    if (!force) {
+      // 拖拽进行中：整段合并
+      if (this.armEditSession) {
+        this.lastArmPushAt = now;
+        return;
+      }
+      // 刚发生过一次"整块动作"（清零/复位/一键套用/撤销）：紧接着的编辑另开一步，
+      // 不要被 600ms 窗口并进那一块里
+      if (!this.armHistoryBarrier && now - this.lastArmPushAt < 600) {
+        this.lastArmPushAt = now;
+        return;
+      }
     }
     this.armUndoStack.push(this.arms.map((a) => ({ ...a })));
     if (this.armUndoStack.length > 60) this.armUndoStack.shift();
     this.armRedoStack = [];
     this.syncArmCounts();
-    this.lastArmPushAt = force ? Number.MAX_SAFE_INTEGER : now;
+    this.armHistoryBarrier = force;
+    this.lastArmPushAt = now;
   }
 
   /** 拖拽/滑块等连续交互的会话开始 */
@@ -1421,7 +1440,8 @@ export class GameEngine {
     this.armRedoStack.push(this.arms.map((a) => ({ ...a })));
     this.arms = prev.map((a) => ({ ...a }));
     this.syncArmCounts();
-    this.lastArmPushAt = 0;
+    // 撤销之后紧跟的编辑要另开一步（否则会被并进上一步，撤销链看起来"少了一步"）
+    this.armHistoryBarrier = true;
   }
 
   redoArms(): void {
@@ -1430,7 +1450,7 @@ export class GameEngine {
     this.armUndoStack.push(this.arms.map((a) => ({ ...a })));
     this.arms = next.map((a) => ({ ...a }));
     this.syncArmCounts();
-    this.lastArmPushAt = 0;
+    this.armHistoryBarrier = true;
   }
 
   /** 修改第 i 根指针参数（启用受本关上限约束） */
