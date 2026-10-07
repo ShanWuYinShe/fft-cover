@@ -988,6 +988,10 @@ input[type='checkbox'] {
   }
 
   main {
+    /* 必须是 flex 容器：中屏断点（≤1180px）把 main 设成了 grid，
+       只写 flex-direction 不会生效，而 grid 里 .sides{width:0} 会把面板压成 0 宽
+       （实测 844×390 下侧栏只剩 11px，中文逐字竖排） */
+    display: flex;
     flex-direction: row;
     align-items: stretch;
     justify-content: flex-start;
@@ -1000,30 +1004,54 @@ input[type='checkbox'] {
   .stage-wrap {
     flex: 0 0 auto;
     justify-content: center;
+    /* 与画布同宽：不然画布被高度限到 298px，舞台仍占 52vw，白白挤掉面板 141px */
+    width: min(52vw, calc(100dvh - 92px));
     max-width: 52vw;
     min-width: 0;
   }
 
+  /* 高度账：画布 + 运行栏两行必须塞进 100dvh，否则按钮被裁到屏幕外 */
   .canvas-box {
-    width: min(52vw, calc(100dvh - 92px));
+    width: min(52vw, calc(100dvh - 110px));
     margin: 0;
   }
 
+  .stage-wrap {
+    position: relative;
+  }
+
+  /* 横屏高度只有 ~390px：引导条占位会挤掉画布、浮起来又会压住运行栏，
+     而它讲的"半径调到 120"右侧面板的关卡提示里本来就有——直接收起来。
+     注意用 .stage-wrap 提高特异性：基础 .first-guide 规则在本块之后定义，
+     同特异性会被它盖回去（样式表顺序的坑，实测踩过一次） */
+  .stage-wrap .first-guide {
+    display: none;
+  }
+
+  /* 9 个按钮排两行：5 个功能键一行 + 4 个图标键一行（3 列会排成三行、高度超标） */
   .run-row {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 6px;
   }
 
   .run-icons {
-    display: contents;
+    display: flex;
+    grid-column: 1 / -1;
+    gap: 6px;
+  }
+
+  .run-icons button {
+    flex: 1;
+    width: auto;
   }
 
   .run-row button {
     width: 100%;
     font-size: var(--fs-xs);
-    padding: 7px 8px;
+    padding: 7px 6px;
     min-height: 38px;
+    white-space: nowrap;
   }
 
   .sides {
