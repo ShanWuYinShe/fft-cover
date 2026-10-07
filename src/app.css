@@ -1155,6 +1155,12 @@ input[type='checkbox'] {
 
 .first-guide b {
   color: var(--cyan);
+  /* 标签类短词不折行（"第 1 步"被压到 26px 会逐字竖排） */
+  white-space: nowrap;
+}
+
+.first-guide {
+  flex-wrap: wrap;
 }
 
 .first-guide.ok {

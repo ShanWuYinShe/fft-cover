@@ -11,6 +11,18 @@ import {
 } from './scoring';
 import type { SpectrumEntry } from './types';
 
+describe('成就定义自洽', () => {
+  // 分组归属已由「每个成就都归入已知分组，且每组都非空」覆盖，这里只补 id 与文案
+  it('成就 id 不重复，且都有名字与说明', () => {
+    const ids = ACHIEVEMENTS.map((a) => a.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const a of ACHIEVEMENTS) {
+      expect(a.name.length, a.id).toBeGreaterThan(0);
+      expect(a.desc.length, a.id).toBeGreaterThan(0);
+    }
+  });
+});
+
 describe('starsFor', () => {
   it('按 90%/65%/35% 阈值定星级', () => {
     expect(starsFor(1)).toBe(3);

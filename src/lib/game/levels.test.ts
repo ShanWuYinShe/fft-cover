@@ -13,7 +13,28 @@ import {
   todayKey,
 } from './levels';
 import { describe, expect, it } from 'vitest';
+import { CHAPTERS } from './levels';
 import { SIZE } from './constants';
+
+describe('章节与关卡的对应关系', () => {
+  it('每关的 chapter 都存在于 CHAPTERS，且每章至少有一关', () => {
+    const chapterIds = new Set(CHAPTERS.map((c) => c.id));
+    for (const def of LEVEL_DEFS) {
+      expect(chapterIds.has(def.chapter ?? 'basics'), def.id + ' 的章节不存在').toBe(true);
+    }
+    for (const c of CHAPTERS) {
+      const n = LEVEL_DEFS.filter((d) => (d.chapter ?? 'basics') === c.id).length;
+      expect(n, c.id + ' 章没有关卡').toBeGreaterThan(0);
+    }
+  });
+
+  it('章节 id 与章节印都不重复', () => {
+    const ids = CHAPTERS.map((c) => c.id);
+    const seals = CHAPTERS.map((c) => c.seal);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(new Set(seals).size).toBe(seals.length);
+  });
+});
 
 describe('makeLevel', () => {
   it('每个内置关卡都生成指定数量的画布内点集', () => {

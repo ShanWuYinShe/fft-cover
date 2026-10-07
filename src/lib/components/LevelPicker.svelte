@@ -794,7 +794,7 @@
   .diff-chips {
     display: flex;
     gap: 4px;
-    flex: 1;
+    flex: 0 0 auto;
   }
   .diff-chip {
     font-size: var(--fs-xs);
@@ -802,7 +802,11 @@
     min-height: 24px;
     border-radius: 999px;
     color: var(--muted);
-    flex: 1;
+    /* 不给压缩：两字标签被压到 33px 就会逐字竖排（窄视口经典坑），
+       宁可让后面的生成/创作按钮换行 */
+    flex: 0 0 auto;
+    min-width: 46px;
+    white-space: nowrap;
   }
   .diff-chip.active {
     border-color: rgba(167, 139, 250, 0.7);
