@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { __setAudioGraphForTests, updateMusic, type AmbientBus } from './music';
+import { __setAudioGraphForTests, setMusicSuspended, updateMusic, type AmbientBus } from './music';
 import type { Arm } from './types';
 
 /**
- * 带"创建计数"的假 AudioContext：验证声部链在 context 重建后能正确重建。
- * 旧实现只在 startMusic 里重置 ctx/bus，chains 还挂在旧 context 的节点上，
- * 新声部永远建不出来——移动端切后台杀 AudioContext 后音乐消失的真因。
+ * 带"创建计数"的假 AudioContext：验证声部链生命周期与页面挂起/恢复。
+ * 记录 suspend/resume 调用（visibilitychange 的委托路径）。
  * 注：每条声部链含 2 个振荡器（声部 + LFO 涨落），计数按 2 的倍数走。
  */
 function fakeContext() {
+  const calls: string[] = [];
   let oscCount = 0;
   const mkParam = (initial: number) => ({
     value: initial,
@@ -32,9 +32,19 @@ function fakeContext() {
     },
     createGain: () => ({ gain: mkParam(0), connect: () => {} }),
     createStereoPanner: () => ({ pan: mkParam(0), connect: () => {} }),
+    suspend: () => {
+      calls.push('suspend');
+    },
+    resume: () => {
+      calls.push('resume');
+    },
     __oscCount: () => oscCount,
+    __calls: () => calls,
   };
-  return ac as unknown as BaseAudioContext & { __oscCount: () => number };
+  return ac as unknown as BaseAudioContext & {
+    __oscCount: () => number;
+    __calls: () => string[];
+  };
 }
 
 function fakeBus(): AmbientBus {
@@ -102,5 +112,28 @@ describe('updateMusic 声部链生命周期', () => {
     // 修复前：chains 里是旧 context 的链，updateMusic 命中"已有链"只改参数，
     // 新 context 一个振荡器都不建 → 音乐永久消失
     expect(ac2.__oscCount()).toBe(4);
+  });
+});
+
+describe('setMusicSuspended：页面挂起/恢复的委托', () => {
+  it('挂起调 ctx.suspend，恢复调 ctx.resume，且不破坏已建声部', () => {
+    const ac = fakeContext();
+    __setAudioGraphForTests(ac, fakeBus());
+    updateMusic(arms, 1, true, 0.5);
+    expect(ac.__oscCount()).toBe(4);
+
+    setMusicSuspended(true);
+    setMusicSuspended(false);
+    expect(ac.__calls()).toEqual(['suspend', 'resume']);
+    // 声部链不因挂起/恢复被破坏（再次 updateMusic 不重建）
+    updateMusic(arms, 1, true, 0.5);
+    expect(ac.__oscCount()).toBe(4);
+  });
+
+  it('没有音频图时（未获得手势）挂起/恢复是安全的空操作', () => {
+    expect(() => {
+      setMusicSuspended(true);
+      setMusicSuspended(false);
+    }).not.toThrow();
   });
 });
