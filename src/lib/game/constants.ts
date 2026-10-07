@@ -62,6 +62,8 @@ export const LAST_CUSTOM_KEY = 'fft-pointers-last-custom-v1';
 export const DIFF_KEY = 'fft-pointers-diff-v1';
 /** 合成器"只显示已启用行"的折叠偏好（裸字符串 '1'/'0'）localStorage 键名 */
 export const COMPOSER_FILTER_KEY = 'fft-pointers-composer-filter-v1';
+/** 合成器上次使用的作品名（裸字符串存储）localStorage 键名 */
+export const COMPOSER_NAME_KEY = 'fft-pointers-composer-name-v1';
 
 /** 五声音阶频率（C 宫调式，两个八度）：收集音效按收集序号递进 */
 export const PENTATONIC = [

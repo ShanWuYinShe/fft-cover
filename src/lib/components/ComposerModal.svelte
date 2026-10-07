@@ -65,7 +65,23 @@
   }
 
   /** 作品名：玩家可给创作关起名，结算卡与续玩存档都用它 */
-  let levelName = $state('');
+  let levelName = $state(
+    ((): string => {
+      try {
+        return localStorage.getItem('fft-pointers-composer-name-v1') ?? '';
+      } catch {
+        return '';
+      }
+    })(),
+  );
+
+  function saveNamePref(v: string): void {
+    try {
+      localStorage.setItem('fft-pointers-composer-name-v1', v);
+    } catch {
+      /* 存储不可用则忽略 */
+    }
+  }
 
   function setFilterPref(v: boolean): void {
     showOnlyActive = v;
@@ -288,6 +304,7 @@
       placeholder="给作品起个名字（可选，最多 12 字）"
       maxlength="12"
       bind:value={levelName}
+      onblur={() => saveNamePref(levelName)}
     />
     <canvas bind:this={canvas} width="150" height="150"></canvas>
     <p class="lead">
