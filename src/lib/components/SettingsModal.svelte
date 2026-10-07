@@ -104,14 +104,11 @@
       </div>
     </div>
 
-    <p class="desc">
+    <p class="desc keys">
       专家模式会隐藏目标轮廓与预览，只靠频谱与收集反馈推导参数。减少动画会关掉抖动、弹动与错峰入场（系统开启了"减弱动态效果"时默认打开）。
     </p>
-
-    <p class="desc keys">
-      快捷键：空格 开始 / 暂停（结算后立即重开）· S 停止结算 · R 重置 · Esc 关闭面板
-    </p>
-
+    快捷键：空格 开始 / 暂停（结算后立即重开）· S 停止结算 · R 重置 · ⌘/Ctrl+Z 撤销 · ⌘/Ctrl+Shift+Z 或
+    ⌘/Ctrl+Y 重做 · Esc 关闭面板
     <button class="primary" onclick={onclose}>关 闭</button>
   </div>
 </div>
