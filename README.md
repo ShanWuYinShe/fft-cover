@@ -195,7 +195,7 @@ pnpm preview        # 预览构建产物
 
     src/
       lib/game/        纯逻辑：constants / types / math / levels（关卡与章节）/ scoring / save / share
-                       campaign（章节进度与通关判定）/ pace（上届节奏：幽灵竞速时间线）
+                       campaign（章节进度与通关判定）/ daily（每日挑战纯计算域：连胜/打卡/统计）/ pace（上届节奏：幽灵竞速时间线）
                        audio（音效）/ harmony（指针→声部映射）/ music（和声垫音音频图）
                        engine.svelte.ts（runes 状态引擎）
       lib/components/  Stage（canvas 渲染循环）、ArmPanel / ArmRow / ArmEditor、

@@ -35,13 +35,22 @@ import {
   makeWeeklyLevel,
   weekKey,
   dayKey,
-  lastNDays,
   parseRandomSpec,
   randomSpec,
   todayKey,
   yesterdayKey,
   type RandomDifficulty,
 } from './levels';
+import {
+  bestForPrefix,
+  calendarRows,
+  longestRun,
+  playedDates,
+  playedOn,
+  settleStreak,
+  weekRows,
+  type StreakRecord,
+} from './daily';
 import { tipAt } from './math';
 import { decodeArms } from './share';
 import {
@@ -136,12 +145,6 @@ function loadPerfect(): Record<string, true> {
   } catch {
     return {};
   }
-}
-
-/** 连胜记录形状 */
-interface StreakRecord {
-  streak: number;
-  last: string;
 }
 
 function loadStreak(): StreakRecord {
@@ -1187,18 +1190,17 @@ export class GameEngine {
     this.checkAchievements();
   }
 
-  /** 每日挑战连胜结算：同一天只记一次 */
+  /** 每日挑战连胜结算：同一天只记一次（规则在 daily.ts 的 settleStreak） */
   private bumpDailyStreak(): void {
-    const today = todayKey();
-    if (this.dailyStreak.last === today) {
+    const next = settleStreak(this.dailyStreak, todayKey(), yesterdayKey());
+    if (next === this.dailyStreak) {
       this.streakJustBumped = 0;
       return;
     }
-    const streak = this.dailyStreak.last === yesterdayKey() ? this.dailyStreak.streak + 1 : 1;
-    this.dailyStreak = { streak, last: today };
-    this.streakJustBumped = streak;
-    if (streak >= 7) this.markFlag('streak7');
-    if (streak >= 30) this.markFlag('streak30');
+    this.dailyStreak = next;
+    this.streakJustBumped = next.streak;
+    if (next.streak >= 7) this.markFlag('streak7');
+    if (next.streak >= 30) this.markFlag('streak30');
     try {
       localStorage.setItem(STREAK_KEY, JSON.stringify(this.dailyStreak));
     } catch {
@@ -1292,20 +1294,16 @@ export class GameEngine {
     this.rememberLevel(lv.id);
   }
 
+  // ---- 每日挑战的统计与日历：计算规则在 daily.ts（纯函数域），这里只做委托 ----
+
   /** 本周挑战最佳得分（固定困难档，按周键记录，与每日挑战的键互不干扰） */
   get weeklyBest(): number {
-    const prefix = 'weekly-' + weekKey() + '-';
-    let best = 0;
-    for (const [k, v] of Object.entries(this.dailyBest)) {
-      if (k.startsWith(prefix) && v > best) best = v;
-    }
-    return best;
+    return bestForPrefix(this.dailyBest, 'weekly-' + weekKey() + '-');
   }
 
   /** 某天是否打过每日挑战（任意难度有得分即算） */
   dailyDoneOn(date: string): boolean {
-    const prefix = 'daily-' + date + '-';
-    return Object.entries(this.dailyBest).some(([k, v]) => k.startsWith(prefix) && v > 0);
+    return playedOn(this.dailyBest, date);
   }
 
   /**
@@ -1313,47 +1311,17 @@ export class GameEngine {
    * 注意每日关卡的 id 是 daily-<日期>-<难度>，不能只按日期前缀取键。
    */
   get todayBest(): number {
-    const prefix = 'daily-' + todayKey() + '-';
-    let best = 0;
-    for (const [k, v] of Object.entries(this.dailyBest)) {
-      if (k.startsWith(prefix) && v > best) best = v;
-    }
-    return best;
-  }
-
-  /** 打过每日挑战的全部日期（任意难度有得分即算），升序去重 */
-  private dailyPlayedDates(): string[] {
-    const set = new Set<string>();
-    for (const [k, v] of Object.entries(this.dailyBest)) {
-      if (v > 0) set.add(k.replace(/^daily-/, '').replace(/-(easy|normal|hard)$/, ''));
-    }
-    return [...set].sort();
+    return bestForPrefix(this.dailyBest, 'daily-' + todayKey() + '-');
   }
 
   /** 累计打过每日挑战的天数 */
   get dailyDaysTotal(): number {
-    return this.dailyPlayedDates().length;
+    return playedDates(this.dailyBest).length;
   }
 
   /** 历史最长连续天数（从每日成绩反推） */
   get longestDailyStreak(): number {
-    const dates = this.dailyPlayedDates();
-    let best = 0;
-    let run = 0;
-    let prev = '';
-    for (const d of dates) {
-      if (prev) {
-        const gap =
-          (new Date(d + 'T00:00:00').getTime() - new Date(prev + 'T00:00:00').getTime()) /
-          86_400_000;
-        run = Math.abs(gap - 1) < 0.01 ? run + 1 : 1;
-      } else {
-        run = 1;
-      }
-      best = Math.max(best, run);
-      prev = d;
-    }
-    return best;
+    return longestRun(playedDates(this.dailyBest));
   }
 
   /**
@@ -1363,41 +1331,12 @@ export class GameEngine {
   dailyCalendar(
     weeks = 5,
   ): { date: string; day: number; done: boolean; today: boolean; future: boolean }[][] {
-    const today = todayKey();
-    const d = new Date();
-    const dow = (d.getDay() + 6) % 7; // 0 = 周一
-    d.setDate(d.getDate() - dow - (weeks - 1) * 7);
-    const rows: { date: string; day: number; done: boolean; today: boolean; future: boolean }[][] =
-      [];
-    for (let w = 0; w < weeks; w++) {
-      const row: { date: string; day: number; done: boolean; today: boolean; future: boolean }[] =
-        [];
-      for (let i = 0; i < 7; i++) {
-        const date = dayKey(d);
-        row.push({
-          date,
-          day: d.getDate(),
-          done: this.dailyDoneOn(date),
-          today: date === today,
-          future: date > today,
-        });
-        d.setDate(d.getDate() + 1);
-      }
-      rows.push(row);
-    }
-    return rows;
+    return calendarRows(this.dailyBest, weeks);
   }
 
   /** 最近 7 天的每日挑战完成情况（旧 → 新，最后一项是今天） */
   get dailyWeek(): { date: string; label: string; done: boolean; today: boolean }[] {
-    const today = todayKey();
-    const labels = ['日', '一', '二', '三', '四', '五', '六'];
-    return lastNDays(7).map((date) => ({
-      date,
-      label: labels[new Date(date + 'T00:00:00').getDay()],
-      done: this.dailyDoneOn(date),
-      today: date === today,
-    }));
+    return weekRows(this.dailyBest);
   }
 
   /** 载入本关已保存的解法参数（无存档则不动） */
