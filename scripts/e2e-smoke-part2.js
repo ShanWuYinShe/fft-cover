@@ -35,6 +35,7 @@
   await new Promise((r) => setTimeout(r, 600));
   out.composerRows = document.querySelectorAll('.sliders .row').length; // 20
   out.negLabel = !!document.querySelector('.neg-label');
+  out.nameInput = !!document.querySelector('.name-input'); // 作品起名输入框（起名功能回归锚）
   // 过滤 chip 回归锚：清存档后偏好重置，chip 应为未按下
   const filterChip = Array.from(document.querySelectorAll('.pchip')).find((x) =>
     x.textContent.includes('已启用'),
