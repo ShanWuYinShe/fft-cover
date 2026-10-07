@@ -358,6 +358,19 @@ describe('GameEngine', () => {
     expect(engine.achievements['craft-master']).toBeTruthy();
   });
 
+  it('集大成：第七章三关全三星才解锁', () => {
+    const dacheng = LEVEL_DEFS.filter((d) => d.chapter === 'dacheng');
+    expect(dacheng).toHaveLength(3);
+    // 只拿两关三星 → 不解锁
+    engine.bestStars = { [dacheng[0].id]: 3, [dacheng[1].id]: 3, [dacheng[2].id]: 2 };
+    engine.checkAchievements();
+    expect(engine.achievements['dacheng-master']).toBeUndefined();
+    // 三关全三星 → 解锁
+    engine.bestStars = { [dacheng[0].id]: 3, [dacheng[1].id]: 3, [dacheng[2].id]: 3 };
+    engine.checkAchievements();
+    expect(engine.achievements['dacheng-master']).toBeTruthy();
+  });
+
   it('setFlag 可开可关，且不影响其它标记', () => {
     engine.setFlag('reduceMotion', true);
     expect(engine.flags.reduceMotion).toBe(true);

@@ -221,6 +221,12 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     desc: '第六章「巧变」三关全部三星',
     group: 'mastery',
   },
+  {
+    id: 'dacheng-master',
+    name: '集大成',
+    desc: '第七章「大成」三关全部三星',
+    group: 'mastery',
+  },
   { id: 'daily-player', name: '每日一练', desc: '每日挑战中拿到得分', group: 'challenge' },
   {
     id: 'streak-7',
@@ -359,6 +365,8 @@ export function evalAchievements(ctx: AchievementContext): string[] {
   if (builtInStarSum >= builtInCount * 1.5) unlocked.push('half-stars');
   // 巧变三器：第六章三关全部三星（3 关 × 3 星 = 9）
   if ((ctx.chapterStars?.craft ?? 0) >= 9) unlocked.push('craft-master');
+  // 集大成：第七章三关全部三星（3 关 × 3 星 = 9）
+  if ((ctx.chapterStars?.dacheng ?? 0) >= 9) unlocked.push('dacheng-master');
   // 完美主义：全部内置关卡都达成 100% 全清（顶端追求）
   const perfectCount = Object.keys(ctx.perfect ?? {}).filter(isBuiltIn).length;
   if (perfectCount >= builtInCount) unlocked.push('all-perfect');
