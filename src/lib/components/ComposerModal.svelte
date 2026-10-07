@@ -51,6 +51,19 @@
     })(),
   );
 
+  let copied = $state(false);
+
+  /** 复制邀请码给好友（1.5s 后恢复按钮文案） */
+  async function copyCode(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(code);
+      copied = true;
+      setTimeout(() => (copied = false), 1500);
+    } catch {
+      /* 剪贴板不可用则忽略 */
+    }
+  }
+
   function setFilterPref(v: boolean): void {
     showOnlyActive = v;
     try {
@@ -261,7 +274,17 @@
       {/each}
     </div>
     <canvas bind:this={canvas} width="150" height="150"></canvas>
-    <p class="lead">启用谐波 {activeCount} 个 · 邀请码 <b>{code || '—'}</b></p>
+    <p class="lead">
+      启用谐波 {activeCount} 个 · 邀请码 <b>{code || '—'}</b>
+      {#if code}
+        <button
+          type="button"
+          class="pchip"
+          title="复制邀请码，好友在邀请码输入框粘贴即可挑战同一关"
+          onclick={copyCode}>{copied ? '✓ 已复制' : '📋 复制'}</button
+        >
+      {/if}
+    </p>
     <div class="btns">
       <button class="primary" disabled={activeCount === 0} onclick={play}>🎮 生成并游玩</button>
       <button onclick={onclose}>关 闭</button>
