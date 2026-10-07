@@ -363,7 +363,10 @@
         type="button"
         class="more-daily"
         class:active={engine.level?.id.startsWith('weekly-')}
-        title="本周挑战：固定困难档，一周里慢慢磨"
+        style={daysLeftInWeek() === 1 && engine.weeklyBest === 0
+          ? 'box-shadow: 0 0 0 1px rgba(240, 183, 107, 0.55)'
+          : ''}
+        title="本周挑战：固定困难档，一周里慢慢磨（还剩最后一天，记得来打）"
         onclick={() => engine.loadWeekly()}
       >
         <span class="md-left">🗓 每周挑战</span>
