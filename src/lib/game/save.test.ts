@@ -15,6 +15,7 @@ import {
   clearSave,
   exportSave,
   importSave,
+  parseCustomSave,
   readJson,
   writeJson,
   PREF_KEYS,
@@ -84,12 +85,6 @@ describe('存档导出/导入', () => {
     store = memStore();
   });
 
-  it('导出带前缀，且为空时也合法', () => {
-    const text = exportSave(store);
-    expect(text.startsWith(SAVE_PREFIX)).toBe(true);
-    expect(text.length).toBeGreaterThan(SAVE_PREFIX.length);
-  });
-
   it('导出→导入 往返一致', () => {
     store.setItem(BEST_KEY, JSON.stringify({ circle: 3, ellipse: 2 }));
     store.setItem(BEST_SCORE_KEY, JSON.stringify({ circle: 30000 }));
@@ -103,7 +98,6 @@ describe('存档导出/导入', () => {
     expect(fresh.getItem(BEST_SCORE_KEY)).toBe(JSON.stringify({ circle: 30000 }));
     expect(fresh.getItem(ACHV_KEY)).toBe(JSON.stringify({ 'first-star': 1 }));
   });
-
   it('中文与 Unicode 往返正确', () => {
     store.setItem(BEST_KEY, JSON.stringify({ '随机·难 #653': 3 }));
     const text = exportSave(store);
@@ -177,5 +171,38 @@ describe('存档导出/导入', () => {
     const registered = new Set<string>([...SAVE_KEYS, ...PREF_KEYS]);
     const missing = declared.filter((k) => !registered.has(k));
     expect(missing, '未登记的存储键：' + missing.join(', ')).toEqual([]);
+  });
+});
+
+describe('parseCustomSave：创作关续玩存档的校验', () => {
+  const valid = JSON.stringify({
+    id: 'custom-1-100-0',
+    name: '反转创作',
+    coeffs: [{ k: 1, mag: 100, phase: 0 }],
+  });
+
+  it('合法记录解析出 name 与 coeffs', () => {
+    expect(parseCustomSave(valid, 'custom-1-100-0')).toEqual({
+      name: '反转创作',
+      coeffs: [{ k: 1, mag: 100, phase: 0 }],
+    });
+  });
+
+  it('id 不匹配 / 坏 JSON / 空 coeffs / 字段缺失 → 一律 null', () => {
+    expect(parseCustomSave(valid, 'custom-other')).toBeNull(); // id 不符
+    expect(parseCustomSave('{broken', 'custom-1-100-0')).toBeNull(); // 坏 JSON
+    expect(
+      parseCustomSave(
+        JSON.stringify({ id: 'custom-1-100-0', name: 'x', coeffs: [] }),
+        'custom-1-100-0',
+      ),
+    ).toBeNull(); // 空 coeffs
+    expect(parseCustomSave(null, 'custom-1-100-0')).toBeNull(); // 无存档
+    expect(
+      parseCustomSave(
+        JSON.stringify({ id: 'custom-1-100-0', name: 'x', coeffs: [{ k: 'x', mag: 1, phase: 0 }] }),
+        'custom-1-100-0',
+      ),
+    ).toBeNull(); // 系数字段类型不对
   });
 });

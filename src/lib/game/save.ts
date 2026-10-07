@@ -84,6 +84,36 @@ export function writeJson<T>(key: string, value: T): void {
   }
 }
 
+/**
+ * 校验并解析「最近游玩的创作关」存档（LAST_CUSTOM_KEY）。
+ * 结构必须完整：id 与期望一致、name 为字符串、coeffs 非空且每项为数值三元组。
+ * 任何不符都返回 null（宁可回落第一关，也不能拿脏数据建关卡）。
+ */
+export function parseCustomSave(
+  raw: string | null,
+  id: string,
+): { name: string; coeffs: { k: number; mag: number; phase: number }[] } | null {
+  try {
+    const parsed = JSON.parse(raw ?? 'null') as {
+      id?: unknown;
+      name?: unknown;
+      coeffs?: unknown;
+    } | null;
+    if (!parsed || parsed.id !== id) return null;
+    if (typeof parsed.name !== 'string' || !Array.isArray(parsed.coeffs)) return null;
+    const coeffs: { k: number; mag: number; phase: number }[] = [];
+    for (const c of parsed.coeffs as Array<{ k?: unknown; mag?: unknown; phase?: unknown }>) {
+      if (typeof c?.k !== 'number' || typeof c?.mag !== 'number' || typeof c?.phase !== 'number')
+        return null;
+      coeffs.push({ k: c.k, mag: c.mag, phase: c.phase });
+    }
+    if (coeffs.length === 0) return null;
+    return { name: parsed.name, coeffs };
+  } catch {
+    return null;
+  }
+}
+
 function toBase64(s: string): string {
   const bytes = new TextEncoder().encode(s);
   let bin = '';

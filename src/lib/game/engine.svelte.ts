@@ -50,7 +50,7 @@ import {
   weekRows,
   type StreakRecord,
 } from './daily';
-import { readJson, writeJson } from './save';
+import { parseCustomSave, readJson, writeJson } from './save';
 import { tipAt } from './math';
 import { decodeArms } from './share';
 import { scoreForPoint, fitScore, solveFromSpectrum, starsFor } from './scoring';
@@ -1135,26 +1135,11 @@ export class GameEngine {
     id: string,
   ): { name: string; coeffs: { k: number; mag: number; phase: number }[] } | null {
     try {
-      const raw = JSON.parse(localStorage.getItem(LAST_CUSTOM_KEY) ?? 'null') as {
-        id?: unknown;
-        name?: unknown;
-        coeffs?: unknown;
-      } | null;
-      if (!raw || raw.id !== id) return null;
-      if (typeof raw.name !== 'string' || !Array.isArray(raw.coeffs)) return null;
-      const coeffs: { k: number; mag: number; phase: number }[] = [];
-      for (const c of raw.coeffs as Array<{ k?: unknown; mag?: unknown; phase?: unknown }>) {
-        if (typeof c?.k !== 'number' || typeof c?.mag !== 'number' || typeof c?.phase !== 'number')
-          return null;
-        coeffs.push({ k: c.k, mag: c.mag, phase: c.phase });
-      }
-      if (coeffs.length === 0) return null;
-      return { name: raw.name, coeffs };
+      return parseCustomSave(localStorage.getItem(LAST_CUSTOM_KEY), id);
     } catch {
       return null;
     }
   }
-
   /** 进入今日每日挑战（seed 由日期+难度决定，人人同关） */
   loadDaily(): void {
     this.cancelAutoSolve();
