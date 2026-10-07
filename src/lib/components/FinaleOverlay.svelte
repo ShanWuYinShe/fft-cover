@@ -17,6 +17,14 @@
   const expertCount = $derived(
     LEVEL_DEFS.reduce((n, d) => n + (engine.expertClears[d.id] ? 1 : 0), 0),
   );
+  /** 从战利品墙点选一关：关掉演出、直接载入那一关再玩 */
+  function playLevel(id: string): void {
+    const def = LEVEL_DEFS.find((d) => d.id === id);
+    if (!def) return;
+    engine.loadLevel(def);
+    engine.dismissFinale();
+  }
+
   /** 全局朱印与章节印（与「本关目标」同一套判定） */
   const seals = $derived(engine.sealSummary);
 
@@ -95,21 +103,22 @@
         <div class="wall-ch">
           <span class="wall-name">{ch.short}</span>
           {#each ch.levels as lv (lv.id)}
-            <div
+            <button
+              type="button"
               class="wall-item"
               class:lit={lv.stars > 0}
               class:full={lv.stars === 3}
               style="animation-delay: {0.15 + lv.idx * 0.055}s"
-              role="img"
-              aria-label={lv.name + '：' + lv.stars + ' 星'}
+              title={'再玩「' + lv.name + '」'}
+              onclick={() => playLevel(lv.id)}
             >
               <svg viewBox="0 0 640 640" aria-hidden="true">
                 <polyline points={shapePoints(lv.id)} />
               </svg>
               <span class="wall-st">{'★'.repeat(lv.stars)}{'☆'.repeat(3 - lv.stars)}</span>
-              <!-- 悬停/聚焦才显示关卡名：静态堆 18 个名字会挤成一团 -->
+              <!-- 悬停/聚焦才显示关卡名：静态堆 21 个名字会挤成一团 -->
               <span class="wall-tip" aria-hidden="true">{lv.name}</span>
-            </div>
+            </button>
           {/each}
           {#if ch.sealed}
             <span class="wall-seal" title={'章节印「' + ch.seal + '」'}>{ch.seal}</span>
@@ -333,14 +342,33 @@
     justify-content: center;
     gap: 6px;
   }
+  /* 战利品墙的格子是按钮：点一下直接载入那一关再玩（reset 掉按钮默认外观） */
   .wall-item {
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1px;
-    cursor: default;
-    /* 逐关点亮：错峰淡入（opacity 放在子元素上，避免与"未点亮"状态打架） */
+    border-radius: 8px;
+    transition: background 0.15s;
+  }
+  .wall-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .wall-item:focus-visible {
+    outline: 2px solid rgba(79, 209, 197, 0.65);
+    outline-offset: 1px;
+  }
+  /* 逐关点亮：错峰淡入（opacity 放在子元素上，避免与"未点亮"状态打架） */
+  .wall-item {
     animation: wall-in 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) backwards;
   }
   @keyframes wall-in {
