@@ -402,31 +402,31 @@
           每天一练
         {/if}
       </span>
-      <div class="gen-row">
-        <span class="gen-label">随机生成</span>
-        <div class="diff-chips">
-          {#each DIFFS as d (d.id)}
-            <button
-              type="button"
-              class="diff-chip"
-              class:active={engine.difficulty === d.id}
-              onclick={() => engine.setDifficulty(d.id)}
-            >
-              {d.nm}
-            </button>
-          {/each}
-        </div>
-        <button class="gen-btn" title="按当前难度生成随机关卡" onclick={() => engine.loadRandom()}>
-          🎲 生成
-        </button>
-        <button
-          class="gen-btn"
-          title="用谐波合成器创作自己的关卡"
-          onclick={() => (showComposer = true)}
-        >
-          🎨 创作
-        </button>
+    </div>
+    <div class="gen-row">
+      <span class="gen-label">随机生成</span>
+      <div class="diff-chips">
+        {#each DIFFS as d (d.id)}
+          <button
+            type="button"
+            class="diff-chip"
+            class:active={engine.difficulty === d.id}
+            onclick={() => engine.setDifficulty(d.id)}
+          >
+            {d.nm}
+          </button>
+        {/each}
       </div>
+      <button class="gen-btn" title="按当前难度生成随机关卡" onclick={() => engine.loadRandom()}>
+        🎲 生成
+      </button>
+      <button
+        class="gen-btn"
+        title="用谐波合成器创作自己的关卡"
+        onclick={() => (showComposer = true)}
+      >
+        🎨 创作
+      </button>
     </div>
 
     <!--
