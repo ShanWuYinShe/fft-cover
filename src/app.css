@@ -1055,8 +1055,12 @@ input[type='checkbox'] {
   }
 
   .sides {
+    /* 横屏面板区够宽（516px）：两栏并排、左右各自滚动——
+       单列时 scrollHeight 1668px，要滚过整个关卡面板才够到指针面板 */
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
     flex: 1 1 0;
     width: 0;
     min-width: 0;
@@ -1064,6 +1068,13 @@ input[type='checkbox'] {
     overflow-y: auto;
     padding-bottom: 4px;
     gap: 10px;
+  }
+
+  .sides .side {
+    flex: 1 1 240px; /* 窄到放不下两栏时自动回到单列 */
+    min-width: 0;
+    max-height: 100%;
+    overflow-y: auto;
   }
 
   /* 横屏空间允许，全部 section 同屏显示（不启用 Tab 抽屉） */
