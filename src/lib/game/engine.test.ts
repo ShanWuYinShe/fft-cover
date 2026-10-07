@@ -1,6 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { CHAPTERS, dayKey, LEVEL_DEFS, makeRandomLevel, todayKey, yesterdayKey } from './levels';
-import { LAST_CUSTOM_KEY, LAST_LEVEL_KEY } from './constants';
+import {
+  CHAPTERS,
+  dayKey,
+  LEVEL_DEFS,
+  makeDailyLevel,
+  makeRandomLevel,
+  todayKey,
+  yesterdayKey,
+} from './levels';
+import { HISTORY_KEY, LAST_CUSTOM_KEY, LAST_LEVEL_KEY } from './constants';
 import { GameEngine } from './engine.svelte';
 import { fitScore, solveFromSpectrum } from './scoring';
 
@@ -107,6 +115,35 @@ describe('续玩：记住上次关卡', () => {
     );
     const next = new GameEngine();
     expect(next.level?.id).toBe('circle');
+  });
+
+  it('每日关的趋势按同难度跨天聚合（否则每天都是新 id，只有一条）', () => {
+    // 先写存档再建引擎：引擎在构造时读取历史
+    localStorage.setItem(
+      HISTORY_KEY,
+      JSON.stringify({
+        [dayKey(new Date(Date.now() - 2 * 86400000)) &&
+        'daily-' + dayKey(new Date(Date.now() - 2 * 86400000)) + '-hard']: [
+          { t: 1, score: 100, collected: 10, total: 24, stars: 1, clearT: null },
+          { t: 2, score: 200, collected: 12, total: 24, stars: 1, clearT: null },
+        ],
+        ['daily-' + dayKey(new Date(Date.now() - 86400000)) + '-hard']: [
+          { t: 3, score: 300, collected: 14, total: 24, stars: 2, clearT: null },
+        ],
+        ['daily-' + todayKey() + '-hard']: [
+          { t: 5, score: 400, collected: 18, total: 24, stars: 2, clearT: null },
+        ],
+        ['daily-' + dayKey(new Date(Date.now() - 86400000)) + '-easy']: [
+          { t: 4, score: 999, collected: 20, total: 24, stars: 3, clearT: null },
+        ],
+      }),
+    );
+    const engine2 = new GameEngine();
+    engine2.setDifficulty('hard');
+    engine2.loadDaily(); // 载入今日（hard）每日关
+    const hist = engine2.recentHistory(10);
+    expect(hist).toHaveLength(4); // 同难度的三天空数 + 今天，全部聚合
+    expect(hist.map((h) => h.score)).toEqual([100, 200, 300, 400]); // 按时间升序
   });
 });
 

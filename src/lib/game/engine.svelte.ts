@@ -717,15 +717,27 @@ export class GameEngine {
     return next;
   }
 
-  /** 本关最近的历史成绩（新的在后），取最近 n 条 */
+  /**
+   * 本关最近的历史成绩（新的在后），取最近 n 条。
+   * 每日关特殊：每天的 id 都不同（daily-<日期>-<难度>），单看只有一条——
+   * 这里聚合成"同难度跨天"的走势，才能看出每日挑战的进步曲线。
+   */
   recentHistory(n = 10): HistoryEntry[] {
     const id = this.level?.id;
     if (!id) return [];
+    if (id.startsWith('daily-')) {
+      const diff = id.split('-').pop();
+      const merged: HistoryEntry[] = [];
+      for (const [k, list] of Object.entries(this.history)) {
+        if (k.startsWith('daily-') && k.endsWith('-' + diff)) merged.push(...list);
+      }
+      merged.sort((a, b) => a.t - b.t);
+      return merged.slice(-n);
+    }
     const list = this.history[id] ?? [];
     return list.slice(-n);
   }
 
-  /** 本关历史最快全清用时（未全清过返回 null） */
   /** 切换专家模式（隐藏轮廓与预览，硬核挑战） */
   toggleExpert(): void {
     this.expertMode = !this.expertMode;
