@@ -201,9 +201,7 @@ pnpm preview        # 预览构建产物
     src/
       lib/game/        纯逻辑：constants / types / math / levels（关卡与章节）/ dates（日期键）/ scoring（打分与频谱）
                        achievements（成就域：定义/判定/进度）/ daily（每日挑战纯计算域：连胜/打卡/统计）
-                       campaign（章节进度与通关判定）/ pace（上届节奏：幽灵竞速时间线）/ goals（本关目标）
-                       save（存档读写 + readJson/writeJson 安全读写）/ share（邀请码与分享链接）
-                       audio（音效）/ harmony（指针→声部映射）/ music（和声垫音音频图）/ haptics（触感）/ keys（输入守卫）
+                       save（存档读写 + readJson/writeJson 安全读写 + 续玩域键的存取）/ share（邀请码与分享链接）/ shapes（内置曲线的轮廓点串，图鉴与战利品墙共用）
                        engine.svelte.ts（runes 状态引擎）
       lib/components/  Stage（canvas 渲染循环）、ArmPanel / ArmRow / ArmEditor、
                        LevelPicker（章节化关卡表）、ScorePanel、ResultOverlay、FinaleOverlay（结局）、
