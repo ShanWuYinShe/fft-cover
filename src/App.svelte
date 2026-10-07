@@ -146,10 +146,6 @@
   // 模块变量默认满音量，不初始化的话"上次静音"的玩家刷新后会突然有声音
   let volume = $state(initVolumeFromStorage());
 
-  /**
-   * 背景音乐跟随游戏状态：指针参数（引擎响应式）变化即刷新声部，
-   * 阶段变化即调整动态强度。参数未变时 updateMusic 内部直接返回。
-   */
   /** 幽灵竞速差值文案：领先/落后上届多少点（无可比对象时为空） */
   const ghostLabel = $derived.by(() => {
     if (!engine.ghostComparable) return '';
@@ -192,6 +188,10 @@
     chapterIntro = null;
   }
 
+  /**
+   * 背景音乐跟随游戏状态：指针参数（引擎响应式）变化即刷新声部，
+   * 阶段变化即调整动态强度。参数未变时 updateMusic 内部直接返回。
+   */
   function syncMusic(): void {
     updateMusic(
       engine.arms,

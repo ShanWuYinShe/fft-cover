@@ -242,7 +242,6 @@
     ctx?.setTransform(canvas.width / SIZE, 0, 0, canvas.width / SIZE, 0, 0);
   }
 
-  /** 频谱仪：右上角实时显示各启用指针的频率与半径——玩家正在编辑的傅立叶系数 */
   /** 频谱仪：右上角精致面板，实时显示各启用指针的频率与半径 */
   function drawSpectrum(): void {
     const on = engine.arms.filter((a) => a.on);
