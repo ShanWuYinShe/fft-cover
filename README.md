@@ -210,6 +210,7 @@ pnpm preview        # 预览构建产物
       lib/components/  Stage（canvas 渲染循环）、ArmPanel / ArmRow / ArmEditor、
                        LevelPicker（章节化关卡表）、ScorePanel、ResultOverlay、FinaleOverlay（结局）、
                        TitleScreen、AchievementsModal、ComposerModal、ChapterIntroOverlay、GoalPanel、SettingsModal
+      scripts/        e2e-smoke.js + e2e-smoke-part2.js（端到端冒烟巡检）+ e2e-smoke.md（用法）
       App.svelte       布局与组装
       lib/components/  Stage（canvas 渲染循环）、ArmPanel / ArmRow / ArmEditor、
                        LevelPicker（章节化关卡表）、ScorePanel、ResultOverlay、FinaleOverlay（结局）、

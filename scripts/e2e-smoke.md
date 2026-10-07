@@ -18,5 +18,5 @@ agent-browser --session <名> eval "$(cat scripts/e2e-smoke.js)"
 ```bash
 agent-browser --session <名> eval "$(cat scripts/e2e-smoke-part2.js)"
 ```
-期望：`resumed` 以 `custom-` 开头；`achvCount=22`；`dexChapters=7`；`errs` 为空。
 
+期望：`resumed` 以 `custom-` 开头；`achvCount=22`；`dexChapters=7`；`errs` 为空。

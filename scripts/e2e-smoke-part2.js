@@ -24,9 +24,9 @@
     .click();
   await new Promise((r) => setTimeout(r, 400));
   out.dexChapters = document.querySelectorAll('.dex-ch').length; // 7
-  const close = Array.from(document.querySelectorAll('.modal button')).find((x) =>
-    x.textContent.replace(/\s+/g, '') === '关闭',
+  const close = Array.from(document.querySelectorAll('.modal button')).find(
+    (x) => x.textContent.replace(/\s+/g, '') === '关闭',
   );
   if (close) close.click();
   return JSON.stringify(out, null, 1);
-})()
+})();
