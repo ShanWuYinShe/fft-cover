@@ -480,6 +480,34 @@ export function makeDailyLevel(diff: RandomDifficulty = 'normal'): Level {
   };
 }
 
+/**
+ * 本周挑战：seed 由 ISO 周一所在年份+周序号决定，同一周同难度的玩家面对同一关卡。
+ * 比每日挑战更大、更难（固定困难档），一周里可以慢慢磨。
+ */
+export function weekKey(d = new Date()): string {
+  // ISO 周：周一为一周之始；含 1 月 1 日的那周属于上一年，则归上一年第 52/53 周
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7; // 周日=7
+  t.setUTCDate(t.getUTCDate() + 4 - day); // 挪到本周的周四（ISO 周的代表日）
+  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((t.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+  return t.getUTCFullYear() + '-W' + String(week).padStart(2, '0');
+}
+
+/** 每周挑战：seed 由周键+难度决定，同一周同难度的玩家面对同一关卡 */
+export function makeWeeklyLevel(diff: RandomDifficulty = 'hard'): Level {
+  const key = weekKey();
+  const seed = Number(key.replace(/[^0-9]/g, '')) * 7;
+  const base = makeRandomLevel(seed, diff);
+  const tag = diff === 'normal' ? '' : diff === 'easy' ? '·易' : '·难';
+  return {
+    ...base,
+    id: 'weekly-' + key + '-' + diff,
+    name: '每周挑战 ' + key.replace(/^\\d{4}-/, '') + tag,
+    hint: '⚠️ 本周挑战：**固定困难档**，一周里可以慢慢磨——全球玩家同关，比比谁的分高！',
+  };
+}
+
 /** 可复现伪随机数（mulberry32） */
 export function mulberry32(a: number): () => number {
   return function () {

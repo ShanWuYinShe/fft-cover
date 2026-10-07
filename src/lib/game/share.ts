@@ -73,6 +73,10 @@ export function levelHashPart(levelId: string, diff?: RandomDifficulty): string 
     const diff = levelId.slice('daily-'.length).split('-').pop();
     return DIFFS.includes(diff as (typeof DIFFS)[number]) ? 'd=' + diff : '';
   }
+  if (levelId.startsWith('weekly-')) {
+    const diff = levelId.slice('weekly-'.length).split('-').pop();
+    return DIFFS.includes(diff as (typeof DIFFS)[number]) ? 'w=' + diff : '';
+  }
   if (levelId.startsWith('custom-')) {
     // 创作关：把 id 还原成系数串（与"邀请码"同一种写法，好友端 decodeCoeffs 直接可用）
     const code = levelId.slice('custom-'.length).replaceAll('_', ',').replaceAll('-', ':');
@@ -186,6 +190,20 @@ export function buildDailyUrl(base: string, diff: RandomDifficulty = 'normal'): 
 /** 从 URL hash 里取每日挑战难度（无则返回 null） */
 export function readDailyFromHash(hash: string): RandomDifficulty | null {
   const m = /(?:^#|&)d=([^&]+)/.exec(hash);
+  if (!m) return null;
+  const d = decodeURIComponent(m[1]);
+  return (DIFFS as readonly string[]).includes(d) ? (d as RandomDifficulty) : null;
+}
+
+/** 本周挑战分享链接：一周里大家磨同一条困难曲线 */
+export function buildWeeklyUrl(base: string, diff: RandomDifficulty = 'hard'): string {
+  const u = base.split('#')[0];
+  return u + '#w=' + diff;
+}
+
+/** 从 URL hash 里取本周挑战难度（无则返回 null） */
+export function readWeeklyFromHash(hash: string): RandomDifficulty | null {
+  const m = /(?:^#|&)w=([^&]+)/.exec(hash);
   if (!m) return null;
   const d = decodeURIComponent(m[1]);
   return (DIFFS as readonly string[]).includes(d) ? (d as RandomDifficulty) : null;

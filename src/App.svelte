@@ -8,6 +8,7 @@
     readCustomFromHash,
     readDailyFromHash,
     readRandomFromHash,
+    readWeeklyFromHash,
   } from './lib/game/share';
   import LevelPicker from './lib/components/LevelPicker.svelte';
   import ScorePanel from './lib/components/ScorePanel.svelte';
@@ -124,6 +125,10 @@
       engine.setDifficulty(sharedDaily);
       engine.loadDaily();
       shareNote = '已载入好友分享的每日挑战（' + sharedDaily + '）';
+      setTimeout(() => (shareNote = null), 5200);
+    } else if (readWeeklyFromHash(location.hash)) {
+      engine.loadWeekly();
+      shareNote = '已载入好友分享的本周挑战';
       setTimeout(() => (shareNote = null), 5200);
     }
     const code = readArmsFromHash(location.hash);

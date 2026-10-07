@@ -11,6 +11,8 @@ import {
   parseRandomSpec,
   randomSpec,
   todayKey,
+  weekKey,
+  makeWeeklyLevel,
 } from './levels';
 import { describe, expect, it } from 'vitest';
 import { CHAPTERS } from './levels';
@@ -92,6 +94,28 @@ describe('makeDailyLevel', () => {
     expect(a.name).toContain(todayKey().slice(5));
     expect(a.pts).toEqual(b.pts);
     expect(a.random).toBe(true);
+  });
+
+  it('weekKey：ISO 周键格式稳定，同一周的日期得到同一个键', () => {
+    // 2026-10-05（周一）到 2026-10-11（周日）都是第 41 周
+    const same = ['2026-10-05', '2026-10-07', '2026-10-11'].map((s) =>
+      weekKey(new Date(s + 'T12:00:00')),
+    );
+    expect(new Set(same).size).toBe(1);
+    expect(same[0]).toMatch(/^\d{4}-W\d{2}$/);
+    // 跨到下一周：键要变
+    expect(weekKey(new Date('2026-10-12T12:00:00'))).not.toBe(same[0]);
+    // ISO 周边界：2027-01-01 属于 2026 年的最后一周，而不是 2027 年第 1 周
+    expect(weekKey(new Date('2027-01-01T12:00:00')).startsWith('2026-W')).toBe(true);
+  });
+
+  it('每周挑战：同周同难度复现同一关卡，且为困难档', () => {
+    const a = makeWeeklyLevel('hard');
+    const b = makeWeeklyLevel('hard');
+    expect(a.id).toBe(b.id);
+    expect(b.pts).toEqual(a.pts);
+    expect(a.id.startsWith('weekly-')).toBe(true);
+    expect(a.armLimit).toBeGreaterThan(0);
   });
 
   it('内置关卡总数为 18（六章）', () => {

@@ -356,6 +356,21 @@
         {dailyShared ? '✓' : '📤'}
       </button>
     </div>
+    <!-- 本周挑战：固定困难档，一周一条曲线，慢慢磨 -->
+    <div class="daily-row">
+      <button
+        type="button"
+        class="more-daily"
+        class:active={engine.level?.id.startsWith('weekly-')}
+        title="本周挑战：固定困难档，一周里慢慢磨"
+        onclick={() => engine.loadWeekly()}
+      >
+        <span class="md-left">🗓 每周挑战</span>
+        <span class="md-right"
+          >{engine.weeklyBest > 0 ? engine.weeklyBest + ' 分' : '本周慢慢磨'}</span
+        >
+      </button>
+    </div>
     <!-- 最近 7 天：完成的格子填朱砂，今天描边——连胜变成看得见的一排 -->
     <div class="dweek" aria-label="最近 7 天的每日挑战">
       {#each engine.dailyWeek as d (d.date)}

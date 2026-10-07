@@ -32,6 +32,8 @@ import {
   makeDailyLevel,
   makeLevel,
   makeRandomLevel,
+  makeWeeklyLevel,
+  weekKey,
   dayKey,
   lastNDays,
   parseRandomSpec,
@@ -1157,6 +1159,16 @@ export class GameEngine {
         /* 存储不可用则忽略 */
       }
     }
+    // 本周挑战：同表记录（weekly- 前缀与每日关互不干扰），一周里刷出最好成绩
+    if (id.startsWith('weekly-') && this.score > (this.dailyBest[id] ?? 0)) {
+      this.dailyBest = { ...this.dailyBest, [id]: this.score };
+      this.newRecord = true;
+      try {
+        localStorage.setItem(DAILY_KEY, JSON.stringify(this.dailyBest));
+      } catch {
+        /* 存储不可用则忽略 */
+      }
+    }
     // 每日挑战连胜：今天首次完成即累加（昨天完成过则 +1，否则重新从 1 开始）
     if (id.startsWith('daily-')) this.bumpDailyStreak();
     this.checkAchievements();
@@ -1254,6 +1266,27 @@ export class GameEngine {
     this.trimArmsToLimit();
     this.resetRun();
     this.rememberLevel(this.level.id);
+  }
+
+  /** 进入本周挑战（固定困难档，seed 由 ISO 周键决定，人人同关） */
+  loadWeekly(): void {
+    this.cancelAutoSolve();
+    this.sandbox = false;
+    const lv = makeWeeklyLevel('hard');
+    this.level = lv;
+    this.trimArmsToLimit();
+    this.resetRun();
+    this.rememberLevel(lv.id);
+  }
+
+  /** 本周挑战最佳得分（固定困难档，按周键记录，与每日挑战的键互不干扰） */
+  get weeklyBest(): number {
+    const prefix = 'weekly-' + weekKey() + '-';
+    let best = 0;
+    for (const [k, v] of Object.entries(this.dailyBest)) {
+      if (k.startsWith(prefix) && v > best) best = v;
+    }
+    return best;
   }
 
   /** 某天是否打过每日挑战（任意难度有得分即算） */
