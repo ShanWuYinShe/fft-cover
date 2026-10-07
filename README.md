@@ -197,6 +197,7 @@ pnpm build          # 产物构建（dist/）
 pnpm preview        # 预览构建产物
 ```
 
+另有一个**端到端冒烟巡检脚本** `scripts/e2e-smoke.js`（配套 `scripts/e2e-smoke.md`）：改完核心逻辑后，在 agent-browser 会话里跑一遍即可验证 21 关收集率、四模式载入、创作关续玩与 UI 渲染（详见 `scripts/e2e-smoke.md`）。
 目录结构：
 
     src/
