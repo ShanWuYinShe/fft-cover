@@ -40,6 +40,25 @@
   }
 
   let coeffs = $state<HarmonicCoeff[]>(loadDraft());
+  /** 折叠未启用行的偏好：持久化（与音量等偏好同一哲学） */
+  let showOnlyActive = $state(
+    ((): boolean => {
+      try {
+        return localStorage.getItem('fft-pointers-composer-filter-v1') === '1';
+      } catch {
+        return false;
+      }
+    })(),
+  );
+
+  function setFilterPref(v: boolean): void {
+    showOnlyActive = v;
+    try {
+      localStorage.setItem('fft-pointers-composer-filter-v1', v ? '1' : '0');
+    } catch {
+      /* 存储不可用则忽略 */
+    }
+  }
 
   /** 保存草稿（弹层关闭/参数变化时调用）。k 存有符号值——符号即旋转方向 */
   function saveDraft(): void {
@@ -200,32 +219,42 @@
         title="取当前关卡的主频率填进滑杆——合成器是单侧旋转曲线，画布即所得"
         onclick={importCurrentLevel}>⤓ 取当前关主频</button
       >
+      <button
+        type="button"
+        class="pchip"
+        class:rev={showOnlyActive}
+        title="只显示已启用（幅值 > 0）的行"
+        aria-pressed={showOnlyActive}
+        onclick={() => setFilterPref(!showOnlyActive)}>⦿ 已启用</button
+      >
     </div>
     <div class="sliders">
       {#each coeffs as c, i (i)}
         {#if i === 10}
           <div class="neg-label">⟲ 反转（负频率）</div>
         {/if}
-        <div class="row" class:active={c.mag > 0.5}>
-          <span class="side" class:rev={c.k < 0}>{c.k < 0 ? '⟲' : '⟳'}</span>
-          <span class="k">{CIRCLED[Math.abs(c.k) - 1] || Math.abs(c.k)} {Math.abs(c.k)}×</span>
-          <input
-            type="range"
-            min="0"
-            max="150"
-            step="2"
-            value={c.mag}
-            oninput={(e) => setMag(i + 1, +(e.currentTarget as HTMLInputElement).value)}
-          />
-          <input
-            type="range"
-            min="0"
-            max="360"
-            step="5"
-            value={c.phase}
-            oninput={(e) => setPhase(i + 1, +(e.currentTarget as HTMLInputElement).value)}
-          />
-        </div>
+        {#if !showOnlyActive || c.mag > 0.5}
+          <div class="row" class:active={c.mag > 0.5}>
+            <span class="side" class:rev={c.k < 0}>{c.k < 0 ? '⟲' : '⟳'}</span>
+            <span class="k">{CIRCLED[Math.abs(c.k) - 1] || Math.abs(c.k)} {Math.abs(c.k)}×</span>
+            <input
+              type="range"
+              min="0"
+              max="150"
+              step="2"
+              value={c.mag}
+              oninput={(e) => setMag(i + 1, +(e.currentTarget as HTMLInputElement).value)}
+            />
+            <input
+              type="range"
+              min="0"
+              max="360"
+              step="5"
+              value={c.phase}
+              oninput={(e) => setPhase(i + 1, +(e.currentTarget as HTMLInputElement).value)}
+            />
+          </div>
+        {/if}
       {/each}
     </div>
     <canvas bind:this={canvas} width="150" height="150"></canvas>

@@ -4,6 +4,7 @@ import {
   BEST_KEY,
   BEST_SCORE_KEY,
   CLEAR_KEY,
+  COMPOSER_FILTER_KEY,
   DAILY_KEY,
   DRAFT_KEY,
   EXACT_KEY,
@@ -55,7 +56,7 @@ export const SAVE_KEYS = [
 ] as const;
 
 /** 偏好类键：参与存档，但"清空进度"时保留（音量/音效/音乐/难度不该被清） */
-export const PREF_KEYS = [SOUND_KEY, MUSIC_KEY, VOLUME_KEY, DIFF_KEY] as const;
+export const PREF_KEYS = [SOUND_KEY, MUSIC_KEY, VOLUME_KEY, DIFF_KEY, COMPOSER_FILTER_KEY] as const;
 
 const ALL_KEYS = [...SAVE_KEYS, ...PREF_KEYS];
 
