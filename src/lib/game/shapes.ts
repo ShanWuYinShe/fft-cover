@@ -2,7 +2,7 @@ import { LEVEL_DEFS, makeLevel } from './levels';
 
 /**
  * 关卡轮廓的缩略点串（SVG polyline 用）：把参考曲线抽稀到 ~120 个点。
- * 构建一次后缓存——图鉴与结局面板都要画全部 15 关的轮廓。
+ * 构建一次后缓存——图鉴与结局面板都要画全部内置关卡的轮廓。
  */
 const cache = new Map<string, string>();
 

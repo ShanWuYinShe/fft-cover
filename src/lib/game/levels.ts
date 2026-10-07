@@ -27,7 +27,7 @@ export interface ChapterDef {
 }
 
 /**
- * 五个章节（顺序即解锁顺序）。
+ * 内置章节（顺序即解锁顺序）。
  * 章名取中国古典意象，数学含义放在 tagline 里——一章一境，一句一理。
  */
 export const CHAPTERS: ChapterDef[] = [
@@ -69,6 +69,14 @@ export const CHAPTERS: ChapterDef[] = [
     intro:
       '本章要点：<b>谐波的不同写法</b>。两根能编结、五根能开菱花、八根能游出阴阳鱼——器物不过是谐波换了一种排法。',
     seal: '器',
+  },
+  {
+    id: 'craft',
+    name: '第六章 · 巧变',
+    tagline: '同是那几根指针，换个配比与相位，便是另一件器物',
+    intro:
+      '本章要点：<b>配比与相位</b>。频率清单不变，只改振幅比例与相位，形状就换了模样——风车靠相位拧出四叶、双旋靠配比定两瓣胖瘦、云纹靠正反成对叠出云头。',
+    seal: '巧',
   },
 ];
 
@@ -264,6 +272,44 @@ export const LEVEL_DEFS: LevelDef[] = [
     n: 30,
     armLimit: 8,
     fn: taijiFn,
+  },
+
+  // ---- 第六章 · 巧变：频率清单不变，改配比与相位就是另一个器物 ----
+  {
+    id: 'pinwheel',
+    chapter: 'craft',
+    name: '风车',
+    hint: '半径随 4× 摆一圈（r = 1 + 0.42·sin 4t）：展开是 1×、5× 与一根 <b>−3×（⟲ 反转）</b>——四片叶子是被那根反转的指针"拧"出来的，去掉它叶子就正了。',
+    n: 24,
+    armLimit: 3,
+    fn: (t) => {
+      const m = 1 + 0.42 * S(4 * t);
+      return { x: 200 * m * C(t), y: 200 * m * S(t) };
+    },
+  },
+  {
+    id: 'twin',
+    chapter: 'craft',
+    name: '双旋',
+    hint: '两根同向（1×、3×）加一根反向（−1×）：<b>振幅配比</b>决定两瓣的胖瘦与腰的深浅——比例一变，豆荚就成了葫芦。',
+    n: 24,
+    armLimit: 3,
+    fn: (t) => {
+      const r = 1 + 0.34 * S(2 * t);
+      return { x: 200 * r * C(t), y: 200 * r * S(t) };
+    },
+  },
+  {
+    id: 'wisp',
+    chapter: 'craft',
+    name: '云纹',
+    hint: '云头是叠出来的：1× 撑主体，半径上的 4× 摆动展开成 +5× 与 −3× 两道云头，7× 摆动再展开成 +8× 与 −6× 收出小卷——<b>共 5 根</b>，正反成对才圆润。',
+    n: 24,
+    armLimit: 5,
+    fn: (t) => {
+      const r = 1 + 0.2 * C(4 * t) + 0.12 * C(7 * t);
+      return { x: 200 * r * C(t), y: 200 * r * S(t) };
+    },
   },
 ];
 

@@ -155,7 +155,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   {
     id: 'all-chapter-seals',
     name: '印满山河',
-    desc: '五章的章节印全部集齐',
+    desc: '全部章节印集齐',
     group: 'collect',
   },
   { id: 'daily-player', name: '每日一练', desc: '每日挑战中拿到得分', group: 'challenge' },
@@ -180,7 +180,7 @@ export interface AchievementContext {
   expert?: Record<string, true>;
   /** 各章是否已集齐全部朱印（章节印），key = 章节 id */
   chapterSeals?: Record<string, boolean>;
-  /** 章节总数（判断"五章全印"用） */
+  /** 章节总数（判断"全部章节印"用） */
   chapterCount?: number;
 }
 

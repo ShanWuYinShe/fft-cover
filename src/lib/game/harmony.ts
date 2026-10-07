@@ -36,7 +36,7 @@ export interface MusicalKey {
  * 切章时整条配乐一起转调（环境音、指针声部、收集音阶全部跟随）。
  *
  * 五声调式天然没有半音与导音，听感温润——这也是"不刺耳"的底子。
- * 五章各取一调，宫商角徵羽至此齐全。
+ * 前五章各取一调（宫商角徵羽至此齐全）；再往后换宫音再取一调，根音仍各不相同。
  */
 export const CHAPTER_KEYS: Record<string, MusicalKey> = {
   basics: { id: 'basics', name: 'C 宫五声', root: 130.81, steps: [0, 2, 4, 7, 9] },
@@ -44,6 +44,8 @@ export const CHAPTER_KEYS: Record<string, MusicalKey> = {
   pairs: { id: 'pairs', name: 'D 商五声', root: 146.83, steps: [0, 2, 5, 7, 10] },
   summit: { id: 'summit', name: 'E 角五声', root: 164.81, steps: [0, 3, 5, 8, 10] },
   china: { id: 'china', name: 'G 徵五声', root: 196.0, steps: [0, 2, 5, 7, 9] },
+  // 五声调式只有五种，第六章起换宫音再取一调：F 商（降 E 宫五声的第二级为主音）
+  craft: { id: 'craft', name: 'F 商五声', root: 174.61, steps: [0, 2, 5, 7, 10] },
 };
 
 /** 默认调性：无章节的关卡（随机关 / 每日 / 创作关）回落到这里 */

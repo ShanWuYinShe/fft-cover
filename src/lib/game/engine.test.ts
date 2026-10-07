@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { dayKey, LEVEL_DEFS, makeRandomLevel, todayKey, yesterdayKey } from './levels';
+import { CHAPTERS, dayKey, LEVEL_DEFS, makeRandomLevel, todayKey, yesterdayKey } from './levels';
 import { LAST_LEVEL_KEY } from './constants';
 import { GameEngine } from './engine.svelte';
 import { fitScore, solveFromSpectrum } from './scoring';
@@ -198,6 +198,23 @@ describe('GameEngine', () => {
     expect([...dates].sort()).toEqual(dates);
   });
 
+  it('第六章三关都能用精确解在指针上限内全清（新增关卡的硬约束）', () => {
+    for (const id of ['pinwheel', 'twin', 'wisp']) {
+      const def = LEVEL_DEFS.find((d) => d.id === id)!;
+      engine.loadLevel(def);
+      const lv = engine.level!;
+      // 精确解用到的根数不超过本关上限
+      const sol = solveFromSpectrum(lv.spectrum, lv.armLimit);
+      expect(sol.filter((a) => a.on).length, id).toBeLessThanOrEqual(lv.armLimit);
+      expect(fitScore(lv.spectrum, sol), id).toBeGreaterThanOrEqual(0.99);
+      sol.forEach((a, i) => engine.setArm(i, { ...a }));
+      engine.startRun();
+      for (let i = 0; i < 2000 && engine.phase === 'running'; i++) engine.advance(1 / 60);
+      // 关键：解得出来还得真能收齐（否则关卡不可通关）
+      expect(engine.collectedCount, id).toBe(engine.total);
+    }
+  });
+
   it('一键套用精确解：参数与分解一致，可达成精确解认证', () => {
     // 先把指针调乱（单指针、错的频率与相位）
     engine.setArm(0, { on: true, r: 30, freq: 3, phase: 1 });
@@ -240,7 +257,7 @@ describe('GameEngine', () => {
       done: 0,
       total: LEVEL_DEFS.length * 4,
       chapters: 0,
-      chaptersTotal: 5,
+      chaptersTotal: CHAPTERS.length,
     });
     // 集齐第一章（圆 + 椭圆）的全部朱印 → 8 枚印 + 1 方章节印
     engine.bestStars = { circle: 3, ellipse: 3 };
