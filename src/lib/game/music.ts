@@ -311,6 +311,9 @@ export function startMusic(): void {
     if (!bus || ctx !== ac) {
       ctx = ac;
       bus = buildAmbientBus(ac);
+      // 声部链还挂在旧 context 的节点上（移动端切后台会杀掉 AudioContext）——
+      // 不清掉的话这些索引永远命中"已有链"，新声部再也建不出来（2026-10 修）
+      chains.clear();
       schedState.nextAt = 0;
       lastSig = '';
     }
@@ -431,4 +434,13 @@ export function updateMusic(
 /** 仅供测试/调试：当前是否已有音频图 */
 export function isMusicReady(): boolean {
   return ctx !== null && bus !== null;
+}
+
+/** 仅供测试：注入假的音频图，让 updateMusic 的声部链逻辑能在 Node 里驱动 */
+export function __setAudioGraphForTests(ac: BaseAudioContext, graph: AmbientBus): void {
+  ctx = ac as AudioContext;
+  bus = graph;
+  chains.clear();
+  schedState.nextAt = 0;
+  lastSig = '';
 }
