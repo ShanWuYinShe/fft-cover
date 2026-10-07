@@ -120,6 +120,11 @@ export interface AchievementDef {
   desc: string;
   /** 所属分组（ACHV_GROUPS 的 id） */
   group: string;
+  /**
+   * 可量化成就的进度算法（声明在定义旁，与 evalAchievements 的判定同源）。
+   * 不给就是不可量化（成就面板不显示进度条）。
+   */
+  progress?: (ctx: AchievementContext) => AchievementProgress;
 }
 
 /** 全部成就 */
@@ -130,33 +135,85 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'drag-master', name: '机械臂大师', desc: '用画布拖拽调过指针', group: 'start' },
   { id: 'auto-try', name: '数学魔法', desc: '体验过自动拟合演示', group: 'start' },
   { id: 'composer', name: '造物主', desc: '用谐波合成器创作过关卡', group: 'start' },
-  { id: 'combo-king', name: '连击之王', desc: '单局得分达到 30000', group: 'mastery' },
-  { id: 'half-stars', name: '半程大师', desc: '总星数达到满分一半', group: 'mastery' },
-  { id: 'all-three', name: '谐波大师', desc: '全部内置关卡三星', group: 'mastery' },
-  { id: 'all-perfect', name: '完美主义', desc: '全部内置关卡完美全清（100%）', group: 'mastery' },
+  {
+    id: 'combo-king',
+    name: '连击之王',
+    desc: '单局得分达到 30000',
+    group: 'mastery',
+    progress: (c) => ({
+      have: Object.values(c.bestScores).reduce((a, b) => Math.max(a, b), 0),
+      need: 30000,
+      unit: 'points',
+    }),
+  },
+  {
+    id: 'half-stars',
+    name: '半程大师',
+    desc: '总星数达到满分一半',
+    group: 'mastery',
+    progress: (c) => ({
+      have: builtInStarStats(c).sum,
+      need: Math.ceil(builtInStarStats(c).count * 1.5),
+      unit: 'stars',
+    }),
+  },
+  {
+    id: 'all-three',
+    name: '谐波大师',
+    desc: '全部内置关卡三星',
+    group: 'mastery',
+    progress: (c) => ({
+      have: builtInStarStats(c).threeStar,
+      need: builtInStarStats(c).count,
+      unit: 'levels',
+    }),
+  },
+  {
+    id: 'all-perfect',
+    name: '完美主义',
+    desc: '全部内置关卡完美全清（100%）',
+    group: 'mastery',
+    progress: (c) => ({
+      have: builtInCountOf(c, c.perfect),
+      need: builtInStarStats(c).count,
+      unit: 'levels',
+    }),
+  },
   {
     id: 'exact-award',
     name: '精确分解',
     desc: '全部内置关卡达成精确解认证（拟合度 ≥99%）',
     group: 'mastery',
+    progress: (c) => ({
+      have: builtInCountOf(c, c.exact),
+      need: builtInStarStats(c).count,
+      unit: 'levels',
+    }),
   },
   {
     id: 'expert-all',
     name: '盲眼大师',
     desc: '专家模式（无轮廓预览）下全清全部内置关卡',
     group: 'mastery',
+    progress: (c) => ({
+      have: builtInCountOf(c, c.expert),
+      need: builtInStarStats(c).count,
+      unit: 'levels',
+    }),
   },
   {
     id: 'chapter-seal',
     name: '一方之印',
     desc: '集齐任意一章的全部朱印（章节印）',
     group: 'collect',
+    progress: (c) => ({ have: sealedCount(c), need: 1, unit: 'seals' }),
   },
   {
     id: 'all-chapter-seals',
     name: '印满山河',
     desc: '全部章节印集齐',
     group: 'collect',
+    progress: (c) => ({ have: sealedCount(c), need: c.chapterCount ?? 5, unit: 'seals' }),
   },
   {
     id: 'craft-master',
@@ -165,8 +222,20 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     group: 'mastery',
   },
   { id: 'daily-player', name: '每日一练', desc: '每日挑战中拿到得分', group: 'challenge' },
-  { id: 'streak-7', name: '日拱一卒', desc: '每日挑战连续完成 7 天', group: 'challenge' },
-  { id: 'streak-30', name: '月月有余', desc: '每日挑战连续完成 30 天', group: 'challenge' },
+  {
+    id: 'streak-7',
+    name: '日拱一卒',
+    desc: '每日挑战连续完成 7 天',
+    group: 'challenge',
+    progress: (c) => ({ have: c.dailyStreak ?? 0, need: 7, unit: 'days' }),
+  },
+  {
+    id: 'streak-30',
+    name: '月月有余',
+    desc: '每日挑战连续完成 30 天',
+    group: 'challenge',
+    progress: (c) => ({ have: c.dailyStreak ?? 0, need: 30, unit: 'days' }),
+  },
   { id: 'weekly-clear', name: '周而复始', desc: '完成本周挑战（全清收集）', group: 'challenge' },
   { id: 'inviter', name: '牵线搭桥', desc: '使用过随机关邀请码', group: 'challenge' },
   { id: 'speed-demon', name: '光速谐波', desc: '任意一关 8 秒内全清', group: 'challenge' },
@@ -211,53 +280,47 @@ export interface AchievementProgress {
   unit: string;
 }
 
+// ---- 成就进度的共享口径（builtInIds 过滤等），定义旁的 progress 都用它 ----
+
+/** 内置关星的统计：总数 / 星数和 / 三星关数（口径与 evalAchievements 一致） */
+function builtInStarStats(ctx: AchievementContext): {
+  count: number;
+  sum: number;
+  threeStar: number;
+} {
+  const builtIn = new Set(ctx.builtInIds ?? []);
+  const stars = Object.entries(ctx.bestStars)
+    .filter(([k]) => builtIn.size === 0 || builtIn.has(k))
+    .map(([, v]) => v);
+  return {
+    count: builtIn.size || ctx.levelCount,
+    sum: stars.reduce((a, b) => a + b, 0),
+    threeStar: stars.filter((s) => s >= 3).length,
+  };
+}
+
+/** 集合里属于内置关的条数（完美 / 精确 / 专家共用） */
+function builtInCountOf(ctx: AchievementContext, m?: Record<string, unknown>): number {
+  if (!m) return 0;
+  const builtIn = new Set(ctx.builtInIds ?? []);
+  return Object.keys(m).filter((k) => builtIn.size === 0 || builtIn.has(k)).length;
+}
+
+/** 已集齐的章节印数 */
+function sealedCount(ctx: AchievementContext): number {
+  return Object.values(ctx.chapterSeals ?? {}).filter(Boolean).length;
+}
+
 /**
  * 某个可量化成就的当前进度（未达成的拿来展示"还差多少"）。
- * 口径与 evalAchievements 完全一致（含 builtInIds 过滤），
+ * 算法声明在各成就定义的 progress 字段上——判定与进度同源，新成就只写一处。
  * 不可量化的成就返回 null。
  */
 export function achievementProgress(
   id: string,
   ctx: AchievementContext,
 ): AchievementProgress | null {
-  const builtIn = new Set(ctx.builtInIds ?? []);
-  const isBuiltIn = (x: string): boolean => builtIn.size === 0 || builtIn.has(x);
-  const builtInCount = builtIn.size || ctx.levelCount;
-  const builtInStars = Object.entries(ctx.bestStars)
-    .filter(([k]) => isBuiltIn(k))
-    .map(([, v]) => v);
-  const starSum = builtInStars.reduce((a, b) => a + b, 0);
-  const threeStar = builtInStars.filter((s) => s >= 3).length;
-  const countOf = (m?: Record<string, unknown>): number =>
-    m ? Object.keys(m).filter(isBuiltIn).length : 0;
-  const sealedCount = Object.values(ctx.chapterSeals ?? {}).filter(Boolean).length;
-  const streak = ctx.dailyStreak ?? 0;
-  const bestScore = Object.values(ctx.bestScores).reduce((a, b) => Math.max(a, b), 0);
-
-  switch (id) {
-    case 'combo-king':
-      return { have: bestScore, need: 30000, unit: 'points' };
-    case 'half-stars':
-      return { have: starSum, need: Math.ceil(builtInCount * 1.5), unit: 'stars' };
-    case 'all-three':
-      return { have: threeStar, need: builtInCount, unit: 'levels' };
-    case 'all-perfect':
-      return { have: countOf(ctx.perfect), need: builtInCount, unit: 'levels' };
-    case 'exact-award':
-      return { have: countOf(ctx.exact), need: builtInCount, unit: 'levels' };
-    case 'expert-all':
-      return { have: countOf(ctx.expert), need: builtInCount, unit: 'levels' };
-    case 'chapter-seal':
-      return { have: sealedCount, need: 1, unit: 'seals' };
-    case 'all-chapter-seals':
-      return { have: sealedCount, need: ctx.chapterCount ?? 5, unit: 'seals' };
-    case 'streak-7':
-      return { have: streak, need: 7, unit: 'days' };
-    case 'streak-30':
-      return { have: streak, need: 30, unit: 'days' };
-    default:
-      return null;
-  }
+  return ACHIEVEMENTS.find((a) => a.id === id)?.progress?.(ctx) ?? null;
 }
 
 /** 按上下文返回全部已达成成就的 id */
