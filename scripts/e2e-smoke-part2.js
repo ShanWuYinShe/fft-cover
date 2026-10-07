@@ -9,7 +9,39 @@
   const out = { errs: window.__errs || [] };
   const M = await import('/src/lib/game/engine.svelte.ts');
   out.resumed = M.engine.level?.id ?? null; // 期望 custom-…（续玩）
-  const b = Array.from(document.querySelectorAll('button')).find((x) => x.title === '成就');
+  // 结算卡重开回归锚（第 130 轮）：完成一局 → 收起结算卡 → 运行栏重开
+  const S = await import('/src/lib/game/scoring.ts');
+  const L2 = await import('/src/lib/game/levels.ts');
+  const e2 = M.engine;
+  e2.loadLevel(L2.LEVEL_DEFS.find((d) => d.id === 'circle'));
+  S.solveFromSpectrum(e2.level.spectrum, e2.level.armLimit).forEach((a, i) =>
+    e2.setArm(i, { ...a }),
+  );
+  e2.startRun();
+  let g = 0;
+  while (e2.phase !== 'done' && g < 2000) {
+    e2.advance(1 / 60);
+    g++;
+  }
+  await new Promise((r) => setTimeout(r, 300));
+  const eye = Array.from(document.querySelectorAll('button')).find((x) =>
+    x.textContent.includes('查看轨迹'),
+  );
+  eye.click();
+  await new Promise((r) => setTimeout(r, 300));
+  const reopen = Array.from(document.querySelectorAll('button')).find((x) =>
+    x.textContent.includes('结算卡'),
+  );
+  out.reopenBtn = !!reopen;
+  reopen.click();
+  await new Promise((r) => setTimeout(r, 300));
+  out.resultBack = !!document.querySelector('[class*=result]');
+  // 收起结算卡回到编辑态，继续后续成就/图鉴/合成器抽查
+  const closeR = Array.from(document.querySelectorAll('button')).find((x) =>
+    x.textContent.includes('查看轨迹'),
+  );
+  if (closeR) closeR.click();
+  await new Promise((r) => setTimeout(r, 200));
   b.click();
   await new Promise((r) => setTimeout(r, 500));
   out.achvCount = document.querySelectorAll('.item').length; // 22
