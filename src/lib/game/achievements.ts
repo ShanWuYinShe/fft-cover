@@ -122,12 +122,14 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     name: '巧变三器',
     desc: '第六章「巧变」三关全部三星',
     group: 'mastery',
+    progress: (c) => ({ have: c.chapterStars?.craft ?? 0, need: 9, unit: 'stars' }),
   },
   {
     id: 'dacheng-master',
     name: '集大成',
     desc: '第七章「大成」三关全部三星',
     group: 'mastery',
+    progress: (c) => ({ have: c.chapterStars?.dacheng ?? 0, need: 9, unit: 'stars' }),
   },
   { id: 'daily-player', name: '每日一练', desc: '每日挑战中拿到得分', group: 'challenge' },
   {

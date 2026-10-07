@@ -40,6 +40,7 @@ describe('achievementProgress', () => {
       exact: {},
       expert: {},
       chapterSeals: { basics: true },
+      chapterStars: { dacheng: 6 },
       chapterCount: 6,
       builtInIds: LEVEL_DEFS.map((d) => d.id),
       dailyStreak: 12,
@@ -64,6 +65,14 @@ describe('achievementProgress', () => {
     });
     // 连胜：12 / 30
     expect(achievementProgress('streak-30', ctx)).toEqual({ have: 12, need: 30, unit: 'days' });
+    // 章节精通：大成章已有 6 星 → 6 / 9（两关三星 + 一关零星）
+    expect(achievementProgress('dacheng-master', ctx)).toEqual({
+      have: 6,
+      need: 9,
+      unit: 'stars',
+    });
+    // 巧变三器：fixture 里 craft 章没星 → 0 / 9
+    expect(achievementProgress('craft-master', ctx)).toEqual({ have: 0, need: 9, unit: 'stars' });
     // 不可量化的成就返回 null
     expect(achievementProgress('first-star', ctx)).toBeNull();
   });
