@@ -38,6 +38,9 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  // 集合站子路径游戏(travel/cnm/wave-warden)是独立应用,不归本 SW 管:
+  // 全部直接放行,避免它们的资源被 cache-first 误入库、离线导航错回根游戏
+  if (/^\/(travel|cnm|wave-warden)(\/|$)/.test(url.pathname)) return;
 
   // 导航与 manifest：network-first
   if (req.mode === 'navigate' || url.pathname === '/manifest.webmanifest') {
