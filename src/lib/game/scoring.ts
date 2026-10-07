@@ -167,6 +167,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'daily-player', name: '每日一练', desc: '每日挑战中拿到得分', group: 'challenge' },
   { id: 'streak-7', name: '日拱一卒', desc: '每日挑战连续完成 7 天', group: 'challenge' },
   { id: 'streak-30', name: '月月有余', desc: '每日挑战连续完成 30 天', group: 'challenge' },
+  { id: 'weekly-clear', name: '周而复始', desc: '完成本周挑战（全清收集）', group: 'challenge' },
   { id: 'inviter', name: '牵线搭桥', desc: '使用过随机关邀请码', group: 'challenge' },
   { id: 'speed-demon', name: '光速谐波', desc: '任意一关 8 秒内全清', group: 'challenge' },
 ];
@@ -198,6 +199,8 @@ export interface AchievementContext {
   chapterStars?: Record<string, number>;
   /** 每日挑战当前连胜天数（streak 类成就的进度来源） */
   dailyStreak?: number;
+  /** 当前 ISO 周键（如 2026-W41），判断"本周挑战"类成就用 */
+  weekKey?: string;
 }
 
 /** 可量化成就的进度（have/need 同单位） */
@@ -284,6 +287,10 @@ export function evalAchievements(ctx: AchievementContext): string[] {
   if (ctx.flags.dailyWon) unlocked.push('daily-player');
   if (ctx.flags.streak7) unlocked.push('streak-7');
   if (ctx.flags.streak30) unlocked.push('streak-30');
+  // 周而复始：**本周**的每周挑战被 100% 全清（全清记录按关卡 id 存）
+  if (ctx.weekKey && (ctx.perfect ?? {})[`weekly-${ctx.weekKey}-hard`]) {
+    unlocked.push('weekly-clear');
+  }
   if (ctx.flags.autoTry) unlocked.push('auto-try');
   if (ctx.flags.composerPlayed) unlocked.push('composer');
   if (builtInStarSum >= builtInCount * 1.5) unlocked.push('half-stars');

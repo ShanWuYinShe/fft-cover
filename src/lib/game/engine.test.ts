@@ -501,6 +501,20 @@ describe('GameEngine', () => {
     expect(engine.collectedCount).toBe(0);
   });
 
+  it('周而复始：本周挑战全清 → 解锁成就（引擎侧接线）', () => {
+    // 先有一关的一颗星（满足"全清"记录之外的基础状态）
+    engine.loadWeekly();
+    expect(engine.level!.id.startsWith('weekly-')).toBe(true);
+    const sol = solveFromSpectrum(engine.level!.spectrum, engine.level!.armLimit);
+    sol.forEach((a, i) => engine.setArm(i, { ...a }));
+    engine.startRun();
+    for (let i = 0; i < 4000 && engine.phase === 'running'; i++) engine.advance(1 / 60);
+    expect(engine.collectedCount).toBe(engine.total);
+    expect(engine.level!.id.startsWith('weekly-')).toBe(true);
+    engine.checkAchievements();
+    expect(engine.achievements['weekly-clear']).toBeTruthy();
+  });
+
   it('沙盒模式：超时不自动结算，exitSandbox 不写最佳分', () => {
     engine.enterSandbox();
     expect(engine.sandbox).toBe(true);

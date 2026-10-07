@@ -845,6 +845,7 @@ export class GameEngine {
       chapterSeals,
       chapterCount: CHAPTERS.length,
       dailyStreak: this.dailyStreak.streak,
+      weekKey: weekKey(),
     };
   }
 

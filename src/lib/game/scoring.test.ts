@@ -113,6 +113,30 @@ describe('evalAchievements', () => {
     );
   });
 
+  it('周而复始：**本周**的每周挑战全清才解锁，上周的不算', () => {
+    const weeklyId = (week: string) => 'weekly-' + week + '-hard';
+    // 本周（2026-W41）全清，但 perfect 里是**上周**的记录 → 不解锁
+    const lastWeekOnly = evalAchievements({
+      ...base,
+      weekKey: '2026-W41',
+      perfect: { [weeklyId('2026-W40')]: true },
+    });
+    expect(lastWeekOnly).not.toContain('weekly-clear');
+    // 本周全清 → 解锁
+    const thisWeek = evalAchievements({
+      ...base,
+      weekKey: '2026-W41',
+      perfect: { [weeklyId('2026-W41')]: true },
+    });
+    expect(thisWeek).toContain('weekly-clear');
+    // 没有 weekKey（老调用方）→ 不解锁（宁可晚给，不能乱给）
+    const noKey = evalAchievements({
+      ...base,
+      perfect: { [weeklyId('2026-W41')]: true },
+    });
+    expect(noKey).not.toContain('weekly-clear');
+  });
+
   it('首星/首清/连击/竞速按数据判定', () => {
     expect(evalAchievements({ ...base, bestStars: { circle: 1 } })).toContain('first-star');
     expect(evalAchievements({ ...base, bestClears: { circle: 7.5 } })).toContain('first-clear');
