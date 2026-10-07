@@ -40,9 +40,12 @@
     x.textContent.includes('已启用'),
   );
   out.filterChipOff = filterChip?.getAttribute('aria-pressed') === 'false';
-  const closeC = Array.from(document.querySelectorAll('.modal button')).find(
-    (x) => x.textContent.replace(/\s+/g, '') === '关闭',
+  // 复制 chip 回归锚（清存档后未复制，应显示 📋 复制）
+  out.copyChipReady = Array.from(document.querySelectorAll('.pchip')).some((x) =>
+    x.textContent.includes('📋 复制'),
   );
-  if (closeC) closeC.click();
-  return JSON.stringify(out, null, 1);
+  // Esc 关闭回归锚（与其他弹层同一交互）
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  await new Promise((r) => setTimeout(r, 400));
+  out.escClosed = !document.querySelector('.modal');
 })();
