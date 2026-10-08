@@ -14,6 +14,11 @@
   const inSpecialMode = $derived(
     !!engine.level && !engine.level.chapter && !LEVEL_DEFS.some((d) => d.id === engine.level?.id),
   );
+  /** 关卡提示：默认收起（先自己试）；玩家展开后钉住；本关卡关 2 次自动展开 */
+  let hintPinned = $state(false);
+  const hintOpen = $derived(
+    hintPinned || !engine.level?.chapter || (engine.failCounts[engine.level?.id ?? ''] ?? 0) >= 2,
+  );
 
   /** 线性解锁：前一关 ≥1★ 才能进入（规则集中在 campaign.ts） */
   const isLocked = (id: string): boolean => isLevelLocked(LEVEL_DEFS, id, engine.bestStars);
@@ -330,11 +335,17 @@
     {/if}
   {/if}
 
-  <!-- 关卡提示自带 <b> 强调；文案全部写死在本仓库（内置关卡与生成关卡都不含
-       用户输入），所以用 @html 渲染而不是转义成字面标签 -->
-  <p id="hint">
-    {#if engine.level}{@html engine.level.hint}{/if}
-  </p>
+  <!-- 关卡提示默认收起（先自己试试）；卡关 2 次自动展开。
+       文案自带 <b>，全部写死在本仓库，用 @html 渲染 -->
+  {#if hintOpen}
+    <p id="hint">
+      {#if engine.level}{@html engine.level.hint}{/if}
+    </p>
+  {:else}
+    <button type="button" class="hint-toggle" onclick={() => (hintPinned = true)}>
+      💡 看提示
+    </button>
+  {/if}
 
   <!-- 更多玩法：默认折叠——入门玩家只需要关卡地图；低频模式收在展开条里 -->
   <div class="more">
@@ -769,6 +780,25 @@
     font-size: var(--fs-sm);
     color: var(--muted);
     line-height: 1.7;
+  }
+  .hint-toggle {
+    margin-top: 11px;
+    min-height: 40px;
+    padding: 6px 10px;
+    border-radius: var(--r-sm);
+    border: 1px dashed rgba(167, 139, 250, 0.35);
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: var(--fs-xs);
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
+  }
+  button.hint-toggle:hover {
+    color: var(--text);
+    border-color: rgba(167, 139, 250, 0.6);
   }
   #hint :global(b) {
     color: var(--purple);

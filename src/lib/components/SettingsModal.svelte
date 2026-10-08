@@ -109,6 +109,9 @@
     </p>
     快捷键：空格 开始 / 暂停（结算后立即重开）· S 停止结算 · R 重置 · ⌘/Ctrl+Z 撤销 · ⌘/Ctrl+Shift+Z 或
     ⌘/Ctrl+Y 重做 · Esc 关闭面板
+    <p class="desc">
+      原理：指针尖端位置 = Σ rₖ·e^(i(ωₖt+φₖ))——你调的每一根指针，都是目标曲线傅立叶展开中的一项。
+    </p>
     <button class="primary" onclick={onclose}>关 闭</button>
   </div>
 </div>

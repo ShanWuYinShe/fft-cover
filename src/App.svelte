@@ -11,13 +11,11 @@
     readWeeklyFromHash,
   } from './lib/game/share';
   import LevelPicker from './lib/components/LevelPicker.svelte';
-  import ScorePanel from './lib/components/ScorePanel.svelte';
   import ResultOverlay from './lib/components/ResultOverlay.svelte';
   import EndlessResult from './lib/components/EndlessResult.svelte';
   import MoreMenu from './lib/components/MoreMenu.svelte';
   import AchievementsModal from './lib/components/AchievementsModal.svelte';
   import FinaleOverlay from './lib/components/FinaleOverlay.svelte';
-  import GoalPanel from './lib/components/GoalPanel.svelte';
   import ChapterIntroOverlay from './lib/components/ChapterIntroOverlay.svelte';
   import SettingsModal from './lib/components/SettingsModal.svelte';
   import { decodeCoeffs, LEVEL_DEFS } from './lib/game/levels';
@@ -512,8 +510,6 @@
   <div class="sides">
     <aside class="side side-left">
       <LevelPicker />
-      <ScorePanel />
-      <GoalPanel />
     </aside>
 
     <aside class="side side-right">
@@ -586,15 +582,6 @@
         {/if}
         <ArmPanel />
       </section>
-      <section class="tips sec-tips">
-        <p class="kb-only">
-          快捷键：<kbd>空格</kbd> 开始/暂停 · <kbd>S</kbd> 停止结算 · <kbd>R</kbd> 重置
-        </p>
-        <p>
-          原理：指针尖端位置 = Σ rₖ·e<sup>i(ωₖt+φₖ)</sup
-          >。你调的每一根指针，都是目标曲线傅立叶展开中的一项——旋转玩法的背后就是傅立叶变换。
-        </p>
-      </section>
     </aside>
   </div>
 </main>
@@ -606,9 +593,6 @@
   </button>
   <button type="button" class:on={mobileTab === 'arms'} onclick={() => (mobileTab = 'arms')}>
     <i>🎛</i><span>指针</span>
-  </button>
-  <button type="button" class:on={mobileTab === 'score'} onclick={() => (mobileTab = 'score')}>
-    <i>🏆</i><span>成绩</span>
   </button>
 </nav>
 {#if showTitle}
