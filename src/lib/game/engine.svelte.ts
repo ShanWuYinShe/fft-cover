@@ -568,6 +568,23 @@ export class GameEngine {
     return campaignState(this.bestStars, LEVEL_DEFS);
   }
 
+  /* ---------- 精通工具的渐进解锁：入门期不出现，减轻新手的选择负担 ---------- */
+
+  /** 专家模式入口：通过第二关（拿到 1★）后出现——那时玩家已理解基本调参 */
+  get expertUnlocked(): boolean {
+    return (this.bestStars['ellipse'] ?? 0) >= 1;
+  }
+
+  /**
+   * 频谱对比入口：本关连续 2 次 0 星（卡关求助，与"精确参数分解"同口径）
+   * 或推进到第六关（无穷 ∞，第三章起）后常驻——频率对需要看谱。
+   */
+  get spectrumUnlocked(): boolean {
+    const id = this.level?.id ?? '';
+    if ((this.failCounts[id] ?? 0) >= 2) return true;
+    return LEVEL_DEFS.findIndex((d) => d.id === (id || 'circle')) >= 5;
+  }
+
   /** 本关调性：内置关按章节，随机关/每日/创作关按 id 稳定散列 */
   get musicalKey(): MusicalKey {
     return keyForLevel(this.level);

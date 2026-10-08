@@ -14,6 +14,7 @@
   import ScorePanel from './lib/components/ScorePanel.svelte';
   import ResultOverlay from './lib/components/ResultOverlay.svelte';
   import EndlessResult from './lib/components/EndlessResult.svelte';
+  import MoreMenu from './lib/components/MoreMenu.svelte';
   import AchievementsModal from './lib/components/AchievementsModal.svelte';
   import FinaleOverlay from './lib/components/FinaleOverlay.svelte';
   import GoalPanel from './lib/components/GoalPanel.svelte';
@@ -455,34 +456,31 @@
         >
           ⏹ <span class="bt-long">停止结算</span><span class="bt-short">停止</span>
         </button>
-        <button
-          title="2× 快进：跳过等待（不影响得分与连击判定）"
-          class:gold={engine.fastForward}
-          disabled={engine.phase !== 'running'}
-          onclick={() => (engine.fastForward = !engine.fastForward)}
-        >
-          ⏩ 2×
-        </button>
-        <button onclick={() => engine.resetRun()}
-          >⟲ <span class="bt-long">重置点</span><span class="bt-short">重置</span></button
-        >
-        {#if engine.phase === 'done' && engine.resultDismissed}
-          <button
-            title="重新打开结算卡（复制战报 / 下一关）"
-            onclick={() => (engine.resultDismissed = false)}
-          >
-            📊 <span class="bt-long">结算卡</span><span class="bt-short">结算</span>
-          </button>
-        {/if}
-        <button
-          title={engine.endless
-            ? '无尽挑战中不能进沙盒——先在结算卡结束本局'
-            : '无限时自由旋转，实时调参，成绩不计入记录'}
-          disabled={engine.phase === 'running' || engine.phase === 'paused' || engine.endless}
-          onclick={() => engine.enterSandbox()}
-        >
-          🧪 沙盒
-        </button>
+        <MoreMenu
+          items={[
+            {
+              label: (engine.fastForward ? '✓ ' : '') + '⏩ 2× 快进',
+              title: '跳过等待（不影响得分与连击判定）',
+              disabled: engine.phase !== 'running',
+              onclick: () => (engine.fastForward = !engine.fastForward),
+            },
+            { label: '⟲ 重置点', onclick: () => engine.resetRun() },
+            {
+              label: '📊 结算卡',
+              title: '重新打开结算卡（复制战报 / 下一关）',
+              disabled: !(engine.phase === 'done' && engine.resultDismissed),
+              onclick: () => (engine.resultDismissed = false),
+            },
+            {
+              label: '🧪 沙盒',
+              title: engine.endless
+                ? '无尽挑战中不能进沙盒——先在结算卡结束本局'
+                : '无限时自由旋转，实时调参，成绩不计入记录',
+              disabled: engine.phase === 'running' || engine.phase === 'paused' || engine.endless,
+              onclick: () => engine.enterSandbox(),
+            },
+          ]}
+        />
         <span class="run-icons">
           <button
             title="音量（点击循环 全/半/静）"
@@ -525,53 +523,63 @@
           <span class="muted">（本关最多 {engine.level?.armLimit ?? 10} 根）</span>
         </h2>
         <div class="tools-row">
-          <button
-            title="撤销上一次调参（Ctrl/Cmd+Z）"
-            disabled={engine.armUndoCount === 0}
-            onclick={() => engine.undoArms()}
-          >
-            ↶ 撤销
-          </button>
-          <button
-            title="重做（Ctrl/Cmd+Shift+Z）"
-            disabled={engine.armRedoCount === 0}
-            onclick={() => engine.redoArms()}
-          >
-            ↷ 重做
-          </button>
-          <button
-            title="专家模式：隐藏目标轮廓与预览轨迹，只能靠频谱与收集反馈调参——硬核玩家的证明"
-            class:expert={engine.expertMode}
-            onclick={() => engine.toggleExpert()}
-          >
-            💎 专家
-          </button>
-          <button
-            title="在频谱仪上叠加目标曲线的真实频谱（教学用）"
-            class:gold={engine.spectrumCompare}
-            onclick={() => engine.toggleSpectrumCompare()}
-          >
-            🔍 频谱对比
-          </button>
+          <!-- 入门只露出"随机参数"；精通工具按进度解锁（专家=过第二关，频谱=卡关或进第三章） -->
           <button title="随机化已启用指针的半径与相位" onclick={() => engine.randomizeArms()}>
             🎲 随机参数
           </button>
-          <button title="全部指针清零关闭" onclick={() => engine.clearArms()}>⭯ 清零</button>
-          <button title="全部指针复位到默认参数" onclick={() => engine.resetAllArms()}
-            >↺ 复位</button
-          >
-          {#if engine.hasSavedArms()}
+          {#if engine.expertUnlocked}
             <button
-              title="载入上届解法并立即旋转（回放最佳参数的实际效果）"
-              onclick={() => {
-                engine.loadSavedArms();
-                engine.resetRun();
-                engine.startRun();
-              }}
+              title="专家模式：隐藏目标轮廓与预览轨迹，只能靠频谱与收集反馈调参——硬核玩家的证明"
+              class:expert={engine.expertMode}
+              onclick={() => engine.toggleExpert()}
             >
-              ▶ 回放解法
+              💎 专家
             </button>
           {/if}
+          {#if engine.spectrumUnlocked}
+            <button
+              title="在频谱仪上叠加目标曲线的真实频谱（卡关时看清差在哪一项）"
+              class:gold={engine.spectrumCompare}
+              onclick={() => engine.toggleSpectrumCompare()}
+            >
+              🔍 频谱对比
+            </button>
+          {/if}
+          <MoreMenu
+            items={[
+              {
+                label: '↶ 撤销',
+                title: '撤销上一次调参（Ctrl/Cmd+Z）',
+                disabled: engine.armUndoCount === 0,
+                onclick: () => engine.undoArms(),
+              },
+              {
+                label: '↷ 重做',
+                title: '重做（Ctrl/Cmd+Shift+Z）',
+                disabled: engine.armRedoCount === 0,
+                onclick: () => engine.redoArms(),
+              },
+              { label: '⭯ 清零', title: '全部指针清零关闭', onclick: () => engine.clearArms() },
+              {
+                label: '↺ 复位',
+                title: '全部指针复位到默认参数',
+                onclick: () => engine.resetAllArms(),
+              },
+              ...(engine.hasSavedArms()
+                ? [
+                    {
+                      label: '▶ 回放解法',
+                      title: '载入上届解法并立即旋转（回放最佳参数的实际效果）',
+                      onclick: () => {
+                        engine.loadSavedArms();
+                        engine.resetRun();
+                        engine.startRun();
+                      },
+                    },
+                  ]
+                : []),
+            ]}
+          />
         </div>
         {#if engine.autoSolve}
           <p class="fitting-tip">🪄 自动拟合中——直接调整任意指针即可接管它；点击画布可打断</p>

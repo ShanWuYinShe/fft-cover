@@ -952,11 +952,10 @@ input[type='checkbox'] {
   }
 }
 
-/* 手机竖屏：运行栏重排——5 个功能键一行，4 个图标键独占一行。
-   4 列网格装 9 个按钮会剩一个孤儿（⚙️ 单独占一行），所以竖屏单独定列数 */
+/* 手机竖屏：运行栏重排——4 个功能键（开始/停止/⋯/图标行）正好一行 */
 @media (max-width: 640px) and (orientation: portrait) {
   .run-row {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
   .run-row button {
     padding: 7px 6px;

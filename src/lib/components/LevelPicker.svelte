@@ -10,6 +10,10 @@
   import ComposerModal from './ComposerModal.svelte';
 
   let showComposer = $state(false);
+  /** 当前是否在特殊模式（每日/每周/随机关/无尽/创作）——折叠条上要点亮提示，免得"现在玩的是哪来着" */
+  const inSpecialMode = $derived(
+    !!engine.level && !engine.level.chapter && !LEVEL_DEFS.some((d) => d.id === engine.level?.id),
+  );
 
   /** 线性解锁：前一关 ≥1★ 才能进入（规则集中在 campaign.ts） */
   const isLocked = (id: string): boolean => isLevelLocked(LEVEL_DEFS, id, engine.bestStars);
@@ -332,148 +336,160 @@
     {#if engine.level}{@html engine.level.hint}{/if}
   </p>
 
-  <!-- 更多玩法：每日 / 随机 / 创作 -->
+  <!-- 更多玩法：默认折叠——入门玩家只需要关卡地图；低频模式收在展开条里 -->
   <div class="more">
-    <div class="daily-row">
-      <button
-        type="button"
-        class="more-daily"
-        class:active={engine.level?.id === makeDailyId(engine.difficulty)}
-        title="按当前随机难度生成今日关卡"
-        onclick={() => engine.loadDaily()}
-      >
-        <span class="md-left"
-          >📅 每日挑战{#if engine.dailyStreak.streak > 0}<i class="fire"
-              >🔥{engine.dailyStreak.streak}</i
-            >{/if}</span
+    <button
+      type="button"
+      class="more-toggle"
+      class:active={inSpecialMode}
+      aria-expanded={!!engine.flags['moreOpen']}
+      onclick={() => engine.setFlag('moreOpen', !engine.flags['moreOpen'])}
+    >
+      <i>{engine.flags['moreOpen'] ? '▾' : '▸'}</i> 更多玩法
+      <span>每日 · 每周 · 无尽 · 随机 · 创作</span>
+    </button>
+    {#if engine.flags['moreOpen']}
+      <div class="daily-row">
+        <button
+          type="button"
+          class="more-daily"
+          class:active={engine.level?.id === makeDailyId(engine.difficulty)}
+          title="按当前随机难度生成今日关卡"
+          onclick={() => engine.loadDaily()}
         >
-        <span class="md-right" title={'今日挑战剩余 ' + dailyCountdown.long}
-          >{engine.todayBest > 0 ? engine.todayBest + ' 分 · ' : ''}{dailyCountdown.short}</span
-        >
-      </button>
-      <button
-        type="button"
-        class="mini daily-share"
-        title="分享今日挑战——好友打开即玩同一天的关卡"
-        aria-label="分享每日挑战"
-        onclick={shareDaily}
-      >
-        {dailyShared ? '✓' : '📤'}
-      </button>
-    </div>
-    <!-- 无尽挑战：连续随机曲线，逐波爬升，看能撑几波 -->
-    <div class="daily-row">
-      <button
-        type="button"
-        class="more-daily"
-        class:active={engine.endless}
-        title="无尽挑战：连续随机曲线，每波收集 ≥35% 才能进下一波，难度逐波爬升——看你最多撑几波"
-        onclick={() => engine.startEndless()}
-      >
-        <span class="md-left">♾ 无尽挑战</span>
-        <span class="md-right"
-          >{engine.endlessBest.wave > 0
-            ? '最佳 ' + engine.endlessBest.wave + ' 波 · ' + engine.endlessBest.score + ' 分'
-            : '逐波爬升'}</span
-        >
-      </button>
-    </div>
-    <!-- 本周挑战：固定困难档，一周一条曲线，慢慢磨 -->
-    <div class="daily-row">
-      <button
-        type="button"
-        class="more-daily"
-        class:active={engine.level?.id.startsWith('weekly-')}
-        style={daysLeftInWeek() === 1 && engine.weeklyBest === 0
-          ? 'box-shadow: 0 0 0 1px rgba(240, 183, 107, 0.55)'
-          : ''}
-        title="本周挑战：固定困难档，一周里慢慢磨（还剩最后一天，记得来打）"
-        onclick={() => engine.loadWeekly()}
-      >
-        <span class="md-left">🗓 每周挑战</span>
-        <span class="md-right"
-          >{engine.weeklyBest > 0 ? engine.weeklyBest + ' 分 · ' : ''}还剩 {daysLeftInWeek()} 天</span
-        >
-      </button>
-    </div>
-    <!-- 最近 7 天：完成的格子填朱砂，今天描边——连胜变成看得见的一排 -->
-    <div class="dweek" aria-label="最近 7 天的每日挑战">
-      {#each engine.dailyWeek as d (d.date)}
-        <span
-          class="dcell"
-          class:done={d.done}
-          class:today={d.today}
-          title={d.date + (d.done ? ' · 已完成' : ' · 未完成')}
-        >
-          <i>{d.label}</i>
-          {#if d.done}<b>✓</b>{/if}
-        </span>
-      {/each}
-      <span class="dweek-cap" class:full={weekFull} class:atrisk={streakAtRisk}>
-        {#if weekFull}
-          🎉 本周全勤
-        {:else if streakAtRisk}
-          ⚠️ 今天不打，连胜就断
-        {:else if engine.dailyStreak.streak > 0}
-          连续 {engine.dailyStreak.streak} 天
-        {:else}
-          每天一练
-        {/if}
-      </span>
-    </div>
-    <div class="gen-row">
-      <span class="gen-label">随机生成</span>
-      <div class="diff-chips">
-        {#each DIFFS as d (d.id)}
-          <button
-            type="button"
-            class="diff-chip"
-            class:active={engine.difficulty === d.id}
-            onclick={() => engine.setDifficulty(d.id)}
+          <span class="md-left"
+            >📅 每日挑战{#if engine.dailyStreak.streak > 0}<i class="fire"
+                >🔥{engine.dailyStreak.streak}</i
+              >{/if}</span
           >
-            {d.nm}
-          </button>
-        {/each}
+          <span class="md-right" title={'今日挑战剩余 ' + dailyCountdown.long}
+            >{engine.todayBest > 0 ? engine.todayBest + ' 分 · ' : ''}{dailyCountdown.short}</span
+          >
+        </button>
+        <button
+          type="button"
+          class="mini daily-share"
+          title="分享今日挑战——好友打开即玩同一天的关卡"
+          aria-label="分享每日挑战"
+          onclick={shareDaily}
+        >
+          {dailyShared ? '✓' : '📤'}
+        </button>
       </div>
-      <button class="gen-btn" title="按当前难度生成随机关卡" onclick={() => engine.loadRandom()}>
-        🎲 生成
-      </button>
-      <button
-        class="gen-btn"
-        title="用谐波合成器创作自己的关卡"
-        onclick={() => (showComposer = true)}
-      >
-        🎨 创作
-      </button>
-    </div>
+      <!-- 无尽挑战：连续随机曲线，逐波爬升，看能撑几波 -->
+      <div class="daily-row">
+        <button
+          type="button"
+          class="more-daily"
+          class:active={engine.endless}
+          title="无尽挑战：连续随机曲线，每波收集 ≥35% 才能进下一波，难度逐波爬升——看你最多撑几波"
+          onclick={() => engine.startEndless()}
+        >
+          <span class="md-left">♾ 无尽挑战</span>
+          <span class="md-right"
+            >{engine.endlessBest.wave > 0
+              ? '最佳 ' + engine.endlessBest.wave + ' 波 · ' + engine.endlessBest.score + ' 分'
+              : '逐波爬升'}</span
+          >
+        </button>
+      </div>
+      <!-- 本周挑战：固定困难档，一周一条曲线，慢慢磨 -->
+      <div class="daily-row">
+        <button
+          type="button"
+          class="more-daily"
+          class:active={engine.level?.id.startsWith('weekly-')}
+          style={daysLeftInWeek() === 1 && engine.weeklyBest === 0
+            ? 'box-shadow: 0 0 0 1px rgba(240, 183, 107, 0.55)'
+            : ''}
+          title="本周挑战：固定困难档，一周里慢慢磨（还剩最后一天，记得来打）"
+          onclick={() => engine.loadWeekly()}
+        >
+          <span class="md-left">🗓 每周挑战</span>
+          <span class="md-right"
+            >{engine.weeklyBest > 0 ? engine.weeklyBest + ' 分 · ' : ''}还剩 {daysLeftInWeek()} 天</span
+          >
+        </button>
+      </div>
+      <!-- 最近 7 天：完成的格子填朱砂，今天描边——连胜变成看得见的一排 -->
+      <div class="dweek" aria-label="最近 7 天的每日挑战">
+        {#each engine.dailyWeek as d (d.date)}
+          <span
+            class="dcell"
+            class:done={d.done}
+            class:today={d.today}
+            title={d.date + (d.done ? ' · 已完成' : ' · 未完成')}
+          >
+            <i>{d.label}</i>
+            {#if d.done}<b>✓</b>{/if}
+          </span>
+        {/each}
+        <span class="dweek-cap" class:full={weekFull} class:atrisk={streakAtRisk}>
+          {#if weekFull}
+            🎉 本周全勤
+          {:else if streakAtRisk}
+            ⚠️ 今天不打，连胜就断
+          {:else if engine.dailyStreak.streak > 0}
+            连续 {engine.dailyStreak.streak} 天
+          {:else}
+            每天一练
+          {/if}
+        </span>
+      </div>
+      <div class="gen-row">
+        <span class="gen-label">随机生成</span>
+        <div class="diff-chips">
+          {#each DIFFS as d (d.id)}
+            <button
+              type="button"
+              class="diff-chip"
+              class:active={engine.difficulty === d.id}
+              onclick={() => engine.setDifficulty(d.id)}
+            >
+              {d.nm}
+            </button>
+          {/each}
+        </div>
+        <button class="gen-btn" title="按当前难度生成随机关卡" onclick={() => engine.loadRandom()}>
+          🎲 生成
+        </button>
+        <button
+          class="gen-btn"
+          title="用谐波合成器创作自己的关卡"
+          onclick={() => (showComposer = true)}
+        >
+          🎨 创作
+        </button>
+      </div>
 
-    <!--
+      <!--
     邀请码行常驻：输入框是"用别人的码进关"的唯一入口，原先只在随机关才渲染，
     导致收到创作关系数串 / 每日难度码的玩家根本找不到地方粘贴。
     「复制 / 分享」只对随机关有意义（每日关有自己的分享按钮），单独用条件包起来。
   -->
-    <div class="seed-row">
-      {#if inviteCode}
-        <span>邀请码 <b>{inviteCode}</b></span>
-        {#if !isDaily}
-          <button class="mini" title="复制邀请码——好友载入后进入同一关" onclick={copySeed}>
-            🔗 复制
-          </button>
-          <button class="mini" title="分享链接——好友打开直接进入这一关" onclick={shareLevel}>
-            {shareCopied ? '✓ 已复制' : '📤 分享'}
-          </button>
+      <div class="seed-row">
+        {#if inviteCode}
+          <span>邀请码 <b>{inviteCode}</b></span>
+          {#if !isDaily}
+            <button class="mini" title="复制邀请码——好友载入后进入同一关" onclick={copySeed}>
+              🔗 复制
+            </button>
+            <button class="mini" title="分享链接——好友打开直接进入这一关" onclick={shareLevel}>
+              {shareCopied ? '✓ 已复制' : '📤 分享'}
+            </button>
+          {/if}
+        {:else}
+          <span class="seed-label">邀请码</span>
         {/if}
-      {:else}
-        <span class="seed-label">邀请码</span>
-      {/if}
-      <input
-        class="seed-input"
-        placeholder="邀请码 / 种子 / 难度"
-        bind:value={seedInput}
-        onkeydown={(e) => e.key === 'Enter' && loadSeed()}
-      />
-      <button class="mini" onclick={loadSeed}>载入</button>
-    </div>
+        <input
+          class="seed-input"
+          placeholder="邀请码 / 种子 / 难度"
+          bind:value={seedInput}
+          onkeydown={(e) => e.key === 'Enter' && loadSeed()}
+        />
+        <button class="mini" onclick={loadSeed}>载入</button>
+      </div>
+    {/if}
   </div>
 </section>
 
@@ -764,6 +780,47 @@
     display: flex;
     flex-direction: column;
     gap: 7px;
+  }
+  /* 折叠开关：默认收起——入门玩家只看关卡地图；特殊模式进行中时点亮 */
+  .more-toggle {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border-radius: var(--r-sm);
+    border: 1px dashed rgba(130, 150, 210, 0.3);
+    background: rgba(24, 30, 56, 0.4);
+    color: var(--muted);
+    font: inherit;
+    font-size: var(--fs-sm);
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
+  }
+  button.more-toggle:hover {
+    color: var(--text);
+    border-color: rgba(130, 150, 210, 0.55);
+  }
+  .more-toggle.active {
+    border-color: rgba(79, 209, 197, 0.55);
+    border-style: solid;
+    color: var(--text);
+    box-shadow: inset 3px 0 0 var(--cyan);
+  }
+  .more-toggle i {
+    font-style: normal;
+    width: 14px;
+    flex: none;
+  }
+  .more-toggle span {
+    margin-left: auto;
+    font-size: var(--fs-xs);
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   /* 每日挑战一行：主按钮 + 分享按钮 */
   .daily-row {
