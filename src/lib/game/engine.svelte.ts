@@ -22,6 +22,7 @@ import {
   HISTORY_KEY,
   HISTORY_MAX,
   DIFF_KEY,
+  ENDLESS_KEY,
 } from './constants';
 import {
   CHAPTERS,
@@ -187,6 +188,14 @@ function loadAchv(): Record<string, number> {
   return readJson(ACHV_KEY, {});
 }
 
+/** 无尽挑战历史最佳的读取：脏数据丢弃，回落到"尚无记录" */
+function loadEndlessBest(): { wave: number; score: number } {
+  const raw = readJson<{ wave?: unknown; score?: unknown } | null>(ENDLESS_KEY, null);
+  return raw && typeof raw.wave === 'number' && typeof raw.score === 'number'
+    ? { wave: raw.wave, score: raw.score }
+    : { wave: 0, score: 0 };
+}
+
 function loadFlags(): Record<string, boolean> {
   return readJson(FLAGS_KEY, {});
 }
@@ -317,6 +326,16 @@ export class GameEngine {
   dailyBest = $state<Record<string, number>>(loadDailyBest());
   /** 每关历史成绩（key = 关卡 id，最多 HISTORY_MAX 条，用于趋势展示） */
   history = $state<Record<string, HistoryEntry[]>>(loadHistory());
+  /** 无尽挑战进行中：连续随机曲线，收集达标进下一波 */
+  endless = $state(false);
+  /** 无尽挑战当前波次（1 起） */
+  endlessWave = $state(0);
+  /** 无尽挑战本局累计得分（含波次奖励；每波结算时累加） */
+  endlessScore = $state(0);
+  /** 刚结算的一波是否存活（收集 ≥1 星线）：结算浮层用 */
+  endlessSurvived = $state(false);
+  /** 无尽挑战历史最佳：最高波次与该局累计分 */
+  endlessBest = $state<{ wave: number; score: number }>(loadEndlessBest());
   /** 本局竞速结果：结束时相对上届的领先（+）/落后（−）点数；无上届为 null */
   lastGhostDelta = $state<number | null>(null);
   /** 通关演出：本局刚刚达成战役里程碑时置位（'cleared' 全关 ≥1★ / 'mastered' 全关 3★） */
@@ -367,6 +386,7 @@ export class GameEngine {
 
   loadLevel(def: LevelDef): void {
     this.cancelAutoSolve();
+    this.clearEndlessState(); // 常规载关退出无尽挑战
     this.level = makeLevel(def);
     this.trimArmsToLimit();
     this.resetRun();
@@ -424,6 +444,60 @@ export class GameEngine {
     this.loadRandomSeed(Math.floor(Math.random() * 1e9), this.difficulty);
   }
 
+  /* ---------- 无尽挑战：连续随机曲线，收集达标进下一波 ---------- */
+
+  /** 波次难度曲线：1–2 波简单、3–5 波普通、6 波起困难（逐波爬升的紧张感） */
+  endlessDiff(wave: number): RandomDifficulty {
+    return wave <= 2 ? 'easy' : wave <= 5 ? 'normal' : 'hard';
+  }
+
+  /** 过波奖励：波次越深越值钱，鼓励连续存活 */
+  get endlessWaveBonus(): number {
+    return this.endlessWave * 500;
+  }
+
+  /** 开始一局无尽挑战：从第 1 波（简单）起步 */
+  startEndless(): void {
+    this.endlessWave = 1;
+    this.endlessScore = 0;
+    this.endlessSurvived = false;
+    this.enterLevel(makeRandomLevel(Math.floor(Math.random() * 1e9), this.endlessDiff(1)));
+    this.endless = true;
+  }
+
+  /** 存活过当前波：领取波次奖励并进入下一波（难度爬升） */
+  nextEndlessWave(): void {
+    if (!this.endless || !this.endlessSurvived) return;
+    this.endlessWave++;
+    this.enterLevel(
+      makeRandomLevel(Math.floor(Math.random() * 1e9), this.endlessDiff(this.endlessWave)),
+    );
+    this.endless = true;
+  }
+
+  /** 结束无尽挑战（挑战结束卡或玩家主动退出）：回到普通模式 */
+  exitEndless(): void {
+    this.clearEndlessState();
+    this.resetRun();
+  }
+
+  /** 完全退出无尽模式：标志位与波次/累计一并清零（进下一波时不能用这个） */
+  private clearEndlessState(): void {
+    this.endless = false;
+    this.endlessWave = 0;
+    this.endlessScore = 0;
+    this.endlessSurvived = false;
+  }
+
+  /** 结束时更新无尽历史最佳：先比波次，同波次比累计分 */
+  private settleEndlessBest(): void {
+    const b = this.endlessBest;
+    if (this.endlessWave > b.wave || (this.endlessWave === b.wave && this.endlessScore > b.score)) {
+      this.endlessBest = { wave: this.endlessWave, score: this.endlessScore };
+      writeJson(ENDLESS_KEY, this.endlessBest);
+    }
+  }
+
   /** 按邀请码（seed）重建随机关卡：同码必同关卡。难度不影响已有关卡复现 */
   loadRandomSeed(seed: number, diff: RandomDifficulty = 'normal'): void {
     this.randomDiff = diff;
@@ -440,6 +514,8 @@ export class GameEngine {
   private enterLevel(level: Level): void {
     this.cancelAutoSolve();
     this.sandbox = false;
+    // 任何常规载关都会退出无尽挑战（startEndless/nextEndlessWave 在调用后重新置位）
+    this.endless = false;
     this.level = level;
     this.trimArmsToLimit();
     this.resetRun();
@@ -942,6 +1018,15 @@ export class GameEngine {
     this.resultDismissed = false;
     if (this.sandbox) {
       this.sandbox = false;
+      return;
+    }
+    // 无尽挑战：波次曲线不写各关档案（星级/最佳/朱印都归内置与常规随机关），
+    // 只判生死、累加本局得分，失败时结算历史最佳
+    if (this.endless) {
+      const ratio = this.total ? this.collectedCount / this.total : 0;
+      this.endlessSurvived = starsFor(ratio) >= 1;
+      this.endlessScore += this.score + (this.endlessSurvived ? this.endlessWaveBonus : 0);
+      if (!this.endlessSurvived) this.settleEndlessBest();
       return;
     }
     // 最快全清时间竞速（挑战模式）

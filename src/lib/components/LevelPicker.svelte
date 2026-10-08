@@ -361,6 +361,23 @@
         {dailyShared ? '✓' : '📤'}
       </button>
     </div>
+    <!-- 无尽挑战：连续随机曲线，逐波爬升，看能撑几波 -->
+    <div class="daily-row">
+      <button
+        type="button"
+        class="more-daily"
+        class:active={engine.endless}
+        title="无尽挑战：连续随机曲线，每波收集 ≥35% 才能进下一波，难度逐波爬升——看你最多撑几波"
+        onclick={() => engine.startEndless()}
+      >
+        <span class="md-left">♾ 无尽挑战</span>
+        <span class="md-right"
+          >{engine.endlessBest.wave > 0
+            ? '最佳 ' + engine.endlessBest.wave + ' 波 · ' + engine.endlessBest.score + ' 分'
+            : '逐波爬升'}</span
+        >
+      </button>
+    </div>
     <!-- 本周挑战：固定困难档，一周一条曲线，慢慢磨 -->
     <div class="daily-row">
       <button

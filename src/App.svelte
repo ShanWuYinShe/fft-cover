@@ -13,6 +13,7 @@
   import LevelPicker from './lib/components/LevelPicker.svelte';
   import ScorePanel from './lib/components/ScorePanel.svelte';
   import ResultOverlay from './lib/components/ResultOverlay.svelte';
+  import EndlessResult from './lib/components/EndlessResult.svelte';
   import AchievementsModal from './lib/components/AchievementsModal.svelte';
   import FinaleOverlay from './lib/components/FinaleOverlay.svelte';
   import GoalPanel from './lib/components/GoalPanel.svelte';
@@ -287,6 +288,8 @@
     if (e.code === 'Space') {
       e.preventDefault();
       if (engine.phase === 'done') {
+        // 无尽模式由结算卡按钮推进（过波/重开），空格不偷跑同一波
+        if (engine.endless) return;
         engine.resetRun();
         engine.startRun(); // 快速迭代：结算后空格立即重开
       } else {
@@ -317,7 +320,13 @@
     <div class="canvas-box">
       <Stage />
       <div class="hud">
-        <span class="lvl">{engine.level?.name ?? ''}{engine.sandbox ? ' 🧪' : ''}</span>
+        <span class="lvl">
+          {#if engine.endless}
+            ♾ 第 {engine.endlessWave} 波 · 累计 {engine.endlessScore} 分
+          {:else}
+            {engine.level?.name ?? ''}{engine.sandbox ? ' 🧪' : ''}
+          {/if}
+        </span>
         <div class="hud-right">
           <span
             class="score"
@@ -339,7 +348,11 @@
         </div>
       </div>
       {#if engine.phase === 'done' && !engine.resultDismissed}
-        <ResultOverlay />
+        {#if engine.endless}
+          <EndlessResult />
+        {:else}
+          <ResultOverlay />
+        {/if}
       {/if}
 
       {#if engine.phase === 'paused' && !engine.sandbox}
@@ -461,8 +474,10 @@
           </button>
         {/if}
         <button
-          title="无限时自由旋转，实时调参，成绩不计入记录"
-          disabled={engine.phase === 'running' || engine.phase === 'paused'}
+          title={engine.endless
+            ? '无尽挑战中不能进沙盒——先在结算卡结束本局'
+            : '无限时自由旋转，实时调参，成绩不计入记录'}
+          disabled={engine.phase === 'running' || engine.phase === 'paused' || engine.endless}
           onclick={() => engine.enterSandbox()}
         >
           🧪 沙盒

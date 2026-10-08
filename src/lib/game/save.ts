@@ -8,6 +8,7 @@ import {
   COMPOSER_NAME_KEY,
   DAILY_KEY,
   DRAFT_KEY,
+  ENDLESS_KEY,
   EXACT_KEY,
   EXPERT_KEY,
   FAIL_KEY,
@@ -54,6 +55,7 @@ export const SAVE_KEYS = [
   LAST_CUSTOM_KEY,
   FAIL_KEY,
   DRAFT_KEY,
+  ENDLESS_KEY,
 ] as const;
 
 /** 偏好类键：参与存档，但"清空进度"时保留（音量/音效/音乐/难度不该被清） */
