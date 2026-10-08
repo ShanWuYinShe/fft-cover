@@ -77,8 +77,15 @@
   out.copyChipReady = Array.from(document.querySelectorAll('.pchip')).some((x) =>
     x.textContent.includes('📋 复制'),
   );
-  // Esc 关闭回归锚（与其他弹层同一交互）
-  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-  await new Promise((r) => setTimeout(r, 400));
+  const nameInput = document.querySelector('.name-input');
+  nameInput.value = '冒烟作品';
+  nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+  const playBtn = Array.from(document.querySelectorAll('.modal button')).find((x) =>
+    x.textContent.includes('生成并游玩'),
+  );
+  playBtn.click();
+  await new Promise((r) => setTimeout(r, 300));
+  out.playedName = M.engine.level?.name ?? null; // 期望「冒烟作品」
   out.escClosed = !document.querySelector('.modal');
+  return JSON.stringify(out, null, 1);
 })();
