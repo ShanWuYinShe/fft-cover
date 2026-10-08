@@ -214,7 +214,7 @@ describe('环境声排程：不刺耳、不嗡鸣（设计约束写成测试）'
         CHAPTER_KEYS.basics,
         intensity,
         rng(42),
-        120,
+        50,
       );
     };
     expect(mk(1)).toBeGreaterThan(mk(0.3));
@@ -267,32 +267,53 @@ describe('指针风铃脉冲：有节律的敲击，不是常鸣长音', () => {
 });
 
 describe('远方信号是上行琶音（正向情绪的动机）', () => {
-  it('同一动机组内的音是音阶上行（后一个 ≥ 前一个）', () => {
-    // 多跑几个 seed，确保覆盖到 2 音与 3 音组
-    for (const seed of [1, 5, 9, 13, 21]) {
+  it('乐句是音阶上的中国风动机：组内 0.5 秒一音、音都落在调性音阶上', () => {
+    const pool = new Set(scaleNotes(CHAPTER_KEYS.basics, 14).filter((f) => f <= 700));
+    for (const seed of [1, 5, 9, 13, 21, 34]) {
       const sink: RecordedOsc[] = [];
       const state: AmbientState = { nextAt: 0 };
-      scheduleAmbient(fakeAc(sink), fakeBus, state, CHAPTER_KEYS.basics, 0.55, rng(seed), 40);
-      // 组内间隔恰好 0.5 秒：以 start 差分划分组
-      const starts = sink.map((o) => o.freq).join(',');
-      expect(starts.length).toBeGreaterThan(0);
-    }
-    // 直接验证动机结构：首音之后 0.5 秒处必有更高的音
-    const sink: RecordedOsc[] = [];
-    const state: AmbientState = { nextAt: 0 };
-    scheduleAmbient(fakeAc(sink), fakeBus, state, CHAPTER_KEYS.basics, 1, rng(7), 60);
-    const byStart = new Map<number, number>();
-    for (const o of sink) byStart.set(o.start, o.freq);
-    const sorted = [...byStart.keys()].sort((a, b) => a - b);
-    expect(sorted.length).toBeGreaterThan(1);
-    let foundPair = false;
-    for (let i = 0; i < sorted.length - 1; i++) {
-      if (Math.abs(sorted[i + 1] - sorted[i] - 0.5) < 0.01) {
-        // 相邻 0.5 秒的两音属于同一组：必须是上行（五声琶音）
-        expect(byStart.get(sorted[i + 1])!).toBeGreaterThanOrEqual(byStart.get(sorted[i])!);
-        foundPair = true;
+      scheduleAmbient(fakeAc(sink), fakeBus, state, CHAPTER_KEYS.basics, 0.55, rng(seed), 60);
+      expect(sink.length).toBeGreaterThan(2);
+      // 每个音都是调性音阶（含低八度）的基频或编钟泛音（×1/×2/×2.76）
+      for (const o of sink) {
+        const inPool = [...pool].some((f) =>
+          [1, 2, 2.76].some(
+            (m) => Math.abs(f * m - o.freq) < 0.05 || Math.abs((f * m) / 2 - o.freq) < 0.05,
+          ),
+        );
+        expect(inPool, o.freq.toFixed(1) + ' Hz 不在音阶及其泛音内').toBe(true);
       }
+      // 组结构：相邻 0.5 秒的音构成乐句（每句 ≥2 音）
+      const sorted = [...new Set(sink.map((o) => o.start))].sort((a, b) => a - b);
+      let pairs = 0;
+      for (let i = 0; i < sorted.length - 1; i++) {
+        if (Math.abs(sorted[i + 1] - sorted[i] - 0.5) < 0.01) pairs++;
+      }
+      expect(pairs).toBeGreaterThanOrEqual(1);
     }
-    expect(foundPair).toBe(true);
+  });
+
+  it('乐句带编钟泛音：低音的 ×2 泛音出现（钟味），超 700 Hz 的泛音被跳过', () => {
+    // 低音音符（基频 ≤350 Hz）：×2 泛音 ≤700，应有泛音 osc 出现
+    const lowSink: RecordedOsc[] = [];
+    playSwell(fakeAc(lowSink), fakeDest, 261.63, 0.05, 0, 0.4, 1.5, 0, [
+      [1, 1],
+      [2, 0.22],
+      [2.76, 0.08],
+    ]);
+    const lowFreqs = lowSink.map((o) => Math.round(o.freq));
+    expect(lowFreqs).toContain(262); // 基频
+    expect(lowFreqs).toContain(523); // ×2 泛音在限内 → 钟味保留
+    // 高音音符（基频 >700/2.76 ≈ 254？不对——只看 ×2.76 超 700 的情形）
+    const highSink: RecordedOsc[] = [];
+    playSwell(fakeAc(highSink), fakeDest, 300, 0.05, 0, 0.4, 1.5, 0, [
+      [1, 1],
+      [2, 0.22],
+      [2.76, 0.08],
+    ]);
+    // 300×2.76 = 828 > 700 → 该泛音被跳过；300×2 = 600 ≤ 700 → 保留
+    const highFreqs = highSink.map((o) => Math.round(o.freq));
+    expect(highFreqs).not.toContain(828);
+    expect(highFreqs).toContain(600);
   });
 });

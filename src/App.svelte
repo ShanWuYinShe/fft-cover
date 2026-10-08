@@ -253,7 +253,8 @@
     const was = engine.phase;
     engine.stopRun();
     if (engine.phase === 'done' && (was === 'running' || was === 'paused')) {
-      if (engine.collectedCount === engine.total) perfectArpeggio(engine.soundOn);
+      if (engine.collectedCount === engine.total)
+        perfectArpeggio(engine.soundOn, engine.collectScale.slice(0, 8));
       else finishChord(engine.soundOn);
     }
   }

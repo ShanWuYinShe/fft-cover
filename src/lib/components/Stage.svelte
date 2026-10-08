@@ -13,6 +13,7 @@
     solveDone,
     solveTick,
     starSound,
+    woodfishSound,
   } from '../game/audio';
   import { haptic } from '../game/haptics';
   import { spectrumGaps, starsFor } from '../game/scoring';
@@ -837,6 +838,8 @@
       if (engine.phase === 'running') {
         const { got, finished } = engine.advance(dt);
         if (got > 0) collectSound(engine.collectedCount, engine.soundOn, engine.collectScale);
+        // 连击里程碑（每满 5 连）敲一声木鱼：中国打击乐的轻点缀
+        if (engine.combo > 0 && engine.combo % 5 === 0) woodfishSound(engine.soundOn);
         // 升星提示音 + 触感：本局刚越过一个星级阈值
         if (engine.starReached > lastStarTier) {
           lastStarTier = engine.starReached;
@@ -844,7 +847,8 @@
           haptic(engine.starReached >= 3 ? [16, 40, 16] : 14, engine.soundOn);
         }
         if (finished) {
-          if (engine.collectedCount === engine.total) perfectArpeggio(engine.soundOn);
+          if (engine.collectedCount === engine.total)
+            perfectArpeggio(engine.soundOn, engine.collectScale.slice(0, 8));
           else finishChord(engine.soundOn);
           // 本局盖了新印：等收尾音落定，一枚一枚盖下去（音 + 触感）
           engine.newSeals.forEach((_, i) => {

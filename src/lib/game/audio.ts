@@ -99,8 +99,9 @@ export function beep(
 }
 
 /**
- * 拨弦音（古筝／琵琶意象）：极快起音 + 指数衰减 + 三个泛音。
- * 泛音按 1 : 0.3 : 0.12 递弱、并整体低通，既像"弦"又不刺耳。
+ * 拨弦音（古筝／琵琶意象）：极快起音 + 指数衰减 + 三个泛音 + **上滑音装饰**。
+ * 泛音按 1 : 0.3 : 0.12 递弱、并整体低通，既像"弦"又不刺耳；
+ * 滑音是古筝"按滑"的韵味所在：基频从低约 60 音分处 50ms 内滑正，很轻。
  */
 export function pluck(freq: number, on: boolean, dur = 0.55, gain = 0.13): void {
   if (!on) return;
@@ -122,6 +123,11 @@ export function pluck(freq: number, on: boolean, dur = 0.55, gain = 0.13): void 
       const o = ac.createOscillator();
       o.type = 'sine';
       o.frequency.value = freq * mult;
+      if (mult === 1) {
+        // 上滑音：只滑基频（泛音跟着基频的滑动感走，不必单独滑）
+        o.frequency.setValueAtTime(freq * 0.965, t0);
+        o.frequency.exponentialRampToValueAtTime(freq, t0 + 0.05);
+      }
       const g = ac.createGain();
       const peak = Math.max(0.0002, gain * pg * vol());
       const decay = dur * (mult === 1 ? 1 : 0.55); // 高次泛音衰减更快
@@ -133,6 +139,33 @@ export function pluck(freq: number, on: boolean, dur = 0.55, gain = 0.13): void 
       o.start(t0);
       o.stop(t0 + decay + 0.05);
     }
+  } catch {
+    /* 音频不可用则忽略 */
+  }
+}
+
+/**
+ * 木鱼声（中国打击乐）：短促的"笃"——快速下落的音高 + 极短衰减。
+ * 用于连击里程碑（每满 5 连）这样的轻量点缀，不盖过收集音。
+ */
+export function woodfishSound(on: boolean): void {
+  if (!on) return;
+  try {
+    const ac = getAudioContext();
+    if (!ac) return;
+    const t0 = ac.currentTime;
+    const o = ac.createOscillator();
+    o.type = 'sine';
+    // 木腔的"笃"：音高瞬间下落（880 → 620），比固定音高更像敲木头
+    o.frequency.setValueAtTime(880, t0);
+    o.frequency.exponentialRampToValueAtTime(620, t0 + 0.045);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.09 * vol(), t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.07);
+    o.connect(g);
+    g.connect(ac.destination);
+    o.start(t0);
+    o.stop(t0 + 0.09);
   } catch {
     /* 音频不可用则忽略 */
   }
@@ -173,11 +206,15 @@ export function achvSound(on: boolean): void {
   });
 }
 
-/** 完美收集琶音：C 大三和弦上行（C4-E4-G4-C5） */
-export function perfectArpeggio(on: boolean): void {
+/**
+ * 全清演奏：**古筝刮奏**（glissando）——按本关调性音阶快速上行一行
+ * （默认 C 宫五声两个八度取前 8 音），每音错开 45ms，拨弦收尾。
+ * 比大三和弦更"中国风"：五声刮奏是古筝最标志性的语汇。
+ */
+export function perfectArpeggio(on: boolean, scale: number[] = PENTATONIC.slice(0, 8)): void {
   if (!on) return;
-  [261.63, 329.63, 392.0, 523.25].forEach((f, i) => {
-    setTimeout(() => beep(f, 0.25, 'triangle', 0.12, true), i * 90);
+  scale.forEach((f, i) => {
+    setTimeout(() => pluck(f, true, 0.5, 0.09), i * 45);
   });
 }
 

@@ -184,8 +184,22 @@ export interface AmbientState {
 }
 
 /**
- * 在 [state.nextAt, until) 之间排入若干组**上行五声琶音**（远方信号）。
- * 五声上行天然是正向情绪：像风铃被风拂过，而不是随机散音。
+ * 中国风旋律动机：相对起点的**音阶索引**模式（不是固定频率），
+ * 在任意调性上都成立。级进回绕 + 折回——像笛箫的短句，
+ * 而不是机械上行音阶。尾音拖腔（release ×1.7）是"韵味"所在。
+ */
+const MOTIFS: number[][] = [
+  [0, 1, 2], // 三音上行
+  [0, 1, 2, 1], // 上行折回
+  [0, 2, 1, 0], // 环绕回落
+  [0, 1, 2, 3], // 四音上行
+  [0, 2, 3, 2], // 跳进后折回
+];
+
+/**
+ * 在 [state.nextAt, until) 之间排入若干条**五声乐句**（远方信号）。
+ * 每条乐句是一个中国风动机（级进回绕 + 尾音拖腔），带编钟泛音
+ * （低音带钟味；超 700 Hz 的泛音被 playSwell 自动跳过，高音永远干净）。
  * rnd 可注入（测试用），返回本次排入的音符数。
  */
 export function scheduleAmbient(
@@ -201,25 +215,37 @@ export function scheduleAmbient(
   const pool = scaleNotes(key, 14).filter((f) => f <= NOTE_MAX_HZ);
   if (pool.length === 0) pool.push(key.root * 2);
   let count = 0;
-  // len 最多 3：条件按"加上本组仍 ≤32"卡，保证返回值不越上限
-  while (state.nextAt < until && count + 3 <= 32) {
+  // 每条乐句最多 5 音：条件按"加上本句仍 ≤32"卡，保证返回值不越上限
+  while (state.nextAt < until && count + 5 <= 32) {
     const at = Math.max(state.nextAt, 0.02);
-    const idx = Math.min(pool.length - 1, Math.floor(rnd() * pool.length));
+    const idx = Math.min(pool.length - 1, Math.floor(rnd() * (pool.length * 0.6)));
     // 偶尔沉到低八度（更深、更远），不再往上飘——上方八度正是刺耳区
     const octave = rnd() < 0.3 ? 0.5 : 1;
-    // 上行 2~3 音的琶音动机：五声上行 = 明亮、正向；音量逐音收轻
-    const len = rnd() < 0.4 ? 3 : 2;
+    const motif = MOTIFS[Math.floor(rnd() * MOTIFS.length)];
     const pan = (rnd() * 2 - 1) * 0.8;
     const gain = NOTE_GAIN * (0.55 + 0.45 * rnd()) * (0.6 + 0.4 * intensity);
-    const attack = 0.35 + rnd() * 0.5;
-    const release = 1.4 + rnd() * 1.2;
-    for (let j = 0; j < len; j++) {
-      const note = pool[Math.min(idx + j, pool.length - 1)] * octave;
-      playSwell(ac, bus.input, note, gain * (1 - j * 0.18), at + j * 0.5, attack, release, pan);
+    const attack = 0.3 + rnd() * 0.4;
+    const release = 1.3 + rnd() * 1.0;
+    for (let j = 0; j < motif.length; j++) {
+      const note = pool[Math.max(0, Math.min(idx + motif[j], pool.length - 1))] * octave;
+      // 尾音拖腔（release ×1.7）+ 编钟泛音：低音有钟味，高音自动只剩基频
+      const tail = j === motif.length - 1 ? 1.7 : 1;
+      playSwell(
+        ac,
+        bus.input,
+        note,
+        gain * (1 - j * 0.12),
+        at + j * 0.5,
+        attack,
+        release * tail,
+        pan,
+        BELL_PARTIALS,
+      );
     }
-    // 组间留白：动机之间必须有大段的安静——稠密与嗡鸣只有一步之遥
-    state.nextAt = at + len * 0.5 + 1.5 * (0.7 + 0.8 * rnd()) + nextNoteDelay(rnd(), intensity);
-    count += len;
+    // 组间留白：乐句之间必须有大段的安静——稠密与嗡鸣只有一步之遥
+    const span = motif.length * 0.5;
+    state.nextAt = at + span + 0.4 + 1.5 * (0.7 + 0.8 * rnd()) + nextNoteDelay(rnd(), intensity);
+    count += motif.length;
   }
   return count;
 }
