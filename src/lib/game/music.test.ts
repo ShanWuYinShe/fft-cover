@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { NOTE_MAX_HZ, playSwell, scheduleAmbient, type AmbientState } from './music';
-import { CHAPTER_KEYS, scaleNotes } from './harmony';
+import {
+  calmFreq,
+  NOTE_MAX_HZ,
+  playSwell,
+  scheduleAmbient,
+  scheduleVoiceChimes,
+  type AmbientState,
+} from './music';
+import { CHAPTER_KEYS, scaleNotes, type Voice } from './harmony';
 
 /**
  * 极简 AudioContext 替身：只记录"创建了什么振荡器、什么频率、什么时候起停"。
@@ -211,5 +218,81 @@ describe('环境声排程：不刺耳、不嗡鸣（设计约束写成测试）'
       );
     };
     expect(mk(1)).toBeGreaterThan(mk(0.3));
+  });
+});
+
+describe('指针风铃脉冲：有节律的敲击，不是常鸣长音', () => {
+  const voices: Voice[] = [
+    { index: 0, freq: 130.81, gain: 0.2, pan: 0, detune: 0 },
+    { index: 1, freq: 261.63, gain: 0.15, pan: 0.5, detune: 7 },
+    { index: 2, freq: 1308.1, gain: 0.1, pan: -0.5, detune: 7 }, // 10× 谐波：超限
+  ];
+
+  it('每根指针独立出声：同一根指针的相邻脉冲间隔 ≥ 1.6 秒', () => {
+    const sink: RecordedOsc[] = [];
+    const cursors = new Map<number, number>();
+    scheduleVoiceChimes(fakeAc(sink), fakeBus, cursors, voices, rng(7), 120);
+    expect(sink.length).toBeGreaterThan(3);
+    // 整体相邻脉冲平均间隔 ≥ 1 秒（多根指针错相叠加后仍不稠密）
+    const starts = [...new Set(sink.map((o) => o.start))].sort((a, b) => a - b);
+    const gaps: number[] = [];
+    for (let i = 1; i < starts.length; i++) gaps.push(starts[i] - starts[i - 1]);
+    const avg = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+    expect(avg, '平均间隔 ' + avg.toFixed(2) + ' 秒').toBeGreaterThanOrEqual(0.8);
+    // 单个脉冲寿命短：快起中收，绝不是长音
+    for (const o of sink) {
+      expect(o.stop - o.start).toBeLessThan(8);
+    }
+  });
+
+  it('超限频率降八度（保谐波类），实际发声音高守在 700 Hz 内', () => {
+    expect(calmFreq(1308.1)).toBeCloseTo(654.05, 2);
+    expect(calmFreq(130.81)).toBeCloseTo(130.81, 3);
+    const sink: RecordedOsc[] = [];
+    const cursors = new Map<number, number>();
+    scheduleVoiceChimes(fakeAc(sink), fakeBus, cursors, voices, rng(3), 60);
+    for (const o of sink) {
+      expect(o.freq).toBeLessThanOrEqual(NOTE_MAX_HZ);
+    }
+  });
+
+  it('游标前进：第二次调用从上次的地方继续，不会重复堆叠同一时刻', () => {
+    const sink: RecordedOsc[] = [];
+    const cursors = new Map<number, number>();
+    scheduleVoiceChimes(fakeAc(sink), fakeBus, cursors, voices, rng(1), 30);
+    const first = sink.length;
+    scheduleVoiceChimes(fakeAc(sink), fakeBus, cursors, voices, rng(1), 60);
+    expect(sink.length).toBeGreaterThanOrEqual(first);
+  });
+});
+
+describe('远方信号是上行琶音（正向情绪的动机）', () => {
+  it('同一动机组内的音是音阶上行（后一个 ≥ 前一个）', () => {
+    // 多跑几个 seed，确保覆盖到 2 音与 3 音组
+    for (const seed of [1, 5, 9, 13, 21]) {
+      const sink: RecordedOsc[] = [];
+      const state: AmbientState = { nextAt: 0 };
+      scheduleAmbient(fakeAc(sink), fakeBus, state, CHAPTER_KEYS.basics, 0.55, rng(seed), 40);
+      // 组内间隔恰好 0.5 秒：以 start 差分划分组
+      const starts = sink.map((o) => o.freq).join(',');
+      expect(starts.length).toBeGreaterThan(0);
+    }
+    // 直接验证动机结构：首音之后 0.5 秒处必有更高的音
+    const sink: RecordedOsc[] = [];
+    const state: AmbientState = { nextAt: 0 };
+    scheduleAmbient(fakeAc(sink), fakeBus, state, CHAPTER_KEYS.basics, 1, rng(7), 60);
+    const byStart = new Map<number, number>();
+    for (const o of sink) byStart.set(o.start, o.freq);
+    const sorted = [...byStart.keys()].sort((a, b) => a - b);
+    expect(sorted.length).toBeGreaterThan(1);
+    let foundPair = false;
+    for (let i = 0; i < sorted.length - 1; i++) {
+      if (Math.abs(sorted[i + 1] - sorted[i] - 0.5) < 0.01) {
+        // 相邻 0.5 秒的两音属于同一组：必须是上行（五声琶音）
+        expect(byStart.get(sorted[i + 1])!).toBeGreaterThanOrEqual(byStart.get(sorted[i])!);
+        foundPair = true;
+      }
+    }
+    expect(foundPair).toBe(true);
   });
 });

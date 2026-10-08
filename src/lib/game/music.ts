@@ -10,17 +10,18 @@ import {
 import type { Arm } from './types';
 
 /**
- * 「探索未知」环境声。
+ * 「探索未知 · 正向明快」环境声。
  *
- * 刻意**不做**持续低鸣/长音垫：那种声音听久了就是嗡嗡嗡。
- * 这里给出的是一片有空旷混响的空间，声音是稀疏、偶发、慢慢涨落的：
+ * 刻意**不做**任何持续音：持续正弦叠加（哪怕是和声）听久了就是嗡嗡的低鸣——
+ * "指针化为声部"最容易被误读成常鸣垫音，所以指针声部
+ * **只以一阵阵柔和的风铃脉冲出现**，安静下来时几乎只剩空间感。
  *
- * - 远方信号：每隔几秒从本关调性音阶里飘出一个长起长落的音（随机声像）
- * - 你的指针：启用中的指针是缓慢呼吸的声部（频率→谐波、半径→音量、相位→声像）
- * - 空气：极轻的带通噪声，像空间本身在流动
+ * - 远方信号：每隔几秒飘出一串**上行五声琶音**（2~3 音，正向情绪的动机）
+ * - 你的指针：按各自节拍敲出风铃脉冲（频率→音高、半径→音量、相位→声像）
+ * - 空间：短混响 + 单次回声，收着给——长尾会把稀疏的音糊成持续背景
  *
- * 干声 + 混响 + 延迟三条支路汇入总线；静下来的时候几乎只剩空间感。
- * 声部链构建、总线构建、排程三个函数都与离线渲染自检共用。
+ * 干声 + 混响 + 延迟三条支路汇入总线；一切实际发声都压在 700 Hz 以下。
+ * 总线构建、排程函数都与离线渲染自检共用。
  */
 
 /** 单个"远方信号"的音量基数 */
@@ -36,72 +37,25 @@ export const NOTE_MAX_HZ = 700;
 /** 总线低通：一切都在 900 Hz 以下，刺耳段（1.5~4 kHz）根本进不来 */
 const BUS_LOWPASS_HZ = 900;
 /** 总线总音量上限 */
-const MASTER_LEVEL = 0.4;
+const MASTER_LEVEL = 0.34;
 
-/** 单条声部链（实时播放与离线渲染自测共用同一构建函数） */
-export interface VoiceChain {
-  osc: OscillatorNode;
-  gain: GainNode;
-  breath: GainNode;
-  lfo: OscillatorNode;
-  pan: StereoPannerNode | null;
-  /** 淡出并停声 */
-  dispose(at: number): void;
-}
+/** 指针风铃脉冲：快起（敲击感）+ 中速消散（余韵），绝不是长音 */
+const CHIME_ATTACK_MAX = 0.14;
+const CHIME_RELEASE_BASE = 1.1;
 
 /**
- * 构建一条声部链：osc → gain（包络）→ breath（极慢涨落）→ pan → dest。
- * gain 从 0 起，由调用方淡入；breath 让声部一直缓慢起伏，不会变成一条长音。
+ * 把声部频率降到 NOTE_MAX_HZ 以下：超限就降八度（÷2），保住谐波类关系——
+ * 比起把音"掐掉"，降八度既不刺耳又保留"这是第 k 次谐波"的听感对应。
+ * 导出仅供测试断言。
  */
-export function buildVoiceChain(ac: BaseAudioContext, dest: AudioNode, voice: Voice): VoiceChain {
-  const osc = ac.createOscillator();
-  osc.type = 'sine';
-  osc.frequency.value = voice.freq;
-  osc.detune.value = voice.detune;
-  const gain = ac.createGain();
-  gain.gain.value = 0;
-  const breath = ac.createGain();
-  breath.gain.value = 1;
-  // 每根指针一个不同的慢周期（11~33 秒）：声部明显涨落、时隐时现，
-  // 而不是一条持续的长音（深度 0.7 → 音量在 0.3~1.7 倍之间起伏）
-  const lfo = ac.createOscillator();
-  lfo.frequency.value = 0.03 + (voice.index % 5) * 0.015;
-  const depth = ac.createGain();
-  depth.gain.value = 0.7;
-  lfo.connect(depth);
-  depth.connect(breath.gain);
-  lfo.start();
-  osc.connect(gain);
-  gain.connect(breath);
-  // Safari 老版本无 StereoPanner：退化为单声道
-  const maybePan = ac as BaseAudioContext & { createStereoPanner?: () => StereoPannerNode };
-  let pan: StereoPannerNode | null = null;
-  if (typeof maybePan.createStereoPanner === 'function') {
-    pan = maybePan.createStereoPanner();
-    pan.pan.value = voice.pan;
-    breath.connect(pan);
-    pan.connect(dest);
-  } else {
-    breath.connect(dest);
-  }
-  osc.start();
-  return {
-    osc,
-    gain,
-    breath,
-    lfo,
-    pan,
-    dispose(at: number): void {
-      gain.gain.cancelScheduledValues(at);
-      gain.gain.setTargetAtTime(0, at, 1.1); // 慢慢消散，不要"咔"的一声
-      osc.stop(at + 6);
-      lfo.stop(at + 6);
-    },
-  };
+export function calmFreq(freq: number): number {
+  let f = freq;
+  while (f > NOTE_MAX_HZ) f /= 2;
+  return f;
 }
 
 /** 混响脉冲响应：指数衰减噪声（空间感的来源） */
-export function makeImpulse(ac: BaseAudioContext, seconds = 3.6, decay = 2.3): AudioBuffer {
+export function makeImpulse(ac: BaseAudioContext, seconds = 1.4, decay = 3.4): AudioBuffer {
   const len = Math.max(1, Math.floor(ac.sampleRate * seconds));
   const buf = ac.createBuffer(2, len, ac.sampleRate);
   for (let ch = 0; ch < buf.numberOfChannels; ch++) {
@@ -123,7 +77,8 @@ export interface AmbientBus {
 
 /**
  * 构建总线：input → 低通 → 压缩 → 总音量 → 输出，
- * 并联混响（Convolver，长尾）与延迟（带阻尼反馈的回声）。
+ * 并联混响（短尾）与延迟（单次回声，无反馈）。
+ * 两条支路都收得很轻：混响/回声糊在稀疏的音后面，就是"嗡嗡"的底。
  */
 export function buildAmbientBus(ac: BaseAudioContext): AmbientBus {
   const input = ac.createGain();
@@ -144,11 +99,11 @@ export function buildAmbientBus(ac: BaseAudioContext): AmbientBus {
   comp.connect(master);
   master.connect(ac.destination);
 
-  // 混响支路：空旷空间（短一些、湿一些收着给——长尾会把稀疏的音糊成持续背景）
+  // 混响支路：短尾轻湿——空间感够用，不会把稀疏的音拖成持续背景
   const conv = ac.createConvolver();
-  conv.buffer = makeImpulse(ac, 1.8, 3.2);
+  conv.buffer = makeImpulse(ac, 1.4, 3.4);
   const wet = ac.createGain();
-  wet.gain.value = 0.4;
+  wet.gain.value = 0.3;
   input.connect(conv);
   conv.connect(wet);
   wet.connect(lp);
@@ -160,7 +115,7 @@ export function buildAmbientBus(ac: BaseAudioContext): AmbientBus {
   damp.type = 'lowpass';
   damp.frequency.value = 900;
   const echo = ac.createGain();
-  echo.gain.value = 0.26;
+  echo.gain.value = 0.15;
   input.connect(delay);
   delay.connect(damp);
   damp.connect(echo);
@@ -229,7 +184,8 @@ export interface AmbientState {
 }
 
 /**
- * 在 [state.nextAt, until) 之间排入若干"远方信号"。
+ * 在 [state.nextAt, until) 之间排入若干组**上行五声琶音**（远方信号）。
+ * 五声上行天然是正向情绪：像风铃被风拂过，而不是随机散音。
  * rnd 可注入（测试用），返回本次排入的音符数。
  */
 export function scheduleAmbient(
@@ -245,21 +201,64 @@ export function scheduleAmbient(
   const pool = scaleNotes(key, 14).filter((f) => f <= NOTE_MAX_HZ);
   if (pool.length === 0) pool.push(key.root * 2);
   let count = 0;
-  while (state.nextAt < until && count < 32) {
+  // len 最多 3：条件按"加上本组仍 ≤32"卡，保证返回值不越上限
+  while (state.nextAt < until && count + 3 <= 32) {
     const at = Math.max(state.nextAt, 0.02);
     const idx = Math.min(pool.length - 1, Math.floor(rnd() * pool.length));
     // 偶尔沉到低八度（更深、更远），不再往上飘——上方八度正是刺耳区
     const octave = rnd() < 0.3 ? 0.5 : 1;
-    const freq = pool[idx] * octave;
-    const gain = NOTE_GAIN * (0.55 + 0.45 * rnd()) * (0.6 + 0.4 * intensity);
-    // 短一些、软一些：一条音的生命 ~5 秒，起落分明，不留长长的尾巴
-    const attack = 0.6 + rnd() * 0.9;
-    const release = 1.8 + rnd() * 1.6;
+    // 上行 2~3 音的琶音动机：五声上行 = 明亮、正向；音量逐音收轻
+    const len = rnd() < 0.4 ? 3 : 2;
     const pan = (rnd() * 2 - 1) * 0.8;
-    // 纯正弦单音：不再叠编钟泛音（高音会扎耳朵），像远处一声轻钟
-    playSwell(ac, bus.input, freq, gain, at, attack, release, pan);
-    state.nextAt = at + nextNoteDelay(rnd(), intensity);
-    count++;
+    const gain = NOTE_GAIN * (0.55 + 0.45 * rnd()) * (0.6 + 0.4 * intensity);
+    const attack = 0.35 + rnd() * 0.5;
+    const release = 1.4 + rnd() * 1.2;
+    for (let j = 0; j < len; j++) {
+      const note = pool[Math.min(idx + j, pool.length - 1)] * octave;
+      playSwell(ac, bus.input, note, gain * (1 - j * 0.18), at + j * 0.5, attack, release, pan);
+    }
+    // 组间留白：动机之间必须有大段的安静——稠密与嗡鸣只有一步之遥
+    state.nextAt = at + len * 0.5 + 1.5 * (0.7 + 0.8 * rnd()) + nextNoteDelay(rnd(), intensity);
+    count += len;
+  }
+  return count;
+}
+
+/**
+ * 指针风铃脉冲：每根启用的指针按自己的节拍敲一下——
+ * 频率→音高（超限降八度）、半径→音量、相位→声像。
+ * 各指针的节拍错开（序号错相 + 随机抖动），叠起来是跳动的音符织体，
+ * 而不是一堵持续的长音墙。
+ * 返回本次排入的脉冲数（测试用）。
+ */
+export function scheduleVoiceChimes(
+  ac: BaseAudioContext,
+  bus: AmbientBus,
+  cursors: Map<number, number>,
+  voices: Voice[],
+  rnd: () => number,
+  until: number,
+): number {
+  let count = 0;
+  for (const v of voices) {
+    let next = cursors.get(v.index) ?? 0.02;
+    while (next < until && count < 48) {
+      const at = Math.max(next, 0.02);
+      playSwell(
+        ac,
+        bus.input,
+        calmFreq(v.freq),
+        v.gain * 0.9,
+        at,
+        0.04 + rnd() * CHIME_ATTACK_MAX,
+        CHIME_RELEASE_BASE + rnd() * 0.8,
+        v.pan,
+      );
+      // 每根指针 1.6~3.6 秒敲一下：有节律，但绝不连成持续音
+      next = at + 1.6 + (v.index % 4) * 0.35 + rnd() * 0.9;
+      count++;
+    }
+    cursors.set(v.index, next);
   }
   return count;
 }
@@ -268,7 +267,10 @@ export function scheduleAmbient(
 
 let ctx: AudioContext | null = null;
 let bus: AmbientBus | null = null;
-let chains = new Map<number, VoiceChain>();
+/** 当前指针声部快照：排程器按它敲风铃脉冲（不再有任何持续振荡器） */
+let curVoices: Voice[] = [];
+/** 每根指针的下一次脉冲时刻 */
+const voiceCursors = new Map<number, number>();
 /** 上一次落地的参数签名：未变化则完全跳过，避免每帧重设音频参数 */
 let lastSig = '';
 /** 排程用的当前调性与强度（updateMusic 时更新） */
@@ -277,10 +279,14 @@ let curIntensity = 0.55;
 const schedState: AmbientState = { nextAt: 0 };
 let schedTimer: ReturnType<typeof setTimeout> | null = null;
 
-/** 排程循环：提前 2.5 秒把"远方信号"排进音频时钟 */
+/** 排程循环：提前 2.5 秒把"远方信号"与"指针脉冲"排进音频时钟 */
 function pumpScheduler(): void {
   if (!ctx || !bus) return;
-  scheduleAmbient(ctx, bus, schedState, curKey, curIntensity, Math.random, ctx.currentTime + 2.5);
+  const until = ctx.currentTime + 2.5;
+  scheduleAmbient(ctx, bus, schedState, curKey, curIntensity, Math.random, until);
+  if (curVoices.length > 0) {
+    scheduleVoiceChimes(ctx, bus, voiceCursors, curVoices, Math.random, until);
+  }
 }
 
 function startScheduler(): void {
@@ -311,9 +317,7 @@ export function startMusic(): void {
     if (!bus || ctx !== ac) {
       ctx = ac;
       bus = buildAmbientBus(ac);
-      // 声部链还挂在旧 context 的节点上（移动端切后台会杀掉 AudioContext）——
-      // 不清掉的话这些索引永远命中"已有链"，新声部再也建不出来（2026-10 修）
-      chains.clear();
+      voiceCursors.clear();
       schedState.nextAt = 0;
       lastSig = '';
     }
@@ -362,21 +366,20 @@ export function musicLevelArrival(key: MusicalKey): void {
   });
 }
 
-/** 释放全部声部（关音乐/静音时调用，避免空转耗电） */
-function releaseVoices(at: number): void {
-  for (const chain of chains.values()) chain.dispose(at);
-  chains.clear();
-}
-
 /**
  * 按当前指针参数刷新音乐。每帧调用也安全：参数签名未变化时直接返回。
+ *
+ * 这里**只更新快照与总线响度**——不建任何持续振荡器。
+ * 指针真正出声由排程器的风铃脉冲负责（scheduleVoiceChimes）：
+ * 常鸣长音（哪怕是好听的长音）听久了就是"嗡嗡"，从根上不给它机会。
+ *
  * @param arms 指针组
  * @param intensity 动态强度 0~1（见 harmony.musicIntensity）
  * @param on 音乐开关
  * @param volume 全局音量 0~1（与音效共用）
  * @param key 本关调性（章节决定；随机关按 id 稳定散列）
- * @param voiced 是否让指针发声：只有指针真的在转（运行/暂停/结算）时才唱，
- *   编辑思考时保持安静——"嗡嗡"的长音正是要避免的东西
+ * @param voiced 是否让指针发声：只有指针真的在转（运行/暂停/结算）时才敲脉冲，
+ *   编辑思考时保持安静
  */
 export function updateMusic(
   arms: Arm[],
@@ -391,44 +394,17 @@ export function updateMusic(
   curKey = key;
   curIntensity = intensity;
   const audible = on && volume > 0;
-  const voices = audible && voiced ? armsToVoices(arms, key.root) : [];
-  const sig = audible ? JSON.stringify([intensity, volume, key.root, voiced, voices]) : 'muted';
+  curVoices = audible && voiced ? armsToVoices(arms, key.root) : [];
+  if (!audible || curVoices.length === 0) voiceCursors.clear();
+  const sig = audible ? JSON.stringify([intensity, volume, key.root, voiced, curVoices]) : 'muted';
   if (sig === lastSig) return;
   lastSig = sig;
 
-  const now = ac.currentTime;
   bus.master.gain.setTargetAtTime(
     audible ? MASTER_LEVEL * intensity * volume : 0,
-    now,
+    ac.currentTime,
     audible ? 0.8 : 0.4,
   );
-
-  if (!audible) {
-    releaseVoices(now);
-    return;
-  }
-
-  const wanted = new Set(voices.map((v) => v.index));
-  for (const [i, chain] of chains) {
-    if (!wanted.has(i)) {
-      chain.dispose(now);
-      chains.delete(i);
-    }
-  }
-  for (const v of voices) {
-    const existing = chains.get(v.index);
-    if (existing) {
-      existing.osc.frequency.setTargetAtTime(v.freq, now, 0.25);
-      existing.osc.detune.setTargetAtTime(v.detune, now, 0.2);
-      existing.gain.gain.setTargetAtTime(v.gain * 0.6, now, 1.4);
-      if (existing.pan) existing.pan.pan.setTargetAtTime(v.pan, now, 0.6);
-    } else {
-      const chain = buildVoiceChain(ac, bus.input, v);
-      // 新声部：2.4 秒缓缓浮现，像从远处出现
-      chain.gain.gain.setTargetAtTime(v.gain * 0.6, now + 0.05, 2.4);
-      chains.set(v.index, chain);
-    }
-  }
 }
 
 /** 仅供测试/调试：当前是否已有音频图 */
@@ -436,11 +412,12 @@ export function isMusicReady(): boolean {
   return ctx !== null && bus !== null;
 }
 
-/** 仅供测试：注入假的音频图，让 updateMusic 的声部链逻辑能在 Node 里驱动 */
+/** 仅供测试：注入假的音频图，让 updateMusic 的快照逻辑能在 Node 里驱动 */
 export function __setAudioGraphForTests(ac: BaseAudioContext, graph: AmbientBus): void {
   ctx = ac as AudioContext;
   bus = graph;
-  chains.clear();
+  curVoices = [];
+  voiceCursors.clear();
   schedState.nextAt = 0;
   lastSig = '';
 }
