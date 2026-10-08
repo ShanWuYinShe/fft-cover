@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   calmFreq,
+  makeImpulse,
   NOTE_MAX_HZ,
   playSwell,
   scheduleAmbient,
@@ -315,5 +316,50 @@ describe('远方信号是上行琶音（正向情绪的动机）', () => {
     const highFreqs = highSink.map((o) => Math.round(o.freq));
     expect(highFreqs).not.toContain(828);
     expect(highFreqs).toContain(600);
+  });
+});
+
+describe('混响脉冲响应：不产生电流杂音（高频嘶声压掉）', () => {
+  /** 带 createBuffer 的假 AC：直接返回可写通道数据 */
+  function bufferAc(len = 4800) {
+    const chans: Float32Array[] = [];
+    const ac = {
+      sampleRate: 48000,
+      createBuffer: (_: number, length: number) => {
+        const arr = new Float32Array(length);
+        chans.push(arr);
+        return { getChannelData: (i: number) => chans[i] ?? arr, numberOfChannels: 2 };
+      },
+    };
+    return { ac: ac as unknown as BaseAudioContext, chans };
+  }
+
+  /** 相邻样本差分的平均绝对值：高频（嘶声）含量的代理指标 */
+  function roughness(data: Float32Array): number {
+    let sum = 0;
+    for (let i = 1; i < data.length; i++) sum += Math.abs(data[i] - data[i - 1]);
+    return sum / (data.length - 1);
+  }
+
+  it('IR 是低通平滑过的：差分粗糙度远低于原始白噪声', () => {
+    const { ac, chans } = bufferAc();
+    makeImpulse(ac, 0.1, 3.4);
+    const data = chans[0];
+    expect(data.length).toBe(4800);
+    const rough = roughness(data);
+    // 原始白噪声（均匀 ±1）的差分粗糙度 ≈ 2/√3 ≈ 1.15；
+    // 低通后应压到两位数以下的百分位
+    expect(rough, '粗糙度 ' + rough.toFixed(3)).toBeLessThan(0.08);
+  });
+
+  it('IR 仍是指数衰减的：尾部能量远小于头部', () => {
+    const { ac, chans } = bufferAc();
+    makeImpulse(ac, 0.1, 3.4);
+    const data = chans[0];
+    const head = data.slice(0, 480).reduce((s, v) => s + Math.abs(v), 0) / 480;
+    const tail = data.slice(-480).reduce((s, v) => s + Math.abs(v), 0) / 480;
+    expect(tail, '尾部 ' + tail.toFixed(4) + ' 应远小于头部 ' + head.toFixed(4)).toBeLessThan(
+      head * 0.2,
+    );
   });
 });

@@ -54,14 +54,25 @@ export function calmFreq(freq: number): number {
   return f;
 }
 
-/** 混响脉冲响应：指数衰减噪声（空间感的来源） */
+/**
+ * 混响脉冲响应：指数衰减噪声经**一阶低通平滑**（空间感的来源）。
+ *
+ * 原始白噪声 IR 是"电流杂音"的元凶：卷积会原样输出 IR 的频谱——
+ * 白噪声衰减尾就是一段高频嘶嘶声，声音越密噪声尾叠得越多，
+ * 听感正是"连续的电流杂音"。低通把高频成分压掉，只留温暖的漫响。
+ */
 export function makeImpulse(ac: BaseAudioContext, seconds = 1.4, decay = 3.4): AudioBuffer {
   const len = Math.max(1, Math.floor(ac.sampleRate * seconds));
   const buf = ac.createBuffer(2, len, ac.sampleRate);
+  // 低通系数：越大越亮。0.16 @48kHz ≈ 1.2 kHz 截止——嘶声（3 kHz+）进不来
+  const alpha = 0.16;
   for (let ch = 0; ch < buf.numberOfChannels; ch++) {
     const data = buf.getChannelData(ch);
+    let prev = 0;
     for (let i = 0; i < len; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+      const raw = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+      prev += alpha * (raw - prev);
+      data[i] = prev;
     }
   }
   return buf;
@@ -103,7 +114,7 @@ export function buildAmbientBus(ac: BaseAudioContext): AmbientBus {
   const conv = ac.createConvolver();
   conv.buffer = makeImpulse(ac, 1.4, 3.4);
   const wet = ac.createGain();
-  wet.gain.value = 0.3;
+  wet.gain.value = 0.18;
   input.connect(conv);
   conv.connect(wet);
   wet.connect(lp);
@@ -115,7 +126,7 @@ export function buildAmbientBus(ac: BaseAudioContext): AmbientBus {
   damp.type = 'lowpass';
   damp.frequency.value = 900;
   const echo = ac.createGain();
-  echo.gain.value = 0.15;
+  echo.gain.value = 0.1;
   input.connect(delay);
   delay.connect(damp);
   damp.connect(echo);
@@ -152,11 +163,13 @@ export function playSwell(
 ): void {
   const maybePan = ac as BaseAudioContext & { createStereoPanner?: () => StereoPannerNode };
   let out: AudioNode = dest;
+  let owned: AudioNode | null = null;
   if (typeof maybePan.createStereoPanner === 'function') {
     const p = maybePan.createStereoPanner();
     p.pan.value = Math.max(-1, Math.min(1, pan));
     p.connect(dest);
     out = p;
+    owned = p;
   }
   for (const [mult, pg] of partials) {
     // 上限要卡在**实际发声音高**上，而不只是基频：
@@ -174,6 +187,16 @@ export function playSwell(
     g.connect(out);
     osc.start(at);
     osc.stop(at + attack + release * 2.4 + 0.5);
+    // 声毕即断：每次 swell 建的 pan 节点不断开会长年堆积（音频图越大越容易出杂音）
+    if (owned) {
+      osc.onended = () => {
+        try {
+          owned!.disconnect();
+        } catch {
+          /* 已断开 */
+        }
+      };
+    }
   }
 }
 
