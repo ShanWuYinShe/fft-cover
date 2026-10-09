@@ -134,6 +134,11 @@
     }
     const code = readArmsFromHash(location.hash);
     if (code && engine.applyArmsCode(code)) {
+      // 解法挑战不能静默套参数：好友得知道自己被挑战了、下一步做什么
+      shareNote =
+        (shared || sharedDaily || sharedCustomLoaded ? '已载入好友分享的关卡，' : '') +
+        '好友向你发起解法挑战——参数已装好，点 ▶ 开始旋转试试全清！';
+      setTimeout(() => (shareNote = null), 5200);
       history.replaceState(null, '', location.pathname + location.search);
     } else if (shared || sharedDaily || sharedCustomLoaded) {
       history.replaceState(null, '', location.pathname + location.search);
