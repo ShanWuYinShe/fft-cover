@@ -211,11 +211,10 @@
 <section>
   <h2>
     关卡
-    <span class="muted"
-      >总星数 {totalStars} / {LEVEL_DEFS.length * 3}{#if campaignBadge}&nbsp;· {campaignBadge}{/if}{#if perfectCount > 0}&nbsp;·
-        👑
-        {perfectCount}{/if}{#if exactCount > 0}&nbsp;· 🎯 {exactCount}{/if}</span
-    >
+    <!-- 口径合并：总星数只在标题页/结局出现，这里只给战役状态与精通计数 -->
+    {#if campaignBadge}<span class="muted">{campaignBadge}</span
+      >{/if}{#if perfectCount > 0}&nbsp;<span class="muted">· 👑 {perfectCount}</span
+      >{/if}{#if exactCount > 0}&nbsp;<span class="muted">· 🎯 {exactCount}</span>{/if}
   </h2>
   {#if showComposer}
     <ComposerModal onclose={() => (showComposer = false)} />
@@ -357,7 +356,15 @@
       onclick={() => engine.setFlag('moreOpen', !engine.flags['moreOpen'])}
     >
       <i>{engine.flags['moreOpen'] ? '▾' : '▸'}</i> 更多玩法
-      <span>每日 · 每周 · 无尽 · 随机 · 创作</span>
+      <span>
+        {#if engine.flags['moreOpen']}
+          每日 · 每周 · 无尽 · 随机 · 创作
+        {:else if engine.todayBest === 0}
+          ⏳ 今日挑战 {dailyCountdown.short}
+        {:else}
+          每日 · 每周 · 无尽 · 随机 · 创作
+        {/if}
+      </span>
     </button>
     {#if engine.flags['moreOpen']}
       <div class="daily-row">
