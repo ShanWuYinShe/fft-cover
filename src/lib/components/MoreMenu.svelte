@@ -10,7 +10,11 @@
     onclick: () => void;
   }
 
-  let { items = [], label = '⋯' }: { items?: MenuItem[]; label?: string } = $props();
+  let {
+    items = [],
+    label = '⋯',
+    direction = 'down',
+  }: { items?: MenuItem[]; label?: string; direction?: 'down' | 'up' } = $props();
 
   let open = $state(false);
   let root: HTMLDivElement | undefined = $state();
@@ -47,7 +51,7 @@
     {label}
   </button>
   {#if open}
-    <div class="mm-pop" role="menu">
+    <div class="mm-pop" class:up={direction === 'up'} role="menu">
       {#each items as it (it.label)}
         <button
           type="button"
@@ -91,6 +95,10 @@
     position: absolute;
     top: calc(100% + 6px);
     right: 0;
+  }
+  .mm-pop.up {
+    top: auto;
+    bottom: calc(100% + 6px);
     z-index: 30;
     min-width: 168px;
     display: flex;
