@@ -46,6 +46,8 @@ export const FLAGS_KEY = 'fft-pointers-flags-v1';
 export const ARMS_SAVE_KEY = 'fft-pointers-arms-save-v1';
 /** 各关上届节奏（每个点的收集时刻）localStorage 键名 */
 export const PACE_KEY = 'fft-pointers-pace-v1';
+/** 各关个人最佳那局（解法参数 + 节奏，同源；幽灵竞速取更强的那条） */
+export const BEST_RUN_KEY = 'fft-pointers-best-run-v1';
 /** 每日挑战最佳得分 localStorage 键名 */
 export const DAILY_KEY = 'fft-pointers-daily-v1';
 /** 每关历史成绩 localStorage 键名（用于趋势展示） */

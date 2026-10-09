@@ -2,6 +2,7 @@ import {
   ACHV_KEY,
   ARMS_SAVE_KEY,
   BEST_KEY,
+  BEST_RUN_KEY,
   BEST_SCORE_KEY,
   CLEAR_KEY,
   COMPOSER_FILTER_KEY,
@@ -39,6 +40,7 @@ export const SAVE_PREFIX = 'FFTP1:';
  */
 export const SAVE_KEYS = [
   BEST_KEY,
+  BEST_RUN_KEY,
   BEST_SCORE_KEY,
   CLEAR_KEY,
   PERFECT_KEY,

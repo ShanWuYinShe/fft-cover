@@ -156,7 +156,8 @@
     // 只在跑动中显示：结算后由结算卡的"上届同期"接手
     if (engine.phase !== 'running' && engine.phase !== 'paused') return '';
     const d = engine.ghostDelta;
-    return d > 0 ? '👻 +' + d + ' 领先' : d < 0 ? '👻 ' + d + ' 落后' : '👻 持平';
+    const vs = engine.raceIsBest ? '最佳' : '上届';
+    return d > 0 ? '👻 +' + d + ' 领先' + vs : d < 0 ? '👻 ' + d + ' 落后' + vs : '👻 持平';
   });
 
   /* ---------- 章节入场卡：第一次进入某一章时介绍这一章教什么 ---------- */
@@ -345,7 +346,9 @@
               class="ghost-chip"
               class:ahead={engine.ghostDelta > 0}
               class:behind={engine.ghostDelta < 0}
-              title="与上届同一时刻的收集数对比（金色刻度线标在上方进度条上）">{ghostLabel}</span
+              title="与{engine.raceIsBest
+                ? '个人最佳'
+                : '上届'}同一时刻的收集数对比（金色刻度线标在上方进度条上）">{ghostLabel}</span
             >
           {/if}
           {#if engine.level}

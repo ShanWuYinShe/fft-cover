@@ -5,7 +5,11 @@ import {
   paceComparable,
   paceDelta,
   paceRatio,
+  sanitizeBestRuns,
   sanitizePace,
+  strongerPace,
+  strongerRun,
+  type BestRun,
 } from './pace';
 
 describe('ghostProgressAt', () => {
@@ -60,6 +64,67 @@ describe('paceComparable', () => {
     expect(paceComparable([], false)).toBe(false);
     expect(paceComparable([1, 2], true)).toBe(false);
     expect(paceComparable([1, 2], false)).toBe(true);
+  });
+});
+
+describe('strongerPace（幽灵对准更强的那条）', () => {
+  it('收得多者优先', () => {
+    const a = [1, 2];
+    const b = [1, 2, 3];
+    expect(strongerPace(a, b)).toBe(b);
+    expect(strongerPace(b, a)).toBe(b);
+  });
+
+  it('收得一样多时收完更早者优先', () => {
+    const a = [1, 5];
+    const b = [1, 4];
+    expect(strongerPace(a, b)).toBe(b);
+    expect(strongerPace(b, a)).toBe(b);
+  });
+
+  it('缺省方回落到另一方；完全打平保留 a（不翻转参照）', () => {
+    const a = [1, 2];
+    expect(strongerPace(undefined, a)).toBe(a);
+    expect(strongerPace(a, undefined)).toBe(a);
+    expect(strongerPace([], a)).toBe(a);
+    expect(strongerPace(a, [1, 2])).toBe(a);
+  });
+});
+
+describe('strongerRun（个人最佳那局的择优）', () => {
+  const run = (pace: number[]): BestRun => ({ arms: [], pace });
+
+  it('无旧纪录直接当选；更弱的挑战者不撼动旧纪录', () => {
+    const best = run([1, 2, 3]);
+    expect(strongerRun(undefined, best)).toBe(best);
+    expect(strongerRun(best, run([1]))).toBe(best);
+  });
+
+  it('收得更多或同数更快才换；打平幂等保留旧纪录', () => {
+    const best = run([1, 5]);
+    const faster = run([1, 4]);
+    expect(strongerRun(best, faster)).toBe(faster);
+    expect(strongerRun(best, run([1, 5]))).toBe(best);
+  });
+});
+
+describe('sanitizeBestRuns（个人最佳存档清洗）', () => {
+  it('保留结构完整的一条，丢弃缺 arms / 缺节奏 / 脏节奏的条目', () => {
+    const out = sanitizeBestRuns({
+      circle: { arms: [{ on: true, r: 80, freq: 1, phase: 0 }], pace: [3, 1, 2] },
+      noArms: { pace: [1] },
+      emptyArms: { arms: [], pace: [1] },
+      badPace: { arms: [{ on: true, r: 1, freq: 1, phase: 0 }], pace: 'x' },
+      junk: 42,
+    });
+    expect(Object.keys(out)).toEqual(['circle']);
+    expect(out.circle.pace).toEqual([1, 2, 3]);
+  });
+
+  it('非对象输入一律返回空表', () => {
+    expect(sanitizeBestRuns(null)).toEqual({});
+    expect(sanitizeBestRuns('x')).toEqual({});
+    expect(sanitizeBestRuns([1])).toEqual({});
   });
 });
 

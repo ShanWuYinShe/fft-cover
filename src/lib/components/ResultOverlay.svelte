@@ -356,7 +356,9 @@
               class="ghost-line"
               class:ahead={engine.lastGhostDelta > 0}
               class:even={engine.lastGhostDelta === 0}
-              >👻 {engine.lastGhostDelta > 0 ? '+' : ''}{engine.lastGhostDelta}</span
+              >👻 {engine.lastGhostDelta > 0
+                ? '+'
+                : ''}{engine.lastGhostDelta}{' '}{engine.lastGhostVsBest ? '最佳' : '上届'}</span
             >
           {/if}
         </div>

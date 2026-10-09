@@ -3,6 +3,7 @@ import {
   ARMS_MAX,
   ARMS_SAVE_KEY,
   BEST_KEY,
+  BEST_RUN_KEY,
   BEST_SCORE_KEY,
   CLEAR_KEY,
   COMBO_WINDOW,
@@ -78,7 +79,17 @@ import {
   type GoalState,
 } from './goals';
 import { keyForLevel, scaleNotes, type MusicalKey } from './harmony';
-import { ghostProgressAt, paceDelta, paceRatio, sanitizePace, type Pace } from './pace';
+import {
+  ghostProgressAt,
+  paceDelta,
+  paceRatio,
+  sanitizeBestRuns,
+  sanitizePace,
+  strongerPace,
+  strongerRun,
+  type BestRun,
+  type Pace,
+} from './pace';
 import type { Arm, Floater, GamePhase, HistoryEntry, Level, LevelDef, Vec } from './types';
 
 export { starsFor };
@@ -182,6 +193,11 @@ function loadHistory(): Record<string, HistoryEntry[]> {
 /** 读取上届节奏存档（脏数据丢弃，见 pace.sanitizePace） */
 function loadPace(): Record<string, Pace> {
   return sanitizePace(readJson(PACE_KEY, {}));
+}
+
+/** 读取个人最佳那局（解法 + 节奏；脏数据整条丢弃，见 pace.sanitizeBestRuns） */
+function loadBestRuns(): Record<string, BestRun> {
+  return sanitizeBestRuns(readJson(BEST_RUN_KEY, {}));
 }
 
 function loadAchv(): Record<string, number> {
@@ -322,6 +338,8 @@ export class GameEngine {
   armsSaves = $state<Record<string, Arm[]>>(loadArmsSaves());
   /** 各关上届节奏：每个点的收集时刻（与 armsSaves 同源，都是"上届"那一局） */
   paceSaves = $state<Record<string, Pace>>(loadPace());
+  /** 各关个人最佳那局（解法 + 节奏同源；幽灵竞速自动对准更强的一条） */
+  bestRuns = $state<Record<string, BestRun>>(loadBestRuns());
   /** 每日挑战历史最佳得分（key = 日期） */
   dailyBest = $state<Record<string, number>>(loadDailyBest());
   /** 每关历史成绩（key = 关卡 id，最多 HISTORY_MAX 条，用于趋势展示） */
@@ -338,6 +356,8 @@ export class GameEngine {
   endlessBest = $state<{ wave: number; score: number }>(loadEndlessBest());
   /** 本局竞速结果：结束时相对上届的领先（+）/落后（−）点数；无上届为 null */
   lastGhostDelta = $state<number | null>(null);
+  /** 结算那次对比对准的是谁（true = 个人最佳；结算卡文案用） */
+  lastGhostVsBest = $state(false);
   /** 通关演出：本局刚刚达成战役里程碑时置位（'cleared' 全关 ≥1★ / 'mastered' 全关 3★） */
   finale = $state<CampaignState | null>(null);
   /** 本局全清时刻（秒）；null = 未全清 */
@@ -1172,6 +1192,7 @@ export class GameEngine {
 
     // 竞速结果快照：必须赶在覆盖上届节奏之前算，否则就成了自己跟自己比
     this.lastGhostDelta = this.ghostComparable ? this.ghostDelta : null;
+    this.lastGhostVsBest = this.raceIsBest;
 
     // 上届那局的解法参数与节奏入档（"载入上届解法" + "上届节奏"竞速用）
     // 两者必须同源：同一条金色虚线轨迹，配上同一局的时间线
@@ -1181,6 +1202,15 @@ export class GameEngine {
       if (this.collectTimes.length > 0) {
         this.paceSaves = { ...this.paceSaves, [id]: [...this.collectTimes] };
         writeJson(PACE_KEY, this.paceSaves);
+        // 个人最佳那局（解法 + 节奏同源入档）：比旧纪录收得多、或同收数收得更快才换
+        this.bestRuns = {
+          ...this.bestRuns,
+          [id]: strongerRun(this.bestRuns[id], {
+            arms: this.arms.map((a) => ({ ...a })),
+            pace: [...this.collectTimes],
+          }),
+        };
+        writeJson(BEST_RUN_KEY, this.bestRuns);
       }
     }
     // 每日挑战：刷新今日最佳
@@ -1325,7 +1355,7 @@ export class GameEngine {
     return !!(id && this.armsSaves[id]);
   }
 
-  /* ---------- 上届节奏（幽灵竞速） ---------- */
+  /* ---------- 幽灵竞速（自动对准更强的那条：个人最佳 或 上届） ---------- */
 
   /** 上届节奏：每个点的收集时刻（未存过则 undefined） */
   get savedPace(): Pace | undefined {
@@ -1341,29 +1371,60 @@ export class GameEngine {
     return armSignature(saved) === armSignature(this.arms);
   }
 
-  /** 是否处于可与上届竞速的状态：非编辑态 + 有上届节奏 + 参数与上届不同 */
+  /** 本关的个人最佳那局（无则 undefined） */
+  get bestRun(): BestRun | undefined {
+    const id = this.level?.id;
+    return id ? this.bestRuns[id] : undefined;
+  }
+
+  /** 竞速对准的节奏：个人最佳与上届中**更强**的那条（收得多优先、同数更快优先） */
+  get racePace(): Pace | undefined {
+    return strongerPace(this.savedPace, this.bestRun?.pace);
+  }
+
+  /** 竞速对准的是不是个人最佳（false = 上届；轨迹线与文案据此切换） */
+  get raceIsBest(): boolean {
+    const best = this.bestRun?.pace;
+    return !!best?.length && this.racePace === best && best !== this.savedPace;
+  }
+
+  /** 竞速对准的那局的解法参数（轨迹线同源；都缺失时 undefined） */
+  get raceArms(): Arm[] | undefined {
+    if (this.raceIsBest) return this.bestRun?.arms;
+    const id = this.level?.id;
+    return id ? this.armsSaves[id] : undefined;
+  }
+
+  /** 当前指针组是否与竞速参照的解法一致（一致则轨迹同步，比了没有意义） */
+  get sameArmsAsRace(): boolean {
+    const saved = this.raceArms;
+    if (!saved) return false;
+    return armSignature(saved) === armSignature(this.arms);
+  }
+
+  /** 是否处于可竞速的状态：非编辑态 + 有参照节奏 + 参数与参照不同 */
   get ghostComparable(): boolean {
-    return this.phase !== 'edit' && !!this.savedPace?.length && !this.sameArmsAsSaved;
+    return this.phase !== 'edit' && !!this.racePace?.length && !this.sameArmsAsRace;
   }
 
-  /** 是否绘制上届解法的幽灵轨迹（有解法存档且当前参数不同；老存档无节奏也照画） */
+  /** 是否绘制幽灵轨迹（有参照解法且当前参数不同；老存档无节奏也照画） */
   get ghostPathVisible(): boolean {
-    return this.phase !== 'edit' && this.hasSavedArms() && !this.sameArmsAsSaved;
+    return this.phase !== 'edit' && !!this.raceArms && !this.sameArmsAsRace;
   }
 
-  /** 当前时刻上届已收集的点数 */
+  /** 参照（最佳/上届）到当前时刻已收集的点数 */
   get ghostProgress(): number {
-    return ghostProgressAt(this.savedPace, this.t);
+    return ghostProgressAt(this.racePace, this.t);
   }
 
-  /** 当前领先（+）/落后（−）上届的点数 */
+  /** 当前领先（+）/落后（−）参照的点数 */
   get ghostDelta(): number {
-    return paceDelta(this.savedPace, this.t, this.collectedCount);
+    return paceDelta(this.racePace, this.t, this.collectedCount);
   }
 
-  /** 上届在当前时刻的进度比例（0~1，画布进度条刻度用） */
+  /** 参照在当前时刻的进度比例（0~1，画布进度条刻度用） */
   get ghostRatio(): number {
-    return paceRatio(this.savedPace, this.t, this.total);
+    return paceRatio(this.racePace, this.t, this.total);
   }
 
   /** 启用指针的解法参数串（如 ①120/1×/0° + ②60/2×/90°） */

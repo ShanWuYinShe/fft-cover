@@ -627,9 +627,9 @@
       }
     }
 
-    // 幽灵竞速：上届解法的轨迹同屏（金色虚线），直观对比当前方案
+    // 幽灵竞速：参照解法（个人最佳 / 上届，自动取更强）的轨迹同屏（金色虚线）
     if (engine.ghostPathVisible && engine.level) {
-      const saved = engine.armsSaves[engine.level.id];
+      const saved = engine.raceArms;
       if (saved) {
         const ghost = new Path2D();
         const M = 480;
@@ -646,7 +646,7 @@
         ctx.setLineDash([]);
         ctx.fillStyle = 'rgba(251,191,36,.75)';
         ctx.font = '10px sans-serif';
-        ctx.fillText('👻 上届解法', 10, SIZE - 12);
+        ctx.fillText(engine.raceIsBest ? '👻 最佳解法' : '👻 上届解法', 10, SIZE - 12);
       }
     }
 

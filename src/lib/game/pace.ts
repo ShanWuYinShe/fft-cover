@@ -6,6 +6,8 @@
  * 因此不同跑法之间可直接比较。
  */
 
+import type { Arm } from './types';
+
 /** 一局的节奏：每个点的收集时刻（秒，升序） */
 export type Pace = number[];
 
@@ -57,6 +59,52 @@ export function sanitizePace(raw: unknown): Record<string, Pace> {
     if (times.length !== value.length) continue;
     times.sort((a, b) => a - b);
     out[key] = times;
+  }
+  return out;
+}
+/* ---------- 个人最佳（race your best） ---------- */
+
+/** 个人最佳的那一局：解法参数与节奏必须同源（幽灵轨迹与节奏竞速才对得上） */
+export interface BestRun {
+  arms: Arm[];
+  pace: Pace;
+}
+
+/**
+ * 哪条节奏更值得竞速：收得多者优先；收得一样多时收完得更早者优先；
+ * 完全打平返回 a（保持既有参照，避免无意义的"来源"翻转）。
+ */
+export function strongerPace(a: Pace | undefined, b: Pace | undefined): Pace | undefined {
+  if (!a || a.length === 0) return b;
+  if (!b || b.length === 0) return a;
+  if (a.length !== b.length) return a.length > b.length ? a : b;
+  const fa = a[a.length - 1];
+  const fb = b[b.length - 1];
+  return fb < fa ? b : a;
+}
+
+/** 哪一局更配当"个人最佳"：节奏更强者胜；节奏打平保留旧纪录（幂等） */
+export function strongerRun(prev: BestRun | undefined, cand: BestRun): BestRun {
+  if (!prev) return cand;
+  return strongerPace(prev.pace, cand.pace) === cand.pace && cand.pace !== prev.pace ? cand : prev;
+}
+
+/**
+ * 清洗「个人最佳」存档：结构完整（arms 数组 + 合法节奏）才保留，
+ * 节奏部分复用 sanitizePace 的口径；任何脏数据整条丢弃。
+ */
+export function sanitizeBestRuns(raw: unknown): Record<string, BestRun> {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+  const out: Record<string, BestRun> = {};
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (!value || typeof value !== 'object') continue;
+    const arms = (value as { arms?: unknown }).arms;
+    const pace = (value as { pace?: unknown }).pace;
+    if (!Array.isArray(arms) || arms.length === 0) continue;
+    if (!arms.every((a) => !!a && typeof a === 'object')) continue;
+    const clean = sanitizePace({ p: pace }).p;
+    if (!clean) continue;
+    out[key] = { arms: arms as Arm[], pace: clean };
   }
   return out;
 }
