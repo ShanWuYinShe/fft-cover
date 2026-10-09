@@ -518,9 +518,11 @@
     }
 
     // 收集飘字：+分数 ×连击（连击越高越大越金）
+    // 连收时指尖附近会同时冒出多条：按新旧顺序垂直错开，后收的更高，不互相叠字
     if (engine.floaters.length > 0) {
       ctx.textAlign = 'center';
-      for (const f of engine.floaters) {
+      for (let i = 0; i < engine.floaters.length; i++) {
+        const f = engine.floaters[i];
         const age = Math.min((now - f.born) / 900, 1);
         const alpha = 1 - age * age;
         const size = 12 + Math.min(f.combo, 9) * 1.4;
@@ -532,7 +534,7 @@
         ctx.fillText(
           '+' + f.score + (f.combo >= 1 ? '  ×' + (f.combo + 1) : ''),
           f.x,
-          f.y - 16 - age * 30,
+          f.y - 16 - age * 30 - i * 15,
         );
       }
       ctx.textAlign = 'start';
