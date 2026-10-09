@@ -283,12 +283,13 @@ canvas {
 }
 
 .hud .score b {
-  color: var(--gold);
+  /* 金色只属于"奖励时刻"（新纪录/徽章/升星）；常态数字用月白，金才稀缺 */
+  color: var(--text);
   font-size: 21px;
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 16px rgba(251, 191, 36, 0.35);
+  text-shadow: 0 0 14px rgba(232, 235, 245, 0.25);
 }
 
 /* 收集进度条：贴在收集胶囊底部 */

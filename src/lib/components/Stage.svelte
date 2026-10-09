@@ -823,7 +823,8 @@
     }
 
     ctx.globalAlpha = 1;
-    drawSpectrum();
+    // 频谱仪是精通工具：与"频谱对比"同门槛解锁，新手期不占画布（渐进披露）
+    if (engine.spectrumUnlocked || engine.spectrumCompare) drawSpectrum();
   }
 
   onMount(() => {
