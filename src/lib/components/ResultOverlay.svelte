@@ -813,4 +813,21 @@
     height: 100%;
     min-height: 38px;
   }
+  /* 矮屏（手机横屏 ~390px 高）：压缩结算卡密度，不靠隐蔽滚动也能看全 */
+  @media (max-height: 460px) {
+    .card-body {
+      padding: 8px 14px 4px;
+      gap: 3px;
+    }
+    .stars {
+      font-size: 24px;
+      gap: 4px;
+    }
+    .score-big b {
+      font-size: 28px;
+    }
+    .next-seal {
+      padding: 6px 10px;
+    }
+  }
 </style>
