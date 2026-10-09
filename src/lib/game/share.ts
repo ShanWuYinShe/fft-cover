@@ -2,6 +2,19 @@ import { parseRandomSpec, randomSpec, type RandomDifficulty } from './levels';
 import type { Arm } from './types';
 
 /**
+ * 解法挑战分享用哪套参数：个人最佳强于本局（bestGap > 0）时用最佳那局的
+ * 参数并注明，否则分享本局参数——好友永远面对你打出的更强解法。
+ */
+export function pickChallengeArms(
+  best: { arms: Arm[] } | undefined,
+  bestGap: number | null,
+  current: Arm[],
+): { arms: Arm[]; isBest: boolean } {
+  if (best && bestGap !== null) return { arms: best.arms, isBest: true };
+  return { arms: current, isBest: false };
+}
+
+/**
  * 解法分享码：把玩家调好的指针参数编码成短文本，拼进 URL 供好友挑战。
  *
  * 格式：`v1-<序号>:<半径>:<频率>:<相位度>` 多根用 `;` 分隔（只含启用的指针）。

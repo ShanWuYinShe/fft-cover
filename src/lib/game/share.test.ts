@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { Arm } from './types';
 import {
   buildArmsUrl,
   buildDailyUrl,
@@ -8,13 +9,13 @@ import {
   encodeArms,
   levelHashPart,
   parseInvite,
+  pickChallengeArms,
   readArmsFromHash,
   readCustomFromHash,
   readDailyFromHash,
   readRandomFromHash,
 } from './share';
 import { decodeCoeffs, encodeCoeffs } from './levels';
-import type { Arm } from './types';
 
 const arm = (on: boolean, r: number, freq: number, deg: number): Arm => ({
   on,
@@ -154,5 +155,19 @@ describe('解法分享链接要带上关卡（否则好友对不上题）', () =
     expect(buildArmsUrl('https://x/y', 'v1-1:100:2:0', 'random-abc')).toBe(
       'https://x/y#arms=v1-1:100:2:0',
     );
+  });
+});
+describe('pickChallengeArms（挑战好友发哪套参数）', () => {
+  const arms: Arm[] = [{ on: true, r: 120, freq: 1, phase: 0 }];
+
+  it('个人最佳强于本局（bestGap > 0）→ 发最佳并注明', () => {
+    const out = pickChallengeArms({ arms }, 2, []);
+    expect(out.isBest).toBe(true);
+    expect(out.arms).toBe(arms);
+  });
+
+  it('本局已追平/超越，或尚无最佳 → 发本局参数（bestGap 契约：落后才非 null）', () => {
+    expect(pickChallengeArms({ arms }, null, arms).isBest).toBe(false);
+    expect(pickChallengeArms(undefined, 2, arms).isBest).toBe(false);
   });
 });

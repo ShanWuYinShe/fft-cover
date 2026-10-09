@@ -5,7 +5,7 @@
   import { goalProgress, levelGoals } from '../game/goals';
   import { haptic } from '../game/haptics';
   import { CHAPTERS, LEVEL_DEFS } from '../game/levels';
-  import { buildArmsUrl, encodeArms } from '../game/share';
+  import { buildArmsUrl, encodeArms, pickChallengeArms } from '../game/share';
   import { fitScore, starsFor } from '../game/scoring';
 
   /** 本关朱印进度（结算时给一条"这一关还差什么"的落点） */
@@ -108,9 +108,10 @@
     }
   }
 
-  /** 分享解法挑战链接：好友打开即载入这套参数 */
+  /** 分享解法挑战链接：好友打开即载入这套参数（个人最佳更强时改发最佳解法） */
   async function shareArms(): Promise<void> {
-    const code = encodeArms(engine.arms);
+    const pick = pickChallengeArms(engine.bestRun, engine.bestGap, engine.arms);
+    const code = encodeArms(pick.arms);
     if (!code) return;
     // 带上关卡标识：随机关/每日关/创作关的好友才面对同一道题
     const url = buildArmsUrl(
@@ -120,7 +121,11 @@
       engine.randomDiff,
     );
     const text =
-      '我在《傅立叶指针》的「' + (engine.level?.name ?? '') + '」调出了这套解法，你能全清吗？';
+      '我在《傅立叶指针》的「' +
+      (engine.level?.name ?? '') +
+      '」调出了' +
+      (pick.isBest ? '最佳' : '这套') +
+      '解法，你能全清吗？';
     try {
       if (navigator.share) {
         await navigator.share({ title: '傅立叶指针 · 解法挑战', text, url });
