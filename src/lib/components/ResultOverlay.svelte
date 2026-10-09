@@ -308,10 +308,15 @@
   /** 成就徽章（小 chip）：有才显示，新达成的带高亮 */
   const badges = $derived.by(() => {
     const out: Array<{ icon: string; text: string; fresh: boolean }> = [];
-    if (engine.isPerfect) out.push({ icon: '👑', text: '完美全清', fresh: engine.newPerfect });
-    if (engine.isExpertClear)
+    // 掌握类徽章（👑💎🎯）只在本局全清时展示：isPerfect/isExact 是"本关历史"口径，
+    // 直接挂在 0/24 的结算卡上会读成"这局完美全清了"（实测踩过）
+    const runCleared = engine.runCleared;
+    if (runCleared && engine.isPerfect)
+      out.push({ icon: '👑', text: '完美全清', fresh: engine.newPerfect });
+    if (runCleared && engine.isExpertClear)
       out.push({ icon: '💎', text: '专家全清', fresh: engine.newExpertClear });
-    if (engine.isExact) out.push({ icon: '🎯', text: '精确解', fresh: engine.newExact });
+    if (runCleared && engine.isExact)
+      out.push({ icon: '🎯', text: '精确解', fresh: engine.newExact });
     if (engine.streakJustBumped > 1)
       out.push({ icon: '🔥', text: '连胜 ' + engine.streakJustBumped + ' 天', fresh: true });
     if (engine.newSeals.length > 0)

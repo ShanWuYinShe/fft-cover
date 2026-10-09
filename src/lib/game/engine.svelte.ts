@@ -860,6 +860,11 @@ export class GameEngine {
     return !!this.level && !!this.perfectLevels[this.level.id];
   }
 
+  /** 本局是否全清（结算卡掌握类徽章的展示门槛：历史达成≠本局达成） */
+  get runCleared(): boolean {
+    return this.clearT !== null;
+  }
+
   /**
    * 是否解锁"精确参数提示"：同一关连续 2 次 0 星后浮现。
    * 入门容易——但提示是主动求助出来的，不破坏自己发现的乐趣。

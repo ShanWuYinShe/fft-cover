@@ -847,3 +847,9 @@ describe('bestGap（距个人最佳差值）', () => {
     expect(engine.bestGap).toBeNull();
   });
 });
+describe('runCleared（本局是否全清）', () => {
+  it('未开跑/半途停止时为 false（掌握类徽章的门槛）', () => {
+    const engine = new GameEngine();
+    expect(engine.runCleared).toBe(false);
+  });
+});
