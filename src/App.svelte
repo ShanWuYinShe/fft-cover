@@ -19,6 +19,7 @@
   import ChapterIntroOverlay from './lib/components/ChapterIntroOverlay.svelte';
   import SettingsModal from './lib/components/SettingsModal.svelte';
   import { decodeCoeffs, LEVEL_DEFS } from './lib/game/levels';
+  import { levelGoals } from './lib/game/goals';
   import { chapterProgress, type ChapterProgress } from './lib/game/campaign';
   import { engine } from './lib/game/engine.svelte';
   import {
@@ -145,6 +146,9 @@
   // 启动时把存档音量灌进 audio 模块的模块级状态：
   // 模块变量默认满音量，不初始化的话"上次静音"的玩家刷新后会突然有声音
   let volume = $state(initVolumeFromStorage());
+
+  /** 本关已盖朱印数（星 满 准 专）：HUD 上的"精通灯塔" */
+  const sealDone = $derived(levelGoals(engine.levelGoalState).filter((x) => x.done).length);
 
   /** 幽灵竞速差值文案：领先/落后上届多少点（无可比对象时为空） */
   const ghostLabel = $derived.by(() => {
@@ -306,13 +310,12 @@
 
 <svelte:window onkeydown={onKeydown} />
 
-<header>
+<header class="compact">
   <h1>
     <button type="button" class="title-btn" title="查看进度概览" onclick={() => (showTitle = true)}>
       傅立叶指针
     </button>
   </h1>
-  <p class="sub">旋转指针 · 合成曲线 · 收集目标点</p>
 </header>
 
 <main data-tab={mobileTab}>
@@ -344,6 +347,16 @@
               class:behind={engine.ghostDelta < 0}
               title="与上届同一时刻的收集数对比（金色刻度线标在上方进度条上）">{ghostLabel}</span
             >
+          {/if}
+          {#if engine.level}
+            <button
+              type="button"
+              class="hud-seal"
+              title={'本关朱印 ' + sealDone + '/4（星 满 准 专）——点开图鉴与成就'}
+              onclick={() => (showAchv = true)}
+            >
+              印 <b>{sealDone}</b>/4
+            </button>
           {/if}
         </div>
       </div>
@@ -408,6 +421,17 @@
           <b>第 1 步</b>：把 ① 的半径调到 <b>120</b>（当前 {engine.arms[0]
             ?.r}）——金色虚线是目标，紫色是你的轨迹
         {/if}
+      </div>
+    {:else if engine.showEllipseGuide}
+      <div class="first-guide" class:ok={engine.guideE2Ready}>
+        {#if engine.guideE2Ready}
+          <b>✅ 对了！</b>再微调两根的半径与相位，让紫色轨迹贴上金色虚线（细节见 💡 提示）
+        {:else}
+          <b>椭圆的秘密在"反转"</b>：启用 <b>②</b> 并把它切到 <b>⟲ 反转</b>—— 一顺一反才叠得出椭圆
+        {/if}
+        <button type="button" class="mini" onclick={() => engine.markFlag('ellipseGuideDone')}>
+          知道了
+        </button>
       </div>
     {/if}
     <div class="run-row">

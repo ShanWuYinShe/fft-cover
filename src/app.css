@@ -98,14 +98,15 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ---------- 顶部 ---------- */
+/* ---------- 顶部（紧凑：大标题属于开始画面，游戏内只留一行角标） ---------- */
 header {
-  padding: 20px 24px 4px;
+  padding: 8px 24px 2px;
   text-align: center;
 }
 
 header h1 {
   margin: 0;
+  line-height: 1.2;
 }
 
 /* 标题本身是按钮：点它回看进度概览（用真实 button 保证无障碍） */
@@ -119,23 +120,21 @@ header h1 .title-btn {
   padding: 0;
   margin: 0;
   font-family: inherit;
-  font-size: 25px;
-  letter-spacing: 7px;
+  font-size: 15px;
+  letter-spacing: 5px;
   font-weight: 700;
   cursor: pointer;
-  filter: drop-shadow(0 2px 14px rgba(79, 209, 197, 0.18));
+  opacity: 0.85;
+  filter: drop-shadow(0 2px 10px rgba(79, 209, 197, 0.15));
 }
 
 header h1 .title-btn:hover {
-  filter: drop-shadow(0 2px 22px rgba(79, 209, 197, 0.42));
+  opacity: 1;
+  filter: drop-shadow(0 2px 18px rgba(79, 209, 197, 0.4));
 }
 
 header .sub {
-  margin: 7px auto 0;
-  max-width: 620px;
-  color: var(--muted);
-  font-size: var(--fs-sm);
-  line-height: 1.6;
+  display: none; /* 副标题属于开始画面 */
 }
 
 /* ---------- 主布局 ---------- */
@@ -229,6 +228,33 @@ canvas {
   flex-direction: column;
   align-items: flex-end;
   gap: 5px;
+}
+
+/* 本关印徽：精通线的"远处灯塔"——平时安静，点开直达成就 */
+.hud .hud-seal {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-quiet);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+.hud .hud-seal b {
+  color: #e88073;
+  font-variant-numeric: tabular-nums;
+}
+.hud .hud-seal:hover {
+  color: var(--text);
+  border-color: rgba(192, 57, 43, 0.55);
 }
 
 .hud .ghost-chip {

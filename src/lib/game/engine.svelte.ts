@@ -818,6 +818,23 @@ export class GameEngine {
     return !!a && a.on && a.r >= 115 && a.r <= 125;
   }
 
+  /**
+   * 椭圆关引导：首关引导已完成、椭圆还没拿过星。
+   * 圆 → 椭圆是第一个难度断层（突然要"反转"概念），给一块显眼的跳板。
+   */
+  get showEllipseGuide(): boolean {
+    if (!this.flags.guideDone || this.flags.ellipseGuideDone) return false;
+    if (this.sandbox) return false;
+    if (this.level?.id !== 'ellipse') return false;
+    return (this.bestStars['ellipse'] ?? 0) === 0;
+  }
+
+  /** 椭圆引导第 2 步是否已达成（② 已启用且切到反转） */
+  get guideE2Ready(): boolean {
+    const a = this.arms[1];
+    return !!a && a.on && a.freq < 0;
+  }
+
   /** 当前关是否已达成完美全清 */
   get isPerfect(): boolean {
     return !!this.level && !!this.perfectLevels[this.level.id];
