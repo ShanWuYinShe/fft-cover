@@ -5,7 +5,7 @@
   import { goalProgress, levelGoals } from '../game/goals';
   import { haptic } from '../game/haptics';
   import { CHAPTERS, LEVEL_DEFS } from '../game/levels';
-  import { buildArmsUrl, encodeArms, pickChallengeArms } from '../game/share';
+  import { buildArmsUrl, buildChallengeLine, encodeArms, pickChallengeArms } from '../game/share';
   import { fitScore, starsFor } from '../game/scoring';
 
   /** 本关朱印进度（结算时给一条"这一关还差什么"的落点） */
@@ -143,7 +143,17 @@
   }
 
   async function copyReport(): Promise<void> {
-    const text = engine.buildReport();
+    let text = engine.buildReport();
+    // 战报末尾附挑战链接：好友点开即进同题对决（个人最佳更强时发最佳解法）
+    const line = buildChallengeLine(
+      location.origin + location.pathname,
+      engine.bestRun,
+      engine.bestGap,
+      engine.arms,
+      engine.level?.id ?? '',
+      engine.randomDiff,
+    );
+    if (line) text += '\n' + line;
     // 移动端优先原生分享面板
     if ('share' in navigator) {
       try {

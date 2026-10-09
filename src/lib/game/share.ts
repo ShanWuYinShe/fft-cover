@@ -15,6 +15,27 @@ export function pickChallengeArms(
 }
 
 /**
+ * 战报末尾的挑战行：链接已带上关卡标识，好友点开即进同题对决
+ * （口径同 pickChallengeArms——个人最佳更强时发最佳解法）。
+ * 没有启用的指针（编码为空）返回 null，战报保持原样。
+ */
+export function buildChallengeLine(
+  base: string,
+  best: { arms: Arm[] } | undefined,
+  bestGap: number | null,
+  current: Arm[],
+  levelId = '',
+  diff?: RandomDifficulty,
+): string | null {
+  const { arms, isBest } = pickChallengeArms(best, bestGap, current);
+  const code = encodeArms(arms);
+  if (!code) return null;
+  return (
+    (isBest ? '挑战我的最佳解法：' : '挑战这套解法：') + buildArmsUrl(base, code, levelId, diff)
+  );
+}
+
+/**
  * 解法分享码：把玩家调好的指针参数编码成短文本，拼进 URL 供好友挑战。
  *
  * 格式：`v1-<序号>:<半径>:<频率>:<相位度>` 多根用 `;` 分隔（只含启用的指针）。

@@ -5,6 +5,7 @@ import {
   buildDailyUrl,
   buildRandomUrl,
   buildShareUrl,
+  buildChallengeLine,
   decodeArms,
   encodeArms,
   levelHashPart,
@@ -169,5 +170,21 @@ describe('pickChallengeArms（挑战好友发哪套参数）', () => {
   it('本局已追平/超越，或尚无最佳 → 发本局参数（bestGap 契约：落后才非 null）', () => {
     expect(pickChallengeArms({ arms }, null, arms).isBest).toBe(false);
     expect(pickChallengeArms(undefined, 2, arms).isBest).toBe(false);
+  });
+});
+describe('buildChallengeLine（战报挑战行）', () => {
+  const arms: Arm[] = [{ on: true, r: 120, freq: 1, phase: 0 }];
+  const off: Arm[] = [{ on: false, r: 0, freq: 1, phase: 0 }];
+
+  it('带关卡标识与口径注明；最佳强于本局时发最佳', () => {
+    const line = buildChallengeLine('https://x.test/', { arms }, 2, off, 'random-777', 'hard');
+    expect(line?.startsWith('挑战我的最佳解法：')).toBe(true);
+    expect(line).toContain('#r=random-777-hard&arms=');
+  });
+
+  it('无最佳时发本局参数；无启用指针返回 null', () => {
+    const line = buildChallengeLine('https://x.test/', undefined, null, arms);
+    expect(line?.startsWith('挑战这套解法：')).toBe(true);
+    expect(buildChallengeLine('https://x.test/', undefined, null, off)).toBeNull();
   });
 });
