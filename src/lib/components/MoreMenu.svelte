@@ -42,7 +42,7 @@
 <div class="mm" bind:this={root}>
   <button
     type="button"
-    class="mm-btn"
+    class="quiet-btn mm-btn"
     aria-label="更多操作"
     aria-expanded={open}
     title="更多操作"
@@ -72,24 +72,12 @@
     position: relative;
     display: inline-flex;
   }
+  /* 基础语言来自全局 .quiet-btn；这里只留菜单自身的尺寸 */
   .mm-btn {
     min-width: 44px;
     height: 44px;
     padding: 0 10px;
-    border-radius: var(--r-sm);
-    border: 1px solid rgba(130, 150, 210, 0.28);
-    background: rgba(24, 30, 56, 0.6);
-    color: var(--muted);
-    font: inherit;
     font-size: 15px;
-    cursor: pointer;
-    transition:
-      color 0.15s,
-      border-color 0.15s;
-  }
-  button.mm-btn:hover {
-    color: var(--text);
-    border-color: rgba(130, 150, 210, 0.55);
   }
   .mm-pop {
     position: absolute;

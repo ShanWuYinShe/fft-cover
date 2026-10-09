@@ -342,7 +342,7 @@
       {#if engine.level}{@html engine.level.hint}{/if}
     </p>
   {:else}
-    <button type="button" class="hint-toggle" onclick={() => (hintPinned = true)}>
+    <button type="button" class="quiet-btn hint-toggle" onclick={() => (hintPinned = true)}>
       💡 看提示
     </button>
   {/if}
@@ -351,7 +351,7 @@
   <div class="more">
     <button
       type="button"
-      class="more-toggle"
+      class="quiet-btn more-toggle"
       class:active={inSpecialMode}
       aria-expanded={!!engine.flags['moreOpen']}
       onclick={() => engine.setFlag('moreOpen', !engine.flags['moreOpen'])}
@@ -781,24 +781,10 @@
     color: var(--muted);
     line-height: 1.7;
   }
+  /* 基础语言来自全局 .quiet-btn；这里只留位置 */
   .hint-toggle {
     margin-top: 11px;
-    min-height: 40px;
-    padding: 6px 10px;
-    border-radius: var(--r-sm);
-    border: 1px dashed rgba(167, 139, 250, 0.35);
-    background: transparent;
-    color: var(--muted);
-    font: inherit;
-    font-size: var(--fs-xs);
-    cursor: pointer;
-    transition:
-      color 0.15s,
-      border-color 0.15s;
-  }
-  button.hint-toggle:hover {
-    color: var(--text);
-    border-color: rgba(167, 139, 250, 0.6);
+    width: 100%;
   }
   #hint :global(b) {
     color: var(--purple);
@@ -811,31 +797,12 @@
     flex-direction: column;
     gap: 7px;
   }
-  /* 折叠开关：默认收起——入门玩家只看关卡地图；特殊模式进行中时点亮 */
+  /* 折叠开关：基础语言来自全局 .quiet-btn；active = 特殊模式进行中 */
   .more-toggle {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    min-height: 44px;
-    padding: 8px 12px;
-    border-radius: var(--r-sm);
-    border: 1px dashed rgba(130, 150, 210, 0.3);
-    background: rgba(24, 30, 56, 0.4);
-    color: var(--muted);
-    font: inherit;
-    font-size: var(--fs-sm);
-    cursor: pointer;
-    transition:
-      color 0.15s,
-      border-color 0.15s;
-  }
-  button.more-toggle:hover {
-    color: var(--text);
-    border-color: rgba(130, 150, 210, 0.55);
+    width: 100%;
   }
   .more-toggle.active {
     border-color: rgba(79, 209, 197, 0.55);
-    border-style: solid;
     color: var(--text);
     box-shadow: inset 3px 0 0 var(--cyan);
   }

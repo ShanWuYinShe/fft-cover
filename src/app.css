@@ -52,6 +52,9 @@
 
   /* 圆角 */
   --r-sm: 8px;
+  --r-pill: 999px;
+  /* 次级动作统一边框：全部"安静的按钮"共用一条线，消除视觉噪音 */
+  --line-quiet: rgba(130, 150, 210, 0.28);
   --r-md: 10px;
   --r-lg: 14px;
 
@@ -415,12 +418,9 @@ button:disabled {
   background: linear-gradient(180deg, var(--cyan), var(--purple));
 }
 
-/* 分区强调色：关卡=青、成绩=金、指针=紫——一眼区分面板职责 */
+/* 分区强调色：关卡=青、指针=紫——一眼区分面板职责 */
 .side-left > section:nth-of-type(1) h2::before {
   background: linear-gradient(180deg, #7ff0e2, var(--cyan));
-}
-.side-left > section:nth-of-type(2) h2::before {
-  background: linear-gradient(180deg, #ffe9a8, var(--gold));
 }
 .side-right > section.sec-arms h2::before {
   background: linear-gradient(180deg, #c4b5fd, var(--purple));
@@ -439,6 +439,33 @@ button:disabled {
 }
 
 /* ---------- 工具按钮行 ---------- */
+/* 次级动作统一语言：暗底 + 同一条边框线 + muted 文字，hover 才提亮。
+   「更多玩法」「💡 看提示」「⋯ 菜单」都挂这个类——秩序来自重复。 */
+.quiet-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 7px 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line-quiet);
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    background 0.15s;
+}
+.quiet-btn:hover:not(:disabled) {
+  color: var(--text);
+  border-color: rgba(130, 150, 210, 0.5);
+  background: rgba(255, 255, 255, 0.045);
+}
+
 .tools-row {
   display: flex;
   gap: 6px;
@@ -463,6 +490,22 @@ button:disabled {
 
 .tools-row button:hover:not(:disabled) {
   color: var(--cyan);
+}
+
+/* ⋯ 菜单在工具行内与文字按钮同级：退化为同款轻样式（ hover 才见底） */
+.tools-row .mm .quiet-btn {
+  min-height: 30px;
+  padding: 6px 11px;
+  border-color: transparent;
+  background: transparent;
+}
+@media (pointer: coarse), (max-width: 640px) {
+  .tools-row .mm .quiet-btn {
+    min-height: 40px;
+  }
+}
+.tools-row .mm .quiet-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.045);
 }
 
 /* 金色态：运行栏（2× 快进、音乐开关）与指针工具栏共用 */
@@ -881,10 +924,7 @@ input[type='checkbox'] {
     display: none;
   }
   main[data-tab='levels'] .sides .side-left > section:nth-of-type(1),
-  main[data-tab='score'] .sides .side-left > section:nth-of-type(2),
-  main[data-tab='score'] .sides .side-left > section:nth-of-type(3),
-  main[data-tab='arms'] .sides section.sec-arms,
-  main[data-tab='score'] .sides section.sec-tips {
+  main[data-tab='arms'] .sides section.sec-arms {
     display: block;
   }
 
