@@ -1412,6 +1412,14 @@ export class GameEngine {
     return this.phase !== 'edit' && !!this.raceArms && !this.sameArmsAsRace;
   }
 
+  /** 距个人最佳还差几点（追平/超越或尚无最佳时 null；结算卡「再战」钩子用） */
+  get bestGap(): number | null {
+    const best = this.bestRun?.pace;
+    if (!best?.length) return null;
+    const gap = best.length - this.collectedCount;
+    return gap > 0 ? gap : null;
+  }
+
   /** 参照（最佳/上届）到当前时刻已收集的点数 */
   get ghostProgress(): number {
     return ghostProgressAt(this.racePace, this.t);

@@ -361,6 +361,12 @@
                 : ''}{engine.lastGhostDelta}{' '}{engine.lastGhostVsBest ? '最佳' : '上届'}</span
             >
           {/if}
+          {#if engine.bestGap !== null}
+            <span class="dot">·</span>
+            <span title="本关个人最佳那局收集了更多点，再来一局追上它"
+              >距最佳还差 <b>{engine.bestGap}</b> 点</span
+            >
+          {/if}
         </div>
         <!-- 成就徽章：有才出现，一眼扫过 -->
         {#if badges.length > 0}

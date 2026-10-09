@@ -832,3 +832,18 @@ describe('GameEngine', () => {
     expect(engine.arms.filter((a) => a.on)).toHaveLength(2);
   });
 });
+describe('bestGap（距个人最佳差值）', () => {
+  it('落后最佳时给出差值；追平/超越/尚无最佳时为 null', () => {
+    const engine = new GameEngine();
+    engine.loadLevel(LEVEL_DEFS[0]);
+    engine.bestRuns = { circle: { arms: [], pace: [1, 2, 3, 4] } };
+    engine.collectedCount = 2;
+    expect(engine.bestGap).toBe(2);
+    engine.collectedCount = 4; // 追平
+    expect(engine.bestGap).toBeNull();
+    engine.collectedCount = 5; // 超越
+    expect(engine.bestGap).toBeNull();
+    engine.bestRuns = {}; // 尚无最佳
+    expect(engine.bestGap).toBeNull();
+  });
+});
