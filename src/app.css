@@ -900,13 +900,27 @@ input[type='checkbox'] {
     --tabbar-h: calc(56px + env(safe-area-inset-bottom));
   }
 
+  /* 整屏弹性骨架：header 取自然高度、main 填满剩余、底部预留标签栏。
+     不再用「100dvh - 34px」猜 header 高度——实测 390 宽下 header 是 52px，
+     猜错 18px 就会把面板底边推到标签栏底下。 */
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+    padding-bottom: var(--tabbar-h);
+    box-sizing: border-box;
+  }
+
   main {
     display: flex;
     flex-direction: column;
     gap: 8px;
     padding: 6px 10px 4px;
     flex-wrap: nowrap;
-    height: calc(100dvh - 34px - var(--tabbar-h)); /* 减去标题与 Tab 栏 */
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
     overflow: hidden;
   }
 
@@ -1015,9 +1029,9 @@ input[type='checkbox'] {
     filter: drop-shadow(0 0 8px rgba(79, 209, 197, 0.5));
   }
 
-  /* 给底部标签栏留出空间（与 .mobile-tabs 的实际高度同源） */
+  /* 标签栏的让位统一由 #app 的 padding-bottom 负责 */
   body {
-    padding-bottom: var(--tabbar-h);
+    padding-bottom: 0;
   }
 }
 
