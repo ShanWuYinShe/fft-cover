@@ -42,7 +42,9 @@
       <span class="dot">·</span>
       <span>★ {chapter.stars}/{chapter.maxStars}</span>
     </div>
-    <button type="button" class="primary" onclick={onclose}>开始这一章</button>
+    <div class="foot">
+      <button type="button" class="primary" onclick={onclose}>开始这一章</button>
+    </div>
   </div>
 </div>
 
@@ -79,7 +81,8 @@
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    padding: 24px 22px 20px;
+    /* 底部内距交给常驻动作栏（.foot）自带：sticky 底栏才能与滚动区下沿齐平 */
+    padding: 24px 22px 0;
     text-align: center;
     border-radius: 20px;
     background: linear-gradient(170deg, rgba(24, 34, 58, 0.98), rgba(11, 16, 30, 0.99));
@@ -159,6 +162,23 @@
   }
   .meta .dot {
     color: var(--muted-2);
+  }
+
+  /* 动作常驻：矮屏（手机横屏）内容一滚，主按钮不能掉到首屏之外 */
+  .foot {
+    position: sticky;
+    bottom: 0;
+    align-self: stretch;
+    display: flex;
+    justify-content: center;
+    margin: 0 -22px;
+    padding: 10px 22px 20px;
+    background: linear-gradient(
+      180deg,
+      rgba(11, 16, 30, 0) 0,
+      rgba(11, 16, 30, 0.96) 16px,
+      #0b101e 100%
+    );
   }
 
   button.primary {

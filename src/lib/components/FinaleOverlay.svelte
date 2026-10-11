@@ -137,7 +137,11 @@
       {/if}
     </p>
 
-    <button type="button" class="primary" onclick={() => engine.dismissFinale()}> 继续挑战 </button>
+    <div class="foot">
+      <button type="button" class="primary" onclick={() => engine.dismissFinale()}>
+        继续挑战
+      </button>
+    </div>
   </div>
 </div>
 
@@ -172,7 +176,8 @@
     /* dvh 而非 vh：移动端 vh 含地址栏，会算高导致底部按钮被推出屏幕 */
     max-height: calc(100dvh - 24px);
     overflow-y: auto;
-    padding: 26px 24px 22px;
+    /* 底部内距交给常驻动作栏（.foot）自带：sticky 底栏才能与滚动区下沿齐平 */
+    padding: 26px 24px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -477,6 +482,23 @@
     color: var(--muted);
     line-height: 1.8;
     text-align: left;
+  }
+
+  /* 动作常驻：21 关战利品墙 + 结算统计在矮屏会滚，主按钮不能掉到首屏之外 */
+  .foot {
+    position: sticky;
+    bottom: 0;
+    align-self: stretch;
+    display: flex;
+    justify-content: center;
+    margin: 0 -24px;
+    padding: 10px 24px 22px;
+    background: linear-gradient(
+      180deg,
+      rgba(11, 15, 30, 0) 0,
+      rgba(11, 15, 30, 0.96) 16px,
+      #0b0f1e 100%
+    );
   }
 
   button.primary {
