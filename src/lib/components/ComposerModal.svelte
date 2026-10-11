@@ -343,7 +343,8 @@
     background: #10152a;
     border: 1px solid var(--line);
     border-radius: 14px;
-    padding: 18px 20px;
+    /* 底部内距交给常驻动作栏（.btns）自带：否则 sticky 底栏与滚动区下沿会差出 18px */
+    padding: 18px 20px 0;
     text-align: center;
     box-shadow: 0 16px 60px rgba(0, 0, 0, 0.6);
   }
@@ -455,8 +456,8 @@
     display: flex;
     gap: 8px;
     justify-content: center;
-    margin: 12px -20px -18px;
-    padding: 12px 20px;
+    margin: 12px -20px 0;
+    padding: 12px 20px 18px;
     background: #10152a;
     border-top: 1px solid rgba(130, 150, 210, 0.16);
     border-radius: 0 0 13px 13px;
