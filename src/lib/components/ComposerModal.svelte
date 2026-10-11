@@ -446,10 +446,20 @@
     text-align: center;
     letter-spacing: 1px;
   }
+  /* 动作栏常驻：20 行谐波在矮屏（手机横屏 / 小笔记本）会滚，
+     「生成并游玩」不能掉到首屏之外等玩家去猜要滚（触屏没有 Esc 兜底） */
   .btns {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
     display: flex;
     gap: 8px;
     justify-content: center;
+    margin: 12px -20px -18px;
+    padding: 12px 20px;
+    background: #10152a;
+    border-top: 1px solid rgba(130, 150, 210, 0.16);
+    border-radius: 0 0 13px 13px;
   }
 
   /* 触屏：预设 chip 的热区补够 */
