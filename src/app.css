@@ -1022,6 +1022,12 @@ input[type='checkbox'] {
   .canvas-box {
     width: min(92vw, 36vh);
   }
+  /* 画布一小，右上角的「印 x/4」芯片必然压到目标曲线中段（实测 320×568：
+     圆在 182px 画布里半径 ~71，芯片正好落在曲线带上）。它只是打开成就面板
+     的快捷入口，工具栏 🏆 与图鉴/结算卡都是等价路径——小屏让位给画面干净。 */
+  .hud .hud-seal {
+    display: none;
+  }
 }
 
 @media (max-width: 640px) and (orientation: portrait) and (max-height: 600px) {
