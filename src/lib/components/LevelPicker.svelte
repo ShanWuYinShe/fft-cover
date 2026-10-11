@@ -709,7 +709,8 @@
     margin-left: 2px;
   }
   .node .st {
-    font-size: 10px;
+    /* 跟随全局字号底线（移动 11px / 桌面 12px）：10px 中文星级+“未解锁”读不清 */
+    font-size: var(--fs-xs);
     letter-spacing: 1px;
     color: var(--gold);
   }

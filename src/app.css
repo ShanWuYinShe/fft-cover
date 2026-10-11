@@ -1013,6 +1013,23 @@ input[type='checkbox'] {
   }
 }
 
+/* ============================================================
+ * 矮屏手机（竖屏）：画布按高度收一点，把垂直空间还给关卡 / 指针面板。
+ * 320×568 实测：画布 46vh 时 .sides 只剩 74px（内容 491px），关卡列表
+ * 只看得见一行；收画布后仍「画布常在屏内」，但面板能正常浏览。
+ * ============================================================ */
+@media (max-width: 640px) and (orientation: portrait) and (max-height: 700px) {
+  .canvas-box {
+    width: min(92vw, 36vh);
+  }
+}
+
+@media (max-width: 640px) and (orientation: portrait) and (max-height: 600px) {
+  .canvas-box {
+    width: min(92vw, 32vh);
+  }
+}
+
 /* 按钮文案：桌面用全称，移动端用短称 */
 .bt-short {
   display: none;
