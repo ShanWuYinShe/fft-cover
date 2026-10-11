@@ -807,6 +807,14 @@ input[type='checkbox'] {
   }
 }
 
+/* 中屏 / 竖屏平板：画布是方形的（受列宽限制），舞台整体在列内垂直居中。
+   768×1024 实测：舞台 67..592、main 高 968——下方空 429px，左轻右重。 */
+@media (min-width: 641px) and (max-width: 1180px) {
+  .stage-wrap {
+    align-self: center;
+  }
+}
+
 /* 触屏设备：加大滑块与按钮触控目标 */
 @media (pointer: coarse), (max-width: 640px) {
   input[type='range'] {
