@@ -1093,6 +1093,11 @@ input[type='checkbox'] {
 
 /* 手机竖屏：运行栏重排——4 个功能键（开始/停止/⋯/图标行）正好一行 */
 @media (max-width: 640px) and (orientation: portrait) {
+  /* 更新提示条抬到标签栏之上：320 宽实测这条胶囊（259×46）正好压在
+     「关卡 / 指针」两个标签上，两个标签都点不到（横屏没有标签栏，只竖屏抬） */
+  .update-bar {
+    bottom: calc(var(--tabbar-h) + 10px);
+  }
   .run-row {
     grid-template-columns: repeat(4, 1fr);
   }
