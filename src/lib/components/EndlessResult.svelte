@@ -207,16 +207,17 @@
     color: var(--text);
     border-color: rgba(130, 150, 210, 0.5);
   }
-  /* 矮屏手机（画布只有 ~180px 高）：结算卡若仍贴在画布框内，「收集 / 全清 /
-     完美全清 / 下一枚印」全被裁掉（实测 320×568 只剩星级与分数）。
-     改为覆盖整屏、底部让开标签栏——统计一行不落，卡片居中。 */
-  @media (max-width: 640px) and (orientation: portrait) and (max-height: 700px) {
+  /* 矮视口（画布只有 ~180–250px 高）：结算卡若仍贴在画布框内，「收集 / 全清 /
+     完美全清 / 下一枚印」全被裁掉甚至与主按钮串行——实测 320×568（竖屏）只剩
+     星级与分数、640×360（横屏）下一枚印行被「下一关」压住。矮视口一律整屏
+     显示（z-index 高于底部标签栏，结算时整屏就是这一张卡），统计一行不落。 */
+  @media (max-width: 900px) and (max-height: 700px) {
     .result {
       position: fixed;
       inset: 0;
       z-index: 40;
       border-radius: 0;
-      padding: 10px 10px 70px;
+      padding: 10px;
     }
   }
 </style>
