@@ -892,13 +892,21 @@ input[type='checkbox'] {
     display: none; /* 移动端省掉副标题，把高度让给画布 */
   }
 
+  /* 底部标签栏的实际高度：padding 4 + 按钮 48 + padding 4 + iPhone 安全区。
+     面板必须让出这一条——此前只写了 body{padding-bottom:62px}，而 main 的
+     height 没减它，实测 320×568 下面板底边 582 / 标签栏顶边 510：最后
+     72px 永远被盖住（「更多玩法」整条点不到）。 */
+  :root {
+    --tabbar-h: calc(56px + env(safe-area-inset-bottom));
+  }
+
   main {
     display: flex;
     flex-direction: column;
     gap: 8px;
     padding: 6px 10px 4px;
     flex-wrap: nowrap;
-    height: calc(100dvh - 34px); /* 减去标题与 Tab 栏 */
+    height: calc(100dvh - 34px - var(--tabbar-h)); /* 减去标题与 Tab 栏 */
     overflow: hidden;
   }
 
@@ -1007,9 +1015,9 @@ input[type='checkbox'] {
     filter: drop-shadow(0 0 8px rgba(79, 209, 197, 0.5));
   }
 
-  /* 给底部标签栏留出空间 */
+  /* 给底部标签栏留出空间（与 .mobile-tabs 的实际高度同源） */
   body {
-    padding-bottom: 62px;
+    padding-bottom: var(--tabbar-h);
   }
 }
 
