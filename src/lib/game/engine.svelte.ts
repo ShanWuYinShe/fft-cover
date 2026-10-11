@@ -1063,6 +1063,12 @@ export class GameEngine {
       this.phase = 'running';
     } else if (this.phase === 'running') {
       this.phase = 'paused';
+    } else if (this.phase === 'done') {
+      // 结算卡开着时运行栏仍是「▶ 开始旋转」：点了就该重开一局，
+      // 而不是一个按了没反应的死按钮（与空格键同口径）
+      if (this.endless) return; // 无尽由结算卡的「下一波 / 再来一局」推进
+      this.resetRun();
+      this.startRun();
     }
   }
 

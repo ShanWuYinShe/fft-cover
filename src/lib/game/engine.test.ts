@@ -853,3 +853,25 @@ describe('runCleared（本局是否全清）', () => {
     expect(engine.runCleared).toBe(false);
   });
 });
+describe('toggleRun 在结算后重开（运行栏不再是死按钮）', () => {
+  it('结算卡开着时 toggleRun = 重置并重开一局', () => {
+    const engine = new GameEngine();
+    engine.loadLevel(LEVEL_DEFS[0]);
+    engine.startRun();
+    engine.collectedCount = 5; // 模拟跑了一半
+    engine.stopRun();
+    expect(engine.phase).toBe('done');
+    engine.toggleRun();
+    expect(engine.phase).toBe('running');
+    expect(engine.collectedCount).toBe(0); // 重开必须清干净上一局
+  });
+
+  it('无尽模式交回结算卡按钮推进，toggleRun 不偷跑下一波', () => {
+    const engine = new GameEngine();
+    engine.loadLevel(LEVEL_DEFS[0]);
+    engine.endless = true;
+    engine.phase = 'done';
+    engine.toggleRun();
+    expect(engine.phase).toBe('done');
+  });
+});
