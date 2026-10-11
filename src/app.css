@@ -722,6 +722,9 @@ input[type='checkbox'] {
   display: flex;
   align-items: center;
   gap: 10px;
+  /* 窄屏（320）：条宽不得超视口，且文本/按钮都不许被压缩——
+     CJK 没有断点，flex 项一旦被压到 min-content 就逐字竖排（实测踩到） */
+  max-width: calc(100vw - 20px);
   padding: 8px 12px 8px 16px;
   border-radius: 999px;
   background: linear-gradient(135deg, rgba(20, 26, 46, 0.95), rgba(14, 19, 36, 0.95));
@@ -734,7 +737,16 @@ input[type='checkbox'] {
   animation: toast-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+.update-bar > span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .update-bar .mini {
+  flex: 0 0 auto;
+  white-space: nowrap;
   font-size: var(--fs-xs);
   padding: 5px 12px;
   min-height: 28px;
