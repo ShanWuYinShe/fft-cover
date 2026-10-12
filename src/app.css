@@ -1171,6 +1171,12 @@ input[type='checkbox'] {
   .run-icons {
     display: contents; /* 图标键直接进 6 列网格，与停止 / ⋯ 同排 */
   }
+  /* 手机上「成就 / 设置」已进 ⋯ 菜单，图标行只留音量与音乐——
+     少两格、第二行更矮，把高度让给关卡/指针面板 */
+  .run-icons button[aria-label='成就'],
+  .run-icons button[aria-label='设置'] {
+    display: none;
+  }
   .run-icons button {
     width: auto;
     min-height: 42px;

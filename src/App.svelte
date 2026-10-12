@@ -509,6 +509,10 @@
               disabled: engine.phase === 'running' || engine.phase === 'paused' || engine.endless,
               onclick: () => engine.enterSandbox(),
             },
+            // 手机端图标行只留音量/音乐（见 app.css）：成就与设置在这里也有入口，
+            // 桌面端多两个菜单项不冲突（图标键仍在）
+            { label: '🏆 成就', onclick: () => (showAchv = true) },
+            { label: '⚙️ 设置', onclick: () => (showSettings = true) },
           ]}
         />
         <span class="run-icons">
