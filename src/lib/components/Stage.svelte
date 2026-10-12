@@ -283,7 +283,7 @@
     ctx.fillStyle = grad;
     ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,.11)';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = lineW(1);
     ctx.stroke();
     ctx.clip();
 
@@ -324,7 +324,7 @@
         const px = x0 + 10 + (s.k + 10) * 6.4;
         const h = Math.max(2, (s.mag / 210) * maxH);
         ctx.strokeStyle = 'rgba(251,191,36,.85)';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = lineW(1);
         ctx.strokeRect(px - 2.5, baseY - h, 5, h);
       }
     }
@@ -364,6 +364,18 @@
     const shown = canvas?.clientWidth || SIZE;
     // 上限 1.6：再大长文案（预览收集 / 上届漏点）会在 640 逻辑宽里溢出
     return Math.min(1.6, Math.max(1, SIZE / shown));
+  }
+
+  /**
+   * 线宽下限保护：逻辑线宽乘上屏幕比例后若不足 ~1.2px，会被抗锯齿糊成灰蒙蒙
+   * 的细线（手机 338px 画布下 1.8 逻辑 → 0.95px，目标曲线/指针线都发虚）。
+   * 只做「不低于下限」，不整体放大——线条属信息承载图形，放大过头会改变画面气质。
+   */
+  function shownW(): number {
+    return canvas?.clientWidth || SIZE;
+  }
+  function lineW(base: number): number {
+    return Math.max(base, 1.2 * (SIZE / shownW()));
   }
 
   /** 与 canvasFont 同源的补偿系数：文字周围的背景框/进度条也要按同一比例缩放，
@@ -419,7 +431,7 @@
 
     // 回纹边框：极淡的中国纹样，铺在内容之下（不随缩放平移，只作画框）
     ctx.strokeStyle = 'rgba(251, 191, 36, 0.13)';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = lineW(1);
     ctx.stroke(huiBorder());
 
     // 切关淡入：整画布内容透明度过渡（0.4 秒）
@@ -435,7 +447,7 @@
     const top = SIZE / 2 + panY - half;
     const right = SIZE / 2 + panX + half;
     const bottom = SIZE / 2 + panY + half;
-    ctx.lineWidth = 1 / zoom;
+    ctx.lineWidth = Math.max(1 / zoom, 1.2 * (SIZE / shownW()));
     for (let g = Math.floor(left / 40) * 40; g <= right; g += 40) {
       const major = ((g % 160) + 160) % 160 === 0;
       ctx.strokeStyle = major ? 'rgba(255,255,255,.05)' : 'rgba(255,255,255,.022)';
@@ -455,7 +467,7 @@
 
     // 原点：细十字 + 中心点
     ctx.strokeStyle = 'rgba(230,233,242,.22)';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = lineW(1);
     ctx.beginPath();
     ctx.moveTo(SIZE / 2 - 8, SIZE / 2);
     ctx.lineTo(SIZE / 2 + 8, SIZE / 2);
@@ -473,7 +485,7 @@
     if (engine.phase === 'edit' && !engine.expertMode) {
       const curve = engine.level.curve;
       ctx.strokeStyle = 'rgba(251,191,36,.55)';
-      ctx.lineWidth = 1.8;
+      ctx.lineWidth = lineW(1.8);
       ctx.setLineDash([3, 5]);
       ctx.beginPath();
       for (let i = 0; i < curve.length; i++) {
@@ -508,7 +520,7 @@
         previewHits = hits;
       }
       ctx.strokeStyle = 'rgba(196,181,253,.95)';
-      ctx.lineWidth = 2.2;
+      ctx.lineWidth = lineW(2.2);
       ctx.setLineDash([]); // 实线：与目标的金色虚线强区分
       ctx.shadowColor = 'rgba(167,139,250,.6)';
       ctx.shadowBlur = 6;
@@ -585,15 +597,15 @@
         ctx.arc(p.x, p.y, 4 * kd, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = 'rgba(251,191,36,.55)';
-        ctx.lineWidth = 1.4;
+        ctx.lineWidth = lineW(1.4);
         ctx.beginPath();
         ctx.arc(p.x, p.y, engine.level.tol, 0, Math.PI * 2);
         ctx.stroke();
-        ctx.lineWidth = 1 / zoom;
+        ctx.lineWidth = Math.max(1 / zoom, 1.2 * (SIZE / shownW()));
       } else if (missedSet && missedSet.has(i)) {
         // 上届漏点：红色虚线圈（这次能扫到的会被上面的金色预览分支接管）
         ctx.strokeStyle = 'rgba(248,113,113,.6)';
-        ctx.lineWidth = 1.6;
+        ctx.lineWidth = lineW(1.6);
         ctx.setLineDash([3, 3]);
         ctx.beginPath();
         ctx.arc(p.x, p.y, 7 * kd, 0, Math.PI * 2);
@@ -603,12 +615,12 @@
         ctx.beginPath();
         ctx.arc(p.x, p.y, 3 * kd, 0, Math.PI * 2);
         ctx.fill();
-        ctx.lineWidth = 1 / zoom;
+        ctx.lineWidth = Math.max(1 / zoom, 1.2 * (SIZE / shownW()));
       } else if (engine.phase === 'done' && engine.resultDismissed) {
         // 看轨迹：把本局漏掉的点脉冲高亮（红圈），一眼看清差在哪几个
         const pulse = 0.5 + 0.5 * Math.sin(now / 320);
         ctx.strokeStyle = 'rgba(248,113,113,' + (0.4 + pulse * 0.5).toFixed(3) + ')';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = lineW(2);
         ctx.beginPath();
         ctx.arc(p.x, p.y, (6 + pulse * 3.5) * kd, 0, Math.PI * 2);
         ctx.stroke();
@@ -616,7 +628,7 @@
         ctx.beginPath();
         ctx.arc(p.x, p.y, 3.5 * kd, 0, Math.PI * 2);
         ctx.fill();
-        ctx.lineWidth = 1 / zoom;
+        ctx.lineWidth = Math.max(1 / zoom, 1.2 * (SIZE / shownW()));
       } else {
         ctx.fillStyle = 'rgba(220,228,255,.55)';
         ctx.beginPath();
@@ -641,7 +653,7 @@
         if (startIdx >= endIdx) continue;
         const a = endIdx / trail.length;
         ctx.strokeStyle = 'rgba(79,209,197,' + (a * 0.75).toFixed(3) + ')';
-        ctx.lineWidth = 1 + a * 1.8;
+        ctx.lineWidth = lineW(1 + a * 1.8);
         ctx.beginPath();
         ctx.moveTo(trail[startIdx].x, trail[startIdx].y);
         for (let i = startIdx + 1; i <= endIdx; i++) {
@@ -664,7 +676,7 @@
           else ghost.lineTo(p.x, p.y);
         }
         ctx.strokeStyle = 'rgba(251,191,36,.5)';
-        ctx.lineWidth = 1.4;
+        ctx.lineWidth = lineW(1.4);
         ctx.setLineDash([2, 5]);
         ctx.stroke(ghost);
         ctx.setLineDash([]);
@@ -685,14 +697,14 @@
       const hot = dragIdx === idx || now < engine.flashTil[idx];
       const c = joints[i - 1];
       ctx.strokeStyle = 'rgba(255,255,255,.14)';
-      ctx.lineWidth = 1;
+      ctx.lineWidth = lineW(1);
       ctx.fillStyle = 'rgba(255,255,255,.025)';
       ctx.beginPath();
       ctx.arc(c.x, c.y, a.r, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
       ctx.strokeStyle = hot ? 'rgba(251,191,36,.95)' : 'rgba(230,233,242,.55)';
-      ctx.lineWidth = hot ? 3 : 2;
+      ctx.lineWidth = hot ? lineW(3) : lineW(2);
       ctx.beginPath();
       ctx.moveTo(c.x, c.y);
       ctx.lineTo(joints[i].x, joints[i].y);
@@ -721,11 +733,11 @@
       const age = (now - engine.fullClearAt) / 1200;
       if (age < 1) {
         ctx.strokeStyle = 'rgba(251,191,36,' + ((1 - age) * 0.8).toFixed(3) + ')';
-        ctx.lineWidth = 8 * (1 - age) + 1;
+        ctx.lineWidth = lineW(8 * (1 - age) + 1);
         ctx.beginPath();
         ctx.arc(SIZE / 2, SIZE / 2, 20 + age * 440, 0, Math.PI * 2);
         ctx.stroke();
-        ctx.lineWidth = 1;
+        ctx.lineWidth = lineW(1);
       }
     }
 
@@ -784,7 +796,7 @@
       const kb = canvasK();
       ctx.fillRect(bx, by, w + 20 * kb, 24 * kb);
       ctx.strokeStyle = missed > 0 ? 'rgba(248,113,113,.55)' : 'rgba(47,158,127,.55)';
-      ctx.lineWidth = 1;
+      ctx.lineWidth = lineW(1);
       ctx.strokeRect(bx, by, w + 20 * kb, 24 * kb);
       ctx.fillStyle = missed > 0 ? '#fca5a5' : '#7fe3c4';
       ctx.fillText(label, bx + 10, by + 17);
@@ -818,7 +830,7 @@
       ctx.fillRect(-w / 2 - 12 * ks, -14 * ks, w + 24 * ks, 28 * ks);
       ctx.strokeStyle =
         tier === 3 ? 'rgba(251,191,36,.85)' : 'rgba(251,191,36,' + (0.4 + pop * 0.4) + ')';
-      ctx.lineWidth = 1;
+      ctx.lineWidth = lineW(1);
       ctx.strokeRect(-w / 2 - 12 * ks, -14 * ks, w + 24 * ks, 28 * ks);
       ctx.fillStyle = '#fbbf24';
       ctx.fillText(label, 0, 1);
@@ -846,7 +858,7 @@
       const kp = canvasK();
       ctx.fillRect(bx, by - 16 * kp, w + 20 * kp, 24 * kp);
       ctx.strokeStyle = willHit > 0 ? 'rgba(251,191,36,.45)' : 'rgba(255,255,255,.12)';
-      ctx.lineWidth = 1;
+      ctx.lineWidth = lineW(1);
       ctx.strokeRect(bx, by - 16 * kp, w + 20 * kp, 24 * kp);
       ctx.fillStyle = willHit > 0 ? '#fbbf24' : 'rgba(139,147,167,.9)';
       ctx.fillText(label, bx + 10, by);
