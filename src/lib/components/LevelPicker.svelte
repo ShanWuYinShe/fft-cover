@@ -1039,15 +1039,17 @@
    * 放在样式块最后：媒体查询里的规则要与基础规则同特异性，靠顺序取胜。
    */
   @media (pointer: coarse), (max-width: 640px) {
+    /* 热区 40px 但不再紧贴：gap:0 时 8 个点连成一条金色粗带（手机端观感
+       混乱的主因）。收热区到 34px 并留 2px 间隙，视觉仍是细点。 */
     .dots {
-      gap: 0;
+      gap: 2px;
     }
     .dot,
     .dot.on {
       position: relative;
-      width: 40px;
-      height: 40px;
-      min-height: 40px;
+      width: 34px;
+      height: 34px;
+      min-height: 34px;
       background: transparent;
       border: none;
       border-radius: 0;
@@ -1074,7 +1076,7 @@
       box-shadow: 0 0 10px rgba(79, 209, 197, 0.5);
     }
     .dot.done::after {
-      background: rgba(251, 191, 36, 0.6);
+      background: rgba(251, 191, 36, 0.42);
     }
     .dot.done.on::after {
       background: linear-gradient(90deg, var(--cyan), var(--gold));
