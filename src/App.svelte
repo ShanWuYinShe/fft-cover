@@ -46,6 +46,19 @@
   let showTitle = $state(false);
   /** 移动端底部标签：关卡 / 指针 / 成绩（桌面端忽略，全部 section 同屏显示） */
   let mobileTab: 'levels' | 'arms' | 'score' = $state('levels');
+  /**
+   * 手机端面板全屏展开：面板可视高只有 ~330px 而内容要 503px（实测 28%
+   * 的元素必须滚动才看得到）。展开时画布让位、面板铺满，信息一次看全。
+   * 点底部标签栏的**当前项**切换，点另一项则切页并收起。
+   */
+  let panelExpanded = $state(false);
+  function onTab(t: 'levels' | 'arms'): void {
+    if (mobileTab === t) panelExpanded = !panelExpanded;
+    else {
+      mobileTab = t;
+      panelExpanded = false;
+    }
+  }
   /** PWA：有新版本等待接管（main.ts 在 SW 进入 waiting 时派发 pwa-update） */
   let updateReady = $state(false);
   /** 分享链接载入提示（几秒后自动消失） */
@@ -436,7 +449,7 @@
 <!-- 读屏播报：画布进度对读屏用户不可见，这里用 aria-live 转达 -->
 <div class="sr-only" role="status" aria-live="polite">{srLive}</div>
 
-<main data-tab={mobileTab}>
+<main data-tab={mobileTab} class:panel-expanded={panelExpanded}>
   <section class="stage-wrap">
     <div class="canvas-box">
       <Stage />
@@ -742,11 +755,21 @@
 
 <!-- 移动端底部标签栏（桌面隐藏）：画布固定在屏内，面板按需切换 -->
 <nav class="mobile-tabs">
-  <button type="button" class:on={mobileTab === 'levels'} onclick={() => (mobileTab = 'levels')}>
-    <i>🗺</i><span>关卡</span>
+  <button
+    type="button"
+    class:on={mobileTab === 'levels'}
+    aria-expanded={mobileTab === 'levels' && panelExpanded}
+    onclick={() => onTab('levels')}
+  >
+    <i>🗺</i><span>{mobileTab === 'levels' && panelExpanded ? '收起' : '关卡'}</span>
   </button>
-  <button type="button" class:on={mobileTab === 'arms'} onclick={() => (mobileTab = 'arms')}>
-    <i>🎛</i><span>指针</span>
+  <button
+    type="button"
+    class:on={mobileTab === 'arms'}
+    aria-expanded={mobileTab === 'arms' && panelExpanded}
+    onclick={() => onTab('arms')}
+  >
+    <i>🎛</i><span>{mobileTab === 'arms' && panelExpanded ? '收起' : '指针'}</span>
   </button>
 </nav>
 {#if showTitle}

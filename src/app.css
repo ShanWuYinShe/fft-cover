@@ -1208,6 +1208,28 @@ input[type='checkbox'] {
 /* ============================================================
  * 手机横屏：复用左右布局（画布在左、面板在右），画布按高度约束
  * ============================================================ */
+
+/* 面板全屏展开：画布让位、面板铺满，解决"信息要滚动才看得到" */
+@media (max-width: 640px) and (orientation: portrait) {
+  main.panel-expanded .stage-wrap {
+    display: none;
+  }
+  main.panel-expanded .sides {
+    /* 内容多高就多高（上限铺满到标签栏）：内容放得下时不留下大片空白，
+       放不下时才滚动。margin-bottom:auto 把面板顶到上方，避免居中留白。 */
+    flex: 0 1 auto;
+    height: auto;
+    max-height: 100%;
+    margin-bottom: auto;
+    overflow-y: auto;
+  }
+  main.panel-expanded .side {
+    display: block;
+  }
+  main.panel-expanded .mobile-tabs-spacer {
+    height: 0;
+  }
+}
 @media (max-width: 900px) and (orientation: landscape) {
   html,
   body {
