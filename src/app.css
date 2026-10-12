@@ -738,6 +738,13 @@ input[type='checkbox'] {
   color: var(--text);
   z-index: 80;
   animation: toast-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* 提示条是临时浮层，不该拦住面板底部的可点内容：
+     本体不吃指针事件，只有两个按钮可点（实测它曾挡住「更多玩法」折叠条）。 */
+  pointer-events: none;
+}
+
+.update-bar .mini {
+  pointer-events: auto;
 }
 
 .update-bar > span {
