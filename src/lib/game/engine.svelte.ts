@@ -24,6 +24,7 @@ import {
   HISTORY_MAX,
   DIFF_KEY,
   ENDLESS_KEY,
+  STAR_LEVELS,
 } from './constants';
 import {
   CHAPTERS,
@@ -474,6 +475,13 @@ export class GameEngine {
   /** 过波奖励：波次越深越值钱，鼓励连续存活 */
   get endlessWaveBonus(): number {
     return this.endlessWave * 500;
+  }
+
+  /** 无尽：本波还差几点达标（一星线 35%，与过波判定同源）；已达标返回 0 */
+  get endlessNeed(): number {
+    if (!this.endless || this.total === 0) return 0;
+    const needLine = Math.ceil(STAR_LEVELS[2] * this.total - 1e-9);
+    return Math.max(0, needLine - this.collectedCount);
   }
 
   /** 开始一局无尽挑战：从第 1 波（简单）起步 */

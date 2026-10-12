@@ -875,3 +875,18 @@ describe('toggleRun 在结算后重开（运行栏不再是死按钮）', () => 
     expect(engine.phase).toBe('done');
   });
 });
+describe('endlessNeed（无尽本波还差几点过关）', () => {
+  it('按一星线（35%）计算差值；未开始 / 已达标返回 0', () => {
+    const engine = new GameEngine();
+    engine.loadLevel(LEVEL_DEFS[0]);
+    expect(engine.endlessNeed).toBe(0); // 未开无尽
+    engine.endless = true;
+    const total = engine.total;
+    engine.collectedCount = 0;
+    expect(engine.endlessNeed).toBe(Math.ceil(total * 0.35 - 1e-9));
+    engine.collectedCount = Math.ceil(total * 0.35);
+    expect(engine.endlessNeed).toBe(0); // 刚好达标
+    engine.collectedCount = total;
+    expect(engine.endlessNeed).toBe(0); // 超额
+  });
+});

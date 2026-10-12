@@ -222,6 +222,32 @@
         {/if}🎯 {exactCount}</span
       >{/if}
   </h2>
+  <!-- 无尽挑战：面板顶部增补本局状态（波次 / 累计分 / 距过波差几点 / 历史最佳）。
+       关卡地图**保留**——「载入任何常规关卡即退出无尽」，藏起来会断掉退出路径。 -->
+  {#if engine.endless}
+    <div class="endless-panel">
+      <div class="ep-row">
+        <span class="ep-k">本局</span>
+        <b class="ep-wave">♾ 第 {engine.endlessWave} 波</b>
+        <b class="ep-score">{engine.endlessScore} 分</b>
+      </div>
+      <div class="ep-row ep-sub">
+        <span>本波收集 {engine.collectedCount}/{engine.total}</span>
+        {#if engine.endlessNeed > 0}
+          <span class="ep-need">再过 {engine.endlessNeed} 点过关</span>
+        {:else}
+          <span class="ep-ok">已达标 ✓</span>
+        {/if}
+      </div>
+      <div class="ep-row ep-sub">
+        {#if engine.endlessBest.wave > 0}
+          <span>历史最佳：第 {engine.endlessBest.wave} 波 · {engine.endlessBest.score} 分</span>
+        {:else}
+          <span>首次挑战 · 撑得越久越好</span>
+        {/if}
+      </div>
+    </div>
+  {/if}
   {#if showComposer}
     <ComposerModal onclose={() => (showComposer = false)} />
   {/if}
@@ -635,6 +661,47 @@
   }
 
   /* ---------- 章内关卡路径 ---------- */
+  /* 无尽挑战的状态条：替代常规章节导航（无尽与章节进度无关） */
+  .endless-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0 0 10px;
+    padding: 9px 12px;
+    border-radius: var(--r-md);
+    border: 1px solid rgba(79, 209, 197, 0.32);
+    background: rgba(79, 209, 197, 0.07);
+  }
+  .ep-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: var(--fs-sm);
+    color: var(--text);
+  }
+  .ep-k {
+    font-size: var(--fs-xs);
+    color: var(--muted);
+  }
+  .ep-wave {
+    color: var(--cyan);
+  }
+  .ep-score {
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
+  }
+  .ep-sub {
+    font-size: var(--fs-xs);
+    color: var(--muted);
+  }
+  .ep-need {
+    color: var(--gold);
+  }
+  .ep-ok {
+    color: var(--cyan);
+  }
+
   .ch-tag {
     margin: 0 0 8px;
     font-size: var(--fs-xs);
