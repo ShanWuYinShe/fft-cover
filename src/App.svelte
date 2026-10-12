@@ -204,6 +204,36 @@
     }
   });
 
+  // 过波：进入下一波（无尽）
+  $effect(() => {
+    if (engine.endless && engine.endlessWave > 1) {
+      srLive =
+        '第 ' +
+        (engine.endlessWave - 1) +
+        ' 波通过，累计 ' +
+        engine.endlessScore +
+        ' 分，进入第 ' +
+        engine.endlessWave +
+        ' 波';
+    }
+  });
+  // 成就解锁
+  $effect(() => {
+    if (engine.toast) srLive = '解锁成就：' + engine.toast.name;
+  });
+  // 无尽结束：结算播报（常规结算由上面的 done effect 覆盖）
+  $effect(() => {
+    if (engine.phase === 'done' && engine.endless) {
+      srLive =
+        '无尽挑战结束，止步第 ' +
+        engine.endlessWave +
+        ' 波，累计 ' +
+        engine.endlessScore +
+        ' 分' +
+        (engine.endlessNewBest ? '，刷新历史最佳' : '');
+    }
+  });
+
   const pauseGaps = $derived.by(() => {
     if (engine.phase !== 'paused' || engine.collectedCount === 0 || !engine.level) return '';
     const gaps = spectrumGaps(engine.level.spectrum, engine.arms);
