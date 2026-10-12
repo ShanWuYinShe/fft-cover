@@ -427,6 +427,22 @@
     return (bold ? 'bold ' : '') + (px * canvasK()).toFixed(1) + 'px sans-serif';
   }
 
+  /** measureText 带缓存：画布内 4 处每帧量宽，label 不变时直接查表
+      （文本布局比 Map 查找贵一个量级）。key = 字体 + 文本。 */
+  const measureCache = new Map<string, number>();
+  function measureW(label: string, font: string): number {
+    const key = font + '|' + label;
+    let w = measureCache.get(key);
+    if (w === undefined) {
+      if (!ctx) return 0;
+      ctx.font = font;
+      w = ctx.measureText(label).width;
+      measureCache.set(key, w);
+      if (measureCache.size > 400) measureCache.clear(); // 防长跑膨胀
+    }
+    return w;
+  }
+
   /** 全清震动是否已触发（本局一次） */
   let shakeDone = false;
   /** 已播过升星音的档位（编辑态归零） */
@@ -798,8 +814,7 @@
       const sx = (dragInfo.x - SIZE / 2 - panX) * zoom + SIZE / 2;
       const sy = (dragInfo.y - SIZE / 2 - panY) * zoom + SIZE / 2;
       const label = dragInfo.r + ' · ' + dragInfo.deg + '°';
-      ctx.font = canvasFont(13, true);
-      const w = ctx.measureText(label).width;
+      const w = measureW(label, canvasFont(13, true));
       ctx.fillStyle = 'rgba(10,14,26,.85)';
       const kk = canvasK();
       ctx.fillRect(sx - 6 * kk, sy - 16 * kk, w + 12 * kk, 22 * kk);
@@ -836,9 +851,8 @@
       const missed = engine.total - engine.collectedCount;
       const label =
         missed > 0 ? '漏了 ' + missed + ' 点（红圈）· 点画布返回结算' : '全部收齐 · 点画布返回结算';
-      ctx.font = canvasFont(12, true);
-      const w = ctx.measureText(label).width;
       const kb0 = canvasK();
+      const w = measureW(label, canvasFont(12, true));
       // 贴右下角：频谱仪常驻左下（y 由 SIZE-12-H*k 起），居中的提示条会与它
       // 相交 18px（实测回看态 + 频谱仪解锁同时出现）。右下只有缩放条，已让开。
       const bx = SIZE - 12 - w - 20 * kb0;
@@ -875,7 +889,7 @@
       ctx.font = canvasFont(15, true);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      const w = ctx.measureText(label).width;
+      const w = measureW(label, canvasFont(15, true));
       ctx.fillStyle = 'rgba(16,21,42,.85)';
       const ks = canvasK();
       ctx.fillRect(-w / 2 - 12 * ks, -14 * ks, w + 24 * ks, 28 * ks);
@@ -901,8 +915,7 @@
         total +
         (got > 0 ? '（已收 ' + got + '）' : '') +
         (missed > 0 ? ' · 上届漏 ' + missed + ' 点（红圈）' : '');
-      ctx.font = canvasFont(12, true);
-      const w = ctx.measureText(label).width;
+      const w = measureW(label, canvasFont(12, true));
       const bx = SIZE / 2 - w / 2 - 10;
       const by = SIZE - 16;
       ctx.fillStyle = 'rgba(16,21,42,.8)';
