@@ -178,21 +178,29 @@
     return parts.join(' · ');
   });
 
-  /**
-   * 读屏播报：星级跨档与结算结果（画布是像素，读屏用户对游戏进程无感知）。
-   * 只在里程碑变化时更新文案，避免每个收集点都打断读屏。
-   */
   let srLive = $state('');
-  $effect(() => {
-    const tier = engine.starReached;
-    if (tier > 0) {
-      srLive = '已收集 ' + engine.collectedCount + '/' + engine.total + '，' + tier + ' 星达成';
-    }
-  });
-  $effect(() => {
+  let srTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /**
+   * 读屏播报（优先级链）：结算 > 成就解锁 > 过波 > 星级跨档。
+   * 多事件同窗口连发时只播报最高优先级的一条——aria-live 会把每次
+   * 文本变化排队朗读，高连击场景（星级跨档 + 成就 + 过波同秒）会把
+   * 读屏队列塞爆，节奏失控。
+   */
+  const srMsg = $derived.by(() => {
     if (engine.phase === 'done') {
+      if (engine.endless) {
+        return (
+          '无尽挑战结束，止步第 ' +
+          engine.endlessWave +
+          ' 波，累计 ' +
+          engine.endlessScore +
+          ' 分' +
+          (engine.endlessNewBest ? '，刷新历史最佳' : '')
+        );
+      }
       const st = engine.collectedCount / Math.max(1, engine.total);
-      srLive =
+      return (
         '本局结束，收集 ' +
         engine.collectedCount +
         '/' +
@@ -200,38 +208,44 @@
         '，' +
         starsFor(st) +
         ' 星，得分 ' +
-        engine.score;
+        engine.score
+      );
     }
-  });
-
-  // 过波：进入下一波（无尽）
-  $effect(() => {
+    if (engine.toast) return '解锁成就：' + engine.toast.name;
     if (engine.endless && engine.endlessWave > 1) {
-      srLive =
+      return (
         '第 ' +
         (engine.endlessWave - 1) +
         ' 波通过，累计 ' +
         engine.endlessScore +
         ' 分，进入第 ' +
         engine.endlessWave +
-        ' 波';
+        ' 波'
+      );
     }
-  });
-  // 成就解锁
-  $effect(() => {
-    if (engine.toast) srLive = '解锁成就：' + engine.toast.name;
-  });
-  // 无尽结束：结算播报（常规结算由上面的 done effect 覆盖）
-  $effect(() => {
-    if (engine.phase === 'done' && engine.endless) {
-      srLive =
-        '无尽挑战结束，止步第 ' +
-        engine.endlessWave +
-        ' 波，累计 ' +
-        engine.endlessScore +
-        ' 分' +
-        (engine.endlessNewBest ? '，刷新历史最佳' : '');
+    if (engine.starReached > 0) {
+      return (
+        '已收集 ' +
+        engine.collectedCount +
+        '/' +
+        engine.total +
+        '，' +
+        engine.starReached +
+        ' 星达成'
+      );
     }
+    return '';
+  });
+
+  // 防抖提交：事件串平息 600ms 后才写入 aria-live，读屏只读最终结果
+  $effect(() => {
+    const msg = srMsg;
+    if (!msg) return;
+    clearTimeout(srTimer);
+    srTimer = setTimeout(() => {
+      srLive = msg;
+    }, 600);
+    return () => clearTimeout(srTimer);
   });
 
   const pauseGaps = $derived.by(() => {
