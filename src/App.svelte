@@ -20,6 +20,7 @@
   import SettingsModal from './lib/components/SettingsModal.svelte';
   import { decodeCoeffs, LEVEL_DEFS } from './lib/game/levels';
   import { levelGoals } from './lib/game/goals';
+  import { spectrumGaps } from './lib/game/scoring';
   import { chapterProgress, type ChapterProgress } from './lib/game/campaign';
   import { engine } from './lib/game/engine.svelte';
   import {
@@ -154,6 +155,27 @@
 
   /** 本关已盖朱印数（星 满 准 专）：HUD 上的"精通灯塔" */
   const sealDone = $derived(levelGoals(engine.levelGoalState).filter((x) => x.done).length);
+
+  /**
+   * 暂停时的偏差诊断：最该调整的两个频率。
+   * 原先画在画布上（y=30），但暂停浮层是 inset:0 + 磨砂不透明，
+   * 那段文字**永远看不见**（实测截图确认）——移到浮层里才有意义。
+   */
+  const pauseGaps = $derived.by(() => {
+    if (engine.phase !== 'paused' || engine.collectedCount === 0 || !engine.level) return '';
+    const gaps = spectrumGaps(engine.level.spectrum, engine.arms);
+    if (gaps.length === 0) return '';
+    return gaps
+      .map(
+        (g) =>
+          (g.sign > 0 ? '' : '−') +
+          Math.abs(g.k) +
+          '× 差 ' +
+          Math.round(g.mag) +
+          (g.sign > 0 ? '' : '（过量）'),
+      )
+      .join('　');
+  });
 
   /** 幽灵竞速差值文案：领先/落后上届多少点（无可比对象时为空） */
   const ghostLabel = $derived.by(() => {
@@ -380,6 +402,9 @@
         <div class="pause-menu">
           <h3>已暂停</h3>
           <p class="pm-sub">调整策略后继续，或者重新来过</p>
+          {#if pauseGaps}
+            <p class="pm-gaps" title="当前拟合最需要补/削的两个频率">💡 最该调：{pauseGaps}</p>
+          {/if}
           <button type="button" class="primary" onclick={() => engine.toggleRun()}
             >▶ 继续旋转</button
           >

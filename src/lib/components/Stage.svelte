@@ -16,7 +16,7 @@
     woodfishSound,
   } from '../game/audio';
   import { haptic } from '../game/haptics';
-  import { spectrumGaps, starsFor } from '../game/scoring';
+  import { starsFor } from '../game/scoring';
 
   let canvas: HTMLCanvasElement | undefined = $state();
   /** 自动拟合音效的进度档位（-1 = 未在拟合） */
@@ -530,23 +530,9 @@
           ctx.fillStyle = 'rgba(251,191,36,.95)';
           ctx.font = canvasFont(12, true);
           ctx.fillText('✨ 全清！3 秒后自动结算', 10, 30);
-        } else if (engine.phase === 'paused' && engine.collectedCount > 0) {
-          // 暂停时的偏差诊断：告诉玩家最该调整哪两个频率
-          const gaps = spectrumGaps(engine.level.spectrum, engine.arms);
-          if (gaps.length > 0) {
-            ctx.fillStyle = 'rgba(251,191,36,.95)';
-            ctx.font = canvasFont(11);
-            const parts = gaps.map(
-              (g) =>
-                (g.sign > 0 ? '' : '−') +
-                Math.abs(g.k) +
-                '× 差 ' +
-                Math.round(g.mag) +
-                (g.sign > 0 ? '' : '（过量）'),
-            );
-            ctx.fillText('暂停诊断：' + parts.join('　'), 10, 30);
-          }
         }
+        // 注：暂停时的偏差诊断原本画在这里（y=30），但暂停浮层是 inset:0 +
+        // 磨砂不透明，文字永远被遮住（实测确认）。已移到 App 的暂停浮层内显示。
       }
     }
 

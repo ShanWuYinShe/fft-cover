@@ -1387,6 +1387,20 @@ input[type='checkbox'] {
   color: var(--muted);
 }
 
+/* 暂停时的偏差诊断：原画在画布上会被本浮层遮住，移进来才看得见 */
+.pause-menu .pm-gaps {
+  margin: 0 0 10px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px dashed rgba(251, 191, 36, 0.4);
+  font-size: var(--fs-xs);
+  color: #fbbf24;
+  line-height: 1.6;
+  text-align: center;
+}
+
 .pause-menu button {
   width: min(100%, 240px);
   min-height: 42px;
