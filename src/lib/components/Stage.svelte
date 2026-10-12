@@ -560,6 +560,9 @@
     }
 
     // 目标点
+    // 半径按显示尺寸补偿：逻辑圆点 3.5 在手机上只有 2.4px（放大截图确认
+    // 几乎看不见），玩家分不清哪些点还没收。与文字/频谱仪同一套 canvasK()。
+    const kd = canvasK();
     const pts = engine.level.pts;
     // 上届漏点（编辑态提示）：这次预览能扫到的会先被金色分支接管
     const missedSet = engine.phase === 'edit' ? engine.lastMissedSet : null;
@@ -572,14 +575,14 @@
         ctx.shadowColor = 'rgba(251,191,36,.9)';
         ctx.shadowBlur = 12 + burst * 2;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 4.5 + burst * 0.6, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, (4.5 + burst * 0.6) * kd, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
       } else if (engine.phase === 'edit' && previewHits.has(i)) {
         // 编辑态预览：当前参数下会被扫到的点（半透明金色，区别于已收集的实心金）
         ctx.fillStyle = 'rgba(251,191,36,.5)';
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 4 * kd, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = 'rgba(251,191,36,.55)';
         ctx.lineWidth = 1.4;
@@ -593,12 +596,12 @@
         ctx.lineWidth = 1.6;
         ctx.setLineDash([3, 3]);
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 7 * kd, 0, Math.PI * 2);
         ctx.stroke();
         ctx.setLineDash([]);
         ctx.fillStyle = 'rgba(248,113,113,.55)';
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 3 * kd, 0, Math.PI * 2);
         ctx.fill();
         ctx.lineWidth = 1 / zoom;
       } else if (engine.phase === 'done' && engine.resultDismissed) {
@@ -607,17 +610,17 @@
         ctx.strokeStyle = 'rgba(248,113,113,' + (0.4 + pulse * 0.5).toFixed(3) + ')';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 6 + pulse * 3.5, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, (6 + pulse * 3.5) * kd, 0, Math.PI * 2);
         ctx.stroke();
         ctx.fillStyle = 'rgba(248,113,113,.9)';
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 3.5 * kd, 0, Math.PI * 2);
         ctx.fill();
         ctx.lineWidth = 1 / zoom;
       } else {
         ctx.fillStyle = 'rgba(220,228,255,.55)';
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 3.5 * kd, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = 'rgba(220,228,255,.18)';
         ctx.beginPath();
