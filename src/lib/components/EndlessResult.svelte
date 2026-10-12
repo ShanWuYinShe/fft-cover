@@ -54,6 +54,9 @@
         {:else if engine.endlessBest.wave > 0}
           <div class="best">
             最佳：第 {engine.endlessBest.wave} 波 · {engine.endlessBest.score} 分
+            {#if engine.endlessWave === engine.endlessBest.wave}
+              · 差 {engine.endlessBest.score - engine.endlessScore} 分
+            {/if}
           </div>
         {/if}
         <button type="button" class="primary go" onclick={retry}>↻ 再来一局</button>
