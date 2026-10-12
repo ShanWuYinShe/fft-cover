@@ -1,6 +1,7 @@
 <script lang="ts">
   import { engine } from '../game/engine.svelte';
   import { haptic } from '../game/haptics';
+  import { achvSound } from '../game/audio';
 
   /** 波次难度预告：下一波用什么档（玩家心里有数，紧张感来自"看得见的爬坡"） */
   const nextDiff = $derived(
@@ -12,6 +13,8 @@
   );
 
   function goNext(): void {
+    // 过波是里程碑时刻：成就音 + 重触感（与解锁成就同语言），随后进入下一波
+    achvSound(engine.soundOn);
     haptic([12, 40, 12], engine.soundOn);
     engine.nextEndlessWave();
   }
