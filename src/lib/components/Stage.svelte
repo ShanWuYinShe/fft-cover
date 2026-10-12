@@ -789,8 +789,10 @@
         missed > 0 ? '漏了 ' + missed + ' 点（红圈）· 点画布返回结算' : '全部收齐 · 点画布返回结算';
       ctx.font = canvasFont(12, true);
       const w = ctx.measureText(label).width;
-      const bx = SIZE / 2 - w / 2 - 10;
-      // 放在画布底部：顶部会与成就 toast 打架
+      const kb0 = canvasK();
+      // 贴右下角：频谱仪常驻左下（y 由 SIZE-12-H*k 起），居中的提示条会与它
+      // 相交 18px（实测回看态 + 频谱仪解锁同时出现）。右下只有缩放条，已让开。
+      const bx = SIZE - 12 - w - 20 * kb0;
       const by = SIZE - 46;
       ctx.fillStyle = 'rgba(16,21,42,.85)';
       const kb = canvasK();
