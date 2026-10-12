@@ -252,14 +252,24 @@
   function drawSpectrum(): void {
     const on = engine.arms.filter((a) => a.on);
     if (on.length === 0 || !ctx) return;
+    // 整个面板按显示尺寸等比放大：面板逻辑宽 152 在手机上只有 ~80px，
+    // 内部 9px/7px 的字实际渲染不到 5px（放大截图糊成一团）。
+    // 用 ctx.scale 统一缩放，内部所有尺寸/字号都不用逐个改。
+    const k = canvasK();
     const W = 152;
     const H = 74;
     const x0 = 12;
-    const y0 = SIZE - H - 44;
+    // 底边要让开「预览收集」提示条（编辑态画在 SIZE-16 附近，高 24*k）
+    // 与 12 逻辑单位内距，取两者较大值；面板高度已按 k 放大
+    const bottomGap = Math.max(12, 16 + 24 * k + 6);
+    const y0 = SIZE - bottomGap - H * k;
     const radius = 10;
 
     // 面板背景（圆角 + 渐变 + 描边）
     ctx.save();
+    ctx.translate(x0, y0);
+    ctx.scale(k, k);
+    ctx.translate(-x0, -y0);
     ctx.beginPath();
     ctx.moveTo(x0 + radius, y0);
     ctx.arcTo(x0 + W, y0, x0 + W, y0 + H, radius);
@@ -279,7 +289,7 @@
 
     // 标题栏
     ctx.fillStyle = 'rgba(139,147,167,.92)';
-    ctx.font = canvasFont(9);
+    ctx.font = '9px sans-serif';
     ctx.fillText('频谱 |rₖ|', x0 + 9, y0 + 13);
     if (engine.spectrumCompare) {
       ctx.fillStyle = 'rgba(251,191,36,.9)';
@@ -302,7 +312,7 @@
     ctx.lineTo(zx, baseY);
     ctx.stroke();
     ctx.fillStyle = 'rgba(139,147,167,.5)';
-    ctx.font = canvasFont(7);
+    ctx.font = '7px sans-serif';
     ctx.fillText('0', zx - 2, baseY + 8);
     ctx.fillText('-10×', x0 + 10, baseY + 8);
     ctx.fillText('+10×', x0 + W - 26, baseY + 8);
