@@ -383,6 +383,9 @@
    * Canvas2D 模糊那一趟——shadowBlur 在低端手机是软路径，收集点一多
    * （每帧 20+ 次模糊填充）就掉帧，这是手机端掉帧的主因。
    */
+  /** 辉光渐变缓存：只有 4 种颜色组合，按 key 复用渐变对象（定义在原点、
+      绘制时 translate 到目标位置），省掉每帧 20+ 次 createRadialGradient。 */
+  const glowCache = new Map<string, CanvasGradient>();
   function glowDot(
     x: number,
     y: number,
@@ -392,17 +395,27 @@
     glowR: number,
   ): void {
     if (!ctx) return;
-    const g = ctx.createRadialGradient(x, y, r * 0.4, x, y, r + glowR);
-    g.addColorStop(0, glow);
-    g.addColorStop(1, 'rgba(0,0,0,0)');
+    // key 含 r 与 glowR：收集爆发期间半径连续变化不命中缓存（退化为新建），
+    // 稳定态半径恒定 → 命中。数值取整避免浮点抖动。
+    const key = glow + '|' + glowR.toFixed(1) + '|' + r.toFixed(1);
+    let g = glowCache.get(key);
+    if (!g) {
+      g = ctx.createRadialGradient(0, 0, r * 0.4, 0, 0, r + glowR);
+      g.addColorStop(0, glow);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      glowCache.set(key, g);
+    }
+    ctx.save();
+    ctx.translate(x, y);
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(x, y, r + glowR, 0, Math.PI * 2);
+    ctx.arc(0, 0, r + glowR, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = core;
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
   }
 
   /** 与 canvasFont 同源的补偿系数：文字周围的背景框/进度条也要按同一比例缩放，
