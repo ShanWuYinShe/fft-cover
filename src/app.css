@@ -1387,6 +1387,18 @@ input[type='checkbox'] {
   color: var(--muted);
 }
 
+/* 暂停时的当前进度：收集数 / 星级 / 离下一档差几点（决策时刻的关键信息） */
+.pause-menu .pm-prog {
+  margin: 0 0 10px;
+  padding: 5px 12px;
+  border-radius: var(--r-pill);
+  background: rgba(79, 209, 197, 0.1);
+  border: 1px solid rgba(79, 209, 197, 0.32);
+  font-size: var(--fs-sm);
+  color: var(--cyan);
+  font-variant-numeric: tabular-nums;
+}
+
 /* 暂停时的偏差诊断：原画在画布上会被本浮层遮住，移进来才看得见 */
 .pause-menu .pm-gaps {
   margin: 0 0 10px;

@@ -20,7 +20,8 @@
   import SettingsModal from './lib/components/SettingsModal.svelte';
   import { decodeCoeffs, LEVEL_DEFS } from './lib/game/levels';
   import { levelGoals } from './lib/game/goals';
-  import { spectrumGaps } from './lib/game/scoring';
+  import { spectrumGaps, starsFor } from './lib/game/scoring';
+  import { STAR_LEVELS } from './lib/game/constants';
   import { chapterProgress, type ChapterProgress } from './lib/game/campaign';
   import { engine } from './lib/game/engine.svelte';
   import {
@@ -161,6 +162,22 @@
    * 原先画在画布上（y=30），但暂停浮层是 inset:0 + 磨砂不透明，
    * 那段文字**永远看不见**（实测截图确认）——移到浮层里才有意义。
    */
+  /** 暂停时的当前进度：收了多少、几星、离下一档还差几点（暂停是决策时刻） */
+  const pauseProgress = $derived.by(() => {
+    if (engine.phase !== 'paused' || engine.total === 0) return '';
+    const got = engine.collectedCount;
+    const ratio = got / engine.total;
+    const st = starsFor(ratio);
+    const parts = ['收集 ' + got + '/' + engine.total, '★'.repeat(st) + '☆'.repeat(3 - st)];
+    if (st < 3) {
+      // STAR_LEVELS 是降序 [0.9, 0.65, 0.35]：三星线→索引 0，二星线→1，一星线→2
+      const nextTier = STAR_LEVELS[2 - st];
+      const need = Math.ceil(nextTier * engine.total - 1e-9) - got;
+      if (need > 0) parts.push('再收 ' + need + ' 点升 ' + (st + 1) + ' 星');
+    }
+    return parts.join(' · ');
+  });
+
   const pauseGaps = $derived.by(() => {
     if (engine.phase !== 'paused' || engine.collectedCount === 0 || !engine.level) return '';
     const gaps = spectrumGaps(engine.level.spectrum, engine.arms);
@@ -402,6 +419,9 @@
         <div class="pause-menu">
           <h3>已暂停</h3>
           <p class="pm-sub">调整策略后继续，或者重新来过</p>
+          {#if pauseProgress}
+            <p class="pm-prog">{pauseProgress}</p>
+          {/if}
           {#if pauseGaps}
             <p class="pm-gaps" title="当前拟合最需要补/削的两个频率">💡 最该调：{pauseGaps}</p>
           {/if}
