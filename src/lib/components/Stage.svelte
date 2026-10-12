@@ -378,6 +378,33 @@
     return Math.max(base, 1.2 * (SIZE / shownW()));
   }
 
+  /**
+   * 辉光点：径向渐变光晕 + 实心核，视觉等价 shadowBlur，但没有
+   * Canvas2D 模糊那一趟——shadowBlur 在低端手机是软路径，收集点一多
+   * （每帧 20+ 次模糊填充）就掉帧，这是手机端掉帧的主因。
+   */
+  function glowDot(
+    x: number,
+    y: number,
+    r: number,
+    core: string,
+    glow: string,
+    glowR: number,
+  ): void {
+    if (!ctx) return;
+    const g = ctx.createRadialGradient(x, y, r * 0.4, x, y, r + glowR);
+    g.addColorStop(0, glow);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, r + glowR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = core;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   /** 与 canvasFont 同源的补偿系数：文字周围的背景框/进度条也要按同一比例缩放，
       否则放大的文字会溢出固定尺寸的底框（手机端实测）。 */
   function canvasFont(px: number, bold = false): string {
@@ -584,13 +611,14 @@
       if (engine.collected.has(i)) {
         const age = (now - (engine.collectAnim.get(i) ?? 0)) / 400;
         const burst = age < 1 ? (1 - age) * 10 : 0;
-        ctx.fillStyle = '#fbbf24';
-        ctx.shadowColor = 'rgba(251,191,36,.9)';
-        ctx.shadowBlur = 12 + burst * 2;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, (4.5 + burst * 0.6) * kd, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        glowDot(
+          p.x,
+          p.y,
+          (4.5 + burst * 0.6) * kd,
+          '#fbbf24',
+          'rgba(251,191,36,.55)',
+          (12 + burst * 2) * kd,
+        );
       } else if (engine.phase === 'edit' && previewHits.has(i)) {
         // 编辑态预览：当前参数下会被扫到的点（半透明金色，区别于已收集的实心金）
         ctx.fillStyle = 'rgba(251,191,36,.5)';
@@ -711,24 +739,19 @@
       ctx.moveTo(c.x, c.y);
       ctx.lineTo(joints[i].x, joints[i].y);
       ctx.stroke();
-      ctx.fillStyle = hot ? '#fbbf24' : '#a78bfa';
-      ctx.shadowColor = hot ? 'rgba(251,191,36,.9)' : 'rgba(167,139,250,.8)';
-      ctx.shadowBlur = hot ? 12 : 6;
-      ctx.beginPath();
-      ctx.arc(c.x, c.y, 3, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
+      glowDot(
+        c.x,
+        c.y,
+        3,
+        hot ? '#fbbf24' : '#a78bfa',
+        hot ? 'rgba(251,191,36,.9)' : 'rgba(167,139,250,.8)',
+        hot ? 12 : 6,
+      );
     }
 
     // 尖端
     const tip = joints[joints.length - 1];
-    ctx.fillStyle = '#4fd1c5';
-    ctx.shadowColor = 'rgba(79,209,197,1)';
-    ctx.shadowBlur = 16;
-    ctx.beginPath();
-    ctx.arc(tip.x, tip.y, 5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
+    glowDot(tip.x, tip.y, 5, '#4fd1c5', 'rgba(79,209,197,.9)', 16);
 
     // 全清冲击波：收集全部点时金色圆环自中心扩散
     if (engine.fullClearAt > 0) {
