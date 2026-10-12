@@ -345,11 +345,16 @@
    * 一团）。这里按「逻辑尺寸 ÷ 实际显示宽度」反向放大，使物理字号恒定。
    * 只用于画布上的界面文字，不用于图形（曲线粗细另有 1/zoom 处理）。
    */
-  function canvasFont(px: number, bold = false): string {
+  function canvasK(): number {
     const shown = canvas?.clientWidth || SIZE;
     // 上限 1.6：再大长文案（预览收集 / 上届漏点）会在 640 逻辑宽里溢出
-    const k = Math.min(1.6, Math.max(1, SIZE / shown));
-    return (bold ? 'bold ' : '') + (px * k).toFixed(1) + 'px sans-serif';
+    return Math.min(1.6, Math.max(1, SIZE / shown));
+  }
+
+  /** 与 canvasFont 同源的补偿系数：文字周围的背景框/进度条也要按同一比例缩放，
+      否则放大的文字会溢出固定尺寸的底框（手机端实测）。 */
+  function canvasFont(px: number, bold = false): string {
+    return (bold ? 'bold ' : '') + (px * canvasK()).toFixed(1) + 'px sans-serif';
   }
 
   /** 全清震动是否已触发（本局一次） */
@@ -731,9 +736,10 @@
       ctx.font = canvasFont(13, true);
       const w = ctx.measureText(label).width;
       ctx.fillStyle = 'rgba(10,14,26,.85)';
-      ctx.fillRect(sx - 6, sy - 16, w + 12, 22);
+      const kk = canvasK();
+      ctx.fillRect(sx - 6 * kk, sy - 16 * kk, w + 12 * kk, 22 * kk);
       ctx.strokeStyle = 'rgba(251,191,36,.7)';
-      ctx.strokeRect(sx - 6, sy - 16, w + 12, 22);
+      ctx.strokeRect(sx - 6 * kk, sy - 16 * kk, w + 12 * kk, 22 * kk);
       ctx.fillStyle = '#fbbf24';
       ctx.fillText(label, sx, sy);
     }
@@ -753,9 +759,9 @@
         ctx.fillText('×' + (engine.combo + 1) + ' 连击', cxr, cyr);
         // 剩余窗口条
         ctx.fillStyle = 'rgba(255,255,255,.12)';
-        ctx.fillRect(cxr, cyr + 6, 78, 3);
+        ctx.fillRect(cxr, cyr + 6 * canvasK(), 78 * canvasK(), 3 * canvasK());
         ctx.fillStyle = hot ? 'rgba(251,191,36,.9)' : 'rgba(196,181,253,.9)';
-        ctx.fillRect(cxr, cyr + 6, 78 * remain, 3);
+        ctx.fillRect(cxr, cyr + 6 * canvasK(), 78 * remain * canvasK(), 3 * canvasK());
         ctx.textAlign = 'start';
       }
     }
@@ -771,10 +777,11 @@
       // 放在画布底部：顶部会与成就 toast 打架
       const by = SIZE - 46;
       ctx.fillStyle = 'rgba(16,21,42,.85)';
-      ctx.fillRect(bx, by, w + 20, 24);
+      const kb = canvasK();
+      ctx.fillRect(bx, by, w + 20 * kb, 24 * kb);
       ctx.strokeStyle = missed > 0 ? 'rgba(248,113,113,.55)' : 'rgba(47,158,127,.55)';
       ctx.lineWidth = 1;
-      ctx.strokeRect(bx, by, w + 20, 24);
+      ctx.strokeRect(bx, by, w + 20 * kb, 24 * kb);
       ctx.fillStyle = missed > 0 ? '#fca5a5' : '#7fe3c4';
       ctx.fillText(label, bx + 10, by + 17);
     }
@@ -803,11 +810,12 @@
       ctx.textBaseline = 'middle';
       const w = ctx.measureText(label).width;
       ctx.fillStyle = 'rgba(16,21,42,.85)';
-      ctx.fillRect(-w / 2 - 12, -14, w + 24, 28);
+      const ks = canvasK();
+      ctx.fillRect(-w / 2 - 12 * ks, -14 * ks, w + 24 * ks, 28 * ks);
       ctx.strokeStyle =
         tier === 3 ? 'rgba(251,191,36,.85)' : 'rgba(251,191,36,' + (0.4 + pop * 0.4) + ')';
       ctx.lineWidth = 1;
-      ctx.strokeRect(-w / 2 - 12, -14, w + 24, 28);
+      ctx.strokeRect(-w / 2 - 12 * ks, -14 * ks, w + 24 * ks, 28 * ks);
       ctx.fillStyle = '#fbbf24';
       ctx.fillText(label, 0, 1);
       ctx.restore();
@@ -831,10 +839,11 @@
       const bx = SIZE / 2 - w / 2 - 10;
       const by = SIZE - 16;
       ctx.fillStyle = 'rgba(16,21,42,.8)';
-      ctx.fillRect(bx, by - 16, w + 20, 24);
+      const kp = canvasK();
+      ctx.fillRect(bx, by - 16 * kp, w + 20 * kp, 24 * kp);
       ctx.strokeStyle = willHit > 0 ? 'rgba(251,191,36,.45)' : 'rgba(255,255,255,.12)';
       ctx.lineWidth = 1;
-      ctx.strokeRect(bx, by - 16, w + 20, 24);
+      ctx.strokeRect(bx, by - 16 * kp, w + 20 * kp, 24 * kp);
       ctx.fillStyle = willHit > 0 ? '#fbbf24' : 'rgba(139,147,167,.9)';
       ctx.fillText(label, bx + 10, by);
     }
