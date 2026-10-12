@@ -513,6 +513,9 @@ button:disabled {
   min-height: 30px;
   border-radius: var(--r-sm);
   color: var(--muted);
+  /* 「💎 专家」这类带图标的工具按钮不许折成两行（实测 768×1024 下
+     被压到 67px 宽，表情与文字各占一行）；整行靠 flex-wrap 换行 */
+  white-space: nowrap;
 }
 
 /* 触屏：工具行按钮的热区补够（视觉尺寸不变，点得中才行） */
