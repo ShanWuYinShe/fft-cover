@@ -243,14 +243,19 @@
     ctx?.setTransform(canvas.width / SIZE, 0, 0, canvas.width / SIZE, 0, 0);
   }
 
-  /** 频谱仪：右上角精致面板，实时显示各启用指针的频率与半径 */
+  /**
+   * 频谱仪：左下角精致面板，实时显示各启用指针的频率与半径。
+   * 原先在右上角，与 HTML 的 HUD「收集 / 印 x/4」芯片抢同一块地盘——
+   * 手机端实测两者叠在一起（芯片压住面板刻度）。右上角归 HUD、
+   * 右下角是缩放条，左下角才是空闲区。
+   */
   function drawSpectrum(): void {
     const on = engine.arms.filter((a) => a.on);
     if (on.length === 0 || !ctx) return;
     const W = 152;
     const H = 74;
-    const x0 = SIZE - W - 12;
-    const y0 = 68;
+    const x0 = 12;
+    const y0 = SIZE - H - 44;
     const radius = 10;
 
     // 面板背景（圆角 + 渐变 + 描边）
