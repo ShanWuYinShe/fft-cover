@@ -27,6 +27,9 @@
   /** ghost 轨迹缓存与参数签名（参数未变时跳过重建） */
   let ghostSig = '';
   let ghostPathCache: Path2D | null = null;
+  /** 运行态幽灵轨迹缓存：key = engine.t（两位小数） */
+  let ghostRunSig = '';
+  let ghostRunPath: Path2D | null = null;
   /** 编辑态预览：当前参数下幽灵轨迹能扫到的点索引 */
   let previewHits: Set<number> = new Set();
 
@@ -710,14 +713,22 @@
     if (engine.ghostPathVisible && engine.level) {
       const saved = engine.raceArms;
       if (saved) {
-        const ghost = new Path2D();
-        const M = 480;
-        const from = Math.max(0, engine.t - T0);
-        for (let i = 0; i <= M; i++) {
-          const p = tipAt(saved, from + ((engine.t - from) * i) / M);
-          if (i === 0) ghost.moveTo(p.x, p.y);
-          else ghost.lineTo(p.x, p.y);
+        // Path2D 按 t 缓存：480 段 × 5 臂的三角函数每帧重建是隐藏开销，
+        // 而轨迹形状只由 (saved, engine.t) 决定——t 不变时直接复用。
+        const tKey = engine.t.toFixed(2);
+        if (ghostRunSig !== tKey || !ghostRunPath) {
+          ghostRunSig = tKey;
+          const ghost = new Path2D();
+          const M = 480;
+          const from = Math.max(0, engine.t - T0);
+          for (let i = 0; i <= M; i++) {
+            const p = tipAt(saved, from + ((engine.t - from) * i) / M);
+            if (i === 0) ghost.moveTo(p.x, p.y);
+            else ghost.lineTo(p.x, p.y);
+          }
+          ghostRunPath = ghost;
         }
+        const ghost = ghostRunPath;
         ctx.strokeStyle = 'rgba(251,191,36,.5)';
         ctx.lineWidth = lineW(1.4);
         ctx.setLineDash([2, 5]);
