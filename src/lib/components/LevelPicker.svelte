@@ -336,6 +336,14 @@
               <span class="st" aria-label="{st} 星"
                 >{locked ? '未解锁' : '★'.repeat(st) + '☆'.repeat(3 - st)}</span
               >
+              {#if !locked && st > 0}
+                <!-- 成绩摘要：最佳分 + 最快全清（未通关只给星级，不剧透） -->
+                <span class="stats">
+                  {#if engine.bestScores[def.id]}<b>{engine.bestScores[def.id]}</b>分{/if}
+                  {#if engine.bestClears[def.id]}<i>· {engine.bestClears[def.id].toFixed(1)}s</i
+                    >{/if}
+                </span>
+              {/if}
             </span>
           </button>
         </div>
@@ -781,6 +789,24 @@
     font-size: 9px;
     margin-left: 2px;
   }
+  /* 关卡行的成绩摘要：最佳分 + 最快全清（已通关才显示，紧凑不挤压主信息） */
+  .node .stats {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-top: 2px;
+    font-size: 10px;
+    color: var(--muted-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .node .stats b {
+    color: var(--gold);
+    font-weight: 600;
+  }
+  .node .stats i {
+    font-style: normal;
+  }
+
   .node .st {
     /* 跟随全局字号底线（移动 11px / 桌面 12px）：10px 中文星级+“未解锁”读不清 */
     font-size: var(--fs-xs);
