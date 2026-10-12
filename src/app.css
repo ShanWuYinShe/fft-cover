@@ -1104,6 +1104,26 @@ input[type='checkbox'] {
   .update-bar {
     bottom: calc(var(--tabbar-h) + 10px);
   }
+  /* HUD 芯片：手机上全局触控规则把 button 撑到 42px，小画布上「印 x/4」
+     看起来像个空心方块（390 实测 58×42）。按「视觉小、热区够」的原则
+     把视觉收成紧凑胶囊，再用 ::after 把可点区域补到 44×44。 */
+  /* 只给可点的「印」按钮补热区：ghost-chip 是纯展示 span，给它加隐形
+     44px 热区会挡住画布拖拽 */
+  .hud .hud-seal {
+    position: relative;
+    min-height: 0;
+    padding: 3px 9px;
+    font-size: var(--fs-xs);
+  }
+  .hud .hud-seal::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
   /* 运行栏重构：主操作独占一行（拇指友好、主次分明），
      其余 6 键（停止 / ⋯ / 音量 / 音乐 / 成就 / 设置）等分第二行。
      旧版是「3 键 4 列（空一格）+ 图标行拉满」，既浪费又主次不分。 */
