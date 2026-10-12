@@ -565,7 +565,8 @@
         ctx.fillText(
           '+' + f.score + (f.combo >= 1 ? '  ×' + (f.combo + 1) : ''),
           f.x,
-          f.y - 16 - age * 30 - i * 15,
+          // 堆叠偏移封顶 3 档：高连击时无限上移会撞到左上角的连击提示与星级框
+          f.y - 16 - age * 30 - Math.min(i, 3) * 15,
         );
       }
       ctx.textAlign = 'start';
