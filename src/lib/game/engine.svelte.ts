@@ -353,6 +353,8 @@ export class GameEngine {
   endlessScore = $state(0);
   /** 刚结算的一波是否存活（收集 ≥1 星线）：结算浮层用 */
   endlessSurvived = $state(false);
+  /** 本局结束时是否刷新了无尽历史最佳（结算卡显示「🏅 新纪录！」） */
+  endlessNewBest = $state(false);
   /** 无尽挑战历史最佳：最高波次与该局累计分 */
   endlessBest = $state<{ wave: number; score: number }>(loadEndlessBest());
   /** 本局竞速结果：结束时相对上届的领先（+）/落后（−）点数；无上届为 null */
@@ -517,10 +519,18 @@ export class GameEngine {
     this.endlessSurvived = false;
   }
 
-  /** 结束时更新无尽历史最佳：先比波次，同波次比累计分 */
+  /**
+   * 结束时更新无尽历史最佳：先比波次，同波次比累计分。
+   * 同时把「本局是否刷新纪录」记进 endlessNewBest ——结算卡据此显示
+   * 「🏅 新纪录！」。不能在组件里用 best <= score 反推：打平历史最佳时
+   * settle 不会更新（严格大于才更新），反推会误报新纪录（边界 bug）。
+   */
   private settleEndlessBest(): void {
     const b = this.endlessBest;
-    if (this.endlessWave > b.wave || (this.endlessWave === b.wave && this.endlessScore > b.score)) {
+    const better =
+      this.endlessWave > b.wave || (this.endlessWave === b.wave && this.endlessScore > b.score);
+    this.endlessNewBest = better;
+    if (better) {
       this.endlessBest = { wave: this.endlessWave, score: this.endlessScore };
       writeJson(ENDLESS_KEY, this.endlessBest);
     }

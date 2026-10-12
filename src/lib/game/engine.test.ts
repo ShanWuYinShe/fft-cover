@@ -890,3 +890,24 @@ describe('endlessNeed（无尽本波还差几点过关）', () => {
     expect(engine.endlessNeed).toBe(0); // 超额
   });
 });
+describe('endlessNewBest（新纪录标志：打平不算新纪录）', () => {
+  it('结算时严格更优才置位；打平历史最佳不置位（旧实现会误报）', () => {
+    const engine = new GameEngine();
+    engine.loadLevel(LEVEL_DEFS[0]);
+    engine.endless = true;
+    // 先立一个历史最佳：第 1 波 · 1000 分
+    engine.endlessBest = { wave: 1, score: 1000 };
+    engine.endlessWave = 1;
+    engine.endlessScore = 1000;
+    // @ts-ignore 私有方法仅此处边界验证使用
+    (engine as any).settleEndlessBest();
+    expect(engine.endlessNewBest).toBe(false); // 打平：严格大于才更新
+    expect(engine.endlessBest.score).toBe(1000); // 历史最佳保持不变
+
+    engine.endlessWave = 2; // 波次更高 → 新纪录
+    engine.endlessScore = 500;
+    (engine as any).settleEndlessBest();
+    expect(engine.endlessNewBest).toBe(true);
+    expect(engine.endlessBest.wave).toBe(2);
+  });
+});

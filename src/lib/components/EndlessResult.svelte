@@ -23,11 +23,9 @@
     engine.exitEndless();
   }
 
-  /** 挑战结束时是否刷新了历史最佳（波次更高，或同波次累计分更高） */
-  const newBest = $derived(
-    engine.endlessBest.wave === engine.endlessWave &&
-      engine.endlessBest.score <= engine.endlessScore,
-  );
+  /** 挑战结束时是否刷新了历史最佳——用引擎结算时记下的标志，
+      不在组件里用 best <= score 反推（打平会误报，边界 bug） */
+  const newBest = $derived(engine.endlessNewBest);
 </script>
 
 <div class="result">
