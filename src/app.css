@@ -144,6 +144,19 @@ header .sub {
   display: none; /* 副标题属于开始画面 */
 }
 
+/* 读屏专用：视觉隐藏、读屏可及（游戏进度播报用） */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ---------- 主布局 ---------- */
 main {
   display: grid;

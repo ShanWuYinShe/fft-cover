@@ -178,6 +178,32 @@
     return parts.join(' · ');
   });
 
+  /**
+   * 读屏播报：星级跨档与结算结果（画布是像素，读屏用户对游戏进程无感知）。
+   * 只在里程碑变化时更新文案，避免每个收集点都打断读屏。
+   */
+  let srLive = $state('');
+  $effect(() => {
+    const tier = engine.starReached;
+    if (tier > 0) {
+      srLive = '已收集 ' + engine.collectedCount + '/' + engine.total + '，' + tier + ' 星达成';
+    }
+  });
+  $effect(() => {
+    if (engine.phase === 'done') {
+      const st = engine.collectedCount / Math.max(1, engine.total);
+      srLive =
+        '本局结束，收集 ' +
+        engine.collectedCount +
+        '/' +
+        engine.total +
+        '，' +
+        starsFor(st) +
+        ' 星，得分 ' +
+        engine.score;
+    }
+  });
+
   const pauseGaps = $derived.by(() => {
     if (engine.phase !== 'paused' || engine.collectedCount === 0 || !engine.level) return '';
     const gaps = spectrumGaps(engine.level.spectrum, engine.arms);
@@ -362,6 +388,9 @@
     </button>
   </h1>
 </header>
+
+<!-- 读屏播报：画布进度对读屏用户不可见，这里用 aria-live 转达 -->
+<div class="sr-only" role="status" aria-live="polite">{srLive}</div>
 
 <main data-tab={mobileTab}>
   <section class="stage-wrap">
