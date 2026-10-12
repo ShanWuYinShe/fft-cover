@@ -274,7 +274,7 @@
 
     // 标题栏
     ctx.fillStyle = 'rgba(139,147,167,.92)';
-    ctx.font = '9px sans-serif';
+    ctx.font = canvasFont(9);
     ctx.fillText('频谱 |rₖ|', x0 + 9, y0 + 13);
     if (engine.spectrumCompare) {
       ctx.fillStyle = 'rgba(251,191,36,.9)';
@@ -297,7 +297,7 @@
     ctx.lineTo(zx, baseY);
     ctx.stroke();
     ctx.fillStyle = 'rgba(139,147,167,.5)';
-    ctx.font = '7px sans-serif';
+    ctx.font = canvasFont(7);
     ctx.fillText('0', zx - 2, baseY + 8);
     ctx.fillText('-10×', x0 + 10, baseY + 8);
     ctx.fillText('+10×', x0 + W - 26, baseY + 8);
@@ -337,6 +337,19 @@
     ctx.translate(SIZE / 2, SIZE / 2);
     ctx.scale(zoom, zoom);
     ctx.translate(-SIZE / 2 - panX, -SIZE / 2 - panY);
+  }
+
+  /**
+   * 画布内 UI 文字的字号补偿：画布逻辑坐标是 640，手机画布只有 ~338px，
+   * 直接写 12px 实际只渲染出 ~6.3px（实测「连击 / 预览收集」在手机上糊成
+   * 一团）。这里按「逻辑尺寸 ÷ 实际显示宽度」反向放大，使物理字号恒定。
+   * 只用于画布上的界面文字，不用于图形（曲线粗细另有 1/zoom 处理）。
+   */
+  function canvasFont(px: number, bold = false): string {
+    const shown = canvas?.clientWidth || SIZE;
+    // 上限 1.6：再大长文案（预览收集 / 上届漏点）会在 640 逻辑宽里溢出
+    const k = Math.min(1.6, Math.max(1, SIZE / shown));
+    return (bold ? 'bold ' : '') + (px * k).toFixed(1) + 'px sans-serif';
   }
 
   /** 全清震动是否已触发（本局一次） */
@@ -488,21 +501,21 @@
     if (engine.phase === 'running' || engine.phase === 'paused') {
       if (engine.sandbox) {
         ctx.fillStyle = 'rgba(167,139,250,.85)';
-        ctx.font = '11px sans-serif';
+        ctx.font = canvasFont(11);
         ctx.fillText('🧪 沙盒模式 · 无限时 · 实时调参', 10, 15);
       } else {
         ctx.fillStyle = 'rgba(79,209,197,.55)';
         ctx.fillRect(4, 4, (engine.t / RUN_DUR) * (SIZE - 8), 3);
         if (engine.collectedCount === engine.total && engine.collectedCount > 0) {
           ctx.fillStyle = 'rgba(251,191,36,.95)';
-          ctx.font = 'bold 12px sans-serif';
+          ctx.font = canvasFont(12, true);
           ctx.fillText('✨ 全清！3 秒后自动结算', 10, 30);
         } else if (engine.phase === 'paused' && engine.collectedCount > 0) {
           // 暂停时的偏差诊断：告诉玩家最该调整哪两个频率
           const gaps = spectrumGaps(engine.level.spectrum, engine.arms);
           if (gaps.length > 0) {
             ctx.fillStyle = 'rgba(251,191,36,.95)';
-            ctx.font = '11px sans-serif';
+            ctx.font = canvasFont(11);
             const parts = gaps.map(
               (g) =>
                 (g.sign > 0 ? '' : '−') +
@@ -526,7 +539,7 @@
         const age = Math.min((now - f.born) / 900, 1);
         const alpha = 1 - age * age;
         const size = 12 + Math.min(f.combo, 9) * 1.4;
-        ctx.font = 'bold ' + size.toFixed(0) + 'px sans-serif';
+        ctx.font = canvasFont(size, true);
         ctx.fillStyle =
           f.combo >= 3
             ? 'rgba(251,191,36,' + alpha.toFixed(3) + ')'
@@ -647,7 +660,7 @@
         ctx.stroke(ghost);
         ctx.setLineDash([]);
         ctx.fillStyle = 'rgba(251,191,36,.75)';
-        ctx.font = '10px sans-serif';
+        ctx.font = canvasFont(10);
         ctx.fillText(engine.raceIsBest ? '👻 最佳解法' : '👻 上届解法', 10, SIZE - 12);
       }
     }
@@ -715,7 +728,7 @@
       const sx = (dragInfo.x - SIZE / 2 - panX) * zoom + SIZE / 2;
       const sy = (dragInfo.y - SIZE / 2 - panY) * zoom + SIZE / 2;
       const label = dragInfo.r + ' · ' + dragInfo.deg + '°';
-      ctx.font = 'bold 13px sans-serif';
+      ctx.font = canvasFont(13, true);
       const w = ctx.measureText(label).width;
       ctx.fillStyle = 'rgba(10,14,26,.85)';
       ctx.fillRect(sx - 6, sy - 16, w + 12, 22);
@@ -729,18 +742,20 @@
     if (engine.phase === 'running' && engine.combo >= 2) {
       const remain = Math.max(0, 1 - (performance.now() - engine.lastCollectAt) / COMBO_WINDOW);
       if (remain > 0) {
-        const cxr = SIZE - 24;
-        const cyr = 112; // 频谱仪面板下方
-        ctx.textAlign = 'right';
-        ctx.font = 'bold 16px sans-serif';
+        // 左上角：右上角是 HUD「收集 / 印 x/4」芯片与频谱仪的地盘，
+        // 连击提示挤在那里会与 HTML 芯片互相压字（手机端实测明显）。
+        const cxr = 24;
+        const cyr = 118; // 让开左上角的关卡序号标签（canvasFont 补偿后文字更高）
+        ctx.textAlign = 'left';
+        ctx.font = canvasFont(16, true);
         const hot = engine.combo >= 5;
         ctx.fillStyle = hot ? 'rgba(251,191,36,.95)' : 'rgba(196,181,253,.95)';
         ctx.fillText('×' + (engine.combo + 1) + ' 连击', cxr, cyr);
         // 剩余窗口条
         ctx.fillStyle = 'rgba(255,255,255,.12)';
-        ctx.fillRect(cxr - 78, cyr + 6, 78, 3);
+        ctx.fillRect(cxr, cyr + 6, 78, 3);
         ctx.fillStyle = hot ? 'rgba(251,191,36,.9)' : 'rgba(196,181,253,.9)';
-        ctx.fillRect(cxr - 78, cyr + 6, 78 * remain, 3);
+        ctx.fillRect(cxr, cyr + 6, 78 * remain, 3);
         ctx.textAlign = 'start';
       }
     }
@@ -750,7 +765,7 @@
       const missed = engine.total - engine.collectedCount;
       const label =
         missed > 0 ? '漏了 ' + missed + ' 点（红圈）· 点画布返回结算' : '全部收齐 · 点画布返回结算';
-      ctx.font = 'bold 12px sans-serif';
+      ctx.font = canvasFont(12, true);
       const w = ctx.measureText(label).width;
       const bx = SIZE / 2 - w / 2 - 10;
       // 放在画布底部：顶部会与成就 toast 打架
@@ -766,7 +781,7 @@
 
     // 缩放指示（非 1× 时显示）
     if (Math.abs(zoom - 1) > 0.01) {
-      ctx.font = '11px sans-serif';
+      ctx.font = canvasFont(11);
       ctx.fillStyle = 'rgba(139,147,170,.9)';
       ctx.fillText('缩放 ' + zoom.toFixed(2) + '×', 12, SIZE - 14);
     }
@@ -783,7 +798,7 @@
       ctx.translate(SIZE / 2, 30);
       const s = 1 + pop * 0.3;
       ctx.scale(s, s);
-      ctx.font = 'bold 15px sans-serif';
+      ctx.font = canvasFont(15, true);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       const w = ctx.measureText(label).width;
@@ -811,7 +826,7 @@
         total +
         (got > 0 ? '（已收 ' + got + '）' : '') +
         (missed > 0 ? ' · 上届漏 ' + missed + ' 点（红圈）' : '');
-      ctx.font = 'bold 12px sans-serif';
+      ctx.font = canvasFont(12, true);
       const w = ctx.measureText(label).width;
       const bx = SIZE / 2 - w / 2 - 10;
       const by = SIZE - 16;
