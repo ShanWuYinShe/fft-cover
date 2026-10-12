@@ -1142,14 +1142,16 @@ input[type='checkbox'] {
   /* 运行栏重构：主操作独占一行（拇指友好、主次分明），
      其余 6 键（停止 / ⋯ / 音量 / 音乐 / 成就 / 设置）等分第二行。
      旧版是「3 键 4 列（空一格）+ 图标行拉满」，既浪费又主次不分。 */
+  /* 运行栏单行：主操作占 2 格（最宽最重要），停止 / ⋯ / 音量 / 音乐
+     各 1 格。旧版两行共 106px，单行后省下约 50px 全给面板。 */
   .run-row {
     grid-template-columns: repeat(6, 1fr);
     gap: 6px;
   }
   .run-row > button.primary {
-    grid-column: 1 / -1;
+    grid-column: span 2;
     min-height: 46px;
-    font-size: var(--fs-md, 14px);
+    font-size: var(--fs-sm);
   }
   .run-row button {
     padding: 7px 4px;
