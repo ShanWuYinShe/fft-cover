@@ -1044,8 +1044,13 @@
     .dots {
       gap: 2px;
     }
+    /* 特异性要对齐基础规则（.dot.done / .dot.locked 是 0,2,0）：
+       只写 .dot 会被基础规则的金色背景盖回来（实测本体仍是 34px 金块）。 */
     .dot,
-    .dot.on {
+    .dot.on,
+    .dot.done,
+    .dot.locked,
+    .dot.done.on {
       position: relative;
       width: 34px;
       height: 34px;
