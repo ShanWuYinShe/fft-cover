@@ -1119,10 +1119,16 @@ input[type='checkbox'] {
   }
   .run-row .mm {
     display: block;
+    width: 100%;
   }
   .run-row .mm .mm-btn {
     width: 100%;
     min-height: 42px;
+    padding: 0;
+    /* 6 列网格里「⋯」要落在格子正中，不能沿用桌面 44px 固定宽 + 左内距 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .run-icons {
     display: contents; /* 图标键直接进 6 列网格，与停止 / ⋯ 同排 */
