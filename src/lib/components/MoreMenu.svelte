@@ -83,6 +83,9 @@
     position: absolute;
     top: calc(100% + 6px);
     right: 0;
+    /* 安全上限：菜单项变多或屏幕很矮时不至于超出视口（超出部分可滚） */
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
   }
   .mm-pop.up {
     top: auto;

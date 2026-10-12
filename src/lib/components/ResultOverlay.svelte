@@ -429,7 +429,7 @@
     <div class="btns">
       <button class="primary" onclick={mainAction.fn}>{mainAction.label}</button>
       <MoreMenu
-        direction="up"
+        direction="down"
         items={[
           { label: '⟲ 再来一次', onclick: () => engine.resetRun() },
           { label: '👁 查看轨迹', onclick: () => (engine.resultDismissed = true) },
@@ -495,6 +495,11 @@
       0 1px 0 rgba(255, 255, 255, 0.07) inset;
     animation: card-in 0.42s cubic-bezier(0.34, 1.4, 0.64, 1);
     text-align: center;
+  }
+  /* 卡片默认 overflow:hidden（圆角裁切内部滚动区），但这会把「⋯」菜单一并
+     裁掉——菜单向下展开时整块不可见（实测）。菜单打开期间放行。 */
+  .card:has(:global(.mm-pop)) {
+    overflow: visible;
   }
   @keyframes card-in {
     from {
