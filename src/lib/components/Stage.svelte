@@ -652,7 +652,8 @@
         const endIdx = Math.min(trail.length - 1, startIdx + per);
         if (startIdx >= endIdx) continue;
         const a = endIdx / trail.length;
-        ctx.strokeStyle = 'rgba(79,209,197,' + (a * 0.75).toFixed(3) + ')';
+        // 尾迹透明度：旧段在手机上（线宽已达下限）几乎看不见，整体提到 0.9 封顶
+        ctx.strokeStyle = 'rgba(79,209,197,' + (a * 0.9).toFixed(3) + ')';
         ctx.lineWidth = lineW(1 + a * 1.8);
         ctx.beginPath();
         ctx.moveTo(trail[startIdx].x, trail[startIdx].y);
