@@ -926,3 +926,21 @@ describe('exitEndless（带着 N 分收工）', () => {
     expect(engine.endlessNewBest).toBe(true); // 并标为新纪录
   });
 });
+describe('endless randomDiff（波次难度与分享链接同步）', () => {
+  it('startEndless 后 randomDiff 同步为第 1 波难度 easy', () => {
+    const engine = new GameEngine();
+    engine.loadLevel(LEVEL_DEFS[0]);
+    engine.randomDiff = 'hard'; // 模拟上一局残留
+    engine.startEndless();
+    expect(engine.randomDiff).toBe('easy'); // 第 1 波是 easy
+  });
+  it('过波后 randomDiff 跟随新波次难度爬升', () => {
+    const engine = new GameEngine();
+    engine.loadLevel(LEVEL_DEFS[0]);
+    engine.startEndless(); // 第 1 波 easy
+    engine.endlessWave = 5;
+    engine.endlessSurvived = true;
+    engine.nextEndlessWave(); // → 第 6 波 hard
+    expect(engine.randomDiff).toBe('hard');
+  });
+});

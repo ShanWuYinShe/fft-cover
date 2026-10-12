@@ -491,7 +491,10 @@ export class GameEngine {
     this.endlessWave = 1;
     this.endlessScore = 0;
     this.endlessSurvived = false;
-    this.enterLevel(makeRandomLevel(Math.floor(Math.random() * 1e9), this.endlessDiff(1)));
+    // randomDiff 与波次难度同步：无尽关也是随机关（id 不含难度），
+    // 分享链接（战报 / 解法挑战）靠它才知道好友该面对哪条曲线
+    this.randomDiff = this.endlessDiff(1);
+    this.enterLevel(makeRandomLevel(Math.floor(Math.random() * 1e9), this.randomDiff));
     this.endless = true;
   }
 
@@ -499,9 +502,8 @@ export class GameEngine {
   nextEndlessWave(): void {
     if (!this.endless || !this.endlessSurvived) return;
     this.endlessWave++;
-    this.enterLevel(
-      makeRandomLevel(Math.floor(Math.random() * 1e9), this.endlessDiff(this.endlessWave)),
-    );
+    this.randomDiff = this.endlessDiff(this.endlessWave); // 与新波次同步（分享链接要正确难度）
+    this.enterLevel(makeRandomLevel(Math.floor(Math.random() * 1e9), this.randomDiff));
     this.endless = true;
   }
 
