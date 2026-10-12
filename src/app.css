@@ -1101,21 +1101,35 @@ input[type='checkbox'] {
   .update-bar {
     bottom: calc(var(--tabbar-h) + 10px);
   }
+  /* 运行栏重构：主操作独占一行（拇指友好、主次分明），
+     其余 6 键（停止 / ⋯ / 音量 / 音乐 / 成就 / 设置）等分第二行。
+     旧版是「3 键 4 列（空一格）+ 图标行拉满」，既浪费又主次不分。 */
   .run-row {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  .run-row button {
-    padding: 7px 6px;
-    white-space: nowrap; /* 69px 宽的格子里"开始旋转"不能折行 */
-  }
-  .run-icons {
-    display: flex;
-    grid-column: 1 / -1;
+    grid-template-columns: repeat(6, 1fr);
     gap: 6px;
   }
+  .run-row > button.primary {
+    grid-column: 1 / -1;
+    min-height: 46px;
+    font-size: var(--fs-md, 14px);
+  }
+  .run-row button {
+    padding: 7px 4px;
+    white-space: nowrap; /* 窄格子里"停止"不能折行 */
+  }
+  .run-row .mm {
+    display: block;
+  }
+  .run-row .mm .mm-btn {
+    width: 100%;
+    min-height: 42px;
+  }
+  .run-icons {
+    display: contents; /* 图标键直接进 6 列网格，与停止 / ⋯ 同排 */
+  }
   .run-icons button {
-    flex: 1;
     width: auto;
+    min-height: 42px;
   }
 }
 
