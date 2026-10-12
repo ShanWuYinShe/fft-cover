@@ -213,8 +213,14 @@
     关卡
     <!-- 口径合并：总星数只在标题页/结局出现，这里只给战役状态与精通计数 -->
     {#if campaignBadge}<span class="muted">{campaignBadge}</span
-      >{/if}{#if perfectCount > 0}&nbsp;<span class="muted">· 👑 {perfectCount}</span
-      >{/if}{#if exactCount > 0}&nbsp;<span class="muted">· 🎯 {exactCount}</span>{/if}
+      >{/if}{#if perfectCount > 0}{#if campaignBadge}&nbsp;{/if}<span class="muted"
+        >{#if campaignBadge}·
+        {/if}👑 完美 {perfectCount}</span
+      >{/if}{#if exactCount > 0}{#if campaignBadge || perfectCount > 0}&nbsp;{/if}<span
+        class="muted"
+        >{#if campaignBadge || perfectCount > 0}·
+        {/if}🎯 {exactCount}</span
+      >{/if}
   </h2>
   {#if showComposer}
     <ComposerModal onclose={() => (showComposer = false)} />
