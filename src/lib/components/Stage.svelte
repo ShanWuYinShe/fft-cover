@@ -691,11 +691,11 @@
         ctx.fill();
         ctx.lineWidth = Math.max(1 / zoom, 1.2 * (SIZE / shownW()));
       } else {
-        ctx.fillStyle = 'rgba(220,228,255,.55)';
+        ctx.fillStyle = 'rgba(220,228,255,.8)';
         ctx.beginPath();
         ctx.arc(p.x, p.y, 3.5 * kd, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(220,228,255,.18)';
+        ctx.strokeStyle = 'rgba(220,228,255,.3)';
         ctx.beginPath();
         ctx.arc(p.x, p.y, engine.level.tol, 0, Math.PI * 2);
         ctx.stroke();
