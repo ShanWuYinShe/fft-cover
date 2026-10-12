@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { uiToggle } from '../game/audio';
   import MoreMenu from './MoreMenu.svelte';
   import { engine } from '../game/engine.svelte';
@@ -306,6 +307,23 @@
   /* ---------- 精简徽章行与主行动 ---------- */
 
   /** 成就徽章（小 chip）：有才显示，新达成的带高亮 */
+  /**
+   * 窄屏（≤640）：结算卡菜单向下展开（避开卡片里的星级/得分）；
+   * 桌面向上（避开下方运行栏）。必须监听媒体查询变化——直接读
+   * matchMedia().matches 放进 $derived 不会随视口变化重算（旋转屏幕/
+   * 缩放窗口后方向不更新，实测踩到）。
+   */
+  let narrow = $state(false);
+  onMount(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    const sync = (): void => {
+      narrow = mq.matches;
+    };
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  });
+
   const badges = $derived.by(() => {
     const out: Array<{ icon: string; text: string; fresh: boolean }> = [];
     // 掌握类徽章（👑💎🎯）只在本局全清时展示：isPerfect/isExact 是"本关历史"口径，
@@ -428,8 +446,9 @@
     </div>
     <div class="btns">
       <button class="primary" onclick={mainAction.fn}>{mainAction.label}</button>
+      <!-- 方向自适应：窄屏向下（避开卡片里的星级/得分），桌面向上（避开下方运行栏） -->
       <MoreMenu
-        direction="down"
+        direction={narrow ? 'down' : 'up'}
         items={[
           { label: '⟲ 再来一次', onclick: () => engine.resetRun() },
           { label: '👁 查看轨迹', onclick: () => (engine.resultDismissed = true) },
