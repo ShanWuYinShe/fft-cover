@@ -911,3 +911,18 @@ describe('endlessNewBest（新纪录标志：打平不算新纪录）', () => {
     expect(engine.endlessBest.wave).toBe(2);
   });
 });
+describe('exitEndless（带着 N 分收工）', () => {
+  it('收工时结算历史最佳——中途收工的最好成绩不再被静默丢弃', () => {
+    const engine = new GameEngine();
+    engine.loadLevel(LEVEL_DEFS[0]);
+    engine.endless = true;
+    engine.endlessBest = { wave: 1, score: 1000 };
+    engine.endlessWave = 3; // 打到第 3 波
+    engine.endlessScore = 8000;
+    engine.endlessSurvived = true; // 刚过第 3 波
+    engine.exitEndless();
+    expect(engine.endlessBest.wave).toBe(3); // 收工成绩入档
+    expect(engine.endlessBest.score).toBe(8000);
+    expect(engine.endlessNewBest).toBe(true); // 并标为新纪录
+  });
+});

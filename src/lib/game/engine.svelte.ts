@@ -507,6 +507,9 @@ export class GameEngine {
 
   /** 结束无尽挑战（挑战结束卡或玩家主动退出）：回到普通模式 */
   exitEndless(): void {
+    // 「带着 N 分收工」也要结算历史最佳：原先直接清状态，
+    // 玩家中途收工的最好成绩会被静默丢弃（实测发现的数据丢失）
+    if (this.endlessSurvived) this.settleEndlessBest();
     this.clearEndlessState();
     this.resetRun();
   }

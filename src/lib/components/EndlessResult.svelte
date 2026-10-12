@@ -38,6 +38,13 @@
           本波 {engine.score} 分 + 过波奖励 {engine.endlessWaveBonus}
         </div>
         <div class="total">累计 <b>{engine.endlessScore}</b> 分</div>
+        {#if engine.endlessNewBest}
+          <div class="rec">🏅 新纪录！（第 {engine.endlessWave} 波）</div>
+        {:else if engine.endlessBest.wave > 0}
+          <div class="best">
+            最佳：第 {engine.endlessBest.wave} 波 · {engine.endlessBest.score} 分
+          </div>
+        {/if}
         <div class="next-hint">下一波：{nextDiff}难度 · 收集 ≥35% 才能继续</div>
         <button type="button" class="primary go" onclick={goNext}>▶ 下一波</button>
         <button type="button" class="ghost-btn" onclick={quit}
