@@ -902,13 +902,16 @@ input[type='checkbox'] {
     min-height: 100dvh;
   }
 
+  /* 手机竖屏：顶部 chrome 收薄——header 从 52px 压到 ~34px、画布 46vh→40vh，
+     把高度还给关卡/指针面板（390×844 实测面板原只有 256px，关卡列表只
+     看得见一行半）。画布仍按宽度自适应，不影响操作。 */
   header {
-    padding: 8px 16px 2px;
+    padding: 4px 16px 0;
   }
 
   header h1 {
-    font-size: 17px;
-    letter-spacing: 4px;
+    font-size: 16px;
+    letter-spacing: 3px;
   }
 
   header .sub {
@@ -954,7 +957,7 @@ input[type='checkbox'] {
   }
 
   .canvas-box {
-    width: min(92vw, 46vh);
+    width: min(92vw, 40vh);
     max-width: 100%;
     margin: 0 auto;
   }
