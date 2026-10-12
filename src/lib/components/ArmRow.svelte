@@ -93,7 +93,9 @@
   }
   .rv {
     flex: 1;
-    text-align: left;
+    /* 手机上臂卡片是两列网格（每格 ~150px），半径数字左对齐会在右侧留
+       一大块空白。居中后「序号 · 半径 · 方向 · 频率」四段铺满整格。 */
+    text-align: center;
     font-size: var(--fs-sm);
     color: var(--text);
   }
