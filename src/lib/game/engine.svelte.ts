@@ -205,12 +205,52 @@ function loadAchv(): Record<string, number> {
   return readJson(ACHV_KEY, {});
 }
 
-/** 无尽挑战历史最佳的读取：脏数据丢弃，回落到"尚无记录" */
-function loadEndlessBest(): { wave: number; score: number } {
-  const raw = readJson<{ wave?: unknown; score?: unknown } | null>(ENDLESS_KEY, null);
-  return raw && typeof raw.wave === 'number' && typeof raw.score === 'number'
-    ? { wave: raw.wave, score: raw.score }
-    : { wave: 0, score: 0 };
+interface EndlessBestState {
+  wave: number;
+  score: number;
+}
+
+/** 进行中的一局：过波时落盘，刷新后从当前波开头续玩 */
+interface EndlessRunState {
+  seed: number;
+  diff: RandomDifficulty;
+  wave: number;
+  score: number;
+}
+
+/** 无尽挑战存档的读取：历史最佳 + 进行中的一局（旧格式无 run，兼容） */
+function loadEndlessState(): {
+  best: EndlessBestState;
+  run: EndlessRunState | null;
+} {
+  const raw = readJson<Record<string, unknown> | null>(ENDLESS_KEY, null);
+  const best: EndlessBestState =
+    raw && typeof raw.wave === 'number' && typeof raw.score === 'number'
+      ? { wave: raw.wave, score: raw.score }
+      : { wave: 0, score: 0 };
+  let run: EndlessRunState | null = null;
+  if (raw && raw.run && typeof raw.run === 'object') {
+    const r = raw.run as Record<string, unknown>;
+    if (
+      typeof r.seed === 'number' &&
+      (r.diff === 'easy' || r.diff === 'normal' || r.diff === 'hard') &&
+      typeof r.wave === 'number' &&
+      typeof r.score === 'number'
+    ) {
+      run = {
+        seed: r.seed,
+        diff: r.diff as RandomDifficulty,
+        wave: r.wave,
+        score: r.score,
+      };
+    }
+  }
+  return { best, run };
+}
+
+/** 无尽存档写入：历史最佳 + 进行中的一局（run 为 null 表示本局已结束） */
+function saveEndlessState(best: EndlessBestState, run: EndlessRunState | null): void {
+  writeJson(ENDLESS_KEY, { ...best, run });
 }
 
 function loadFlags(): Record<string, boolean> {
@@ -356,7 +396,9 @@ export class GameEngine {
   /** 本局结束时是否刷新了无尽历史最佳（结算卡显示「🏅 新纪录！」） */
   endlessNewBest = $state(false);
   /** 无尽挑战历史最佳：最高波次与该局累计分 */
-  endlessBest = $state<{ wave: number; score: number }>(loadEndlessBest());
+  endlessBest = $state<EndlessBestState>(loadEndlessState().best);
+  /** 进行中的一局（过波时落盘；刷新后据此续玩；null=本局已结束） */
+  endlessRun = $state<EndlessRunState | null>(loadEndlessState().run);
   /** 本局竞速结果：结束时相对上届的领先（+）/落后（−）点数；无上届为 null */
   lastGhostDelta = $state<number | null>(null);
   /** 结算那次对比对准的是谁（true = 个人最佳；结算卡文案用） */
@@ -385,6 +427,8 @@ export class GameEngine {
 
   constructor() {
     // "继续游戏"要真的接着上次：能恢复就恢复，否则从第一关开始
+    // 无尽进行中的续玩优先于常规续玩（玩家上次是中途退出无尽）
+    if (this.resumeEndlessRun()) return;
     if (!this.restoreLastLevel()) this.loadLevel(LEVEL_DEFS[0]);
     // 静默恢复成就：存档里已有进度（如从备份导入）也应在打开面板时可见，
     // 且不弹 toast（首次游玩时逐个解锁的演出保留在 checkAchievements）
@@ -487,6 +531,23 @@ export class GameEngine {
   }
 
   /** 开始一局无尽挑战：从第 1 波（简单）起步 */
+  /**
+   * 启动时续玩进行中的无尽局：按存档的 seed/diff 复现当前波，
+   * 从本波开头重新开始（波内进度不持久化，属街机模式设计）。
+   * 返回是否发生了续玩（供 App 跳过常规续玩路径）。
+   */
+  resumeEndlessRun(): boolean {
+    const run = this.endlessRun;
+    if (!run || run.wave < 1) return false;
+    this.endlessWave = run.wave;
+    this.endlessScore = run.score;
+    this.endlessSurvived = false;
+    this.randomDiff = run.diff;
+    this.enterLevel(makeRandomLevel(run.seed, run.diff));
+    this.endless = true;
+    return true;
+  }
+
   startEndless(): void {
     this.endlessWave = 1;
     this.endlessScore = 0;
@@ -494,8 +555,12 @@ export class GameEngine {
     // randomDiff 与波次难度同步：无尽关也是随机关（id 不含难度），
     // 分享链接（战报 / 解法挑战）靠它才知道好友该面对哪条曲线
     this.randomDiff = this.endlessDiff(1);
-    this.enterLevel(makeRandomLevel(Math.floor(Math.random() * 1e9), this.randomDiff));
+    const seed = Math.floor(Math.random() * 1e9);
+    this.enterLevel(makeRandomLevel(seed, this.randomDiff));
     this.endless = true;
+    // 进行中的一局落盘：刷新/关页面后可从本波续玩
+    this.endlessRun = { seed, diff: this.randomDiff, wave: 1, score: 0 };
+    this.persistEndless();
   }
 
   /** 存活过当前波：领取波次奖励并进入下一波（难度爬升） */
@@ -503,8 +568,17 @@ export class GameEngine {
     if (!this.endless || !this.endlessSurvived) return;
     this.endlessWave++;
     this.randomDiff = this.endlessDiff(this.endlessWave); // 与新波次同步（分享链接要正确难度）
-    this.enterLevel(makeRandomLevel(Math.floor(Math.random() * 1e9), this.randomDiff));
+    const seed = Math.floor(Math.random() * 1e9);
+    this.enterLevel(makeRandomLevel(seed, this.randomDiff));
     this.endless = true;
+    // 新一波的进行中状态落盘：刷新/关页面后可从本波续玩
+    this.endlessRun = {
+      seed,
+      diff: this.randomDiff,
+      wave: this.endlessWave,
+      score: this.endlessScore,
+    };
+    this.persistEndless();
   }
 
   /** 结束无尽挑战（挑战结束卡或玩家主动退出）：回到普通模式 */
@@ -513,6 +587,8 @@ export class GameEngine {
     // 玩家中途收工的最好成绩会被静默丢弃（实测发现的数据丢失）
     if (this.endlessSurvived) this.settleEndlessBest();
     this.clearEndlessState();
+    this.endlessRun = null; // 本局已结束，进行中状态从存档移除
+    this.persistEndless();
     this.resetRun();
   }
 
@@ -530,6 +606,10 @@ export class GameEngine {
    * 「🏅 新纪录！」。不能在组件里用 best <= score 反推：打平历史最佳时
    * settle 不会更新（严格大于才更新），反推会误报新纪录（边界 bug）。
    */
+  private persistEndless(): void {
+    saveEndlessState(this.endlessBest, this.endlessRun);
+  }
+
   private settleEndlessBest(): void {
     const b = this.endlessBest;
     const better =
@@ -537,7 +617,7 @@ export class GameEngine {
     this.endlessNewBest = better;
     if (better) {
       this.endlessBest = { wave: this.endlessWave, score: this.endlessScore };
-      writeJson(ENDLESS_KEY, this.endlessBest);
+      this.persistEndless();
     }
   }
 

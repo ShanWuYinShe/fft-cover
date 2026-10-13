@@ -85,6 +85,8 @@
       engine.markFlag('seenTitle');
     }
     applyHashShare();
+    // 无尽进行中的续玩优先于常规续玩（玩家上次是中途退出无尽）
+    engine.resumeEndlessRun();
     // 同一标签页里粘贴新链接（只改 hash 不会重新加载文档）也要生效
     window.addEventListener('hashchange', applyHashShare);
     // 旋到横屏/缩放出竖屏范围：展开态只在竖屏生效，离开时自动复位，
