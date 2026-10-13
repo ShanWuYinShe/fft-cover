@@ -314,7 +314,8 @@
     ctx.moveTo(zx, y0 + 22);
     ctx.lineTo(zx, baseY);
     ctx.stroke();
-    ctx.fillStyle = 'rgba(139,147,167,.5)';
+    /* 轴标 7px 小字，0.5 时不足 2.5:1（canvas 内文本同样按对比度要求） */
+    ctx.fillStyle = 'rgba(139,147,167,.72)';
     ctx.font = '7px sans-serif';
     ctx.fillText('0', zx - 2, baseY + 8);
     ctx.fillText('-10×', x0 + 10, baseY + 8);
@@ -755,7 +756,7 @@
         ctx.setLineDash([2, 5]);
         ctx.stroke(ghost);
         ctx.setLineDash([]);
-        ctx.fillStyle = 'rgba(251,191,36,.75)';
+        ctx.fillStyle = 'rgba(251,191,36,.9)';
         ctx.font = canvasFont(10);
         ctx.fillText(engine.raceIsBest ? '👻 最佳解法' : '👻 上届解法', 10, SIZE - 12);
       }
