@@ -402,7 +402,9 @@ button.primary:hover:not(:disabled) {
 }
 
 button:disabled {
-  opacity: 0.32;
+  /* 0.32 时禁用文案(如「停止结算」)几乎不可辨(实测 2.6:1);0.45 保持
+     「不可点」观感同时能读清按钮是什么(WCAG 对 disabled 豁免,此为可读性优化) */
+  opacity: 0.45;
   cursor: default;
 }
 

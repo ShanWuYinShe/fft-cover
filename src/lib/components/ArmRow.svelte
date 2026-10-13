@@ -115,11 +115,12 @@
     width: 26px;
     text-align: right;
   }
-  /* 未启用态：整行淡化 */
+  /* 未启用态：整行淡化。0.4 时「2×」只剩 ~2:1(WCAG 失败,对比度扫描实测),
+     0.9 后 ≥4.5:1;行间分层靠无高亮底 + 空 checkbox,依然清晰 */
   .arm-row:not(.on) .rv,
   .arm-row:not(.on) .dir,
   .arm-row:not(.on) .fv,
   .arm-row:not(.on) .idx {
-    opacity: 0.4;
+    opacity: 0.9;
   }
 </style>
