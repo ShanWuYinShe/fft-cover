@@ -87,6 +87,15 @@
     applyHashShare();
     // 同一标签页里粘贴新链接（只改 hash 不会重新加载文档）也要生效
     window.addEventListener('hashchange', applyHashShare);
+    // 旋到横屏/缩放出竖屏范围：展开态只在竖屏生效，离开时自动复位，
+    // 否则标签会残留「收起」字样（状态与实际布局不符）
+    const panelMq = window.matchMedia('(max-width: 640px) and (orientation: portrait)');
+    const syncPanel = (): void => {
+      if (!panelMq.matches) panelExpanded = false;
+    };
+    syncPanel();
+    panelMq.addEventListener('change', syncPanel);
+    window.addEventListener('hashchange', syncPanel);
     const onUpdate = () => (updateReady = true);
     window.addEventListener('pwa-update', onUpdate);
     // 全局按钮点击音（capture：先于组件自身 handler，业界标准 UI juice）
