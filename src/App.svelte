@@ -13,6 +13,7 @@
   import LevelPicker from './lib/components/LevelPicker.svelte';
   import ResultOverlay from './lib/components/ResultOverlay.svelte';
   import EndlessResult from './lib/components/EndlessResult.svelte';
+  import Icon from './lib/components/Icon.svelte';
   import MoreMenu from './lib/components/MoreMenu.svelte';
   import AchievementsModal from './lib/components/AchievementsModal.svelte';
   import FinaleOverlay from './lib/components/FinaleOverlay.svelte';
@@ -621,10 +622,14 @@
             onclick={() => {
               engine.setMusic(!engine.musicOn);
               uiToggle(engine.soundOn);
-            }}>🎵</button
+            }}><Icon name="music" size={16} /></button
           >
-          <button title="成就" aria-label="成就" onclick={() => (showAchv = true)}>🏆</button>
-          <button title="设置" aria-label="设置" onclick={() => (showSettings = true)}>⚙️</button>
+          <button title="成就" aria-label="成就" onclick={() => (showAchv = true)}
+            ><Icon name="trophy" size={16} /></button
+          >
+          <button title="设置" aria-label="设置" onclick={() => (showSettings = true)}
+            ><Icon name="gear" size={16} /></button
+          >
         </span>
       {:else}
         <button class="primary" onclick={toggleRun}>{engine.runLabel}</button>
@@ -632,7 +637,9 @@
           onclick={stopRun}
           disabled={engine.phase !== 'running' && engine.phase !== 'paused'}
         >
-          ⏹ <span class="bt-long">停止结算</span><span class="bt-short">停止</span>
+          <Icon name="stop" size={13} /> <span class="bt-long">停止结算</span><span class="bt-short"
+            >停止</span
+          >
         </button>
         <MoreMenu
           items={[
@@ -682,10 +689,14 @@
             onclick={() => {
               engine.setMusic(!engine.musicOn);
               uiToggle(engine.soundOn);
-            }}>🎵</button
+            }}><Icon name="music" size={16} /></button
           >
-          <button title="成就" aria-label="成就" onclick={() => (showAchv = true)}>🏆</button>
-          <button title="设置" aria-label="设置" onclick={() => (showSettings = true)}>⚙️</button>
+          <button title="成就" aria-label="成就" onclick={() => (showAchv = true)}
+            ><Icon name="trophy" size={16} /></button
+          >
+          <button title="设置" aria-label="设置" onclick={() => (showSettings = true)}
+            ><Icon name="gear" size={16} /></button
+          >
         </span>
       {/if}
     </div>
@@ -789,7 +800,9 @@
     aria-expanded={mobileTab === 'levels' && panelExpanded}
     onclick={() => onTab('levels')}
   >
-    <i>🗺</i><span>{mobileTab === 'levels' && panelExpanded ? '收起' : '关卡'}</span>
+    <i><Icon name="map" size={17} /></i><span
+      >{mobileTab === 'levels' && panelExpanded ? '收起' : '关卡'}</span
+    >
   </button>
   <button
     type="button"
@@ -797,7 +810,9 @@
     aria-expanded={mobileTab === 'arms' && panelExpanded}
     onclick={() => onTab('arms')}
   >
-    <i>🎛</i><span>{mobileTab === 'arms' && panelExpanded ? '收起' : '指针'}</span>
+    <i><Icon name="sliders" size={17} /></i><span
+      >{mobileTab === 'arms' && panelExpanded ? '收起' : '指针'}</span
+    >
   </button>
 </nav>
 {#if showTitle}

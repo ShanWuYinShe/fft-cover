@@ -8,6 +8,7 @@
   import { keyForChapter } from '../game/harmony';
   import { buildDailyUrl, buildRandomUrl } from '../game/share';
   import ComposerModal from './ComposerModal.svelte';
+  import Icon from './Icon.svelte';
 
   let showComposer = $state(false);
   /** 当前是否在特殊模式（每日/每周/随机关/无尽/创作）——折叠条上要点亮提示，免得"现在玩的是哪来着" */
@@ -382,7 +383,7 @@
     </p>
   {:else}
     <button type="button" class="quiet-btn hint-toggle" onclick={() => (hintPinned = true)}>
-      💡 看提示
+      <Icon name="bulb" size={14} /> 看提示
     </button>
   {/if}
 
@@ -416,8 +417,8 @@
           onclick={() => engine.loadDaily()}
         >
           <span class="md-left"
-            >📅 每日挑战{#if engine.dailyStreak.streak > 0}<i class="fire"
-                >🔥{engine.dailyStreak.streak}</i
+            ><Icon name="calendar" size={14} /> 每日挑战{#if engine.dailyStreak.streak > 0}<i
+                class="fire">🔥{engine.dailyStreak.streak}</i
               >{/if}</span
           >
           <span class="md-right" title={'今日挑战剩余 ' + dailyCountdown.long}
@@ -443,7 +444,7 @@
           title="无尽挑战：连续随机曲线，每波收集 ≥35% 才能进下一波，难度逐波爬升——看你最多撑几波"
           onclick={() => engine.startEndless()}
         >
-          <span class="md-left">♾ 无尽挑战</span>
+          <span class="md-left"><Icon name="infinity" size={14} /> 无尽挑战</span>
           <span class="md-right"
             >{engine.endlessBest.wave > 0
               ? '最佳 ' + engine.endlessBest.wave + ' 波 · ' + engine.endlessBest.score + ' 分'
@@ -463,7 +464,7 @@
           title="本周挑战：固定困难档，一周里慢慢磨（还剩最后一天，记得来打）"
           onclick={() => engine.loadWeekly()}
         >
-          <span class="md-left">🗓 每周挑战</span>
+          <span class="md-left"><Icon name="calendar" size={14} /> 每周挑战</span>
           <span class="md-right"
             >{engine.weeklyBest > 0 ? engine.weeklyBest + ' 分 · ' : ''}还剩 {daysLeftInWeek()} 天</span
           >
@@ -509,7 +510,7 @@
           {/each}
         </div>
         <button class="gen-btn" title="按当前难度生成随机关卡" onclick={() => engine.loadRandom()}>
-          🎲 生成
+          <Icon name="dice" size={14} /> 生成
         </button>
         <button
           class="gen-btn"

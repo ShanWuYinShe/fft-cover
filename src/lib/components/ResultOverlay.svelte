@@ -657,10 +657,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 7px;
+    /* 5px（原 7px）：星级→得分→摘要→徽章收成一个紧凑视觉组，
+       加快读取并让「下一关」主按钮的引导更顺（Gemini 评审 #4） */
+    gap: 5px;
     min-height: 0;
     overflow-y: auto;
-    padding: 16px 18px 10px;
+    padding: 14px 18px 10px;
     text-align: center;
   }
   /* 星级：逐颗弹出 */

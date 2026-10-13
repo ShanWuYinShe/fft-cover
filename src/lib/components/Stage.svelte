@@ -489,7 +489,8 @@
     ctx.clearRect(0, 0, SIZE, SIZE);
 
     // 回纹边框：极淡的中国纹样，铺在内容之下（不随缩放平移，只作画框）
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.13)';
+    // 0.13 → 0.08（Gemini 评审）：装饰退为氛围，不与目标曲线争夺注意力
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.08)';
     ctx.lineWidth = lineW(1);
     ctx.stroke(huiBorder());
 
@@ -608,12 +609,15 @@
     }
 
     // 收集飘字：+分数 ×连击（连击越高越大越金）
-    // 连收时指尖附近会同时冒出多条：按新旧顺序垂直错开，后收的更高，不互相叠字
+    // 固定锚点在画布顶部居中（Gemini 评审建议）：原地生成会盖住核心轨迹，
+    // 改为顶部「计分条」样式——与两侧 HUD 芯片错开，只做计分反馈不遮玩法
     if (engine.floaters.length > 0) {
       ctx.textAlign = 'center';
+      let stack = 0;
       for (let i = 0; i < engine.floaters.length; i++) {
         const f = engine.floaters[i];
         const age = Math.min((now - f.born) / 900, 1);
+        if (age >= 1) continue; // 已淡出的不占堆叠位
         const alpha = 1 - age * age;
         const size = 12 + Math.min(f.combo, 9) * 1.4;
         ctx.font = canvasFont(size, true);
@@ -623,10 +627,11 @@
             : 'rgba(230,233,242,' + (alpha * 0.9).toFixed(3) + ')';
         ctx.fillText(
           '+' + f.score + (f.combo >= 1 ? '  ×' + (f.combo + 1) : ''),
-          f.x,
-          // 堆叠偏移封顶 3 档：高连击时无限上移会撞到左上角的连击提示与星级框
-          f.y - 16 - age * 30 - Math.min(i, 3) * 15,
+          SIZE / 2,
+          // 顶部锚点垂直堆叠：新的在下、旧的在上方原地淡出
+          92 + stack * 26 - age * 14,
         );
+        stack++;
       }
       ctx.textAlign = 'start';
     }
