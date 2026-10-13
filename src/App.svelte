@@ -462,7 +462,11 @@
 <!-- 读屏播报：画布进度对读屏用户不可见，这里用 aria-live 转达 -->
 <div class="sr-only" role="status" aria-live="polite">{srLive}</div>
 
-<main data-tab={mobileTab} class:panel-expanded={panelExpanded}>
+<main
+  data-tab={mobileTab}
+  class:panel-expanded={panelExpanded}
+  class:panel-hidden={engine.phase === 'running'}
+>
   <section class="stage-wrap">
     <div class="canvas-box">
       <Stage />

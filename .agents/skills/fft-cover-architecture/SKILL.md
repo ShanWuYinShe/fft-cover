@@ -9,14 +9,14 @@ description: 傅立叶指针（fft_cover）项目架构事实：存档键清单�
 
 ## 存档键清单（constants.ts，全部登记在 SAVE_KEYS 参与备份）
 
-| 键 | 内容 | 备注 |
-|---|---|---|
-| fft-pointers-endless-v1 | `{ wave, score, run?: { seed, diff, wave, score } }` | best + 进行中一局（run=null 表示已结束）；旧格式无 run 自动兼容 |
-| fft-pointers-clear-v1 | `Record<关卡id, 全清秒数>` | **注意键名是单数 clear**（不是 clears） |
-| fft-pointers-best-v1 / best-score-v1 | 各关星级 / 最佳分 | |
-| fft-pointers-best-run-v1 | 个人最佳那局（解法+节奏同源） | 幽灵竞速对准更强的一条 |
-| fft-pointers-last-level-v1 / last-custom-v1 | 常规续玩 / 创作关续玩 | 无尽续玩优先于这两者 |
-| fft-pointers-diff-v1 | 随机关难度（easy/normal/hard） | |
+| 键                                          | 内容                                                 | 备注                                                            |
+| ------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------- |
+| fft-pointers-endless-v1                     | `{ wave, score, run?: { seed, diff, wave, score } }` | best + 进行中一局（run=null 表示已结束）；旧格式无 run 自动兼容 |
+| fft-pointers-clear-v1                       | `Record<关卡id, 全清秒数>`                           | **注意键名是单数 clear**（不是 clears）                         |
+| fft-pointers-best-v1 / best-score-v1        | 各关星级 / 最佳分                                    |                                                                 |
+| fft-pointers-best-run-v1                    | 个人最佳那局（解法+节奏同源）                        | 幽灵竞速对准更强的一条                                          |
+| fft-pointers-last-level-v1 / last-custom-v1 | 常规续玩 / 创作关续玩                                | 无尽续玩优先于这两者                                            |
+| fft-pointers-diff-v1                        | 随机关难度（easy/normal/hard）                       |                                                                 |
 
 ## 无尽模式语义
 

@@ -1172,6 +1172,26 @@ input[type='checkbox'] {
   main.panel-expanded .hud {
     font-size: var(--fs-sm);
   }
+
+  /* ---------- 运行时专注布局 ----------
+     运行中面板是闲置的（关卡列表对进行中的对局无用；收集进度/波次
+     HUD 都有）——自动让位，把画布从 40vh 放大到 56vh（实测 390×844：
+     338px → 472px，游戏区占屏 40% → 56%）。停止/结算后面板自动回来。 */
+  main.panel-hidden .sides {
+    display: none;
+  }
+  /* 竖屏下画布是正方形、宽度受限（92vw）——运行时去掉左右留白做到
+     100vw 物理上限（实测 390 屏：359 → 390px，面积 +18%）。 */
+  main.panel-hidden .stage-wrap {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  main.panel-hidden .canvas-box {
+    width: 100vw;
+  }
+  .canvas-box {
+    transition: width 0.25s ease;
+  }
   /* HUD 芯片：手机上全局触控规则把 button 撑到 42px，小画布上「印 x/4」
      看起来像个空心方块（390 实测 58×42）。按「视觉小、热区够」的原则
      把视觉收成紧凑胶囊，再用 ::after 把可点区域补到 44×44。 */
