@@ -1139,6 +1139,11 @@ input[type='checkbox'] {
   .update-bar {
     bottom: calc(var(--tabbar-h) + 10px);
   }
+  /* 展开态画布缩小（~169px）：两枚 HUD 芯片放不下会互相重叠，
+     隐藏「印 x/4」（等价入口：工具栏 🏆 / 图鉴 / 结算卡），只留「收集」。 */
+  main.panel-expanded .hud .hud-seal {
+    display: none;
+  }
   /* HUD 芯片：手机上全局触控规则把 button 撑到 42px，小画布上「印 x/4」
      看起来像个空心方块（390 实测 58×42）。按「视觉小、热区够」的原则
      把视觉收成紧凑胶囊，再用 ::after 把可点区域补到 44×44。 */
