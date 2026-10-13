@@ -1167,6 +1167,11 @@ input[type='checkbox'] {
   main.panel-expanded .hud .hud-seal {
     display: none;
   }
+  /* 展开态小画布（169px）：「收集」芯片占画布近半宽（90/169），
+     收一档字号让目标曲线更突出（fs-lg→fs-sm）。 */
+  main.panel-expanded .hud {
+    font-size: var(--fs-sm);
+  }
   /* HUD 芯片：手机上全局触控规则把 button 撑到 42px，小画布上「印 x/4」
      看起来像个空心方块（390 实测 58×42）。按「视觉小、热区够」的原则
      把视觉收成紧凑胶囊，再用 ::after 把可点区域补到 44×44。 */
