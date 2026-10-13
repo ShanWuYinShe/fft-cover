@@ -1211,7 +1211,18 @@ input[type='checkbox'] {
 
 /* 面板全屏展开：画布让位、面板铺满，解决"信息要滚动才看得到" */
 @media (max-width: 640px) and (orientation: portrait) {
+  /* 展开态：画布**缩小而不是隐藏**——调参时要能看到实时轨迹，
+     否则等于盲调（实测指针 tab 展开后 canvas 高度为 0）。 */
   main.panel-expanded .stage-wrap {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 6px;
+  }
+  main.panel-expanded .canvas-box {
+    width: min(56vw, 20vh);
+  }
+  main.panel-expanded .run-row,
+  main.panel-expanded .guide-bar {
     display: none;
   }
   main.panel-expanded .sides {
