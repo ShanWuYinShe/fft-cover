@@ -505,7 +505,7 @@ button:disabled {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  min-height: 40px;
+  min-height: 44px;
   padding: 7px 12px;
   border-radius: var(--r-sm);
   border: 1px solid var(--line-quiet);
@@ -546,7 +546,7 @@ button:disabled {
 /* 触屏：工具行按钮的热区补够（视觉尺寸不变，点得中才行） */
 @media (pointer: coarse), (max-width: 640px) {
   .tools-row button {
-    min-height: 40px;
+    min-height: 44px;
   }
 }
 
@@ -563,7 +563,7 @@ button:disabled {
 }
 @media (pointer: coarse), (max-width: 640px) {
   .tools-row .mm .quiet-btn {
-    min-height: 40px;
+    min-height: 44px;
   }
 }
 .tools-row .mm .quiet-btn:hover:not(:disabled) {
@@ -894,7 +894,7 @@ input[type='checkbox'] {
   }
   button {
     padding: 11px 17px;
-    min-height: 42px;
+    min-height: 44px; /* 触控热区下限 44(mobile-ui-conventions);热区扫描实测 42 不达标 */
   }
   .hud {
     font-size: var(--fs-lg);

@@ -1211,20 +1211,34 @@
       background: rgba(255, 255, 255, 0.07);
     }
     .nav {
-      width: 40px;
-      min-height: 40px;
+      width: 44px;
+      min-height: 44px;
     }
     .diff-chip {
-      min-height: 40px;
+      min-height: 44px;
     }
     .gen-btn {
-      min-height: 40px;
+      min-height: 44px;
     }
     .mini {
-      min-height: 38px;
+      min-height: 44px;
+      min-width: 44px;
     }
     .daily-share {
-      min-width: 40px;
+      min-width: 44px;
+    }
+    /* 章节圆点视觉 34 不变,::after 把可点区补到 44(hud-seal 同款手法) */
+    .dot {
+      position: relative;
+    }
+    .dot::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 44px;
+      height: 44px;
+      transform: translate(-50%, -50%);
     }
   }
 </style>
