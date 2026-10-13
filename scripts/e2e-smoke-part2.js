@@ -79,12 +79,13 @@
   // 「🎨 创作」在「更多玩法」折叠条内：新存档默认折叠，先展开再找
   await new Promise((r) => setTimeout(r, 300));
   const moreToggle = [...document.querySelectorAll('button')].find(
-    (x) => (x.textContent || '').includes('更多玩法') && x.getAttribute('aria-expanded') === 'false',
+    (x) =>
+      (x.textContent || '').includes('更多玩法') && x.getAttribute('aria-expanded') === 'false',
   );
   if (moreToggle) moreToggle.click();
   await new Promise((r) => setTimeout(r, 500));
-  const composerBtn = [...document.querySelectorAll('button')].find(
-    (x) => (x.textContent || '').includes('创作'),
+  const composerBtn = [...document.querySelectorAll('button')].find((x) =>
+    (x.textContent || '').includes('创作'),
   );
   composerBtn.click();
   await new Promise((r) => setTimeout(r, 600));

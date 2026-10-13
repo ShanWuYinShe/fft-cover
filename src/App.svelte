@@ -236,7 +236,9 @@
       );
     }
     if (engine.toast) return '解锁成就：' + engine.toast.name;
-    if (engine.endless && engine.endlessWave > 1) {
+    // 过波播报需要「本会话真的过了波」：启动续玩（resumeEndlessRun）后
+    // endlessSurvived=false，若不加门控会把存量状态误播成「刚过波」
+    if (engine.endless && engine.endlessWave > 1 && engine.endlessSurvived) {
       return (
         '第 ' +
         (engine.endlessWave - 1) +
