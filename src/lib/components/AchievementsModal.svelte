@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Icon from './Icon.svelte';
   import { LEVEL_DEFS } from '../game/levels';
   import { chapterProgress, isLevelLocked } from '../game/campaign';
   import { levelGoals } from '../game/goals';
@@ -142,9 +143,11 @@
   <div class="box">
     <h2>
       {#if tab === 'dex'}
-        📖 图鉴 <span class="muted">{litLevels} / {LEVEL_DEFS.length} 关已点亮</span>
+        <Icon name="map" size={16} /> 图鉴
+        <span class="muted">{litLevels} / {LEVEL_DEFS.length} 关已点亮</span>
       {:else}
-        🏆 成就 <span class="muted">{unlockedCount} / {ACHIEVEMENTS.length}</span>
+        <Icon name="trophy" size={16} /> 成就
+        <span class="muted">{unlockedCount} / {ACHIEVEMENTS.length}</span>
       {/if}
     </h2>
     <div class="tabs">
@@ -215,7 +218,8 @@
             <span class="cal-stat">当前连续 <i>{engine.dailyStreak.streak}</i> 天</span>
             <span class="cal-stat">最长 <i>{engine.longestDailyStreak}</i> 天</span>
             {#if engine.dailyStreak.streak >= 30}
-              <span class="cal-stat goal done">🏅 月月有余已达成</span>
+              <span class="cal-stat goal done"><Icon name="trophy" size={12} /> 月月有余已达成</span
+              >
             {:else}
               <span class="cal-stat goal"
                 >距「月月有余」还差 <i>{30 - engine.dailyStreak.streak}</i> 天</span
@@ -256,12 +260,12 @@
             >
           </div>
           <div class="card">
-            <span class="k">👑 完美全清</span><span class="v"
+            <span class="k"><Icon name="crown" size={13} /> 完美全清</span><span class="v"
               >{perfectClears}<i>/{LEVEL_DEFS.length}</i></span
             >
           </div>
           <div class="card">
-            <span class="k">🎯 精确解</span><span class="v"
+            <span class="k"><Icon name="target" size={13} /> 精确解</span><span class="v"
               >{exactClears}<i>/{LEVEL_DEFS.length}</i></span
             >
           </div>
@@ -270,8 +274,8 @@
           {#each perLevel as l (l.id)}
             <div class="lvl-row" class:dim={l.plays === 0}>
               <span class="nm"
-                >{l.name}{#if l.perfect}<i class="badge">👑</i>{/if}{#if l.exact}<i class="badge"
-                    >🎯</i
+                >{l.name}{#if l.perfect}<i class="badge"><Icon name="crown" size={11} /></i
+                  >{/if}{#if l.exact}<i class="badge"><Icon name="target" size={11} /></i
                   >{/if}</span
               >
               <span class="st">{'★'.repeat(l.stars)}{'☆'.repeat(3 - l.stars)}</span>
@@ -340,7 +344,7 @@
         {#each g.items as a (a.id)}
           {@const got = !!engine.achievements[a.id]}
           <div class="item" class:got>
-            <span class="icon">{got ? '🏆' : '🔒'}</span>
+            <span class="icon"><Icon name={got ? 'trophy' : 'lock'} size={15} /></span>
             <div class="txt">
               <div class="nm">{a.name}</div>
               <div class="desc">{a.desc}</div>

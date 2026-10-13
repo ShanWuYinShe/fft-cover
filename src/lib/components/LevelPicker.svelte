@@ -34,9 +34,9 @@
     return out;
   });
 
-  /** 战役状态：🏁 已通关 / 🏆 全三星（👑 已用于"完美全清"，换图标避免歧义） */
+  /** 战役状态：已通关 / 全三星（👑 留给"完美全清"，避免歧义；徽记统一走 Icon） */
   const campaignBadge = $derived(
-    engine.campaign === 'mastered' ? '🏆 全三星' : engine.campaign === 'cleared' ? '🏁 已通关' : '',
+    engine.campaign === 'mastered' ? '全三星' : engine.campaign === 'cleared' ? '已通关' : '',
   );
 
   let seedInput = $state('');
@@ -216,11 +216,12 @@
     {#if campaignBadge}<span class="muted">{campaignBadge}</span
       >{/if}{#if perfectCount > 0}{#if campaignBadge}&nbsp;{/if}<span class="muted"
         >{#if campaignBadge}·
-        {/if}👑 完美 {perfectCount}</span
+        {/if}<Icon name="crown" size={12} /> 完美 {perfectCount}</span
       >{/if}{#if exactCount > 0}{#if campaignBadge || perfectCount > 0}&nbsp;{/if}<span
         class="muted"
         >{#if campaignBadge || perfectCount > 0}·
-        {/if}🎯 {exactCount}</span
+        {/if}<Icon name="target" size={12} />
+        {exactCount}</span
       >{/if}
   </h2>
   <!-- 无尽挑战：面板顶部增补本局状态（波次 / 累计分 / 距过波差几点 / 历史最佳）。
@@ -229,7 +230,7 @@
     <div class="endless-panel">
       <div class="ep-row">
         <span class="ep-k">本局</span>
-        <b class="ep-wave">♾ 第 {engine.endlessWave} 波</b>
+        <b class="ep-wave"><Icon name="infinity" size={13} /> 第 {engine.endlessWave} 波</b>
         <b class="ep-score">{engine.endlessScore} 分</b>
       </div>
       <div class="ep-row ep-sub">
@@ -327,12 +328,18 @@
             title={locked ? '获得上一关至少 1★ 后解锁' : def.name}
             onclick={() => engine.loadLevel(def)}
           >
-            <span class="idx">{locked ? '🔒' : i + 1}</span>
+            <span class="idx"
+              >{#if locked}<Icon name="lock" size={13} />{:else}{i + 1}{/if}</span
+            >
             <span class="body">
               <span class="nm"
-                >{def.name}{#if engine.perfectLevels[def.id]}<i class="pf">👑</i
-                  >{/if}{#if engine.exactLevels[def.id]}<i class="pf">🎯</i
-                  >{/if}{#if engine.expertClears[def.id]}<i class="pf">💎</i>{/if}</span
+                >{def.name}{#if engine.perfectLevels[def.id]}<i class="pf"
+                    ><Icon name="crown" size={11} /></i
+                  >{/if}{#if engine.exactLevels[def.id]}<i class="pf"
+                    ><Icon name="target" size={11} /></i
+                  >{/if}{#if engine.expertClears[def.id]}<i class="pf"
+                    ><Icon name="gem" size={11} /></i
+                  >{/if}</span
               >
               <span class="st" aria-label="{st} 星"
                 >{locked ? '未解锁' : '★'.repeat(st) + '☆'.repeat(3 - st)}</span
@@ -366,7 +373,7 @@
       </button>
     {:else}
       <div class="teaser">
-        <span class="t-ico">🔒</span>
+        <span class="t-ico"><Icon name="lock" size={14} /></span>
         <span class="t-txt">
           <b>？？？</b>
           <i>通关「{viewLastLevel?.name ?? '本章最后一关'}」后解锁</i>
@@ -418,7 +425,7 @@
         >
           <span class="md-left"
             ><Icon name="calendar" size={14} /> 每日挑战{#if engine.dailyStreak.streak > 0}<i
-                class="fire">🔥{engine.dailyStreak.streak}</i
+                class="fire"><Icon name="flame" size={12} />{engine.dailyStreak.streak}</i
               >{/if}</span
           >
           <span class="md-right" title={'今日挑战剩余 ' + dailyCountdown.long}
@@ -517,7 +524,7 @@
           title="用谐波合成器创作自己的关卡"
           onclick={() => (showComposer = true)}
         >
-          🎨 创作
+          <Icon name="palette" size={14} /> 创作
         </button>
       </div>
 
@@ -815,10 +822,18 @@
     color: var(--gold);
   }
   .node.active {
-    border-color: rgba(79, 209, 197, 0.7);
+    /* 当前关降噪（评审：选中态与「开始旋转」CTA 争夺焦点）：
+       整框发光改为左侧 4px 竖条 + 向右衰减的渐变底，识别度交给 idx 徽章 */
+    border-color: rgba(79, 209, 197, 0.26);
+    border-left: 4px solid var(--cyan);
     color: var(--cyan);
-    background: var(--cyan-dim);
-    box-shadow: 0 0 14px rgba(79, 209, 197, 0.18);
+    background: linear-gradient(
+      90deg,
+      rgba(79, 209, 197, 0.13) 0%,
+      rgba(79, 209, 197, 0.03) 70%,
+      transparent 100%
+    );
+    padding-left: 3px; /* 补偿竖条宽度，内容不跳位 */
   }
   .node.active .idx {
     color: #06121a;
@@ -830,11 +845,17 @@
     border-color: rgba(251, 191, 36, 0.45);
   }
   .node.locked {
-    opacity: 0.5;
+    /* 0.5 时「未解锁」在深底只剩 ~2.4:1（WCAG 失败，评审高优先级）；
+       0.85 + 提亮后的 --muted-2 保持弱化观感的同时 ≥4.5:1 */
+    opacity: 0.85;
   }
   .node.locked .st {
     color: var(--muted-2);
     letter-spacing: 0;
+  }
+  .node.locked .idx {
+    color: var(--muted-2);
+    border-color: rgba(130, 138, 160, 0.35);
   }
 
   /* 下一章：解锁了就提示，没解锁只给"未知" */

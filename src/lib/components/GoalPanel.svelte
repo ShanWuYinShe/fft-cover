@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Icon from './Icon.svelte';
   import { engine } from '../game/engine.svelte';
   import { goalProgress, levelGoals } from '../game/goals';
   import { fitScore } from '../game/scoring';
@@ -47,7 +48,7 @@
   </ul>
 
   {#if prog.done === prog.total}
-    <p class="all-done">🏅 本关四印齐全——去 🎲 随机关或 📅 每日挑战找新的曲线吧</p>
+    <p class="all-done">本关四印齐全——去随机关或每日挑战找新的曲线吧</p>
   {/if}
 </section>
 

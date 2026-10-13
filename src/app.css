@@ -41,7 +41,8 @@
   --gold-dim: rgba(251, 191, 36, 0.12);
   --text: #e8ebf5;
   --muted: #8b93a7;
-  --muted-2: #666e80;
+  /* 弱化文字下限:#666e80 对深底只有 ~3.7:1(WCAG 失败),提亮到 ≥5:1 */
+  --muted-2: #828aa0;
 
   /* 中国色：朱砂（印章／里程碑）、鎏金、黛青、月白 */
   --cinnabar: #c0392b;
@@ -50,13 +51,13 @@
   --jade: #2f9e7f;
   --moon: #dfe6f2;
 
-  /* 圆角 */
+  /* 圆角:外大内小的嵌套节奏——弹窗/大面板 16 > 面板 14 > 控件 10 > 小件 8 */
   --r-sm: 8px;
   --r-pill: 999px;
   /* 次级动作统一边框：全部"安静的按钮"共用一条线，消除视觉噪音 */
   --line-quiet: rgba(130, 150, 210, 0.28);
   --r-md: 10px;
-  --r-lg: 14px;
+  --r-lg: 16px;
 
   /* 阴影 */
   --sh-1: 0 2px 8px rgba(0, 0, 0, 0.25);
@@ -387,6 +388,12 @@ button.primary {
   color: var(--cyan);
   font-weight: 600;
   letter-spacing: 0.5px;
+  box-shadow: 0 0 14px rgba(79, 209, 197, 0.16);
+  transition:
+    border-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+    box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+    transform 0.08s,
+    background 0.15s;
 }
 
 button.primary:hover:not(:disabled) {
@@ -429,7 +436,10 @@ button:disabled {
 
 .side section {
   position: relative;
-  background: linear-gradient(170deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.018));
+  /* 深海毛玻璃:半透明深色 + 背景模糊,替代纯实心底(评审:高级感方向) */
+  background: linear-gradient(170deg, rgba(24, 30, 54, 0.72), rgba(14, 18, 36, 0.66));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   padding: 13px 15px 14px;
@@ -563,6 +573,15 @@ button.gold {
   border-color: rgba(251, 191, 36, 0.55);
   color: var(--gold);
   background: var(--gold-dim);
+}
+
+/* 破坏态（中断本局/清空参数）：hover 走朱砂语义，与青色前进操作区分。
+   印章红由此进入操作语言：只标记「打断/清空」，不做常态红（避免视觉噪音） */
+button.danger:hover:not(:disabled),
+button.danger:focus-visible {
+  border-color: var(--cinnabar-line);
+  color: #e88073;
+  box-shadow: 0 0 14px rgba(192, 57, 43, 0.25);
 }
 
 /* 音乐开关关闭态：压暗（图标不变，避免与音量图标混淆） */
@@ -801,11 +820,11 @@ input[type='checkbox'] {
 @keyframes pop-in {
   from {
     opacity: 0;
-    transform: scale(0.94);
+    transform: translateY(12px) scale(0.97);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -821,6 +840,14 @@ input[type='checkbox'] {
 }
 
 /* ---------- 响应式 ---------- */
+/* 宽屏：画布除宽度外再按视口高度约束——1440×900 实测运行栏被挤到
+   首屏之外（主操作不可见）。310 = header + 引导条 + 运行栏 + 上下留白预算 */
+@media (min-width: 1181px) {
+  .canvas-box {
+    width: min(100%, 640px, calc(100dvh - 310px));
+  }
+}
+
 /* 中屏（两栏）：画布 + 右侧堆叠面板（面板独立滚动） */
 @media (max-width: 1180px) {
   main {
@@ -1254,7 +1281,8 @@ input[type='checkbox'] {
   }
   .run-icons button {
     width: auto;
-    min-height: 42px;
+    min-height: 44px;
+    min-width: 44px;
   }
 }
 

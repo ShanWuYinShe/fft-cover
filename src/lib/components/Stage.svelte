@@ -594,7 +594,7 @@
       if (engine.sandbox) {
         ctx.fillStyle = 'rgba(167,139,250,.85)';
         ctx.font = canvasFont(11);
-        ctx.fillText('🧪 沙盒模式 · 无限时 · 实时调参', 10, 15);
+        ctx.fillText('沙盒模式 · 无限时 · 实时调参', 10, 15);
       } else {
         ctx.fillStyle = 'rgba(79,209,197,.55)';
         ctx.fillRect(4, 4, (engine.t / RUN_DUR) * (SIZE - 8), 3);

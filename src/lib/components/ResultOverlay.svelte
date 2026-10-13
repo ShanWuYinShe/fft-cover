@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Icon from './Icon.svelte';
   import { onMount } from 'svelte';
   import { uiToggle } from '../game/audio';
   import MoreMenu from './MoreMenu.svelte';
@@ -330,13 +331,13 @@
     // 直接挂在 0/24 的结算卡上会读成"这局完美全清了"（实测踩过）
     const runCleared = engine.runCleared;
     if (runCleared && engine.isPerfect)
-      out.push({ icon: '👑', text: '完美全清', fresh: engine.newPerfect });
+      out.push({ icon: 'crown', text: '完美全清', fresh: engine.newPerfect });
     if (runCleared && engine.isExpertClear)
-      out.push({ icon: '💎', text: '专家全清', fresh: engine.newExpertClear });
+      out.push({ icon: 'gem', text: '专家全清', fresh: engine.newExpertClear });
     if (runCleared && engine.isExact)
-      out.push({ icon: '🎯', text: '精确解', fresh: engine.newExact });
+      out.push({ icon: 'target', text: '精确解', fresh: engine.newExact });
     if (engine.streakJustBumped > 1)
-      out.push({ icon: '🔥', text: '连胜 ' + engine.streakJustBumped + ' 天', fresh: true });
+      out.push({ icon: 'flame', text: '连胜 ' + engine.streakJustBumped + ' 天', fresh: true });
     if (engine.newSeals.length > 0)
       out.push({ icon: '🆕', text: '新盖 ' + engine.newSeals.length + ' 印', fresh: true });
     return out;
@@ -360,7 +361,7 @@
   <div class="card">
     <div class="card-body">
       {#if engine.lastRunSandbox}
-        <div class="stars">🧪</div>
+        <div class="stars"><Icon name="flask" size={22} /></div>
         <div class="line">沙盒探索结束：收集 {got} / {n} 点 · 得分 {engine.score}</div>
         <div class="best">沙盒成绩不计入记录——挑战模式见真章！</div>
       {:else}
@@ -410,7 +411,9 @@
         {#if badges.length > 0}
           <div class="chips">
             {#each badges as b (b.text)}
-              <span class="chip" class:fresh={b.fresh}>{b.icon} {b.text}</span>
+              <span class="chip" class:fresh={b.fresh}
+                ><Icon name={b.icon} size={13} /> {b.text}</span
+              >
             {/each}
           </div>
         {/if}

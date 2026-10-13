@@ -2,9 +2,12 @@
   import { onMount } from 'svelte';
   import { engine } from '../game/engine.svelte';
   import { uiToggle } from '../game/audio';
+  import Icon from './Icon.svelte';
 
   export interface MenuItem {
     label: string;
+    /** 可选线性图标名(见 Icon.svelte);label 里的彩色 emoji 一律改走这里 */
+    icon?: string;
     title?: string;
     disabled?: boolean;
     onclick: () => void;
@@ -60,7 +63,7 @@
           title={it.title}
           onclick={() => run(it)}
         >
-          {it.label}
+          {#if it.icon}<span class="mi"><Icon name={it.icon} size={14} /></span>{/if}{it.label}
         </button>
       {/each}
     </div>
@@ -112,7 +115,9 @@
     }
   }
   .mm-pop button {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     width: 100%;
     text-align: left;
     padding: 10px 12px;
@@ -124,6 +129,13 @@
     font-size: var(--fs-md);
     cursor: pointer;
     white-space: nowrap;
+  }
+  .mm-pop .mi {
+    display: inline-flex;
+    color: var(--muted);
+  }
+  .mm-pop button:hover:not(:disabled) .mi {
+    color: var(--cyan);
   }
   .mm-pop button:hover:not(:disabled) {
     background: rgba(79, 209, 197, 0.12);

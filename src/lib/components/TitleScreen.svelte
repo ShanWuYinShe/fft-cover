@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Icon from './Icon.svelte';
   import { LEVEL_DEFS } from '../game/levels';
   import { engine } from '../game/engine.svelte';
 
@@ -42,13 +43,15 @@
             <b>{seals.chapters}</b><i>/{seals.chaptersTotal} 章节印</i>
           </div>
         {/if}
-        <div class="p-item"><b>{perfectCount}</b><i>👑 完美</i></div>
-        <div class="p-item"><b>{exactCount}</b><i>🎯 精确解</i></div>
+        <div class="p-item"><b>{perfectCount}</b><i><Icon name="crown" size={12} /> 完美</i></div>
+        <div class="p-item"><b>{exactCount}</b><i><Icon name="target" size={12} /> 精确解</i></div>
         {#if expertCount > 0}
-          <div class="p-item"><b>{expertCount}</b><i>💎 专家</i></div>
+          <div class="p-item"><b>{expertCount}</b><i>专家</i></div>
         {/if}
         {#if engine.dailyStreak.streak > 0}
-          <div class="p-item"><b>🔥{engine.dailyStreak.streak}</b><i>连胜</i></div>
+          <div class="p-item">
+            <b>{engine.dailyStreak.streak}</b><Icon name="flame" size={12} /><i>连胜</i>
+          </div>
         {/if}
       </div>
     {/if}

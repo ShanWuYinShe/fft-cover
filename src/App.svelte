@@ -474,9 +474,10 @@
       <div class="hud">
         <span class="lvl">
           {#if engine.endless}
-            ♾ 第 {engine.endlessWave} 波 · 累计 {engine.endlessScore} 分
+            <Icon name="infinity" size={13} /> 第 {engine.endlessWave} 波 · 累计 {engine.endlessScore}
+            分
           {:else}
-            {engine.level?.name ?? ''}{engine.sandbox ? ' 🧪' : ''}
+            {engine.level?.name ?? ''}{#if engine.sandbox}&nbsp;<Icon name="flask" size={13} />{/if}
           {/if}
         </span>
         <div class="hud-right">
@@ -527,7 +528,9 @@
             <p class="pm-prog">{pauseProgress}</p>
           {/if}
           {#if pauseGaps}
-            <p class="pm-gaps" title="当前拟合最需要补/削的两个频率">💡 最该调：{pauseGaps}</p>
+            <p class="pm-gaps" title="当前拟合最需要补/削的两个频率">
+              <Icon name="bulb" size={13} /> 最该调：{pauseGaps}
+            </p>
           {/if}
           <button type="button" class="primary" onclick={() => engine.toggleRun()}
             >▶ 继续旋转</button
@@ -556,12 +559,16 @@
     </div>
     {#if engine.expertMode}
       <div class="expert-tip">
-        💎 <b>专家模式</b>——目标轮廓与预览已隐藏，靠频谱对比和收集反馈来解（全清可得专家认证）
+        <Icon name="gem" size={14} />
+        <b>专家模式</b>——目标轮廓与预览已隐藏，靠频谱对比和收集反馈来解（全清可得专家认证）
       </div>
     {/if}
     {#if engine.remoteChallenge}
       <div class="remote-tip">
-        <span>🎁 <b>好友的解法挑战</b>——参数已载入，点「▶ 开始旋转」试试能不能全清</span>
+        <span
+          ><Icon name="share" size={14} /> <b>好友的解法挑战</b>——参数已载入，点「▶
+          开始旋转」试试能不能全清</span
+        >
         <button
           type="button"
           class="rt-close"
@@ -573,7 +580,8 @@
     {#if engine.showFirstGuide}
       <div class="first-guide" class:ok={engine.guideRReady}>
         {#if engine.guideRReady}
-          <b>✅ 很好！</b>现在点「▶ 开始旋转」，指针尖端扫过金色点即可收集
+          <b><Icon name="check" size={13} /> 很好！</b
+          >现在点「开始旋转」，指针尖端扫过金色点即可收集
         {:else}
           <b>第 1 步</b>：把 ① 的半径调到 <b>120</b>（当前 {engine.arms[0]
             ?.r}）——金色虚线是目标，紫色是你的轨迹
@@ -582,7 +590,8 @@
     {:else if engine.showEllipseGuide}
       <div class="first-guide" class:ok={engine.guideE2Ready}>
         {#if engine.guideE2Ready}
-          <b>✅ 对了！</b>再微调两根的半径与相位，让紫色轨迹贴上金色虚线（细节见 💡 提示）
+          <b><Icon name="check" size={13} /> 对了！</b
+          >再微调两根的半径与相位，让紫色轨迹贴上金色虚线（细节见提示）
         {:else}
           <b>椭圆的秘密在"反转"</b>：启用 <b>②</b> 并把它切到 <b>⟲ 反转</b>—— 一顺一反才叠得出椭圆
         {/if}
@@ -593,7 +602,9 @@
     {/if}
     <div class="run-row">
       {#if engine.sandbox}
-        <button class="primary" onclick={() => engine.exitSandbox()}>⏹ 结束沙盒</button>
+        <button class="primary" onclick={() => engine.exitSandbox()}
+          ><Icon name="stop" size={13} /> 结束沙盒</button
+        >
         <button
           title="按目标频谱自动解出精确参数（动画演示傅立叶逐项逼近）"
           disabled={engine.autoSolve}
@@ -634,6 +645,7 @@
       {:else}
         <button class="primary" onclick={toggleRun}>{engine.runLabel}</button>
         <button
+          class="danger"
           onclick={stopRun}
           disabled={engine.phase !== 'running' && engine.phase !== 'paused'}
         >
@@ -651,13 +663,15 @@
             },
             { label: '⟲ 重置点', onclick: () => engine.resetRun() },
             {
-              label: '📊 结算卡',
+              label: '结算卡',
+              icon: 'chart',
               title: '重新打开结算卡（复制战报 / 下一关）',
               disabled: !(engine.phase === 'done' && engine.resultDismissed),
               onclick: () => (engine.resultDismissed = false),
             },
             {
-              label: '🧪 沙盒',
+              label: '沙盒',
+              icon: 'flask',
               title: engine.endless
                 ? '无尽挑战中不能进沙盒——先在结算卡结束本局'
                 : '无限时自由旋转，实时调参，成绩不计入记录',
@@ -666,8 +680,8 @@
             },
             // 手机端图标行只留音量/音乐（见 app.css）：成就与设置在这里也有入口，
             // 桌面端多两个菜单项不冲突（图标键仍在）
-            { label: '🏆 成就', onclick: () => (showAchv = true) },
-            { label: '⚙️ 设置', onclick: () => (showSettings = true) },
+            { label: '成就', icon: 'trophy', onclick: () => (showAchv = true) },
+            { label: '设置', icon: 'gear', onclick: () => (showSettings = true) },
           ]}
         />
         <span class="run-icons">
@@ -727,7 +741,7 @@
         <div class="tools-row">
           <!-- 入门只露出"随机参数"；精通工具按进度解锁（专家=过第二关，频谱=卡关或进第三章） -->
           <button title="随机化已启用指针的半径与相位" onclick={() => engine.randomizeArms()}>
-            🎲 随机参数
+            <Icon name="dice" size={14} /> 随机参数
           </button>
           {#if engine.expertUnlocked}
             <button
@@ -735,7 +749,7 @@
               class:expert={engine.expertMode}
               onclick={() => engine.toggleExpert()}
             >
-              💎 专家
+              <Icon name="gem" size={14} /> 专家
             </button>
           {/if}
           {#if engine.spectrumUnlocked}
@@ -744,7 +758,7 @@
               class:gold={engine.spectrumCompare}
               onclick={() => engine.toggleSpectrumCompare()}
             >
-              🔍 频谱对比
+              <Icon name="zoom" size={14} /> 频谱对比
             </button>
           {/if}
           <MoreMenu
@@ -852,7 +866,7 @@
   <FinaleOverlay />
 {/if}
 {#if engine.toast && !showTitle}
-  <div class="toast">🏆 解锁成就：{engine.toast.name}</div>
+  <div class="toast"><Icon name="trophy" size={15} /> 解锁成就：{engine.toast.name}</div>
 {/if}
 {#if shareNote && !showTitle}
   <div class="toast share-note">🔗 {shareNote}</div>

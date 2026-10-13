@@ -1,5 +1,6 @@
 <script lang="ts">
   import { engine } from '../game/engine.svelte';
+  import Icon from './Icon.svelte';
 
   let {
     onclose,
@@ -30,7 +31,7 @@
   }}
 >
   <div class="box">
-    <h2>⚙️ 设置</h2>
+    <h2><Icon name="gear" size={16} /> 设置</h2>
 
     <div class="rows">
       <div class="row">
@@ -107,8 +108,10 @@
     <p class="desc keys">
       专家模式会隐藏目标轮廓与预览，只靠频谱与收集反馈推导参数。减少动画会关掉抖动、弹动与错峰入场（系统开启了"减弱动态效果"时默认打开）。
     </p>
-    快捷键：空格 开始 / 暂停（结算后立即重开）· S 停止结算 · R 重置 · ⌘/Ctrl+Z 撤销 · ⌘/Ctrl+Shift+Z 或
-    ⌘/Ctrl+Y 重做 · Esc 关闭面板
+    <p class="desc keys">
+      快捷键：空格 开始 / 暂停（结算后立即重开）· S 停止结算 · R 重置 · ⌘/Ctrl+Z 撤销 ·
+      ⌘/Ctrl+Shift+Z 或 ⌘/Ctrl+Y 重做 · Esc 关闭面板
+    </p>
     <p class="desc">
       原理：指针尖端位置 = Σ rₖ·e^(i(ωₖt+φₖ))——你调的每一根指针，都是目标曲线傅立叶展开中的一项。
     </p>
@@ -131,22 +134,33 @@
     /* 矮屏（手机横屏 ~390px 高）里弹层必须能滚 */
     max-height: calc(100dvh - 24px);
     overflow-y: auto;
-    background: #10152a;
+    /* 深海毛玻璃：与侧栏面板同一材质语言 */
+    background: linear-gradient(170deg, rgba(20, 26, 48, 0.92), rgba(13, 17, 34, 0.9));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: var(--r-lg);
     padding: 18px 20px;
     text-align: center;
     box-shadow: 0 16px 60px rgba(0, 0, 0, 0.6);
   }
   h2 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
     margin: 0 0 14px;
     font-size: 17px;
     letter-spacing: 2px;
   }
+  /* Icon 是子组件,其 svg 带 Svelte scope 类,需 :global 才能命中 */
+  h2 :global(svg) {
+    color: var(--muted);
+  }
   .rows {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     text-align: left;
   }
   .row {
@@ -205,8 +219,16 @@
     line-height: 1.8;
     text-align: left;
   }
+  /* 说明组之间拉开一段呼吸距离（评审：设置弹窗信息压迫感） */
+  .desc + .desc {
+    margin-top: 10px;
+  }
   .desc.keys {
-    margin-top: 8px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line-2);
+    line-height: 1.7;
+    color: var(--muted-2);
   }
   .primary {
     margin-top: 14px;

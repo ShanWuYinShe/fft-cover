@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Icon from './Icon.svelte';
   import { engine } from '../game/engine.svelte';
   import { haptic } from '../game/haptics';
   import { achvSound } from '../game/audio';
@@ -35,14 +36,16 @@
   <div class="card">
     <div class="card-body">
       {#if engine.endlessSurvived}
-        <div class="wave-ico">♾</div>
+        <div class="wave-ico"><Icon name="infinity" size={26} /></div>
         <div class="line">第 {engine.endlessWave} 波通过！</div>
         <div class="gain">
           本波 {engine.score} 分 + 过波奖励 {engine.endlessWaveBonus}
         </div>
         <div class="total">累计 <b>{engine.endlessScore}</b> 分</div>
         {#if engine.endlessNewBest}
-          <div class="rec">🏅 新纪录！（第 {engine.endlessWave} 波）</div>
+          <div class="rec">
+            <Icon name="trophy" size={13} /> 新纪录！（第 {engine.endlessWave} 波）
+          </div>
         {:else if engine.endlessBest.wave > 0}
           <div class="best">
             最佳：第 {engine.endlessBest.wave} 波 · {engine.endlessBest.score} 分
@@ -54,13 +57,13 @@
           >带着 {engine.endlessScore} 分收工</button
         >
       {:else}
-        <div class="wave-ico dead">♾</div>
+        <div class="wave-ico dead"><Icon name="infinity" size={26} /></div>
         <div class="line">挑战结束</div>
         <div class="total">
           止步第 <b>{engine.endlessWave}</b> 波 · 累计 <b>{engine.endlessScore}</b> 分
         </div>
         {#if newBest}
-          <div class="rec">🏅 新纪录！</div>
+          <div class="rec"><Icon name="trophy" size={13} /> 新纪录！</div>
         {:else if engine.endlessBest.wave > 0}
           <div class="best">
             最佳：第 {engine.endlessBest.wave} 波 · {engine.endlessBest.score} 分

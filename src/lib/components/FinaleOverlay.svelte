@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Icon from './Icon.svelte';
   import { engine } from '../game/engine.svelte';
   import { CHAPTERS, LEVEL_DEFS } from '../game/levels';
   import { shapePoints } from '../game/shapes';
@@ -63,7 +64,7 @@
     <div class="glow"></div>
     <!-- 落款朱印：书画收尾的那一方印 -->
     <div class="seal" aria-hidden="true">{mastered ? '大成' : '通关'}</div>
-    <div class="burst">{mastered ? '👑' : '🏁'}</div>
+    <div class="burst"><Icon name={mastered ? 'crown' : 'flag'} size={30} /></div>
     <h2>{mastered ? '谐波大师' : '通关！'}</h2>
     <p class="sub">
       {#if mastered}
@@ -81,13 +82,19 @@
         <b>{cleared}<i>/{LEVEL_DEFS.length}</i></b><span>已通关</span>
       </div>
       <div class="cell">
-        <b>{perfectCount}<i>/{LEVEL_DEFS.length}</i></b><span>👑 完美全清</span>
+        <b>{perfectCount}<i>/{LEVEL_DEFS.length}</i></b><span
+          ><Icon name="crown" size={13} /> 完美全清</span
+        >
       </div>
       <div class="cell">
-        <b>{exactCount}<i>/{LEVEL_DEFS.length}</i></b><span>🎯 精确解</span>
+        <b>{exactCount}<i>/{LEVEL_DEFS.length}</i></b><span
+          ><Icon name="target" size={13} /> 精确解</span
+        >
       </div>
       <div class="cell">
-        <b>{expertCount}<i>/{LEVEL_DEFS.length}</i></b><span>💎 专家全清</span>
+        <b>{expertCount}<i>/{LEVEL_DEFS.length}</i></b><span
+          ><Icon name="gem" size={13} /> 专家全清</span
+        >
       </div>
       <div class="cell">
         <b>{seals.done}<i>/{seals.total}</i></b><span>朱印（星/满/准/专）</span>
@@ -129,11 +136,10 @@
 
     <p class="note">
       {#if mastered}
-        接下来：🎲 随机关（困难档含有超过 10× 的分量）· 📅 每日挑战连胜 · 🎨
-        用谐波合成器创作关卡分享给朋友。
+        接下来：随机关（困难档含有超过 10× 的分量）· 每日挑战连胜 · 用谐波合成器创作关卡分享给朋友。
       {:else}
-        每一关都还留着更高的目标：👑 完美全清（100% 收集）· 🎯 精确解认证（参数与傅立叶分解一致）·
-        💎 专家模式全清（不显示轮廓）——四枚朱印集齐后，章头还会盖上该章的章节印。
+        每一关都还留着更高的目标：完美全清（100% 收集）· 精确解认证（参数与傅立叶分解一致）·
+        专家模式全清（不显示轮廓）——四枚朱印集齐后，章头还会盖上该章的章节印。
       {/if}
     </p>
 

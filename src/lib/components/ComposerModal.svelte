@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Icon from './Icon.svelte';
   import { engine } from '../game/engine.svelte';
   import { encodeCoeffs, type HarmonicCoeff } from '../game/levels';
   import { CIRCLED, DRAFT_KEY } from '../game/constants';
@@ -245,7 +246,7 @@
 
 <div class="modal">
   <div class="box">
-    <h2>🎨 谐波合成器</h2>
+    <h2><Icon name="palette" size={16} /> 谐波合成器</h2>
     <p class="lead">调节各频率的幅值与相位，合成你的专属曲线。生成后好友可用邀请码载入挑战。</p>
     <div class="presets">
       <span class="plabel">预设</span>
