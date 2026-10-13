@@ -16,6 +16,9 @@
 //   agent-browser --session <名> eval "$(cat .workwork/e2e-smoke.js)"
 //
 // 输出：JSON（steps / errs）。errs 应为空；steps 抽查关键值。
+// 注意：本脚本以异步 IIFE 结尾且最后会 reload——eval 直接返回可能拿到
+// null。结果已落 sessionStorage['__e2eSeg1']，reload 后读取即可：
+//   agent-browser --session <名> eval "sessionStorage.getItem('__e2eSeg1')"
 // =====================================================================
 (async () => {
   const out = { errs: [], steps: [] };
@@ -66,6 +69,13 @@
   out.steps.push('custom-negk:' + (e.level.spectrum ?? []).some((s) => s.k === -2));
 
   // 3) 刷新 → 创作关续玩
+  // 结果先落 sessionStorage：页尾的 reload 会销毁页面，eval 对异步 IIFE
+  // 只能拿到 null（实测）——落存储后刷新仍在，第二段/轮询都能读取。
+  try {
+    sessionStorage.setItem('__e2eSeg1', JSON.stringify(out, null, 1));
+  } catch {
+    /* 隐私模式等存储不可用时静默（结果仍会随 return 返回给 eval） */
+  }
   location.hash = '';
   location.reload();
   return JSON.stringify(out, null, 1);

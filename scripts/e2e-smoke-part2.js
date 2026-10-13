@@ -24,12 +24,20 @@
     g++;
   }
   await new Promise((r) => setTimeout(r, 300));
-  const eye = Array.from(document.querySelectorAll('button')).find((x) =>
+  // 查看轨迹已收进结算卡 ⋯ 菜单（P2 整合后不再直接可见）：先开菜单再点
+  const cardMM = [...document.querySelectorAll('.card .mm-btn')][0];
+  cardMM.click();
+  await new Promise((r) => setTimeout(r, 300));
+  const eye = [...document.querySelectorAll('.mm-pop button')].find((x) =>
     x.textContent.includes('查看轨迹'),
   );
   eye.click();
   await new Promise((r) => setTimeout(r, 300));
-  const reopen = Array.from(document.querySelectorAll('button')).find((x) =>
+  // 「📊 结算卡」同样收进运行栏 ⋯ 菜单
+  const runMM = [...document.querySelectorAll('.run-row .mm-btn')][0];
+  runMM.click();
+  await new Promise((r) => setTimeout(r, 300));
+  const reopen = [...document.querySelectorAll('.mm-pop button')].find((x) =>
     x.textContent.includes('结算卡'),
   );
   out.reopenBtn = !!reopen;
@@ -37,12 +45,19 @@
   await new Promise((r) => setTimeout(r, 300));
   out.resultBack = !!document.querySelector('[class*=result]');
   // 收起结算卡回到编辑态，继续后续成就/图鉴/合成器抽查
-  const closeR = Array.from(document.querySelectorAll('button')).find((x) =>
+  // 收起结算卡：同样走卡片 ⋯ 菜单（查看轨迹在菜单里）
+  const cardMM2 = [...document.querySelectorAll('.card .mm-btn')][0];
+  cardMM2.click();
+  await new Promise((r) => setTimeout(r, 300));
+  const closeR = [...document.querySelectorAll('.mm-pop button')].find((x) =>
     x.textContent.includes('查看轨迹'),
   );
   if (closeR) closeR.click();
   await new Promise((r) => setTimeout(r, 200));
-  b.click();
+  const achvBtn = [...document.querySelectorAll('button')].find(
+    (x) => x.getAttribute('aria-label') === '成就',
+  );
+  achvBtn.click();
   await new Promise((r) => setTimeout(r, 500));
   out.achvCount = document.querySelectorAll('.item').length; // 22
   out.dachengGot = (function () {
