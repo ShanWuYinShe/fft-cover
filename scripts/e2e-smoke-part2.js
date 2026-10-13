@@ -76,8 +76,16 @@
   );
   if (close) close.click();
   // 合成器回归锚：20 行槽位 + 负频分隔条（20 槽改造）
+  // 「🎨 创作」在「更多玩法」折叠条内：新存档默认折叠，先展开再找
   await new Promise((r) => setTimeout(r, 300));
-  const composerBtn = document.querySelector('button[title="用谐波合成器创作自己的关卡"]');
+  const moreToggle = [...document.querySelectorAll('button')].find(
+    (x) => (x.textContent || '').includes('更多玩法') && x.getAttribute('aria-expanded') === 'false',
+  );
+  if (moreToggle) moreToggle.click();
+  await new Promise((r) => setTimeout(r, 500));
+  const composerBtn = [...document.querySelectorAll('button')].find(
+    (x) => (x.textContent || '').includes('创作'),
+  );
   composerBtn.click();
   await new Promise((r) => setTimeout(r, 600));
   out.composerRows = document.querySelectorAll('.sliders .row').length; // 20
