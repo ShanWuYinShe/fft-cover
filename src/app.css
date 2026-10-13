@@ -1501,9 +1501,12 @@ input[type='checkbox'] {
   align-items: center;
   gap: 9px;
   padding: 16px;
-  background: rgba(6, 8, 16, 0.72);
-  backdrop-filter: blur(6px);
-  border-radius: 14px;
+  /* 暂停层必须真正压住画布：0.72+blur6 时轨迹/收集点仍清晰透出，
+     与「已暂停」文字互相干扰（1440×900 实测）；加深并加强模糊 */
+  background: rgba(6, 8, 16, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: var(--r-lg);
   z-index: 4;
   animation: fade-in 0.25s ease-out;
 }
