@@ -674,6 +674,17 @@
     </div>
   </section>
 
+  {#if panelExpanded}
+    <button
+      type="button"
+      class="sheet-collapse"
+      aria-label="收起面板"
+      onclick={() => (panelExpanded = false)}
+    >
+      <i>▾</i>收起面板，回到画布
+    </button>
+  {/if}
+
   <div class="sides">
     <aside class="side side-left">
       <LevelPicker />
