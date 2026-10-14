@@ -509,8 +509,10 @@
     max-height: 100%;
     overflow: hidden;
     border-radius: 20px;
-    background: linear-gradient(168deg, rgba(24, 30, 56, 0.96), rgba(12, 16, 32, 0.98));
-    border: 1px solid rgba(130, 150, 210, 0.22);
+    /* 高光时刻紫金质感（复查 B-1）：暗紫渐变底 + 顶部金光边 + 紫色泛光 */
+    background: linear-gradient(145deg, rgba(22, 18, 36, 0.95), rgba(10, 12, 18, 0.98));
+    border: 1px solid rgba(89, 66, 150, 0.4);
+    border-top: 1px solid rgba(251, 191, 36, 0.3);
     box-shadow:
       0 26px 70px rgba(0, 0, 0, 0.62),
       0 0 0 1px rgba(255, 255, 255, 0.03) inset,

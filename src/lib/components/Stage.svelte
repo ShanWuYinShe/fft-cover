@@ -1045,9 +1045,8 @@
     gap: 3px;
     padding: 3px;
     border-radius: 999px;
-    background: rgba(16, 21, 42, 0.78);
+    background: rgba(16, 21, 42, 0.88);
     border: 1px solid var(--line);
-    backdrop-filter: blur(6px);
     z-index: 5;
   }
   .zoom-bar button {

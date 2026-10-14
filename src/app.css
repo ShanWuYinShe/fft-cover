@@ -234,13 +234,15 @@ canvas {
   gap: 6px;
   padding: 4px 11px;
   border-radius: 999px;
-  background: rgba(16, 21, 42, 0.72);
-  border: 1px solid var(--line);
+  /* HUD 芯片在 60fps canvas 上方:禁用毛玻璃(每帧重算模糊,低端机卡死),
+     用不透明度更高的纯色替代(Gemini 复查 C-2) */
+  background: rgba(15, 20, 25, 0.85);
+  /* 极弱青边(复查 B-2):悬浮感与青色科技感,不抢主图 */
+  border: 1px solid rgba(79, 209, 197, 0.16);
+  color: #e0f7fa;
   font-weight: 600;
   font-size: var(--fs-sm);
-  color: var(--text);
   letter-spacing: 1px;
-  backdrop-filter: blur(6px);
 }
 
 /* 右上角：收集数 + 上届竞速差值（差值只在可与上届比较时出现） */
@@ -283,13 +285,12 @@ canvas {
   align-items: center;
   padding: 3px 9px;
   border-radius: 999px;
-  background: rgba(16, 21, 42, 0.72);
+  background: rgba(16, 21, 42, 0.88);
   border: 1px solid rgba(251, 191, 36, 0.38);
   font-size: var(--fs-xs);
   color: var(--gold);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.5px;
-  backdrop-filter: blur(6px);
 }
 
 /* 上届节奏刻度：画在收集进度条（同一坐标轴：收集比例）上 */
@@ -320,11 +321,10 @@ canvas {
   gap: 4px;
   padding: 5px 12px 7px;
   border-radius: 14px;
-  background: rgba(16, 21, 42, 0.78);
+  background: rgba(16, 21, 42, 0.88);
   border: 1px solid var(--line);
   font-size: var(--fs-xs);
   letter-spacing: 0.5px;
-  backdrop-filter: blur(6px);
   position: relative;
   overflow: hidden;
 }
@@ -438,10 +438,9 @@ button:disabled {
 
 .side section {
   position: relative;
-  /* 深海毛玻璃:半透明深色 + 背景模糊,替代纯实心底(评审:高级感方向) */
-  background: linear-gradient(170deg, rgba(24, 30, 54, 0.72), rgba(14, 18, 36, 0.66));
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  /* 常驻面板禁用毛玻璃(Gemini 复查 C-2:canvas 60fps 时每帧重算模糊是性能杀手),
+     高级感改由描边/阴影/内部层次承担 */
+  background: linear-gradient(170deg, rgba(24, 30, 54, 0.92), rgba(14, 18, 36, 0.9));
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   padding: 13px 15px 14px;
@@ -475,6 +474,8 @@ button:disabled {
   height: 14px;
   border-radius: 2px;
   background: linear-gradient(180deg, var(--cyan), var(--purple));
+  /* 复查 B-5:激活指示加光晕 */
+  box-shadow: 0 0 8px rgba(79, 209, 197, 0.45);
 }
 
 /* 分区强调色：关卡=青、指针=紫——一眼区分面板职责 */
@@ -917,8 +918,7 @@ input[type='checkbox'] {
     z-index: 20;
     padding: 9px 6px 11px;
     margin-top: -2px;
-    background: linear-gradient(180deg, rgba(10, 13, 24, 0.65), rgba(10, 13, 24, 0.96) 45%);
-    backdrop-filter: blur(8px);
+    background: linear-gradient(180deg, rgba(10, 13, 24, 0.82), rgba(10, 13, 24, 0.98) 45%);
     border-top: 1px solid var(--line-2);
     border-radius: 14px 14px 0 0;
   }
@@ -1069,9 +1069,8 @@ input[type='checkbox'] {
     z-index: 30;
     padding: 4px 6px calc(4px + env(safe-area-inset-bottom));
     gap: 4px;
-    background: linear-gradient(180deg, rgba(10, 13, 24, 0.86), rgba(8, 10, 20, 0.98));
+    background: linear-gradient(180deg, rgba(10, 13, 24, 0.94), rgba(8, 10, 20, 0.99));
     border-top: 1px solid var(--line-2);
-    backdrop-filter: blur(10px);
   }
 
   .mobile-tabs button {
@@ -1555,6 +1554,20 @@ input[type='checkbox'] {
 .pause-menu button {
   width: min(100%, 240px);
   min-height: 42px;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+/* 复查 B-4:hover 用左侧光带扫入 + 右移 4px,不用大面积色块 */
+.pause-menu button:hover:not(:disabled) {
+  background: linear-gradient(90deg, rgba(79, 209, 197, 0.1), transparent);
+  transform: translateX(4px);
+  border-color: rgba(79, 209, 197, 0.4);
+  color: var(--cyan);
+  box-shadow: none;
 }
 
 /* ---------- 首关手把手引导（入门容易：第一眼就知道做什么） ---------- */

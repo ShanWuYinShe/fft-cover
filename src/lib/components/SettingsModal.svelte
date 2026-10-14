@@ -134,10 +134,13 @@
     /* 矮屏（手机横屏 ~390px 高）里弹层必须能滚 */
     max-height: calc(100dvh - 24px);
     overflow-y: auto;
-    /* 深海毛玻璃：与侧栏面板同一材质语言 */
-    background: linear-gradient(170deg, rgba(20, 26, 48, 0.92), rgba(13, 17, 34, 0.9));
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    /* 深海毛玻璃：模态弹出时游戏已停，属安全区；blur ≤12（复查 C-3）且带回退 */
+    background: linear-gradient(170deg, rgba(20, 26, 48, 0.95), rgba(13, 17, 34, 0.94));
+    @supports (backdrop-filter: blur(12px)) {
+      background: linear-gradient(170deg, rgba(20, 26, 48, 0.88), rgba(13, 17, 34, 0.86));
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
     border: 1px solid var(--line);
     border-radius: var(--r-lg);
     padding: 18px 20px;

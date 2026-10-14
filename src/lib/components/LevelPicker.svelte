@@ -821,6 +821,10 @@
     letter-spacing: 1px;
     color: var(--gold);
   }
+  .dot.on {
+    /* 当前章节微光(复查 B-3):形变已是胶囊,补光晕增强节奏感 */
+    box-shadow: 0 0 10px rgba(79, 209, 197, 0.4);
+  }
   .node.active {
     /* 当前关降噪（评审：选中态与「开始旋转」CTA 争夺焦点）：
        整框发光改为左侧 4px 竖条 + 向右衰减的渐变底，识别度交给 idx 徽章 */
@@ -829,8 +833,8 @@
     color: var(--cyan);
     background: linear-gradient(
       90deg,
-      rgba(79, 209, 197, 0.13) 0%,
-      rgba(79, 209, 197, 0.03) 70%,
+      rgba(79, 209, 197, 0.15) 0%,
+      rgba(79, 209, 197, 0.04) 70%,
       transparent 100%
     );
     padding-left: 3px; /* 补偿竖条宽度，内容不跳位 */
