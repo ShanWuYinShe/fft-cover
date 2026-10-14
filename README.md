@@ -7,7 +7,7 @@
 - [Svelte 5](https://svelte.dev)（runes 响应式）+ TypeScript
 - [Vite](https://vite.dev) 构建，[Vitest](https://vitest.dev) 单测
 - Canvas 2D 渲染（requestAnimationFrame 命令式循环），UI 面板为响应式组件
-- 包管理：pnpm（registry 走 npmmirror）
+- 包管理：pnpm
 
 ## 玩法
 
