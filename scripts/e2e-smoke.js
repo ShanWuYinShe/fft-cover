@@ -4,8 +4,8 @@
 // 用途：合并第 49/70/80 轮的手工冒烟——全关精确解、模式载入、续玩、
 //       成就/图鉴 UI、控制台错误收集。改完核心逻辑后跑一遍当回归。
 //
-// 前置（agent-browser 会话）:
-//   export AGENT_BROWSER_SOCKET_DIR="$PWD/sock" AGENT_BROWSER_ARGS=--no-sandbox
+// 前置（agent-browser 会话）: 受限会话对该命令申请 danger-full-access(2026-10-14 晚起
+//   提权原生启动,不再重定向 socket/注入 --no-sandbox)
 //   agent-browser --session <名> --profile "$PWD/prof" open http://localhost:5199/
 //   agent-browser --session <名> open http://localhost:5199/   # 双开模式
 //   # 清存档 + 关掉首访遮罩：
