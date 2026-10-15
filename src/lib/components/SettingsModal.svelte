@@ -32,6 +32,9 @@
 >
   <div class="box">
     <h2><Icon name="gear" size={16} /> 设置</h2>
+    <button type="button" class="x" aria-label="关闭设置" title="关闭 (Esc)" onclick={onclose}>
+      <span aria-hidden="true">✕</span>
+    </button>
 
     <div class="rows">
       <div class="row">
@@ -147,6 +150,9 @@
     text-align: center;
     box-shadow: 0 16px 60px rgba(0, 0, 0, 0.6);
   }
+  .box {
+    position: relative;
+  }
   h2 {
     display: flex;
     align-items: center;
@@ -155,6 +161,27 @@
     margin: 0 0 14px;
     font-size: 17px;
     letter-spacing: 2px;
+  }
+  /* 评审(26 号截图):右上角 × 快捷关闭,免去移到弹窗底部 */
+  .x {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--line-2);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .x:hover {
+    color: var(--cyan);
+    border-color: rgba(79, 209, 197, 0.5);
   }
   /* Icon 是子组件,其 svg 带 Svelte scope 类,需 :global 才能命中 */
   h2 :global(svg) {
@@ -231,7 +258,7 @@
     padding-top: 12px;
     border-top: 1px solid var(--line-2);
     line-height: 1.7;
-    color: var(--muted-2);
+    color: var(--muted);
   }
   .primary {
     margin-top: 14px;

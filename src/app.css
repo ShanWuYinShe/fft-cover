@@ -182,6 +182,12 @@ main {
 .side-left {
   grid-column: 1;
   grid-row: 1;
+  /* 评审(22 号截图):「更多玩法」展开后整栏把页面撑长,画布被推出视口——
+     面板自身滚动,画布位置保持稳定 */
+  max-height: calc(100dvh - 96px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
 }
 .side-right {
   grid-column: 3;

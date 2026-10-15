@@ -577,7 +577,7 @@
         >
       </div>
     {/if}
-    {#if engine.showFirstGuide}
+    {#if engine.showFirstGuide && engine.phase === 'edit'}
       <div class="first-guide" class:ok={engine.guideRReady}>
         {#if engine.guideRReady}
           <b><Icon name="check" size={13} /> 很好！</b
@@ -587,7 +587,7 @@
             ?.r}）——金色虚线是目标，紫色是你的轨迹
         {/if}
       </div>
-    {:else if engine.showEllipseGuide}
+    {:else if engine.showEllipseGuide && engine.phase === 'edit'}
       <div class="first-guide" class:ok={engine.guideE2Ready}>
         {#if engine.guideE2Ready}
           <b><Icon name="check" size={13} /> 对了！</b

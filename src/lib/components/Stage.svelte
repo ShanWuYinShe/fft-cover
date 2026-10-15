@@ -614,11 +614,13 @@
     // 改为顶部「计分条」样式——与两侧 HUD 芯片错开，只做计分反馈不遮玩法
     if (engine.floaters.length > 0) {
       ctx.textAlign = 'center';
-      let stack = 0;
-      for (let i = 0; i < engine.floaters.length; i++) {
-        const f = engine.floaters[i];
+      // 复审(23/30 号截图):连击 9 条时堆叠下探到 y≈300 会盖住圆顶轨迹——
+      // 只保留最近 3 条并上移堆叠起点,长串计分不再进入玩法区
+      const alive = engine.floaters.filter((f) => (now - f.born) / 900 < 1);
+      const show = alive.slice(-3);
+      for (let i = 0; i < show.length; i++) {
+        const f = show[i];
         const age = Math.min((now - f.born) / 900, 1);
-        if (age >= 1) continue; // 已淡出的不占堆叠位
         const alpha = 1 - age * age;
         const size = 12 + Math.min(f.combo, 9) * 1.4;
         ctx.font = canvasFont(size, true);
@@ -630,9 +632,8 @@
           '+' + f.score + (f.combo >= 1 ? '  ×' + (f.combo + 1) : ''),
           SIZE / 2,
           // 顶部锚点垂直堆叠：新的在下、旧的在上方原地淡出
-          92 + stack * 26 - age * 14,
+          34 + i * 22 - age * 14,
         );
-        stack++;
       }
       ctx.textAlign = 'start';
     }
@@ -838,6 +839,24 @@
         // 连击提示挤在那里会与 HTML 芯片互相压字（手机端实测明显）。
         const cxr = 24;
         const cyr = 118; // 让开左上角的关卡序号标签（canvasFont 补偿后文字更高）
+        // 复审(23/30 号截图):裸文字偏扁平——加暗底圆角面板与主题色描边提精致度
+        {
+          const padX = 10 * canvasK();
+          const label = '×' + (engine.combo + 1) + ' 连击';
+          const wTxt = ctx.measureText(label).width;
+          const bx = cxr - padX;
+          const by = cyr - 20 * canvasK();
+          const bw = wTxt + padX * 2;
+          const bh = 30 * canvasK();
+          ctx.beginPath();
+          if (typeof ctx.roundRect === 'function') ctx.roundRect(bx, by, bw, bh, 6 * canvasK());
+          else ctx.rect(bx, by, bw, bh);
+          ctx.fillStyle = 'rgba(20,25,38,.78)';
+          ctx.fill();
+          ctx.strokeStyle = engine.combo >= 5 ? 'rgba(251,191,36,.45)' : 'rgba(196,181,253,.4)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
         ctx.textAlign = 'left';
         ctx.font = canvasFont(16, true);
         const hot = engine.combo >= 5;

@@ -605,6 +605,7 @@
     opacity: 1;
     border-color: rgba(251, 191, 36, 0.45);
     background: rgba(251, 191, 36, 0.05);
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.12);
   }
   .icon {
     font-size: 20px;

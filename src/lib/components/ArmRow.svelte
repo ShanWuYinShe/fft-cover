@@ -50,7 +50,9 @@
   }
   .arm-row.sel {
     border-color: rgba(79, 209, 197, 0.7);
-    box-shadow: 0 0 0 1px rgba(79, 209, 197, 0.25);
+    box-shadow:
+      0 0 0 1px rgba(79, 209, 197, 0.25),
+      0 0 10px rgba(79, 209, 197, 0.18);
   }
   .arm-row:has(.body:hover) {
     border-color: rgba(255, 255, 255, 0.22);

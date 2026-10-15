@@ -743,7 +743,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 5px;
+    gap: 9px;
     width: 100%;
   }
   .chip {
