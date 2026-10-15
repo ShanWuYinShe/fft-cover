@@ -633,7 +633,10 @@
       for (let i = 0; i < show.length; i++) {
         const f = show[i];
         const age = Math.min((now - f.born) / 900, 1);
-        const alpha = 1 - age * age;
+        // 堆叠层级递减：越旧的行越淡，最新的那条保持全亮——否则 3 行同亮度
+        // 的金色数字与星档徽章抢同一块视觉焦点（54 号截图复审）
+        const depth = show.length > 1 ? i / (show.length - 1) : 1;
+        const alpha = (1 - age * age) * (0.45 + 0.55 * depth);
         const size = 12 + Math.min(f.combo, 9) * 1.4;
         ctx.font = canvasFont(size, true);
         ctx.fillStyle =
