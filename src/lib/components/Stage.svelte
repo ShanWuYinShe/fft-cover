@@ -617,7 +617,19 @@
       // 复审(23/30 号截图):连击 9 条时堆叠下探到 y≈300 会盖住圆顶轨迹——
       // 只保留最近 3 条并上移堆叠起点,长串计分不再进入玩法区
       const alive = engine.floaters.filter((f) => (now - f.born) / 900 < 1);
-      const show = alive.slice(-3);
+      // 星级徽章与飘字都锚在画布顶部居中。徽章盒为 y=30 上下各 14*canvasK
+      // （见下方星档绘制），手机上 canvasK=1.6 时盒底到 y≈52；此前飘字
+      // 从 y=34 起、行距固定 22 —— 41/34 号截图里「+900 ×9」直接压在
+      // 「★★☆」徽章上。这里把行距与起点都按 canvasK 换算，让第一条落在
+      // 徽章盒底之下。
+      const ks = canvasK();
+      const lineH = 22 * ks;
+      const stackTop = 30 + 14 * ks + 26 * ks;
+      // 小屏纵向余量不够：画布 CSS 宽只有 ~338px 时，圆顶(逻辑 y=120)
+      // 换算到屏幕只剩 ~75px，徽章盒底 ~33px —— 3 行 24.6px 的飘字挤不
+      // 进去，必然压住徽章或圆顶。移动端只留最新 1 条（41 号建议：小屏
+      // 隐藏长串计分明细，分数仍由 HUD 的「收集」与得分给出）。
+      const show = alive.slice(ks > 1.25 ? -1 : -3);
       for (let i = 0; i < show.length; i++) {
         const f = show[i];
         const age = Math.min((now - f.born) / 900, 1);
@@ -632,7 +644,7 @@
           '+' + f.score + (f.combo >= 1 ? '  ×' + (f.combo + 1) : ''),
           SIZE / 2,
           // 顶部锚点垂直堆叠：新的在下、旧的在上方原地淡出
-          34 + i * 22 - age * 14,
+          stackTop + i * lineH - age * 14,
         );
       }
       ctx.textAlign = 'start';

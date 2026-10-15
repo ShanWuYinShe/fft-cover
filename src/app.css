@@ -183,8 +183,11 @@ main {
   grid-column: 1;
   grid-row: 1;
   /* 评审(22 号截图):「更多玩法」展开后整栏把页面撑长,画布被推出视口——
-     面板自身滚动,画布位置保持稳定 */
-  max-height: calc(100dvh - 96px);
+     面板自身滚动,画布位置保持稳定。
+     110px 而非 96px:aside 顶边 = header 底(~52.5) + main 上内距(14),
+     底边再留 main 的下内距(40)。96px 时实测 body.scrollHeight=911 >
+     900,页面仍会滚出 11px(展开态截图里「邀请码」贴边)。 */
+  max-height: calc(100dvh - 110px);
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
@@ -262,6 +265,10 @@ canvas {
 /* 本关印徽：精通线的"远处灯塔"——平时安静，点开直达成就 */
 .hud .hud-seal {
   appearance: none;
+  /* .hud 整体 pointer-events:none（让画布拖拽不被 HUD 挡住），
+     这颗可点按钮必须显式收回指针事件，否则点击穿透到画布、
+     成就面板永远打不开（实测 elementFromPoint 命中 CANVAS）。 */
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -617,10 +624,18 @@ input[type='range'] {
   height: 4px;
   border-radius: 999px;
   background: linear-gradient(90deg, rgba(79, 209, 197, 0.55), rgba(167, 139, 250, 0.55));
-  outline: none;
   cursor: pointer;
   min-width: 0;
   transition: filter 0.15s;
+}
+
+/* 这条选择器的特异性(0,2,1)高于上面的 input[type='range']，也高于全局
+   :focus-visible(0,1,0)——滑块此前用 outline:none 关掉浏览器默认框后，
+   键盘聚焦同样没有任何指示(实测 outlineStyle=none)。range 只在键盘
+   聚焦时命中 :focus-visible，鼠标拖动不会画出方框。 */
+input[type='range']:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 4px;
 }
 
 input[type='range']:hover {

@@ -82,17 +82,14 @@
     padding: 0 10px;
     font-size: 15px;
   }
+  /* 视觉语言必须放基础类：默认 direction='down' 也要是一块有底的面板。
+     此前视觉全挂在 .up 上，运行栏/工具栏两处 ⋯（App.svelte）的弹层
+     computed 实测 bg 透明 / border 0 / padding 0 —— 菜单项裸文字直接
+     压在内容上。.up 只负责翻到触发按钮上方。 */
   .mm-pop {
     position: absolute;
     top: calc(100% + 6px);
     right: 0;
-    /* 安全上限：菜单项变多或屏幕很矮时不至于超出视口（超出部分可滚） */
-    max-height: calc(100dvh - 40px);
-    overflow-y: auto;
-  }
-  .mm-pop.up {
-    top: auto;
-    bottom: calc(100% + 6px);
     z-index: 30;
     min-width: 168px;
     display: flex;
@@ -103,6 +100,13 @@
     border: 1px solid rgba(130, 150, 210, 0.3);
     box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
     animation: mm-in 0.16s ease-out;
+    /* 安全上限：菜单项变多或屏幕很矮时不至于超出视口（超出部分可滚） */
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+  }
+  .mm-pop.up {
+    top: auto;
+    bottom: calc(100% + 6px);
   }
   @keyframes mm-in {
     from {

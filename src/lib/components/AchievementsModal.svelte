@@ -469,8 +469,11 @@
   .dex-item:disabled {
     cursor: default;
   }
-  .dex-item.locked {
-    opacity: 0.45;
+  /* 只压暗锁定的图形与问号，关名保持可读（整卡 opacity 会把 11px
+     关名压到 3.93:1，「？？？」本身是信息，不该一并变糊）。 */
+  .dex-item.locked .dex-shape,
+  .dex-item.locked .dex-q {
+    opacity: 0.5;
   }
   .dex-shape {
     width: 100%;
@@ -599,10 +602,17 @@
     border: 1px solid var(--line);
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.02);
-    opacity: 0.5;
+  }
+  /* 未解锁降级只动装饰与标题，描述保持 --muted 实色。
+     整卡 opacity 会把 12px 描述压到 2.38:1（实测远低于 AA 4.5:1）。 */
+  .item:not(.got) .icon {
+    opacity: 0.45;
+  }
+  .item:not(.got) .nm {
+    color: var(--muted);
+    font-weight: 500;
   }
   .item.got {
-    opacity: 1;
     border-color: rgba(251, 191, 36, 0.45);
     background: rgba(251, 191, 36, 0.05);
     box-shadow: 0 0 10px rgba(251, 191, 36, 0.12);
@@ -717,7 +727,7 @@
     border-radius: 4px;
     border: 1px solid var(--line-2);
     background: rgba(255, 255, 255, 0.02);
-    font-size: 10px;
+    font-size: var(--fs-xs);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
   }
@@ -731,8 +741,10 @@
     box-shadow: 0 0 0 1px rgba(79, 209, 197, 0.4);
     color: var(--text);
   }
+  /* 未来日期只需"不可点/未到"的弱提示，不该淡到读不出数字
+     （0.35 → 实测 1.79:1）。0.6 配合 --muted 仍低于已过日期，层级不变。 */
   .cal-cell.future {
-    opacity: 0.35;
+    opacity: 0.6;
   }
   .stats .cards {
     display: grid;
@@ -780,7 +792,11 @@
     font-size: var(--fs-sm);
     background: rgba(255, 255, 255, 0.02);
   }
-  .lvl-row.dim {
+  /* 未玩过的关卡行：只压暗星级与火花图，文字（.nm/.meta/.best）保持实色。
+     整行 opacity 会把 12px .meta 压到 2.03:1（实测）。 */
+  .lvl-row.dim .st,
+  .lvl-row.dim .spark,
+  .lvl-row.dim .spark-empty {
     opacity: 0.45;
   }
   .lvl-row .nm {
@@ -847,6 +863,11 @@
   .save .io:focus {
     border-color: rgba(79, 209, 197, 0.6);
   }
+  /* 同上：键盘焦点必须可见 */
+  .save .io:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
   .save .row {
     display: flex;
     gap: 8px;
@@ -862,8 +883,9 @@
   }
   /* 触屏：标签页与迷你按钮的热区补够 */
   @media (pointer: coarse), (max-width: 640px) {
+    /* 实测 390×844 下 Tab 只有 58×38，低于 44 下限 */
     .tabs button {
-      min-height: 38px;
+      min-height: 44px;
       padding: 8px 16px;
     }
     .mini {

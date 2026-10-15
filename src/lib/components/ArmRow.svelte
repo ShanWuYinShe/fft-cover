@@ -87,6 +87,20 @@
     box-shadow: none;
     background: rgba(255, 255, 255, 0.03);
   }
+  /* 触屏：实测 .body 132×38、复选框 15×15（10 根共 20 个触点），
+     均低于 44px。复选盒本身不放大（视觉会笨重），它的 <label> 是
+     原生可点区域——把 label 撑到 44×44 即等于扩大勾选热区。 */
+  @media (pointer: coarse), (max-width: 640px) {
+    .tg {
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      justify-content: center;
+    }
+    .body {
+      height: 44px;
+    }
+  }
   .idx {
     color: var(--cyan);
     font-size: var(--fs-md);

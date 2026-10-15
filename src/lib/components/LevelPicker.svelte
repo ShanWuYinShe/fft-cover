@@ -403,8 +403,9 @@
       aria-expanded={!!engine.flags['moreOpen']}
       onclick={() => engine.setFlag('moreOpen', !engine.flags['moreOpen'])}
     >
-      <i>{engine.flags['moreOpen'] ? '▾' : '▸'}</i> 更多玩法
-      <span>
+      <i>{engine.flags['moreOpen'] ? '▾' : '▸'}</i>
+      <span class="mt-label">更多玩法</span>
+      <span class="mt-status">
         {#if engine.flags['moreOpen']}
           每日 · 每周 · 无尽 · 随机 · 创作
         {:else if engine.todayBest === 0}
@@ -944,7 +945,15 @@
     width: 14px;
     flex: none;
   }
-  .more-toggle span {
+  /* 标题必须整行不折。此前它是 flex 容器里的裸文本节点（默认
+     flex-shrink:1），右侧状态变长时会被挤成「更多玩 / 法」两行（实测
+     行盒 y=518.5 与 535.5）。改用带类名的 span 显式 flex:none + nowrap，
+     缩短全部由右侧状态承担。 */
+  .more-toggle .mt-label {
+    flex: none;
+    white-space: nowrap;
+  }
+  .more-toggle .mt-status {
     margin-left: auto;
     font-size: var(--fs-xs);
     color: var(--muted);
@@ -1137,6 +1146,11 @@
   }
   .seed-input:focus {
     border-color: rgba(79, 209, 197, 0.6);
+  }
+  /* 自定义边框之外再给键盘用户一圈明确轮廓（outline:none 关掉了默认框） */
+  .seed-input:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
   }
   .seed-input::placeholder {
     color: var(--muted-2);

@@ -359,6 +359,12 @@
     -moz-appearance: textfield;
     appearance: textfield;
   }
+  /* 文本类控件在 Chrome 里鼠标聚焦也会命中 :focus-visible，故保留
+     outline:none 走自定义边框；键盘用户另给一圈明确轮廓。 */
+  .num-edit:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
   .num-edit::-webkit-outer-spin-button,
   .num-edit::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -376,6 +382,10 @@
     font-family: inherit;
     cursor: pointer;
     outline: none;
+  }
+  .freq-line select:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
   }
   .dir {
     flex: 1;
@@ -402,11 +412,35 @@
     background: var(--purple-dim);
   }
 
-  /* 触屏：复位 / 步进 / 方向这类小按钮的热区补够 */
+  /* 触屏：实测 390×844 下 .sb（步进）30×30、.val 42×18、select 50×31、
+     .reset 30×38、.dir 38 高——均低于 44px 下限。
+     这里直接放大真实尺寸而不是用 ::after 扩隐形热区：步进按钮间距只有
+     2px，隐形热区会横向互相重叠（相邻两个 44px 热区中心距仅 32/44px），
+     反而制造误触。行高同步抬到 44px 使上下相邻行不重叠；编辑卡变高约
+     60px，面板本就是内部滚动容器（实测已溢出 231px），不影响可读性。 */
   @media (pointer: coarse), (max-width: 640px) {
-    .reset,
+    .reset {
+      min-height: 44px;
+      padding: 0 10px;
+    }
+    .line {
+      min-height: 44px;
+    }
+    .sb {
+      width: 44px;
+      height: 44px;
+    }
+    /* 步进之间留 4px 真实间隙，44px 热区就不会压到隔壁按钮上 */
+    .spin {
+      gap: 4px;
+    }
+    .val {
+      min-width: 44px;
+      min-height: 44px;
+    }
+    .freq-line select,
     .dir {
-      min-height: 38px;
+      min-height: 44px;
     }
   }
 </style>

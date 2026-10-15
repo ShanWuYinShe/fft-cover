@@ -266,11 +266,20 @@
     min-height: 42px;
   }
 
-  /* 触屏：开关与难度 chip 的热区补够（放样式块末尾，靠顺序压过基础规则） */
+  /* 触屏：开关与难度 chip 的热区补够（放样式块末尾，靠顺序压过基础规则）。
+     实测 390×844：.sw 62×40、.chip 44×40、右上角 ✕ 32×44、底部「关闭」
+     42 高——均低于 44 下限，统一抬到 44。 */
   @media (pointer: coarse), (max-width: 640px) {
     .sw,
     .chip {
-      min-height: 40px;
+      min-height: 44px;
+    }
+    .x {
+      min-width: 44px;
+      min-height: 44px;
+    }
+    .primary {
+      min-height: 44px;
     }
   }
 </style>
