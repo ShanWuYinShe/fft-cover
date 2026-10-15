@@ -107,7 +107,8 @@
   .ts-eyebrow {
     font-size: var(--fs-xs);
     letter-spacing: 4px;
-    color: var(--muted-2);
+    font-weight: 500;
+    color: rgba(153, 246, 228, 0.55);
   }
 
   h1 {
@@ -140,8 +141,9 @@
     -webkit-background-clip: initial;
     background-clip: initial;
     color: #fdece7;
-    border-radius: 4px;
-    box-shadow: 0 2px 12px rgba(192, 57, 43, 0.45);
+    border-radius: 2px;
+    border: 1px solid rgba(255, 200, 190, 0.35);
+    box-shadow: inset 0 0 0 1px #b91c1c, 0 2px 10px rgba(220, 38, 38, 0.35);
     filter: none;
   }
 
@@ -185,6 +187,7 @@
   .ts-start {
     min-width: 200px;
     min-height: 48px;
+    margin-top: 8px; /* 评审:与副标语 28~32px,聚拢 Hero CTA */
     font-size: var(--fs-lg);
     letter-spacing: 3px;
     color: #06121a;
@@ -212,9 +215,9 @@
   }
 
   .ts-tips {
-    margin: 0;
-    font-size: var(--fs-xs);
-    color: var(--muted-2);
+    margin: 26px 0 0; /* 评审:与按钮拉开 44~52px,注脚独立于 CTA 区 */
+    font-size: 13px;
+    color: rgba(226, 232, 240, 0.65);
     line-height: 1.7;
   }
 </style>
