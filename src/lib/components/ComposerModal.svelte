@@ -477,8 +477,10 @@
       font-size: var(--fs-sm);
     }
 
+    /* 44 下限：38 是触控标准确立前的旧值（实测 390×844 下预设/取主频/
+       已启用/复制邀请码 9 颗全为 38 高） */
     .pchip {
-      min-height: 38px;
+      min-height: 44px;
     }
   }
 </style>

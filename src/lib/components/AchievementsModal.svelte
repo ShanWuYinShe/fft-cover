@@ -889,7 +889,7 @@
       padding: 8px 16px;
     }
     .mini {
-      min-height: 40px;
+      min-height: 44px;
     }
   }
   .mini.danger:hover:not(:disabled) {

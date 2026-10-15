@@ -1198,7 +1198,7 @@ input[type='checkbox'] {
     justify-content: center;
     gap: 6px;
     width: 100%;
-    min-height: 40px;
+    min-height: 44px;
     margin: 0;
     padding: 8px 10px;
     border-radius: var(--r-md);
