@@ -6,3 +6,5 @@ dist/
 .DS_Store
 .pnpm-store/
 store/sock-g/
+.agent-profile/
+sock-g/
