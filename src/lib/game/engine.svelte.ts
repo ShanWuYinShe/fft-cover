@@ -805,12 +805,19 @@ export class GameEngine {
    */
   applyExactSolution(): number {
     if (!this.level) return 0;
-    const sol = solveFromSpectrum(this.level.spectrum, this.level.armLimit);
+    // solveFromSpectrum 返回固定 10 槽（未命中的填 {on:false, r:0, freq:1}），
+    // 若整组替换会把玩家在其他槽位自定义的 r/freq/phase 一并清掉（实测
+    // ②=5、③=7 在套用后都变 1）。这里只覆盖解出的前 N 根，其余槽位
+    // 关闭但保留原参数。
+    const sol = solveFromSpectrum(this.level.spectrum, this.level.armLimit).filter((a) => a.on);
     this.cancelAutoSolve();
     this.pushArmHistory(true); // 可撤销
-    this.arms = sol.map((a) => ({ ...a }));
+    this.arms = this.arms.map((a, i) => {
+      if (i < sol.length) return { ...a, ...sol[i] };
+      return { ...a, on: false };
+    });
     this.trimArmsToLimit();
-    return sol.filter((a) => a.on).length;
+    return sol.length;
   }
 
   /**

@@ -855,13 +855,19 @@
         const cxr = 24;
         const cyr = 118; // 让开左上角的关卡序号标签（canvasFont 补偿后文字更高）
         // 复审(23/30 号截图):裸文字偏扁平——加暗底圆角面板与主题色描边提精致度
+        let bx = 0;
+        let bw = 0;
         {
           const padX = 10 * canvasK();
           const label = '×' + (engine.combo + 1) + ' 连击';
+          // 字体必须先设再量：此前的度量发生在上一个绘制阶段的字体上，
+          // 1440×900 实测 33.4px vs 正确 58.1px —— 徽章盒比文字窄，
+          // 文字溢出盒子。衰减条(下方)也依赖这个宽度。
+          ctx.font = canvasFont(16, true);
           const wTxt = ctx.measureText(label).width;
-          const bx = cxr - padX;
+          bx = cxr - padX;
           const by = cyr - 20 * canvasK();
-          const bw = wTxt + padX * 2;
+          bw = wTxt + padX * 2;
           const bh = 30 * canvasK();
           ctx.beginPath();
           if (typeof ctx.roundRect === 'function') ctx.roundRect(bx, by, bw, bh, 6 * canvasK());
@@ -877,11 +883,12 @@
         const hot = engine.combo >= 5;
         ctx.fillStyle = hot ? 'rgba(251,191,36,.95)' : 'rgba(196,181,253,.95)';
         ctx.fillText('×' + (engine.combo + 1) + ' 连击', cxr, cyr);
-        // 剩余窗口条
+        // 剩余窗口条：与徽章盒同宽同位。此前硬编码 78 逻辑宽，比徽章宽出
+        // 一截悬空的灰条（实测 5174 复核 trackW 84.9 vs badgeW 55.1）。
         ctx.fillStyle = 'rgba(255,255,255,.12)';
-        ctx.fillRect(cxr, cyr + 6 * canvasK(), 78 * canvasK(), 3 * canvasK());
+        ctx.fillRect(bx, cyr + 6 * canvasK(), bw, 3 * canvasK());
         ctx.fillStyle = hot ? 'rgba(251,191,36,.9)' : 'rgba(196,181,253,.9)';
-        ctx.fillRect(cxr, cyr + 6 * canvasK(), 78 * remain * canvasK(), 3 * canvasK());
+        ctx.fillRect(bx, cyr + 6 * canvasK(), bw * remain, 3 * canvasK());
         ctx.textAlign = 'start';
       }
     }

@@ -276,6 +276,19 @@ describe('GameEngine', () => {
     expect(engine.arms[0].r).toBe(mine);
   });
 
+  it('一键套用精确解不清掉其他槽位的自定义参数', () => {
+    engine.loadLevel(LEVEL_DEFS[0]);
+    // 玩家先在其他槽位自定义频率（圆关上限 1 根，②③ 平时用不到但参数该保留）
+    engine.setArm(1, { freq: 5 });
+    engine.setArm(2, { freq: 7 });
+    engine.applyExactSolution();
+    // 解只覆盖前 N 根，其余槽位关闭但 r/freq/phase 保留
+    expect(engine.arms[1].freq).toBe(5);
+    expect(engine.arms[2].freq).toBe(7);
+    expect(engine.arms[1].on).toBe(false);
+    expect(engine.arms[2].on).toBe(false);
+  });
+
   it('连击计分：窗口内连收 combo 递增', () => {
     const pts = engine.level!.pts;
     engine.phase = 'running';
