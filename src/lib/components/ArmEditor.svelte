@@ -23,10 +23,6 @@
     engine.setArm(index, { phase: (d * Math.PI) / 180 });
     engine.flashArm(index);
   }
-  function setFreq(e: Event): void {
-    const v = +(e.currentTarget as HTMLSelectElement).value;
-    engine.setArm(index, { freq: Math.sign(arm.freq || 1) * v });
-  }
   function toggleDir(): void {
     engine.setArm(index, { freq: -(arm.freq || 1) });
     engine.flashArm(index);
@@ -112,335 +108,470 @@
   }
 </script>
 
-<div class="editor">
-  <div class="hd">
-    <span class="who">编辑 <b>{CIRCLED[index]}</b></span>
-    <button
-      type="button"
-      class="reset"
-      title="复位这根指针的默认参数"
-      onclick={() => engine.resetArm(index)}>复位</button
-    >
-  </div>
-
-  <div class="line">
-    <span class="lb">半径</span>
-    <input type="range" min="0" max={R_MAX} step="1" value={arm.r} oninput={setR} title="半径" />
-    <div class="spin">
-      <button
-        type="button"
-        class="sb"
-        title="半径 −1（长按连发）"
-        onpointerdown={rMinus.onDown}
-        onpointerup={rMinus.onUp}
-        onpointerleave={rMinus.onUp}
-        onpointercancel={rMinus.onUp}
-        onclick={rMinus.onClick}>−</button
-      >
-      {#if editing === 'r'}
-        <!-- svelte-ignore a11y_autofocus -->
-        <input
-          class="num-edit"
-          type="number"
-          inputmode="numeric"
-          autofocus
-          value={draft}
-          oninput={(e) => (draft = e.currentTarget.value)}
-          onblur={commitEdit}
-          onkeydown={onEditKey}
-        />
-      {:else}
-        <button type="button" class="val" title="点击输入精确值" onclick={() => beginEdit('r')}
-          >{arm.r}</button
-        >
-      {/if}
-      <button
-        type="button"
-        class="sb"
-        title="半径 +1（长按连发）"
-        onpointerdown={rPlus.onDown}
-        onpointerup={rPlus.onUp}
-        onpointerleave={rPlus.onUp}
-        onpointercancel={rPlus.onUp}
-        onclick={rPlus.onClick}>+</button
-      >
-    </div>
-  </div>
-
-  <div class="line">
-    <span class="lb">相位</span>
-    <input
-      type="range"
-      title="初始相位"
-      min="0"
-      max="360"
-      step="1"
-      value={deg}
-      oninput={setPhase}
-    />
-    <div class="spin">
-      <button
-        type="button"
-        class="sb"
-        title="相位 −1°（长按连发）"
-        onpointerdown={pMinus.onDown}
-        onpointerup={pMinus.onUp}
-        onpointerleave={pMinus.onUp}
-        onpointercancel={pMinus.onUp}
-        onclick={pMinus.onClick}>−</button
-      >
-      {#if editing === 'p'}
-        <!-- svelte-ignore a11y_autofocus -->
-        <input
-          class="num-edit"
-          type="number"
-          inputmode="numeric"
-          autofocus
-          value={draft}
-          oninput={(e) => (draft = e.currentTarget.value)}
-          onblur={commitEdit}
-          onkeydown={onEditKey}
-        />
-      {:else}
+<div class="editor-card">
+  <!-- 半径卡槽 (双层贯穿式高精度结构) -->
+  <div class="param-block">
+    <div class="param-meta">
+      <div class="param-title-wrap">
+        <span class="param-lbl">半径</span>
+        <span class="eng-lbl">RADIUS</span>
+      </div>
+      <div class="param-stepper">
         <button
           type="button"
-          class="val"
-          title="点击输入精确值（角度）"
-          onclick={() => beginEdit('p')}>{deg}°</button
+          class="sb"
+          title="半径 −1"
+          onpointerdown={rMinus.onDown}
+          onpointerup={rMinus.onUp}
+          onpointerleave={rMinus.onUp}
+          onpointercancel={rMinus.onUp}
+          onclick={rMinus.onClick}>−</button
         >
-      {/if}
-      <button
-        type="button"
-        class="sb"
-        title="相位 +1°（长按连发）"
-        onpointerdown={pPlus.onDown}
-        onpointerup={pPlus.onUp}
-        onpointerleave={pPlus.onUp}
-        onpointercancel={pPlus.onUp}
-        onclick={pPlus.onClick}>+</button
-      >
+        {#if editing === 'r'}
+          <!-- svelte-ignore a11y_autofocus -->
+          <input
+            class="num-edit"
+            type="number"
+            inputmode="numeric"
+            autofocus
+            value={draft}
+            oninput={(e) => (draft = e.currentTarget.value)}
+            onblur={commitEdit}
+            onkeydown={onEditKey}
+          />
+        {:else}
+          <button type="button" class="val" title="点击直接输入" onclick={() => beginEdit('r')}>
+            <b class="val-num">{arm.r}</b><span class="val-unit">px</span>
+          </button>
+        {/if}
+        <button
+          type="button"
+          class="sb"
+          title="半径 +1"
+          onpointerdown={rPlus.onDown}
+          onpointerup={rPlus.onUp}
+          onpointerleave={rPlus.onUp}
+          onpointercancel={rPlus.onUp}
+          onclick={rPlus.onClick}>+</button
+        >
+      </div>
+    </div>
+    <div class="slider-track-wrap">
+      <input
+        type="range"
+        min="0"
+        max={R_MAX}
+        step="1"
+        value={arm.r}
+        oninput={setR}
+        title="半径推子"
+        class="laser-slider"
+      />
+      <div class="ruler-marks"></div>
     </div>
   </div>
 
-  <div class="line freq-line">
-    <span class="lb">频率</span>
-    <select title="旋转频率" value={Math.abs(arm.freq)} onchange={setFreq}>
+  <!-- 相位卡槽 (双层带角度刻度尺) -->
+  <div class="param-block">
+    <div class="param-meta">
+      <div class="param-title-wrap">
+        <span class="param-lbl">相位</span>
+        <span class="eng-lbl">PHASE</span>
+      </div>
+      <div class="degree-snaps">
+        <span>0°</span><span>90°</span><span>180°</span><span>270°</span><span>360°</span>
+      </div>
+      <div class="param-stepper">
+        <button
+          type="button"
+          class="sb"
+          title="相位 −1°"
+          onpointerdown={pMinus.onDown}
+          onpointerup={pMinus.onUp}
+          onpointerleave={pMinus.onUp}
+          onpointercancel={pMinus.onUp}
+          onclick={pMinus.onClick}>−</button
+        >
+        {#if editing === 'p'}
+          <!-- svelte-ignore a11y_autofocus -->
+          <input
+            class="num-edit"
+            type="number"
+            inputmode="numeric"
+            autofocus
+            value={draft}
+            oninput={(e) => (draft = e.currentTarget.value)}
+            onblur={commitEdit}
+            onkeydown={onEditKey}
+          />
+        {:else}
+          <button type="button" class="val" title="点击直接输入角度" onclick={() => beginEdit('p')}>
+            <b class="val-num">{deg}</b><span class="val-unit">°</span>
+          </button>
+        {/if}
+        <button
+          type="button"
+          class="sb"
+          title="相位 +1°"
+          onpointerdown={pPlus.onDown}
+          onpointerup={pPlus.onUp}
+          onpointerleave={pPlus.onUp}
+          onpointercancel={pPlus.onUp}
+          onclick={pPlus.onClick}>+</button
+        >
+      </div>
+    </div>
+    <div class="slider-track-wrap">
+      <input
+        type="range"
+        min="0"
+        max="360"
+        step="1"
+        value={deg}
+        oninput={setPhase}
+        title="相位推子"
+        class="laser-slider"
+      />
+    </div>
+  </div>
+
+  <!-- 频率与极性：一体化金属琴键 + 翻转拨杆 -->
+  <div class="param-block freq-block">
+    <div class="freq-header">
+      <div class="param-title-wrap">
+        <span class="param-lbl">频率</span>
+        <span class="eng-lbl">FREQ</span>
+      </div>
+      <button
+        type="button"
+        class="dir-toggle"
+        class:ccw={arm.freq < 0}
+        title={arm.freq < 0 ? '当前逆时针，点击切顺时针' : '当前顺时针，点击切逆时针'}
+        onclick={toggleDir}
+      >
+        <span class="dir-dot"></span>
+        <span class="dir-txt">{arm.freq < 0 ? '↺ 逆时针' : '↻ 顺时针'}</span>
+      </button>
+    </div>
+    <div class="freq-matrix" role="radiogroup" aria-label="旋转频率档位">
       {#each freqOptions as f (f)}
-        <option value={f}>{f}×</option>
+        <button
+          type="button"
+          class="freq-key"
+          class:active={Math.abs(arm.freq) === f}
+          class:ccw={arm.freq < 0}
+          aria-checked={Math.abs(arm.freq) === f}
+          role="radio"
+          title="{f}× 旋转频率"
+          onclick={() => {
+            engine.setArm(index, { freq: Math.sign(arm.freq || 1) * f });
+            engine.flashArm(index);
+          }}
+        >
+          {f}×
+        </button>
       {/each}
-    </select>
-    <button
-      type="button"
-      class="dir"
-      class:ccw={arm.freq < 0}
-      title={arm.freq < 0
-        ? '当前逆时针旋转（紫色，对应频谱负频），点击改为顺时针'
-        : '当前顺时针旋转（青色），点击改为逆时针——拟合三叶草/无穷等形状需要逆时针指针'}
-      onclick={toggleDir}
-    >
-      {arm.freq < 0 ? '逆时针' : '顺时针'}
-    </button>
+    </div>
   </div>
 </div>
 
 <style>
-  .editor {
-    border: 1px solid rgba(79, 209, 197, 0.35);
-    border-radius: var(--r-md);
-    background: linear-gradient(170deg, rgba(79, 209, 197, 0.06), rgba(167, 139, 250, 0.04));
-    padding: 9px 11px 10px;
+  .editor-card {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    background: #0f131c;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+    padding: 4px 8px;
     display: flex;
     flex-direction: column;
-    gap: 7px;
-    margin-top: 7px;
+    gap: 3px;
   }
-  .hd {
+
+  /* 参数单块：扁平底盘 + 1px 淡分割线，消除套娃框 */
+  .param-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 2px 0 3px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+  .param-block:last-child {
+    border-bottom: none;
+    padding-bottom: 1px;
+  }
+
+  /* 上半层：标题在左，步进读数在右 */
+  .param-meta {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    height: 19px;
   }
-  .who {
-    font-size: var(--fs-sm);
-    color: var(--muted);
+
+  .param-title-wrap {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
   }
-  .who b {
-    color: var(--cyan);
-    font-size: var(--fs-md);
+  .param-lbl {
+    font-size: 11px;
+    font-weight: 600;
+    color: #cbd5e1;
+    letter-spacing: 0.5px;
   }
-  .reset {
-    appearance: none;
-    background: transparent;
-    border: none;
-    padding: 0 4px;
-    min-height: 22px;
-    font-size: var(--fs-xs);
-    color: var(--muted-2);
-    border-radius: var(--r-sm);
-    cursor: pointer;
-    font-family: inherit;
+  .eng-lbl {
+    font-size: 8px;
+    font-weight: 500;
+    color: #64748b;
+    font-family: monospace;
+    letter-spacing: 0.5px;
   }
-  .reset:hover {
-    color: var(--gold);
-    background: var(--gold-dim);
-    box-shadow: none;
+
+  /* 角度刻度吸附标签 */
+  .degree-snaps {
+    display: flex;
+    gap: 10px;
+    font-size: 8px;
+    color: #64748b;
+    font-family: monospace;
+    user-select: none;
   }
-  .line {
+
+  /* 下半层：全宽滑轨（占满 100% 容器宽度，手感翻倍） */
+  .slider-track-wrap {
+    position: relative;
+    height: 16px;
     display: flex;
     align-items: center;
-    gap: 7px;
+    width: 100%;
   }
-  .lb {
-    font-size: var(--fs-xs);
-    color: var(--muted-2);
-    width: 26px;
-    flex: 0 0 auto;
+
+  .ruler-marks {
+    position: absolute;
+    inset: 4px 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.08) 0px,
+      rgba(255, 255, 255, 0.08) 1px,
+      transparent 1px,
+      transparent 10%
+    );
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 1;
   }
-  .line input[type='range'] {
-    flex: 1;
-    min-width: 40px;
+
+  /* 激光游标滑块 */
+  .laser-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: #080b12;
+    border-radius: 2px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.85);
+    outline: none;
+    position: relative;
+    z-index: 2;
+    margin: 0;
+    cursor: pointer;
   }
-  .spin {
-    display: flex;
+
+  /* 菱形切角精密激光游标拨片（彻底干掉大白圆球！） */
+  .laser-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 16px;
+    background: #111a2e;
+    border: 1.5px solid #00f5d4;
+    border-radius: 2px;
+    box-shadow: 0 0 6px rgba(0, 245, 212, 0.45), inset 0 0 3px rgba(0, 245, 212, 0.3);
+    cursor: ew-resize;
+    transition: transform 0.08s ease, border-color 0.1s ease;
+  }
+  .laser-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    border-color: #38bdf8;
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.65);
+  }
+  .laser-slider::-moz-range-thumb {
+    width: 12px;
+    height: 16px;
+    background: #111a2e;
+    border: 1.5px solid #00f5d4;
+    border-radius: 2px;
+    box-shadow: 0 0 6px rgba(0, 245, 212, 0.45);
+    cursor: ew-resize;
+  }
+
+  /* 步进器 */
+  .param-stepper {
+    display: inline-flex;
     align-items: center;
     gap: 2px;
-    flex: 0 0 auto;
+    flex-shrink: 0;
   }
+
   .sb {
     appearance: none;
-    width: 30px;
-    height: 30px;
+    width: 19px;
+    height: 19px;
     padding: 0;
     min-height: 0;
     line-height: 1;
-    font-size: var(--fs-md);
-    border-radius: var(--r-sm);
-    background: rgba(255, 255, 255, 0.045);
-    border: 1px solid var(--line);
-    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 3px;
+    background: #161e2e;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
     cursor: pointer;
     touch-action: none;
     user-select: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s ease;
   }
   .sb:hover {
-    border-color: rgba(79, 209, 197, 0.6);
-    color: var(--cyan);
-    background: var(--cyan-dim);
+    border-color: rgba(0, 245, 212, 0.4);
+    color: #00f5d4;
+    background: #1e293b;
   }
-  .val {
-    appearance: none;
-    background: none;
-    border: none;
-    padding: 0;
-    min-height: 0;
-    min-width: 42px;
-    text-align: center;
-    font-size: var(--fs-md);
-    color: var(--text);
-    font-variant-numeric: tabular-nums;
-    font-family: inherit;
-    cursor: text;
-  }
-  .val:hover {
-    color: var(--gold);
-  }
-  .num-edit {
-    width: 52px;
-    height: 30px;
-    padding: 0 2px;
-    text-align: center;
-    font-size: var(--fs-md);
-    font-family: inherit;
-    font-variant-numeric: tabular-nums;
-    color: var(--text);
-    background: #0f1428;
-    border: 1px solid rgba(79, 209, 197, 0.7);
-    border-radius: var(--r-sm);
-    outline: none;
-    -moz-appearance: textfield;
-    appearance: textfield;
-  }
-  /* 文本类控件在 Chrome 里鼠标聚焦也会命中 :focus-visible，故保留
-     outline:none 走自定义边框；键盘用户另给一圈明确轮廓。 */
-  .num-edit:focus-visible {
-    outline: 2px solid var(--cyan);
-    outline-offset: 2px;
-  }
-  .num-edit::-webkit-outer-spin-button,
-  .num-edit::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  .freq-line select {
-    flex: 0 0 auto;
-    background: #121829;
-    color: var(--text);
-    border: 1px solid var(--line);
-    border-radius: var(--r-sm);
-    font-size: var(--fs-sm);
-    padding: 5px 6px;
-    min-height: 30px;
-    font-family: inherit;
-    cursor: pointer;
-    outline: none;
-  }
-  .freq-line select:focus-visible {
-    outline: 2px solid var(--cyan);
-    outline-offset: 2px;
-  }
-  .dir {
-    flex: 1;
-    appearance: none;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--line);
-    border-radius: var(--r-sm);
-    color: var(--cyan);
-    font-size: var(--fs-xs);
-    min-height: 30px;
-    padding: 0 8px;
-    cursor: pointer;
-    font-family: inherit;
-  }
-  .dir:hover {
-    border-color: rgba(79, 209, 197, 0.6);
-    background: var(--cyan-dim);
-  }
-  .dir.ccw {
-    color: var(--purple);
-  }
-  .dir.ccw:hover {
-    border-color: rgba(167, 139, 250, 0.6);
-    background: var(--purple-dim);
+  .sb:active {
+    transform: translateY(1px);
   }
 
-  /* 触屏：实测 390×844 下 .sb（步进）30×30、.val 42×18、select 50×31、
-     .reset 30×38、.dir 38 高——均低于 44px 下限。
-     这里直接放大真实尺寸而不是用 ::after 扩隐形热区：步进按钮间距只有
-     2px，隐形热区会横向互相重叠（相邻两个 44px 热区中心距仅 32/44px），
-     反而制造误触。行高同步抬到 44px 使上下相邻行不重叠；编辑卡变高约
-     60px，面板本就是内部滚动容器（实测已溢出 231px），不影响可读性。 */
-  @media (pointer: coarse), (max-width: 640px) {
-    .reset {
-      min-height: 44px;
-      padding: 0 10px;
-    }
-    .line {
-      min-height: 44px;
-    }
-    .sb {
-      width: 44px;
-      height: 44px;
-    }
-    /* 步进之间留 4px 真实间隙，44px 热区就不会压到隔壁按钮上 */
-    .spin {
-      gap: 4px;
-    }
-    .val {
-      min-width: 44px;
-      min-height: 44px;
-    }
-    .freq-line select,
-    .dir {
-      min-height: 44px;
-    }
+  .val {
+    appearance: none;
+    background: #080b12;
+    border: 1px solid rgba(0, 245, 212, 0.2);
+    border-radius: 3px;
+    padding: 0 4px;
+    height: 19px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+  }
+  .val:hover {
+    border-color: #00f5d4;
+    box-shadow: 0 0 6px rgba(0, 245, 212, 0.2);
+  }
+  .val-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 11px;
+    font-weight: 700;
+    color: #00f5d4;
+  }
+  .val-unit {
+    font-size: 9px;
+    color: #64748b;
+  }
+
+  .num-edit {
+    width: 44px;
+    height: 19px;
+    padding: 0 2px;
+    background: #000;
+    border: 1px solid #00f5d4;
+    border-radius: 3px;
+    color: #00f5d4;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-align: center;
+    outline: none;
+  }
+
+  /* 频率行 */
+  .freq-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 19px;
+  }
+
+  .dir-toggle {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 3px;
+    background: #141c2c;
+    border: 1px solid rgba(0, 245, 212, 0.25);
+    color: #00f5d4;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+  }
+  .dir-toggle.ccw {
+    border-color: rgba(168, 85, 247, 0.35);
+    color: #c084fc;
+    background: #1e152e;
+  }
+  .dir-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #00f5d4;
+    box-shadow: 0 0 4px #00f5d4;
+  }
+  .dir-toggle.ccw .dir-dot {
+    background: #c084fc;
+    box-shadow: 0 0 4px #c084fc;
+  }
+
+  /* 频率 10 阶一体式金属琴键 */
+  .freq-matrix {
+    display: flex;
+    width: 100%;
+    border-radius: 3px;
+    overflow: hidden;
+    background: #090c14;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .freq-key {
+    appearance: none;
+    flex: 1;
+    min-width: 0;
+    height: 20px;
+    border: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    background: transparent;
+    color: #64748b;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.08s ease;
+  }
+  .freq-key:last-child {
+    border-right: none;
+  }
+  .freq-key:hover {
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .freq-key.active {
+    background: #00f5d4;
+    color: #050b14;
+    font-weight: 700;
+    box-shadow: 0 0 8px rgba(0, 245, 212, 0.5);
+  }
+  .freq-key.active.ccw {
+    background: #a855f7;
+    color: #050b14;
+    box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
   }
 </style>

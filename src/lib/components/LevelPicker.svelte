@@ -213,16 +213,19 @@
   <h2>
     关卡
     <!-- 口径合并：总星数只在标题页/结局出现，这里只给战役状态与精通计数 -->
-    {#if campaignBadge}<span class="muted">{campaignBadge}</span
-      >{/if}{#if perfectCount > 0}{#if campaignBadge}&nbsp;{/if}<span class="muted"
-        >{#if campaignBadge}·
-        {/if}<Icon name="crown" size={12} /> 完美 {perfectCount}</span
-      >{/if}{#if exactCount > 0}{#if campaignBadge || perfectCount > 0}&nbsp;{/if}<span
-        class="muted"
-        >{#if campaignBadge || perfectCount > 0}·
-        {/if}<Icon name="target" size={12} />
-        {exactCount}</span
-      >{/if}
+    {#if campaignBadge || perfectCount > 0 || exactCount > 0}
+      <span class="muted header-badges">
+        {#if campaignBadge}
+          <span class="h-badge">{campaignBadge}</span>
+        {/if}
+        {#if perfectCount > 0}
+          <span class="h-badge"><Icon name="crown" size={12} /> 完美 {perfectCount}</span>
+        {/if}
+        {#if exactCount > 0}
+          <span class="h-badge"><Icon name="target" size={12} /> {exactCount}</span>
+        {/if}
+      </span>
+    {/if}
   </h2>
   <!-- 无尽挑战：面板顶部增补本局状态（波次 / 累计分 / 距过波差几点 / 历史最佳）。
        关卡地图**保留**——「载入任何常规关卡即退出无尽」，藏起来会断掉退出路径。 -->
@@ -324,6 +327,7 @@
             class:active={engine.level?.id === def.id}
             class:locked
             class:done={st === 3}
+            class:perfect={!!engine.perfectLevels[def.id]}
             disabled={locked}
             title={locked ? '获得上一关至少 1★ 后解锁' : def.name}
             onclick={() => engine.loadLevel(def)}
@@ -561,15 +565,31 @@
 </section>
 
 <style>
+  .header-badges {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: var(--fs-xs);
+  }
+  .h-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+  }
+
   /* ---------- 章节翻页 ---------- */
   .ch-nav {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 5px 6px;
-    border-radius: var(--r-md);
-    border: 1px solid var(--line-2);
-    background: rgba(255, 255, 255, 0.025);
+    padding: 6px 8px;
+    clip-path: var(--chamfer-sm);
+    border: 1px solid rgba(130, 150, 210, 0.24);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    background: linear-gradient(180deg, #131c30 0%, #090e1a 100%);
+    box-shadow: 0 3px 0 #04070d, inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
   .nav {
     width: 30px;
@@ -760,10 +780,28 @@
     align-items: center;
     gap: 9px;
     width: 100%;
-    padding: 7px 10px 7px 7px;
+    padding: 7px 10px 7px 8px;
     text-align: left;
-    border-radius: var(--r-md);
-    background: rgba(255, 255, 255, 0.02);
+    clip-path: var(--chamfer-sm);
+    background: linear-gradient(180deg, #12192a 0%, #0a0f1c 100%);
+    border: 1px solid rgba(130, 150, 210, 0.18);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 2px 0 #04070d, inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    transition:
+      border-color 0.15s,
+      background 0.15s,
+      box-shadow 0.15s,
+      transform 0.08s;
+  }
+  .node:hover:not(:disabled) {
+    background: linear-gradient(180deg, #182238 0%, #0d1424 100%);
+    border-color: rgba(79, 209, 197, 0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 0 #04070d, 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+  .node:active:not(:disabled) {
+    transform: translateY(1.5px);
+    box-shadow: 0 0.5px 0 #04070d;
   }
   .node .idx {
     flex: 0 0 auto;
@@ -778,6 +816,19 @@
     color: var(--muted);
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--line);
+    transition: all 0.2s;
+  }
+  .node.done .idx {
+    background: linear-gradient(135deg, rgba(45, 212, 191, 0.35), rgba(15, 118, 110, 0.9));
+    border-color: #2dd4bf;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(45, 212, 191, 0.45);
+  }
+  .node.done.perfect .idx {
+    background: linear-gradient(135deg, #fbbf24 0%, #b45309 100%);
+    border-color: #fde047;
+    color: #0f172a;
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
   }
   .node .body {
     flex: 1;
@@ -827,17 +878,15 @@
     box-shadow: 0 0 10px rgba(79, 209, 197, 0.4);
   }
   .node.active {
-    /* 当前关降噪（评审：选中态与「开始旋转」CTA 争夺焦点）：
-       整框发光改为左侧 4px 竖条 + 向右衰减的渐变底，识别度交给 idx 徽章 */
-    border-color: rgba(79, 209, 197, 0.26);
-    border-left: 4px solid var(--cyan);
+    border-color: rgba(79, 209, 197, 0.45);
+    border-left: 3px solid #2dd4bf;
     color: var(--cyan);
     background: linear-gradient(
       90deg,
-      rgba(79, 209, 197, 0.15) 0%,
-      rgba(79, 209, 197, 0.04) 70%,
-      transparent 100%
+      rgba(79, 209, 197, 0.18) 0%,
+      rgba(16, 23, 44, 0.85) 100%
     );
+    box-shadow: 0 2px 12px rgba(45, 212, 191, 0.15);
     padding-left: 3px; /* 补偿竖条宽度，内容不跳位 */
   }
   .node.active .idx {

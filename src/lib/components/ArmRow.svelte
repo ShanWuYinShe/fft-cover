@@ -10,96 +10,134 @@
     onselect,
   }: { index: number; arm: Arm; selected: boolean; onselect: () => void } = $props();
 
-  function toggleOn(e: Event): void {
-    engine.setArm(index, { on: (e.currentTarget as HTMLInputElement).checked });
+  const isLocked = $derived(!arm.on && !engine.canEnableMore());
+
+  function togglePower(): void {
+    if (isLocked) return;
+    engine.setArm(index, { on: !arm.on });
   }
 </script>
 
-<div class="arm-row" class:on={arm.on} class:sel={selected && arm.on}>
-  <label class="tg" title={arm.on ? '停用这根指针' : '启用这根指针'}>
-    <input
-      type="checkbox"
-      checked={arm.on}
-      disabled={!arm.on && !engine.canEnableMore()}
-      onchange={toggleOn}
-    />
-  </label>
-  <button type="button" class="body" onclick={onselect} title="点击编辑这根指针">
+<div
+  class="arm-slot"
+  class:on={arm.on}
+  class:sel={selected && arm.on}
+  class:locked={isLocked}
+>
+  <button
+    type="button"
+    class="power-btn"
+    role="switch"
+    aria-checked={arm.on}
+    aria-label={arm.on ? `停用指针 ${CIRCLED[index]}` : `启用指针 ${CIRCLED[index]}`}
+    disabled={isLocked}
+    title={arm.on
+      ? '点击断电 / 停用'
+      : isLocked
+        ? `本关最多启用 ${engine.level?.armLimit ?? 10} 根指针`
+        : '点击通电 / 启用'}
+    onclick={togglePower}
+  >
+    <span class="power-bar" class:powered={arm.on}></span>
+  </button>
+
+  <button
+    type="button"
+    class="slot-body"
+    disabled={isLocked}
+    onclick={onselect}
+    title={isLocked ? '槽位已锁定（达到关卡指针上限）' : '点击编辑这根指针参数'}
+  >
     <span class="idx">{CIRCLED[index]}</span>
-    <span class="rv">{arm.on ? arm.r : '—'}</span>
+    <span class="rv">{arm.on ? arm.r : isLocked ? '封' : '—'}</span>
     <span class="dir" class:ccw={arm.freq < 0}>{arm.freq < 0 ? '逆' : '顺'}</span>
     <span class="fv">{Math.abs(arm.freq)}×</span>
   </button>
 </div>
 
 <style>
-  .arm-row {
+  .arm-slot {
     display: flex;
     align-items: center;
-    gap: 2px;
-    border: 1px solid var(--line-2);
-    border-radius: var(--r-sm);
-    background: rgba(255, 255, 255, 0.015);
+    gap: 0;
+    border-radius: 8px;
+    background: #121620;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    position: relative;
     overflow: hidden;
-    transition:
-      border-color 0.15s,
-      background 0.15s;
+    transition: all 0.15s ease;
   }
-  .arm-row.on {
-    background: rgba(79, 209, 197, 0.05);
+  .arm-slot.on {
+    border-color: rgba(20, 184, 166, 0.4);
+    background: #141b28;
   }
-  .arm-row.sel {
-    border-color: rgba(79, 209, 197, 0.7);
-    box-shadow:
-      0 0 0 1px rgba(79, 209, 197, 0.25),
-      0 0 10px rgba(79, 209, 197, 0.18);
+  .arm-slot.sel {
+    border-color: #14b8a6;
+    background: #182234;
   }
-  .arm-row:has(.body:hover) {
-    border-color: rgba(255, 255, 255, 0.22);
+  .arm-slot.locked {
+    background: rgba(15, 20, 32, 0.6);
+    border-color: rgba(255, 255, 255, 0.04);
+    opacity: 0.45;
   }
-  .tg {
+  .arm-slot:active:not(.locked) {
+    transform: translateY(1px);
+  }
+
+  /* 通电开关与指示柱 */
+  .power-btn {
+    appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0 8px 0 9px;
+    height: 38px;
     display: flex;
     align-items: center;
-    padding: 0 2px 0 7px;
     cursor: pointer;
-    height: 38px;
+    flex: 0 0 auto;
   }
-  .tg input {
-    width: 15px;
-    height: 15px;
+  .power-btn:disabled {
+    cursor: not-allowed;
   }
-  .body {
+  .power-bar {
+    width: 5px;
+    height: 20px;
+    border-radius: 2px;
+    background: #1e283d;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
+    transition: all 0.18s ease;
+  }
+  .power-bar.powered {
+    background: var(--holo-cyan);
+    box-shadow:
+      0 0 8px var(--holo-cyan),
+      0 0 2px #ffffff;
+  }
+  .arm-slot.sel .power-bar.powered {
+    box-shadow:
+      0 0 12px var(--holo-cyan),
+      0 0 4px #ffffff;
+  }
+
+  /* 插槽正文 */
+  .slot-body {
     flex: 1;
     display: flex;
     align-items: center;
     gap: 6px;
     height: 38px;
-    padding: 0 8px 0 2px;
+    padding: 0 10px 0 2px;
     min-height: 0;
     border: none;
     background: transparent;
-    border-radius: 0;
     cursor: pointer;
     font-variant-numeric: tabular-nums;
+    font-family: inherit;
+    text-align: left;
   }
-  .body:hover:not(:disabled) {
-    border-color: transparent;
-    box-shadow: none;
-    background: rgba(255, 255, 255, 0.03);
-  }
-  /* 触屏：实测 .body 132×38、复选框 15×15（10 根共 20 个触点），
-     均低于 44px。复选盒本身不放大（视觉会笨重），它的 <label> 是
-     原生可点区域——把 label 撑到 44×44 即等于扩大勾选热区。 */
-  @media (pointer: coarse), (max-width: 640px) {
-    .tg {
-      width: 44px;
-      height: 44px;
-      padding: 0;
-      justify-content: center;
-    }
-    .body {
-      height: 44px;
-    }
+  .slot-body:disabled {
+    cursor: not-allowed;
   }
   .idx {
     color: var(--cyan);
@@ -109,18 +147,20 @@
   }
   .rv {
     flex: 1;
-    /* 手机上臂卡片是两列网格（每格 ~150px），半径数字左对齐会在右侧留
-       一大块空白。居中后「序号 · 半径 · 方向 · 频率」四段铺满整格。 */
     text-align: center;
     font-size: var(--fs-sm);
     color: var(--text);
+    font-weight: 600;
   }
-  .on .rv {
-    color: var(--text);
+  .locked .rv {
+    font-size: 11px;
+    color: var(--muted-2);
+    letter-spacing: 1px;
   }
   .dir {
     font-size: var(--fs-xs);
     color: var(--cyan);
+    font-weight: 500;
   }
   .dir.ccw {
     color: var(--purple);
@@ -130,13 +170,22 @@
     color: var(--muted);
     width: 26px;
     text-align: right;
+    font-weight: 600;
   }
-  /* 未启用态：整行淡化。0.4 时「2×」只剩 ~2:1(WCAG 失败,对比度扫描实测),
-     0.9 后 ≥4.5:1;行间分层靠无高亮底 + 空 checkbox,依然清晰 */
-  .arm-row:not(.on) .rv,
-  .arm-row:not(.on) .dir,
-  .arm-row:not(.on) .fv,
-  .arm-row:not(.on) .idx {
-    opacity: 0.9;
+
+  @media (pointer: coarse), (max-width: 640px) {
+    .power-btn {
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      justify-content: center;
+    }
+    .power-bar {
+      height: 24px;
+      width: 6px;
+    }
+    .slot-body {
+      height: 44px;
+    }
   }
 </style>

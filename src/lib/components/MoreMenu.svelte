@@ -51,7 +51,13 @@
     title="更多操作"
     onclick={toggle}
   >
-    {label}
+    {#if label === '⋯'}
+      <span class="mm-dots" aria-hidden="true">
+        <i></i><i></i><i></i>
+      </span>
+    {:else}
+      {label}
+    {/if}
   </button>
   {#if open}
     <div class="mm-pop" class:up={direction === 'up'} role="menu">
@@ -81,6 +87,26 @@
     height: 44px;
     padding: 0 10px;
     font-size: 15px;
+  }
+  .mm-dots {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .mm-dots i {
+    display: block;
+    width: 4px;
+    height: 4px;
+    border-radius: 1px;
+    background: #38bdf8;
+    box-shadow: 0 0 6px #38bdf8;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .mm-btn:hover .mm-dots i {
+    background: #ffffff;
+    box-shadow: 0 0 8px #38bdf8;
+    transform: scale(1.25);
   }
   /* 视觉语言必须放基础类：默认 direction='down' 也要是一块有底的面板。
      此前视觉全挂在 .up 上，运行栏/工具栏两处 ⋯（App.svelte）的弹层

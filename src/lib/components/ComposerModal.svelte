@@ -246,32 +246,36 @@
 
 <div class="modal">
   <div class="box">
-    <h2><Icon name="palette" size={16} /> 谐波合成器</h2>
-    <p class="lead">调节各频率的幅值与相位，合成你的专属曲线。生成后好友可用邀请码载入挑战。</p>
-    <div class="presets">
-      <span class="plabel">预设</span>
-      {#each Object.keys(PRESETS) as name (name)}
-        <button type="button" class="pchip" onclick={() => applyPreset(name)}>{name}</button>
-      {/each}
-      <button
-        type="button"
-        class="pchip import"
-        title="取当前关卡的主频率填进滑杆——合成器是单侧旋转曲线，画布即所得"
-        onclick={importCurrentLevel}>⤓ 取当前关主频</button
-      >
-      <button
-        type="button"
-        class="pchip"
-        class:rev={showOnlyActive}
-        disabled={activeCount === 0}
-        title={activeCount === 0
-          ? '还没有启用的谐波，先拉高某行的幅值'
-          : '只显示已启用（幅值 > 0）的行'}
-        aria-pressed={showOnlyActive}
-        onclick={() => setFilterPref(!showOnlyActive)}>⦿ 已启用</button
-      >
+    <div class="modal-header">
+      <h2><Icon name="palette" size={16} /> 谐波合成器</h2>
+      <p class="lead">调节各频率的幅值与相位，合成你的专属曲线。生成后好友可用邀请码载入挑战。</p>
+      <div class="presets">
+        <span class="plabel">预设</span>
+        {#each Object.keys(PRESETS) as name (name)}
+          <button type="button" class="pchip" onclick={() => applyPreset(name)}>{name}</button>
+        {/each}
+        <button
+          type="button"
+          class="pchip import"
+          title="取当前关卡的主频率填进滑杆——合成器是单侧旋转曲线，画布即所得"
+          onclick={importCurrentLevel}>⤓ 取当前关主频</button
+        >
+        <button
+          type="button"
+          class="pchip"
+          class:rev={showOnlyActive}
+          disabled={activeCount === 0}
+          title={activeCount === 0
+            ? '还没有启用的谐波，先拉高某行的幅值'
+            : '只显示已启用（幅值 > 0）的行'}
+          aria-pressed={showOnlyActive}
+          onclick={() => setFilterPref(!showOnlyActive)}>⦿ 已启用</button
+        >
+      </div>
     </div>
-    <div class="sliders">
+
+    <div class="modal-body">
+      <div class="sliders">
       {#each coeffs as c, i (i)}
         {#if i === 10}
           <div class="neg-label">⟲ 反转（负频率）</div>
@@ -319,7 +323,8 @@
         >
       {/if}
     </p>
-    <div class="btns">
+    </div>
+    <div class="modal-footer">
       <button class="primary" disabled={activeCount === 0} onclick={play}>🎮 生成并游玩</button>
       <button onclick={onclose}>关 闭</button>
     </div>
@@ -330,24 +335,45 @@
   .modal {
     position: fixed;
     inset: 0;
-    background: rgba(5, 7, 14, 0.75);
+    background: rgba(4, 6, 14, 0.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 60;
   }
   .box {
+    display: flex;
+    flex-direction: column;
     width: min(94vw, 440px);
-    /* 用 dvh：vh 在移动端包含地址栏，会算高导致底部按钮被推出屏幕 */
-    max-height: calc(100dvh - 24px);
-    overflow-y: auto;
+    max-height: calc(100dvh - 36px);
     background: #10152a;
     border: 1px solid var(--line);
     border-radius: 14px;
-    /* 底部内距交给常驻动作栏（.btns）自带：否则 sticky 底栏与滚动区下沿会差出 18px */
-    padding: 18px 20px 0;
-    text-align: center;
     box-shadow: 0 16px 60px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+  }
+  .modal-header {
+    padding: 16px 20px 10px;
+    border-bottom: 1px solid var(--line-2);
+    text-align: center;
+  }
+  .modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px 20px 20px;
+    text-align: center;
+  }
+  .modal-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    padding: 12px 20px 16px;
+    background: rgba(13, 17, 34, 0.95);
+    border-top: 1px solid var(--line-2);
   }
   h2 {
     margin: 0 0 6px;
@@ -448,21 +474,7 @@
     text-align: center;
     letter-spacing: 1px;
   }
-  /* 动作栏常驻：20 行谐波在矮屏（手机横屏 / 小笔记本）会滚，
-     「生成并游玩」不能掉到首屏之外等玩家去猜要滚（触屏没有 Esc 兜底） */
-  .btns {
-    position: sticky;
-    bottom: 0;
-    z-index: 1;
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    margin: 12px -20px 0;
-    padding: 12px 20px 18px;
-    background: #10152a;
-    border-top: 1px solid rgba(130, 150, 210, 0.16);
-    border-radius: 0 0 13px 13px;
-  }
+
 
   /* 触屏：预设 chip 的热区补够 */
   @media (pointer: coarse), (max-width: 640px) {

@@ -877,16 +877,35 @@
   /* 手机窄屏：说明文字与「对比频谱 →」挤在一行会把「拟合度」拦腰折断
      （实测 390 宽），改为说明占满首行、动作按钮落到第二行右对齐。 */
   @media (max-width: 640px) {
+    .card-body {
+      padding: 10px 14px 6px;
+      gap: 4px;
+    }
+    .stars {
+      font-size: 28px;
+      gap: 4px;
+    }
+    .score-big b {
+      font-size: 30px;
+    }
+    .stat-row {
+      font-size: 11px;
+    }
     .next-seal {
       flex-wrap: wrap;
-      row-gap: 6px;
+      row-gap: 4px;
+      padding: 5px 8px;
+      font-size: 11px;
     }
     .ns-txt {
       flex: 1 1 100%;
-      line-height: 1.5;
+      line-height: 1.35;
     }
     .ns-go {
       margin-left: auto;
+    }
+    .btns {
+      padding: 6px 14px 10px;
     }
   }
 </style>

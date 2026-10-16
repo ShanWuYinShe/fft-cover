@@ -949,8 +949,12 @@
       ctx.restore();
     }
 
-    // 编辑态预览计数：当前参数预计能收集多少点（实时反馈，无需开始旋转）
-    if (engine.phase === 'edit' && engine.level) {
+    // 编辑态预览计数：当前参数预计能收集多少点（桌面端绘制于底边；移动端由悬浮 HUD 承载）
+    if (
+      engine.phase === 'edit' &&
+      engine.level &&
+      (typeof window === 'undefined' || window.innerWidth > 640)
+    ) {
       const total = engine.level.pts.length;
       const got = engine.collected.size;
       const willHit = previewHits.size;

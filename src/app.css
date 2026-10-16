@@ -51,6 +51,36 @@
   --jade: #2f9e7f;
   --moon: #dfe6f2;
 
+  /* 璇玑浑天火控舱 · 几何切角与装甲 Token */
+  --bg-chassis: #060911;
+  --bg-bay-inset: #030509;
+  --surface-armor: #0e1525;
+  --surface-keycap: #162035;
+  --holo-cyan: #00f5d4;
+  --holo-purple: #9d4edd;
+  --imperial-gold: #f5b841;
+  --cinnabar-seal: #d92b2b;
+
+  --chamfer-lg: polygon(
+    14px 0, calc(100% - 14px) 0, 100% 14px,
+    100% calc(100% - 14px), calc(100% - 14px) 100%,
+    14px 100%, 0 calc(100% - 14px), 0 14px
+  );
+  --chamfer-md: polygon(
+    10px 0, calc(100% - 10px) 0, 100% 10px,
+    100% calc(100% - 10px), calc(100% - 10px) 100%,
+    10px 100%, 0 calc(100% - 10px), 0 10px
+  );
+  --chamfer-sm: polygon(
+    5px 0, calc(100% - 5px) 0, 100% 5px,
+    100% calc(100% - 5px), calc(100% - 5px) 100%,
+    5px 100%, 0 calc(100% - 5px), 0 5px
+  );
+  --chamfer-cut: polygon(
+    0 0, calc(100% - 10px) 0, 100% 10px,
+    100% 100%, 10px 100%, 0 calc(100% - 10px)
+  );
+
   /* 圆角:外大内小的嵌套节奏——弹窗/大面板 16 > 面板 14 > 控件 10 > 小件 8 */
   --r-sm: 8px;
   --r-pill: 999px;
@@ -96,53 +126,115 @@ body {
 }
 
 body {
-  background:
-    radial-gradient(1100px 700px at 72% -12%, rgba(35, 48, 92, 0.55) 0%, transparent 60%),
-    radial-gradient(900px 600px at 8% 110%, rgba(58, 32, 78, 0.32) 0%, transparent 55%), var(--bg);
+  background-color: #0b0e14;
   color: var(--text);
-  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif;
   min-height: 100vh;
   min-height: 100dvh; /* iOS Safari 地址栏适配 */
   -webkit-font-smoothing: antialiased;
 }
 
 /* ---------- 顶部（紧凑：大标题属于开始画面，游戏内只留一行角标） ---------- */
-header {
-  padding: 8px 24px 2px;
-  text-align: center;
+/* ---------- 顶部座舱 HUD 状态梁（Observatory HUD Beam） ---------- */
+header.game-hud-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 44px;
+  background: #0f121a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  z-index: 20;
 }
 
-header h1 {
-  margin: 0;
-  line-height: 1.2;
+.hud-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
-/* 标题本身是按钮：点它回看进度概览（用真实 button 保证无障碍） */
-header h1 .title-btn {
+.title-btn {
   appearance: none;
-  background: linear-gradient(92deg, var(--cyan) 10%, var(--purple) 55%, var(--gold) 95%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  background: transparent;
   border: none;
   padding: 0;
   margin: 0;
-  font-family: inherit;
-  font-size: 15px;
-  letter-spacing: 5px;
-  font-weight: 700;
   cursor: pointer;
-  opacity: 0.85;
-  filter: drop-shadow(0 2px 10px rgba(79, 209, 197, 0.15));
+  display: inline-flex;
+  align-items: center;
 }
 
-header h1 .title-btn:hover {
-  opacity: 1;
-  filter: drop-shadow(0 2px 18px rgba(79, 209, 197, 0.4));
+.title-brand {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: 1px;
+  transition: color 0.15s ease;
+}
+.title-btn:hover .title-brand {
+  color: var(--cyan);
 }
 
-header .sub {
-  display: none; /* 副标题属于开始画面 */
+.hud-level-tag {
+  font-size: 12px;
+  font-weight: 500;
+  color: #94a3b8;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.hud-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-seal-badge {
+  appearance: none;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 6px;
+  color: #fbbf24;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.hud-seal-badge:hover {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.hud-action-btn {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: #94a3b8;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+.hud-action-btn:hover {
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 /* 读屏专用：视觉隐藏、读屏可及（游戏进度播报用） */
@@ -158,14 +250,17 @@ header .sub {
   border: 0;
 }
 
-/* ---------- 主布局 ---------- */
+/* ---------- 主布局（天文台控制中枢） ---------- */
 main {
   display: grid;
-  grid-template-columns: 264px minmax(0, 1fr) 348px;
+  grid-template-columns: minmax(290px, 320px) minmax(460px, 560px) minmax(330px, 370px);
   justify-content: center;
   align-items: start;
-  gap: 14px;
-  padding: 14px 20px 40px;
+  gap: 20px;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 16px 24px 36px;
+  width: 100%;
 }
 
 /* 侧栏容器：桌面 display:contents（两个 aside 直接参与 main 的三栏 grid），
@@ -178,30 +273,29 @@ main {
 .stage-wrap {
   grid-column: 2;
   grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  align-items: center;
 }
 .side-left {
   grid-column: 1;
   grid-row: 1;
-  /* 评审(22 号截图):「更多玩法」展开后整栏把页面撑长,画布被推出视口——
-     面板自身滚动,画布位置保持稳定。
-     110px 而非 96px:aside 顶边 = header 底(~52.5) + main 上内距(14),
-     底边再留 main 的下内距(40)。96px 时实测 body.scrollHeight=911 >
-     900,页面仍会滚出 11px(展开态截图里「邀请码」贴边)。 */
-  max-height: calc(100dvh - 110px);
+  max-height: calc(100dvh - 100px);
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+  scrollbar-color: rgba(79, 209, 197, 0.25) transparent;
+  padding-bottom: 24px;
 }
 .side-right {
   grid-column: 3;
   grid-row: 1;
-}
-
-.stage-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0;
+  max-height: calc(100dvh - 100px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(167, 139, 250, 0.25) transparent;
+  padding-bottom: 24px;
 }
 
 .canvas-box {
@@ -210,18 +304,21 @@ main {
   margin: 0 auto;
 }
 
+.canvas-box::before,
+.canvas-box::after {
+  display: none;
+}
+
 canvas {
   display: block;
   width: 100%;
   aspect-ratio: 1 / 1;
   touch-action: none;
-  background:
-    radial-gradient(circle at 50% 45%, rgba(79, 209, 197, 0.06), transparent 62%), var(--bg-2);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  box-shadow:
-    var(--sh-2),
-    inset 0 0 60px rgba(79, 209, 197, 0.03);
+  background: #080c14;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.2s;
 }
 
 /* ---------- 画布 HUD ---------- */
@@ -364,19 +461,22 @@ canvas {
   transition: width 0.3s ease-out;
 }
 
-/* ---------- 按钮 ---------- */
+/* ---------- 游戏级触感按钮 ---------- */
 button {
   appearance: none;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(130, 150, 210, 0.24);
   border-radius: var(--r-md);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
   color: var(--text);
   font-size: var(--fs-md);
   font-family: inherit;
   font-weight: 500;
-  padding: 9px 15px;
-  min-height: 36px;
+  padding: 8px 14px;
+  min-height: 38px;
   cursor: pointer;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transition:
     border-color 0.15s,
     color 0.15s,
@@ -386,37 +486,55 @@ button {
 }
 
 button:hover:not(:disabled) {
-  border-color: rgba(79, 209, 197, 0.55);
-  color: var(--cyan);
-  box-shadow: var(--sh-glow);
+  border-color: rgba(79, 209, 197, 0.6);
+  color: #fff;
+  background: linear-gradient(180deg, rgba(79, 209, 197, 0.15), rgba(79, 209, 197, 0.04));
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.4),
+    0 0 14px rgba(79, 209, 197, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 button:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: translateY(2px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
+/* 核心动力启动键（开始旋转） */
 button.primary {
-  background: linear-gradient(135deg, rgba(79, 209, 197, 0.2), rgba(167, 139, 250, 0.2));
-  border-color: rgba(79, 209, 197, 0.5);
-  color: var(--cyan);
-  font-weight: 600;
+  background: #14b8a6;
+  border: 1px solid #2dd4bf;
+  color: #ffffff;
+  font-weight: 700;
   letter-spacing: 0.5px;
-  box-shadow: 0 0 14px rgba(79, 209, 197, 0.16);
-  transition:
-    border-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
-    box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
-    transform 0.08s,
-    background 0.15s;
+  box-shadow: 0 2px 6px rgba(20, 184, 166, 0.3);
+  transition: background 0.15s, border-color 0.15s, transform 0.08s;
 }
 
 button.primary:hover:not(:disabled) {
-  border-color: rgba(79, 209, 197, 0.85);
-  box-shadow: 0 0 22px rgba(79, 209, 197, 0.3);
+  background: #0d9488;
+  border-color: #14b8a6;
+  transform: translateY(-1px);
+}
+
+button.primary:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 1px 3px rgba(20, 184, 166, 0.3);
+}
+
+button.danger {
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  box-shadow: none;
+}
+
+button.danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ffffff;
 }
 
 button:disabled {
-  /* 0.32 时禁用文案(如「停止结算」)几乎不可辨(实测 2.6:1);0.45 保持
-     「不可点」观感同时能读清按钮是什么(WCAG 对 disabled 豁免,此为可读性优化) */
   opacity: 0.45;
   cursor: default;
 }
@@ -424,14 +542,37 @@ button:disabled {
 .run-row {
   display: flex;
   gap: 8px;
+  align-items: center;
   justify-content: center;
   flex-wrap: wrap;
+  padding: 8px 14px;
+  background: #121620;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* 应用级图标（音量/音乐/成就）成组换行：避免最后一个按钮孤零零独占一行 */
+button.run-btn-main {
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 80ms ease, opacity 0.15s ease;
+}
+button.run-btn-main:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* 应用级图标（音量/音乐/成就）成组换行 */
 .run-icons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 /* 窄屏运行栏是网格布局：图标组"溶解"为其子项，直接参与网格排布 */
@@ -451,13 +592,11 @@ button:disabled {
 
 .side section {
   position: relative;
-  /* 常驻面板禁用毛玻璃(Gemini 复查 C-2:canvas 60fps 时每帧重算模糊是性能杀手),
-     高级感改由描边/阴影/内部层次承担 */
-  background: linear-gradient(170deg, rgba(24, 30, 54, 0.92), rgba(14, 18, 36, 0.9));
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  padding: 13px 15px 14px;
-  box-shadow: var(--sh-1);
+  background: #121620;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
 .side h2 {
@@ -503,6 +642,11 @@ button:disabled {
   letter-spacing: 0;
   text-transform: none;
   font-weight: 400;
+}
+
+.arm-count-badge,
+.sheet-handle {
+  display: none;
 }
 
 .muted {
@@ -617,55 +761,61 @@ button.danger:focus-visible {
   color: var(--purple);
 }
 
-/* ---------- 滑块 ---------- */
+/* ---------- 极简高级线条滑块（Clean Line Slider） ---------- */
 input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(79, 209, 197, 0.55), rgba(167, 139, 250, 0.55));
+  background: #232838;
+  border: none;
+  box-shadow: none;
   cursor: pointer;
   min-width: 0;
-  transition: filter 0.15s;
+  outline: none;
+  transition: background 0.15s ease;
 }
 
-/* 这条选择器的特异性(0,2,1)高于上面的 input[type='range']，也高于全局
-   :focus-visible(0,1,0)——滑块此前用 outline:none 关掉浏览器默认框后，
-   键盘聚焦同样没有任何指示(实测 outlineStyle=none)。range 只在键盘
-   聚焦时命中 :focus-visible，鼠标拖动不会画出方框。 */
 input[type='range']:focus-visible {
   outline: 2px solid var(--cyan);
   outline-offset: 4px;
 }
 
 input[type='range']:hover {
-  filter: brightness(1.25);
+  background: #2d3348;
 }
 
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #fff;
-  border: 2px solid var(--cyan);
-  box-shadow: 0 0 8px rgba(79, 209, 197, 0.6);
-  transition:
-    transform 0.12s,
-    box-shadow 0.12s;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
+  cursor: grab;
+  transition: transform 0.12s ease, background 0.12s ease;
 }
 
 input[type='range']::-webkit-slider-thumb:hover {
-  transform: scale(1.18);
-  box-shadow: 0 0 13px rgba(79, 209, 197, 0.85);
+  transform: scale(1.15);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.6);
+}
+
+input[type='range']::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.1);
+  background: var(--cyan);
 }
 
 input[type='range']::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #fff;
-  border: 2px solid var(--cyan);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
+  cursor: grab;
 }
 
 input[type='checkbox'] {
@@ -904,22 +1054,27 @@ input[type='checkbox'] {
 /* 触屏设备：加大滑块与按钮触控目标 */
 @media (pointer: coarse), (max-width: 640px) {
   input[type='range'] {
-    height: 8px;
+    height: 4px;
   }
   input[type='range']::-webkit-slider-thumb {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
   }
   input[type='range']::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
   }
-  button {
-    padding: 11px 17px;
-    min-height: 44px; /* 触控热区下限 44(mobile-ui-conventions);热区扫描实测 42 不达标 */
+  .modal button,
+  .result-overlay button,
+  .finale button,
+  .tutorial button {
+    min-height: 40px;
+    padding: 8px 14px;
   }
   .hud {
-    font-size: var(--fs-lg);
+    font-size: var(--fs-md);
   }
 }
 
@@ -993,7 +1148,7 @@ input[type='checkbox'] {
      height 没减它，实测 320×568 下面板底边 582 / 标签栏顶边 510：最后
      72px 永远被盖住（「更多玩法」整条点不到）。 */
   :root {
-    --tabbar-h: calc(56px + env(safe-area-inset-bottom));
+    --tabbar-h: calc(42px + env(safe-area-inset-bottom));
   }
 
   /* 整屏弹性骨架：header 取自然高度、main 填满剩余、底部预留标签栏。
@@ -1006,6 +1161,10 @@ input[type='checkbox'] {
     overflow: hidden;
     padding-bottom: var(--tabbar-h);
     box-sizing: border-box;
+    transition: padding-bottom 0.25s ease;
+  }
+  #app:has(main.panel-hidden) {
+    padding-bottom: 0;
   }
 
   main {
@@ -1067,6 +1226,10 @@ input[type='checkbox'] {
     padding-bottom: 4px;
     gap: 8px;
   }
+  main:not(.panel-expanded) .sides {
+    -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent 100%);
+    mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent 100%);
+  }
   .side {
     gap: 8px;
   }
@@ -1080,7 +1243,7 @@ input[type='checkbox'] {
     display: block;
   }
 
-  /* 底部标签栏：固定，大触摸目标 */
+  /* 底部模式切换栏：极简轻量 28px 浮动胶囊底梁 */
   .mobile-tabs {
     display: flex;
     position: fixed;
@@ -1088,40 +1251,49 @@ input[type='checkbox'] {
     right: 0;
     bottom: 0;
     z-index: 30;
-    padding: 4px 6px calc(4px + env(safe-area-inset-bottom));
-    gap: 4px;
-    background: linear-gradient(180deg, rgba(10, 13, 24, 0.94), rgba(8, 10, 20, 0.99));
-    border-top: 1px solid var(--line-2);
+    padding: 2px 8px calc(2px + env(safe-area-inset-bottom));
+    gap: 6px;
+    background: #0f121a;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.4);
+    transition:
+      transform 0.25s ease,
+      opacity 0.2s ease;
+  }
+  .mobile-tabs.hide-in-run {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
   }
 
   .mobile-tabs button {
     flex: 1;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 2px;
-    padding: 7px 4px;
-    min-height: 48px;
+    justify-content: center;
+    gap: 5px;
+    padding: 0 8px;
+    min-height: 28px;
+    height: 28px;
     border: none;
     background: transparent;
-    border-radius: var(--r-md);
+    border-radius: 6px;
     color: var(--muted);
-    font-size: var(--fs-xs);
+    font-size: 11px;
+    font-weight: 500;
   }
 
   .mobile-tabs button i {
     font-style: normal;
-    font-size: 17px;
+    font-size: 13px;
     line-height: 1;
   }
 
   .mobile-tabs button.on {
-    color: var(--cyan);
-    background: var(--cyan-dim);
-  }
-
-  .mobile-tabs button.on i {
-    filter: drop-shadow(0 0 8px rgba(79, 209, 197, 0.5));
+    color: #14b8a6;
+    background: rgba(20, 184, 166, 0.12);
+    font-weight: 600;
   }
 
   /* 标签栏的让位统一由 #app 的 padding-bottom 负责 */
@@ -1166,175 +1338,309 @@ input[type='checkbox'] {
   }
 }
 
-/* 手机竖屏：运行栏重排——4 个功能键（开始/停止/⋯/图标行）正好一行 */
-@media (max-width: 640px) and (orientation: portrait) {
-  /* 画布是主角：把画布 + 运行栏 + 面板串成一条连续视觉带，
-     而不是四块等权重的卡片（手机端观感割裂的主因）。 */
-  .stage-wrap {
-    gap: 0;
-  }
-  .canvas-box canvas {
-    border-color: rgba(130, 150, 210, 0.28);
-    box-shadow:
-      0 18px 48px rgba(0, 0, 0, 0.45),
-      0 0 0 1px rgba(79, 209, 197, 0.06) inset;
-  }
-  .run-row {
-    padding-top: 10px;
-  }
-
-  /* 更新提示条抬到标签栏之上：320 宽实测这条胶囊（259×46）正好压在
-     「关卡 / 指针」两个标签上，两个标签都点不到（横屏没有标签栏，只竖屏抬） */
-  .update-bar {
-    bottom: calc(var(--tabbar-h) + 10px);
-  }
-  /* 展开态的收起把手：让「怎么回去」一眼可见（此前只能靠再点一次标签） */
-  .sheet-collapse {
-    display: none;
-  }
-  main.panel-expanded .sheet-collapse {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-    min-height: 44px;
-    margin: 0;
-    padding: 8px 10px;
-    border-radius: var(--r-md);
-    border: 1px solid var(--line-2);
-    background: rgba(255, 255, 255, 0.03);
-    color: var(--muted);
-    font-size: var(--fs-xs);
-  }
-  .sheet-collapse i {
-    font-style: normal;
-    color: var(--cyan);
-  }
-  /* 展开态画布缩小（~169px）：两枚 HUD 芯片放不下会互相重叠，
-     隐藏「印 x/4」（等价入口：工具栏 🏆 / 图鉴 / 结算卡），只留「收集」。 */
-  main.panel-expanded .hud .hud-seal {
-    display: none;
-  }
-  /* 展开态小画布（169px）：「收集」芯片占画布近半宽（90/169），
-     收一档字号让目标曲线更突出（fs-lg→fs-sm）。 */
-  main.panel-expanded .hud {
-    font-size: var(--fs-sm);
-  }
-
-  /* ---------- 运行时专注布局 ----------
-     运行中面板是闲置的（关卡列表对进行中的对局无用；收集进度/波次
-     HUD 都有）——自动让位，把画布从 40vh 放大到 56vh（实测 390×844：
-     338px → 472px，游戏区占屏 40% → 56%）。停止/结算后面板自动回来。 */
-  main.panel-hidden .sides {
-    display: none;
-  }
-  /* 竖屏下画布是正方形、宽度受限（92vw）——运行时去掉左右留白做到
-     100vw 物理上限（实测 390 屏：359 → 390px，面积 +18%）。 */
-  main.panel-hidden .stage-wrap {
-    padding-left: 0;
-    padding-right: 0;
-  }
-  main.panel-hidden .canvas-box {
-    width: 100vw;
-  }
-  .canvas-box {
-    transition: width 0.25s ease;
-  }
-  /* HUD 芯片：手机上全局触控规则把 button 撑到 42px，小画布上「印 x/4」
-     看起来像个空心方块（390 实测 58×42）。按「视觉小、热区够」的原则
-     把视觉收成紧凑胶囊，再用 ::after 把可点区域补到 44×44。 */
-  /* 只给可点的「印」按钮补热区：ghost-chip 是纯展示 span，给它加隐形
-     44px 热区会挡住画布拖拽 */
-  .hud .hud-seal {
-    position: relative;
-    min-height: 0;
-    padding: 3px 9px;
-    font-size: var(--fs-xs);
-  }
-  .hud .hud-seal::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 44px;
-    height: 44px;
-    transform: translate(-50%, -50%);
-  }
-  /* 运行栏重构：主操作独占一行（拇指友好、主次分明），
-     其余 6 键（停止 / ⋯ / 音量 / 音乐 / 成就 / 设置）等分第二行。
-     旧版是「3 键 4 列（空一格）+ 图标行拉满」，既浪费又主次不分。 */
-  /* 运行栏单行：主操作占 2 格（最宽最重要），停止 / ⋯ / 音量 / 音乐
-     各 1 格。旧版两行共 106px，单行后省下约 50px 全给面板。 */
-  .run-row {
-    grid-template-columns: repeat(6, 1fr);
-    gap: 6px;
-  }
-  .run-row > button.primary {
-    grid-column: span 2;
-    min-height: 46px;
-    font-size: var(--fs-sm);
-  }
-  .run-row button {
-    padding: 7px 4px;
-    white-space: nowrap; /* 窄格子里"停止"不能折行 */
-  }
-  .run-row .mm {
-    display: block;
-    width: 100%;
-  }
-  .run-row .mm .mm-btn {
-    width: 100%;
-    min-height: 42px;
-    padding: 0;
-    /* 6 列网格里「⋯」要落在格子正中，不能沿用桌面 44px 固定宽 + 左内距 */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .run-icons {
-    display: contents; /* 图标键直接进 6 列网格，与停止 / ⋯ 同排 */
-  }
-  /* 手机上「成就 / 设置」已进 ⋯ 菜单，图标行只留音量与音乐——
-     少两格、第二行更矮，把高度让给关卡/指针面板 */
-  .run-icons button[aria-label='成就'],
-  .run-icons button[aria-label='设置'] {
-    display: none;
-  }
-  .run-icons button {
-    width: auto;
-    min-height: 44px;
-    min-width: 44px;
-  }
+/* 画布顶层 HUD 与底缘火控栏默认行为（桌面端） */
+.mobile-lvl-btn {
+  display: none;
+}
+.desktop-lvl {
+  display: inline-flex;
+}
+.mobile-only-btn {
+  display: none;
+}
+.canvas-fire-bar {
+  display: none;
 }
 
 /* ============================================================
- * 手机横屏：复用左右布局（画布在左、面板在右），画布按高度约束
+ * 手机竖屏：全息天象主舞台 + 一体化战术指令座舱底座（Unified Command Deck）
  * ============================================================ */
-
-/* 面板全屏展开：画布让位、面板铺满，解决"信息要滚动才看得到" */
 @media (max-width: 640px) and (orientation: portrait) {
-  /* 展开态：画布**缩小而不是隐藏**——调参时要能看到实时轨迹，
-     否则等于盲调（实测指针 tab 展开后 canvas 高度为 0）。 */
+  /* 隐藏桌面独立顶部栏，避免与画布内 HUD 产生“双胞胎重复” */
+  header.game-hud-bar {
+    display: none !important;
+  }
+
+  /* 顶部 HUD 切换为精美微型胶囊 */
+  .desktop-lvl {
+    display: none !important;
+  }
+  .mobile-lvl-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(15, 23, 42, 0.78);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 245, 212, 0.35);
+    border-radius: 4px;
+    padding: 2px 7px;
+    color: #f1f5f9;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .mobile-lvl-btn .lvl-icon {
+    font-size: 11px;
+    color: #00f5d4;
+  }
+  .mobile-lvl-btn .lvl-name {
+    font-size: 11px;
+    color: #e2e8f0;
+  }
+  .mobile-lvl-btn .lvl-caret {
+    font-size: 9px;
+    color: #64748b;
+  }
+  .mobile-only-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    color: #94a3b8;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  /* 整屏骨架：顶部紧凑、舞台居中、下方一体化底座贴合标签栏 */
+  main {
+    display: flex;
+    flex-direction: column;
+    padding: 2px 6px 0;
+    gap: 0;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .stage-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
+  .canvas-box {
+    width: min(96vw, 42vh);
+    margin: 0 auto 3px;
+    position: relative;
+    transition: width 0.25s ease, margin 0.25s ease;
+  }
+
+  .canvas-box canvas {
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  /* 画布底缘悬浮操作区（手机端主控，释放中央空间） */
+  .canvas-fire-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: absolute;
+    bottom: 5px;
+    left: 6px;
+    right: 6px;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .canvas-fire-bar > * {
+    pointer-events: auto;
+  }
+  .cf-left {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .cf-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+    color: #fde68a;
+    background: rgba(15, 18, 10, 0.82);
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .cf-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #fbbf24;
+    box-shadow: 0 0 4px #fbbf24;
+  }
+  .cf-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .cf-btn {
+    appearance: none;
+    height: 26px;
+    padding: 0 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.1s ease;
+  }
+  .cf-primary {
+    background: #00f5d4;
+    color: #050b14;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 0 10px rgba(0, 245, 212, 0.45);
+  }
+  .cf-danger {
+    background: #ef4444;
+    color: #ffffff;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.45);
+  }
+  .cf-reset {
+    background: rgba(15, 23, 42, 0.85);
+    color: #cbd5e1;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    width: 26px;
+    padding: 0;
+    justify-content: center;
+  }
+  .cf-best {
+    background: rgba(251, 191, 36, 0.12);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    font-size: 10px;
+  }
+  .cf-ff {
+    background: rgba(15, 23, 42, 0.85);
+    color: #cbd5e1;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 10px;
+  }
+
+  /* 移动端隐藏原本横亘中央的粗大操作梁，彻底释放视线与空间 */
+  .run-row {
+    display: none !important;
+  }
+  .run-icons {
+    display: none;
+  }
+
+  /* 抽屉手柄：移动端消隐缝隙 */
+  .sheet-handle {
+    display: none;
+  }
+
+  /* 侧栏容器：无缝透明底色，消除死黑框 */
+  .sides {
+    flex: 1 1 auto;
+    background: transparent;
+    border: none;
+    padding: 2px 4px calc(42px + env(safe-area-inset-bottom));
+    margin: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 4px;
+  }
+  .side section {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0 0 4px;
+    border-radius: 0;
+  }
+  .side section::before {
+    display: none;
+  }
+  .side .sec-arms-hd {
+    display: none;
+  }
+  .side h2 {
+    display: none;
+  }
+
+  /* 底部模式切换栏：精致悬浮居中胶囊 */
+  .mobile-tabs {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(6px + env(safe-area-inset-bottom));
+    width: auto;
+    min-width: 220px;
+    max-width: 280px;
+    padding: 3px 6px;
+    gap: 6px;
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.55);
+  }
+  .mobile-tabs button {
+    border-radius: 999px;
+    height: 26px;
+    min-height: 26px;
+    font-size: 11px;
+    padding: 0 10px;
+  }
+  .mobile-tabs button.on {
+    background: #00f5d4;
+    color: #050b14;
+    font-weight: 700;
+  }
+
+  /* 更新提示条抬到标签栏之上 */
+  .update-bar {
+    bottom: calc(var(--tabbar-h) + 10px);
+  }
+
+  /* ---------- 面板展开态（保持画布完整尺寸，不压缩画布） ---------- */
   main.panel-expanded .stage-wrap {
     display: flex;
     flex: 0 0 auto;
-    gap: 6px;
+    gap: 0;
+    padding: 0;
   }
   main.panel-expanded .canvas-box {
-    width: min(56vw, 20vh);
+    width: min(96vw, 42vh);
+    margin-bottom: 2px;
+  }
+  main.panel-expanded .hud .hud-seal {
+    display: none;
+  }
+  main.panel-expanded .hud {
+    font-size: var(--fs-sm);
   }
   main.panel-expanded .run-row,
   main.panel-expanded .guide-bar {
     display: none;
   }
+  main.panel-expanded .sheet-handle {
+    border-radius: 18px 18px 0 0;
+    border-top: 1px solid rgba(79, 209, 197, 0.45);
+    height: 18px;
+    min-height: 18px;
+  }
+  main.panel-expanded .sheet-handle .handle-bar {
+    background: var(--cyan);
+    box-shadow: 0 0 10px rgba(79, 209, 197, 0.6);
+  }
   main.panel-expanded .sides {
-    /* 内容多高就多高（上限铺满到标签栏）：内容放得下时不留下大片空白，
-       放不下时才滚动。margin-bottom:auto 把面板顶到上方，避免居中留白。 */
-    flex: 0 1 auto;
-    height: auto;
+    flex: 1 1 auto;
+    height: 100%;
     max-height: 100%;
-    margin-bottom: auto;
     overflow-y: auto;
   }
   main.panel-expanded .side {
@@ -1342,6 +1648,27 @@ input[type='checkbox'] {
   }
   main.panel-expanded .mobile-tabs-spacer {
     height: 0;
+  }
+
+  /* ---------- 运行时专注布局（Running Phase） ---------- */
+  main.panel-hidden {
+    justify-content: center;
+    padding-bottom: 24px;
+  }
+  main.panel-hidden .sides,
+  main.panel-hidden .sheet-handle {
+    display: none;
+  }
+  main.panel-hidden .stage-wrap {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  main.panel-hidden .canvas-box {
+    width: min(94vw, 48vh);
+  }
+  main.panel-hidden .run-row {
+    border-radius: var(--r-lg);
+    border-bottom: 1px solid rgba(79, 209, 197, 0.35);
   }
 }
 @media (max-width: 900px) and (orientation: landscape) {
@@ -1351,8 +1678,9 @@ input[type='checkbox'] {
     overflow: hidden;
   }
 
-  header {
-    display: none; /* 横屏高度紧张，省掉标题 */
+  header,
+  header.game-hud-bar {
+    display: none !important; /* 横屏高度紧张，省掉标题 */
   }
 
   main {
@@ -1396,10 +1724,10 @@ input[type='checkbox'] {
     display: none;
   }
 
-  /* 9 个按钮排两行：5 个功能键一行 + 4 个图标键一行（3 列会排成三行、高度超标） */
+  /* 运行栏两行饱满对称：主操作占 2 列，停止/⋯ 各占 1 列；4 个图标键占满第二行 */
   .run-row {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: 2fr 1fr 1fr;
     gap: 6px;
   }
 
@@ -1423,31 +1751,34 @@ input[type='checkbox'] {
   }
 
   .sides {
-    /* 横屏面板区够宽（516px）：两栏并排、左右各自滚动——
-       单列时 scrollHeight 1668px，要滚过整个关卡面板才够到指针面板 */
+    /* 横屏两栏并排：外层禁止多余滚动，左右两栏各自独立滚动，杜绝嵌套滚动 */
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-start;
+    flex-wrap: nowrap;
+    align-items: stretch;
     flex: 1 1 0;
     width: 0;
     min-width: 0;
     min-height: 0;
-    overflow-y: auto;
-    padding-bottom: 4px;
+    overflow: hidden;
+    padding-bottom: 2px;
     gap: 10px;
+    height: 100%;
   }
 
   .sides .side {
-    flex: 1 1 240px; /* 窄到放不下两栏时自动回到单列 */
-    min-width: 0;
+    flex: 1 1 0;
+    min-width: 220px;
+    height: 100%;
     max-height: 100%;
     overflow-y: auto;
   }
 
-  /* 横屏空间允许，全部 section 同屏显示（不启用 Tab 抽屉） */
+  /* 横屏空间允许，全部 section 同屏显示（不启用 Tab 抽屉），机甲面板撑满通高 */
   main[data-tab] .sides section {
     display: block;
+    min-height: 100%;
+    box-sizing: border-box;
   }
 
   .mobile-tabs {
@@ -1529,7 +1860,7 @@ input[type='checkbox'] {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-radius: var(--r-lg);
-  z-index: 4;
+  z-index: 12;
   animation: fade-in 0.25s ease-out;
 }
 
@@ -1591,51 +1922,61 @@ input[type='checkbox'] {
   box-shadow: none;
 }
 
-/* ---------- 首关手把手引导（入门容易：第一眼就知道做什么） ---------- */
-.first-guide {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
-  margin: 0 auto;
-  max-width: 100%;
-  border-radius: var(--r-md);
-  background: linear-gradient(135deg, rgba(79, 209, 197, 0.14), rgba(167, 139, 250, 0.1));
+/* ---------- 首关手把手引导（全息屏幕内测控指令） ---------- */
+.canvas-box .first-guide {
+  position: absolute;
+  bottom: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 420px;
+  display: block;
+  padding: 7px 12px;
+  margin: 0;
+  border-radius: 12px;
+  background: rgba(10, 16, 32, 0.92);
+  backdrop-filter: blur(8px);
   border: 1px solid rgba(79, 209, 197, 0.45);
-  font-size: var(--fs-sm);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 12px rgba(79, 209, 197, 0.25);
+  font-size: var(--fs-xs);
+  line-height: 1.45;
   color: var(--text);
   text-align: center;
+  z-index: 15;
+  pointer-events: auto;
   animation: guide-in 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
+  box-sizing: border-box;
 }
 
-.first-guide b {
+.canvas-box .first-guide b {
   color: var(--cyan);
-  /* 标签类短词不折行（"第 1 步"被压到 26px 会逐字竖排） */
   white-space: nowrap;
 }
 
-.first-guide {
-  flex-wrap: wrap;
+.canvas-box .first-guide.ok {
+  background: rgba(20, 26, 16, 0.94);
+  border-color: rgba(251, 191, 36, 0.65);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 16px rgba(251, 191, 36, 0.35);
 }
 
-.first-guide.ok {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(79, 209, 197, 0.1));
-  border-color: rgba(251, 191, 36, 0.55);
-}
-
-.first-guide.ok b {
+.canvas-box .first-guide.ok b {
   color: var(--gold);
 }
 
 @keyframes guide-in {
   from {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translate(-50%, 6px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (min-width: 641px) {
+  .canvas-box .first-guide {
+    bottom: 12px;
   }
 }
 

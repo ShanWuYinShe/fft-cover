@@ -141,22 +141,26 @@
   }}
 >
   <div class="box">
-    <h2>
-      {#if tab === 'dex'}
-        <Icon name="map" size={16} /> 图鉴
-        <span class="muted">{litLevels} / {LEVEL_DEFS.length} 关已点亮</span>
-      {:else}
-        <Icon name="trophy" size={16} /> 成就
-        <span class="muted">{unlockedCount} / {ACHIEVEMENTS.length}</span>
-      {/if}
-    </h2>
-    <div class="tabs">
-      <button type="button" class:on={tab === 'achv'} onclick={() => (tab = 'achv')}>成就</button>
-      <button type="button" class:on={tab === 'dex'} onclick={() => (tab = 'dex')}>图鉴</button>
-      <button type="button" class:on={tab === 'stats'} onclick={() => (tab = 'stats')}>统计</button>
-      <button type="button" class:on={tab === 'save'} onclick={() => (tab = 'save')}>存档</button>
+    <div class="modal-header">
+      <h2>
+        {#if tab === 'dex'}
+          <Icon name="map" size={16} /> 图鉴
+          <span class="muted">{litLevels} / {LEVEL_DEFS.length} 关已点亮</span>
+        {:else}
+          <Icon name="trophy" size={16} /> 成就
+          <span class="muted">{unlockedCount} / {ACHIEVEMENTS.length}</span>
+        {/if}
+      </h2>
+      <div class="tabs">
+        <button type="button" class:on={tab === 'achv'} onclick={() => (tab = 'achv')}>成就</button>
+        <button type="button" class:on={tab === 'dex'} onclick={() => (tab = 'dex')}>图鉴</button>
+        <button type="button" class:on={tab === 'stats'} onclick={() => (tab = 'stats')}>统计</button>
+        <button type="button" class:on={tab === 'save'} onclick={() => (tab = 'save')}>存档</button>
+      </div>
     </div>
-    {#if tab === 'dex'}
+
+    <div class="modal-body">
+      {#if tab === 'dex'}
       <div class="dex">
         {#each chapters as ch (ch.id)}
           {@const seal = engine.chapterSealsOf(ch.id)}
@@ -364,8 +368,11 @@
         {/each}
       {/each}
     </div>
-    <div class="hint">当前总星数 {totalStars} / {LEVEL_DEFS.length * 3}（随机关不计星）</div>
-    <button class="primary" onclick={onclose}>关 闭</button>
+    </div>
+    <div class="modal-footer">
+      <div class="hint">当前总星数 {totalStars} / {LEVEL_DEFS.length * 3}（随机关不计星）</div>
+      <button class="primary" onclick={onclose}>关 闭</button>
+    </div>
   </div>
 </div>
 
@@ -373,26 +380,52 @@
   .modal {
     position: fixed;
     inset: 0;
-    background: rgba(5, 7, 14, 0.7);
+    background: rgba(4, 6, 14, 0.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 50;
   }
   .box {
+    display: flex;
+    flex-direction: column;
     width: min(92vw, 380px);
-    /* 矮屏（手机横屏 ~390px 高）里弹层必须能滚：否则顶部标签栏与底部按钮都够不着 */
-    max-height: calc(100dvh - 24px);
-    overflow-y: auto;
+    max-height: calc(100dvh - 36px);
     background: #10152a;
     border: 1px solid var(--line);
     border-radius: 14px;
-    padding: 18px 20px;
-    text-align: center;
     box-shadow: 0 16px 60px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+  }
+  .modal-header {
+    padding: 16px 20px 10px;
+    border-bottom: 1px solid var(--line-2);
+    text-align: center;
+  }
+  .modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px 20px;
+  }
+  .modal-footer {
+    padding: 10px 20px 14px;
+    border-top: 1px solid var(--line-2);
+    background: rgba(13, 17, 34, 0.95);
+    text-align: center;
+  }
+  .modal-footer .hint {
+    margin-bottom: 8px;
+  }
+  .modal-footer .primary {
+    width: 100%;
+    margin: 0;
   }
   h2 {
-    margin: 0 0 12px;
+    margin: 0 0 10px;
     font-size: 17px;
     letter-spacing: 2px;
   }
@@ -407,8 +440,6 @@
     flex-direction: column;
     gap: 12px;
     margin-bottom: 12px;
-    max-height: 46vh;
-    overflow-y: auto;
     text-align: left;
   }
   .dex-ch-head {
@@ -780,8 +811,6 @@
     display: flex;
     flex-direction: column;
     gap: 3px;
-    max-height: 240px;
-    overflow-y: auto;
   }
   .lvl-row {
     display: flex;

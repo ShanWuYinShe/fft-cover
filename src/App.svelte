@@ -45,8 +45,8 @@
   let showSettings = $state(false);
   /** 开始画面：首次访问显示（老玩家直接进游戏，点标题可再看） */
   let showTitle = $state(false);
-  /** 移动端底部标签：关卡 / 指针 / 成绩（桌面端忽略，全部 section 同屏显示） */
-  let mobileTab: 'levels' | 'arms' | 'score' = $state('levels');
+  /** 移动端底部标签：指针 / 关卡（默认调参，方便即刻开始操作） */
+  let mobileTab: 'levels' | 'arms' | 'score' = $state('arms');
   /**
    * 手机端面板全屏展开：面板可视高只有 ~330px 而内容要 503px（实测 28%
    * 的元素必须滚动才看得到）。展开时画布让位、面板铺满，信息一次看全。
@@ -54,11 +54,13 @@
    */
   let panelExpanded = $state(false);
   function onTab(t: 'levels' | 'arms'): void {
-    if (mobileTab === t) panelExpanded = !panelExpanded;
-    else {
+    if (mobileTab === t) {
+      panelExpanded = !panelExpanded;
+    } else {
       mobileTab = t;
       panelExpanded = false;
     }
+    haptic(10, engine.soundOn);
   }
   /** PWA：有新版本等待接管（main.ts 在 SW 进入 waiting 时派发 pwa-update） */
   let updateReady = $state(false);
@@ -70,7 +72,27 @@
     document.documentElement.classList.toggle('reduce-motion', !!engine.flags.reduceMotion);
   });
 
+  /** 结算或通关时自动收起移动端展开的面板，确保结算卡拥有完整画布展示空间，防止数字截断 */
+  $effect(() => {
+    if (engine.phase === 'done' && panelExpanded) {
+      panelExpanded = false;
+    }
+  });
+
+  /** 关卡切换时移动端自动切到调参面板，确保首屏直接可调参 */
+  let activeLevelId = $state(engine.level?.id);
+  $effect(() => {
+    if (engine.level?.id && engine.level.id !== activeLevelId) {
+      activeLevelId = engine.level.id;
+      mobileTab = 'arms';
+    }
+  });
+
   onMount(() => {
+    (window as any).__ENGINE = engine;
+    (window as any).__OPEN_SETTINGS = () => (showSettings = true);
+    (window as any).__OPEN_ACHV = () => (showAchv = true);
+    (window as any).__OPEN_TITLE = () => (showTitle = true);
     // 系统开了"减弱动态效果"且用户没手动设过 → 默认打开减少动画
     if (
       engine.flags.reduceMotion === undefined &&
@@ -369,7 +391,9 @@
     setVolume(next);
     engine.setSound(next > 0);
   }
-  const volIcon = $derived(volume === 1 ? '🔊' : volume === 0.5 ? '🔉' : '🔇');
+  const volIconName = $derived(
+    volume === 1 ? 'volume-high' : volume === 0.5 ? 'volume-low' : 'volume-mute',
+  );
 
   // 新手引导：首次访问显示（flag 持久化在引擎 flags 里）
   const tutorialSeen = $derived(!!engine.flags['tutorialSeen']);
@@ -452,12 +476,45 @@
 
 <svelte:window onkeydown={onKeydown} />
 
-<header class="compact">
-  <h1>
+<header class="game-hud-bar">
+  <div class="hud-left">
     <button type="button" class="title-btn" title="查看进度概览" onclick={() => (showTitle = true)}>
-      傅立叶指针
+      <span class="title-brand">✦ 傅立叶指针</span>
     </button>
-  </h1>
+    {#if engine.level}
+      <span class="hud-level-tag">{engine.level.name}</span>
+    {/if}
+  </div>
+  <div class="hud-right-actions">
+    {#if engine.level}
+      <button
+        type="button"
+        class="hud-seal-badge"
+        title="本关朱印成就"
+        onclick={() => (showAchv = true)}
+      >
+        ◈ 印 {sealDone}/4
+      </button>
+    {/if}
+    <button
+      type="button"
+      class="hud-action-btn"
+      title="成就与图鉴"
+      aria-label="成就"
+      onclick={() => (showAchv = true)}
+    >
+      <Icon name="trophy" size={15} />
+    </button>
+    <button
+      type="button"
+      class="hud-action-btn"
+      title="设置"
+      aria-label="设置"
+      onclick={() => (showSettings = true)}
+    >
+      <Icon name="gear" size={15} />
+    </button>
+  </div>
 </header>
 
 <!-- 读屏播报：画布进度对读屏用户不可见，这里用 aria-live 转达 -->
@@ -472,7 +529,26 @@
     <div class="canvas-box">
       <Stage />
       <div class="hud">
-        <span class="lvl">
+        <button
+          type="button"
+          class="mobile-lvl-btn"
+          title="切换关卡"
+          onclick={() => {
+            mobileTab = mobileTab === 'levels' ? 'arms' : 'levels';
+            panelExpanded = true;
+          }}
+        >
+          <span class="lvl-icon">☰</span>
+          <span class="lvl-name">
+            {#if engine.endless}
+              第 {engine.endlessWave} 波
+            {:else}
+              {engine.level?.name ?? '自由'}
+            {/if}
+          </span>
+          <span class="lvl-caret">▾</span>
+        </button>
+        <span class="lvl desktop-lvl">
           {#if engine.endless}
             <Icon name="infinity" size={13} /> 第 {engine.endlessWave} 波 · 累计 {engine.endlessScore}
             分
@@ -508,6 +584,64 @@
               onclick={() => (showAchv = true)}
             >
               印 <b>{sealDone}</b>/4
+            </button>
+          {/if}
+          <button
+            type="button"
+            class="hud-settings-btn mobile-only-btn"
+            title="设置"
+            aria-label="设置"
+            onclick={() => (showSettings = true)}
+          >
+            <Icon name="gear" size={13} />
+          </button>
+        </div>
+      </div>
+
+      <!-- 画布底缘悬浮操作区（移动端主控） -->
+      <div class="canvas-fire-bar">
+        <div class="cf-left">
+          {#if engine.hasSavedArms()}
+            <button
+              type="button"
+              class="cf-btn cf-best"
+              title="载入最佳解法"
+              onclick={() => engine.loadSavedArms()}
+            >
+              ★ 最佳
+            </button>
+          {/if}
+          {#if engine.collectedCount === 0 && !engine.sandbox}
+            <span class="cf-preview">
+              <span class="cf-dot"></span> 满分预览
+            </span>
+          {/if}
+        </div>
+        <div class="cf-right">
+          {#if engine.phase === 'running' || engine.phase === 'paused'}
+            <button type="button" class="cf-btn cf-danger" onclick={stopRun}>
+              <Icon name="stop" size={12} /> 停止
+            </button>
+            <button
+              type="button"
+              class="cf-btn cf-ff"
+              class:gold={engine.fastForward}
+              title="2× 快进"
+              onclick={() => (engine.fastForward = !engine.fastForward)}
+            >
+              ⏩ {engine.fastForward ? '2×' : '1×'}
+            </button>
+          {:else}
+            <button
+              type="button"
+              class="cf-btn cf-reset"
+              title="重置本局已收集点与指针"
+              onclick={() => engine.resetRun()}
+            >
+              ⟲
+            </button>
+            <button type="button" class="cf-btn cf-primary" onclick={toggleRun}>
+              <span class="cf-play">▶</span> {engine.runLabel}
             </button>
           {/if}
         </div>
@@ -556,50 +690,50 @@
           </button>
         </div>
       {/if}
+      {#if engine.expertMode}
+        <div class="expert-tip">
+          <Icon name="gem" size={14} />
+          <b>专家模式</b>——目标轮廓与预览已隐藏，靠频谱对比和收集反馈来解（全清可得专家认证）
+        </div>
+      {/if}
+      {#if engine.remoteChallenge}
+        <div class="remote-tip">
+          <span
+            ><Icon name="share" size={14} /> <b>好友的解法挑战</b>——参数已载入，点「▶
+            开始旋转」试试能不能全清</span
+          >
+          <button
+            type="button"
+            class="rt-close"
+            title="关闭提示"
+            onclick={() => (engine.remoteChallenge = false)}>✕</button
+          >
+        </div>
+      {/if}
+      {#if engine.showFirstGuide && engine.phase === 'edit'}
+        <div class="first-guide" class:ok={engine.guideRReady}>
+          {#if engine.guideRReady}
+            <b><Icon name="check" size={13} /> 很好！</b
+            >现在点「开始旋转」，指针尖端扫过金色点即可收集
+          {:else}
+            <b>第 1 步</b>：把 ① 的半径调到 <b>120</b>（当前 {engine.arms[0]
+              ?.r}）——金色虚线是目标，紫色是你的轨迹
+          {/if}
+        </div>
+      {:else if engine.showEllipseGuide && engine.phase === 'edit'}
+        <div class="first-guide" class:ok={engine.guideE2Ready}>
+          {#if engine.guideE2Ready}
+            <b><Icon name="check" size={13} /> 对了！</b
+            >再微调两根的半径与相位，让紫色轨迹贴上金色虚线（细节见提示）
+          {:else}
+            <b>椭圆的秘密在"反转"</b>：启用 <b>②</b> 并把它切到 <b>⟲ 反转</b>—— 一顺一反才叠得出椭圆
+          {/if}
+          <button type="button" class="mini" onclick={() => engine.markFlag('ellipseGuideDone')}>
+            知道了
+          </button>
+        </div>
+      {/if}
     </div>
-    {#if engine.expertMode}
-      <div class="expert-tip">
-        <Icon name="gem" size={14} />
-        <b>专家模式</b>——目标轮廓与预览已隐藏，靠频谱对比和收集反馈来解（全清可得专家认证）
-      </div>
-    {/if}
-    {#if engine.remoteChallenge}
-      <div class="remote-tip">
-        <span
-          ><Icon name="share" size={14} /> <b>好友的解法挑战</b>——参数已载入，点「▶
-          开始旋转」试试能不能全清</span
-        >
-        <button
-          type="button"
-          class="rt-close"
-          title="关闭提示"
-          onclick={() => (engine.remoteChallenge = false)}>✕</button
-        >
-      </div>
-    {/if}
-    {#if engine.showFirstGuide && engine.phase === 'edit'}
-      <div class="first-guide" class:ok={engine.guideRReady}>
-        {#if engine.guideRReady}
-          <b><Icon name="check" size={13} /> 很好！</b
-          >现在点「开始旋转」，指针尖端扫过金色点即可收集
-        {:else}
-          <b>第 1 步</b>：把 ① 的半径调到 <b>120</b>（当前 {engine.arms[0]
-            ?.r}）——金色虚线是目标，紫色是你的轨迹
-        {/if}
-      </div>
-    {:else if engine.showEllipseGuide && engine.phase === 'edit'}
-      <div class="first-guide" class:ok={engine.guideE2Ready}>
-        {#if engine.guideE2Ready}
-          <b><Icon name="check" size={13} /> 对了！</b
-          >再微调两根的半径与相位，让紫色轨迹贴上金色虚线（细节见提示）
-        {:else}
-          <b>椭圆的秘密在"反转"</b>：启用 <b>②</b> 并把它切到 <b>⟲ 反转</b>—— 一顺一反才叠得出椭圆
-        {/if}
-        <button type="button" class="mini" onclick={() => engine.markFlag('ellipseGuideDone')}>
-          知道了
-        </button>
-      </div>
-    {/if}
     <div class="run-row">
       {#if engine.sandbox}
         <button class="primary" onclick={() => engine.exitSandbox()}
@@ -616,11 +750,12 @@
         <button onclick={() => engine.resetRun()}>⟲ 重置点</button>
         <span class="run-icons">
           <button
+            class:music-off={volume === 0}
             title="音量（点击循环 全/半/静）"
             aria-label={'音量：' + (volume === 1 ? '100%' : volume === 0.5 ? '50%' : '静音')}
             onclick={cycleVolume}
           >
-            {volIcon}
+            <Icon name={volIconName} size={16} />
           </button>
           <button
             class:music-off={!engine.musicOn}
@@ -643,16 +778,28 @@
           >
         </span>
       {:else}
-        <button class="primary" onclick={toggleRun}>{engine.runLabel}</button>
-        <button
-          class="danger"
-          onclick={stopRun}
-          disabled={engine.phase !== 'running' && engine.phase !== 'paused'}
-        >
-          <Icon name="stop" size={13} /> <span class="bt-long">停止结算</span><span class="bt-short"
-            >停止</span
+        {#if engine.phase === 'running' || engine.phase === 'paused'}
+          <button class="danger run-btn-main" onclick={stopRun}>
+            <Icon name="stop" size={13} /> <span class="bt-long">停止结算</span><span class="bt-short">停止</span>
+          </button>
+          <button
+            class="run-btn-aux"
+            class:gold={engine.fastForward}
+            title="2× 快进"
+            onclick={() => (engine.fastForward = !engine.fastForward)}
           >
-        </button>
+            ⏩ {engine.fastForward ? '2×' : '1×'}
+          </button>
+        {:else}
+          <button class="primary run-btn-main" onclick={toggleRun}>{engine.runLabel}</button>
+          <button
+            class="run-btn-aux"
+            title="重置本局已收集点与指针"
+            onclick={() => engine.resetRun()}
+          >
+            ⟲ 重置
+          </button>
+        {/if}
         <MoreMenu
           items={[
             {
@@ -662,6 +809,34 @@
               onclick: () => (engine.fastForward = !engine.fastForward),
             },
             { label: '⟲ 重置点', onclick: () => engine.resetRun() },
+            ...(engine.hasSavedArms()
+              ? [
+                  {
+                    label: '▶ 回放上届解法',
+                    icon: 'play',
+                    title: '载入上届解法并立即旋转（回放最佳参数的实际效果）',
+                    onclick: () => {
+                      engine.loadSavedArms();
+                      engine.resetRun();
+                      engine.startRun();
+                    },
+                  },
+                ]
+              : []),
+            { label: '⭯ 全部指针清零', title: '全部指针清零关闭', onclick: () => engine.clearArms() },
+            {
+              label: '音量：' + (volume === 1 ? '100%' : volume === 0.5 ? '50%' : '静音'),
+              icon: 'volume-high',
+              onclick: cycleVolume,
+            },
+            {
+              label: '背景音乐：' + (engine.musicOn ? '开' : '关'),
+              icon: 'music',
+              onclick: () => {
+                engine.setMusic(!engine.musicOn);
+                uiToggle(engine.soundOn);
+              },
+            },
             {
               label: '结算卡',
               icon: 'chart',
@@ -678,19 +853,18 @@
               disabled: engine.phase === 'running' || engine.phase === 'paused' || engine.endless,
               onclick: () => engine.enterSandbox(),
             },
-            // 手机端图标行只留音量/音乐（见 app.css）：成就与设置在这里也有入口，
-            // 桌面端多两个菜单项不冲突（图标键仍在）
             { label: '成就', icon: 'trophy', onclick: () => (showAchv = true) },
             { label: '设置', icon: 'gear', onclick: () => (showSettings = true) },
           ]}
         />
         <span class="run-icons">
           <button
+            class:music-off={volume === 0}
             title="音量（点击循环 全/半/静）"
             aria-label={'音量：' + (volume === 1 ? '100%' : volume === 0.5 ? '50%' : '静音')}
             onclick={cycleVolume}
           >
-            {volIcon}
+            <Icon name={volIconName} size={16} />
           </button>
           <button
             class:music-off={!engine.musicOn}
@@ -716,16 +890,20 @@
     </div>
   </section>
 
-  {#if panelExpanded}
-    <button
-      type="button"
-      class="sheet-collapse"
-      aria-label="收起面板"
-      onclick={() => (panelExpanded = false)}
-    >
-      <i>▾</i>收起面板，回到画布
-    </button>
-  {/if}
+  <!-- 移动端抽屉手柄：点击展开/收起，微触感反馈，释放垂直空间 -->
+  <button
+    type="button"
+    class="sheet-handle"
+    aria-expanded={panelExpanded}
+    aria-label={panelExpanded ? '收起面板，回到画布' : '展开面板'}
+    title={panelExpanded ? '收起面板，回到画布' : '展开面板'}
+    onclick={() => {
+      panelExpanded = !panelExpanded;
+      haptic(10, engine.soundOn);
+    }}
+  >
+    <span class="handle-bar"></span>
+  </button>
 
   <div class="sides">
     <aside class="side side-left">
@@ -734,69 +912,11 @@
 
     <aside class="side side-right">
       <section class="sec-arms">
-        <h2>
+        <h2 class="sec-arms-hd">
           指针
-          <span class="muted">（本关最多 {engine.level?.armLimit ?? 10} 根）</span>
+          <span class="muted arm-limit-sub">（本关最多 {engine.level?.armLimit ?? 10} 根）</span>
+          <span class="arm-count-badge">已启用 {engine.arms.filter((a) => a.on).length}/{engine.level?.armLimit ?? 10}</span>
         </h2>
-        <div class="tools-row">
-          <!-- 入门只露出"随机参数"；精通工具按进度解锁（专家=过第二关，频谱=卡关或进第三章） -->
-          <button title="随机化已启用指针的半径与相位" onclick={() => engine.randomizeArms()}>
-            <Icon name="dice" size={14} /> 随机参数
-          </button>
-          {#if engine.expertUnlocked}
-            <button
-              title="专家模式：隐藏目标轮廓与预览轨迹，只能靠频谱与收集反馈调参——硬核玩家的证明"
-              class:expert={engine.expertMode}
-              onclick={() => engine.toggleExpert()}
-            >
-              <Icon name="gem" size={14} /> 专家
-            </button>
-          {/if}
-          {#if engine.spectrumUnlocked}
-            <button
-              title="在频谱仪上叠加目标曲线的真实频谱（卡关时看清差在哪一项）"
-              class:gold={engine.spectrumCompare}
-              onclick={() => engine.toggleSpectrumCompare()}
-            >
-              <Icon name="zoom" size={14} /> 频谱对比
-            </button>
-          {/if}
-          <MoreMenu
-            items={[
-              {
-                label: '↶ 撤销',
-                title: '撤销上一次调参（Ctrl/Cmd+Z）',
-                disabled: engine.armUndoCount === 0,
-                onclick: () => engine.undoArms(),
-              },
-              {
-                label: '↷ 重做',
-                title: '重做（Ctrl/Cmd+Shift+Z）',
-                disabled: engine.armRedoCount === 0,
-                onclick: () => engine.redoArms(),
-              },
-              { label: '⭯ 清零', title: '全部指针清零关闭', onclick: () => engine.clearArms() },
-              {
-                label: '↺ 复位',
-                title: '全部指针复位到默认参数',
-                onclick: () => engine.resetAllArms(),
-              },
-              ...(engine.hasSavedArms()
-                ? [
-                    {
-                      label: '▶ 回放解法',
-                      title: '载入上届解法并立即旋转（回放最佳参数的实际效果）',
-                      onclick: () => {
-                        engine.loadSavedArms();
-                        engine.resetRun();
-                        engine.startRun();
-                      },
-                    },
-                  ]
-                : []),
-            ]}
-          />
-        </div>
         {#if engine.autoSolve}
           <p class="fitting-tip">🪄 自动拟合中——直接调整任意指针即可接管它；点击画布可打断</p>
         {/if}
@@ -807,25 +927,27 @@
 </main>
 
 <!-- 移动端底部标签栏（桌面隐藏）：画布固定在屏内，面板按需切换 -->
-<nav class="mobile-tabs">
-  <button
-    type="button"
-    class:on={mobileTab === 'levels'}
-    aria-expanded={mobileTab === 'levels' && panelExpanded}
-    onclick={() => onTab('levels')}
-  >
-    <i><Icon name="map" size={17} /></i><span
-      >{mobileTab === 'levels' && panelExpanded ? '收起' : '关卡'}</span
-    >
-  </button>
+<nav class="mobile-tabs" class:hide-in-run={engine.phase === 'running'}>
   <button
     type="button"
     class:on={mobileTab === 'arms'}
+    class:expanded={mobileTab === 'arms' && panelExpanded}
     aria-expanded={mobileTab === 'arms' && panelExpanded}
     onclick={() => onTab('arms')}
   >
     <i><Icon name="sliders" size={17} /></i><span
-      >{mobileTab === 'arms' && panelExpanded ? '收起' : '指针'}</span
+      >{mobileTab === 'arms' && panelExpanded ? '指针调参 ▾' : '指针调参'}</span
+    >
+  </button>
+  <button
+    type="button"
+    class:on={mobileTab === 'levels'}
+    class:expanded={mobileTab === 'levels' && panelExpanded}
+    aria-expanded={mobileTab === 'levels' && panelExpanded}
+    onclick={() => onTab('levels')}
+  >
+    <i><Icon name="map" size={17} /></i><span
+      >{mobileTab === 'levels' && panelExpanded ? '星图关卡 ▾' : '星图关卡'}</span
     >
   </button>
 </nav>

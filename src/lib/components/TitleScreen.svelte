@@ -43,8 +43,12 @@
             <b>{seals.chapters}</b><i>/{seals.chaptersTotal} 章节印</i>
           </div>
         {/if}
-        <div class="p-item"><b>{perfectCount}</b><i><Icon name="crown" size={12} /> 完美</i></div>
-        <div class="p-item"><b>{exactCount}</b><i><Icon name="target" size={12} /> 精确解</i></div>
+        {#if perfectCount > 0}
+          <div class="p-item"><b>{perfectCount}</b><i><Icon name="crown" size={12} /> 完美</i></div>
+        {/if}
+        {#if exactCount > 0}
+          <div class="p-item"><b>{exactCount}</b><i><Icon name="target" size={12} /> 精确解</i></div>
+        {/if}
         {#if expertCount > 0}
           <div class="p-item"><b>{expertCount}</b><i>专家</i></div>
         {/if}
