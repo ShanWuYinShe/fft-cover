@@ -1,0 +1,176 @@
+/* ============================================================
+ * 浑天璇玑 · 设计令牌 (Design Tokens)
+ * 兼容原有变量名，同时提供规范的语义化令牌
+ * ============================================================ */
+
+:root {
+  /* --- 颜色：背景层级 --- */
+  --bg: #06080e;
+  --bg-2: #0a0f19;
+  --bg-chassis: #0a0e1a;
+  --bg-bay-inset: #04060b;
+  --surface-armor: #0f1626;
+  --surface-keycap: #141c2e;
+
+  --color-bg-deep: var(--bg);
+  --color-bg-surface: var(--bg-2);
+  --color-bg-chassis: var(--bg-chassis);
+  --color-bg-inset: var(--bg-bay-inset);
+  --color-bg-elevated: var(--surface-armor);
+  --color-surface-keycap: var(--surface-keycap);
+
+  /* --- 颜色：面板与微质感 --- */
+  --panel: rgba(16, 23, 38, 0.78);
+  --panel-2: rgba(16, 23, 38, 0.45);
+  --color-panel: var(--panel);
+  --color-panel-translucent: var(--panel-2);
+
+  /* --- 颜色：边框与分割线 --- */
+  --line: rgba(245, 184, 65, 0.16);
+  --line-2: rgba(255, 255, 255, 0.06);
+  --line-quiet: rgba(148, 163, 184, 0.22);
+  --line-bright: rgba(245, 184, 65, 0.42);
+
+  --color-border: var(--line);
+  --color-border-subtle: var(--line-2);
+  --color-border-quiet: var(--line-quiet);
+  --color-border-bright: var(--line-bright);
+
+  /* --- 颜色：浑天灵色 (Celestial Accents) --- */
+  --cyan: #00f5d4;
+  --cyan-dim: rgba(0, 245, 212, 0.12);
+  --cyan-line: rgba(0, 245, 212, 0.35);
+  --holo-cyan: #00f5d4;
+
+  --color-cyan: var(--cyan);
+  --color-cyan-dim: var(--cyan-dim);
+  --color-cyan-line: var(--cyan-line);
+
+  --purple: #a78bfa;
+  --purple-dim: rgba(167, 139, 250, 0.12);
+  --holo-purple: #9d4edd;
+
+  --color-purple: var(--purple);
+  --color-purple-dim: var(--purple-dim);
+
+  --gold: #f5b841;
+  --gold-bright: #ffd166;
+  --gold-dim: rgba(245, 184, 65, 0.14);
+  --imperial-gold: #f5b841;
+
+  --color-gold: var(--gold);
+  --color-gold-bright: var(--gold-bright);
+  --color-gold-dim: var(--gold-dim);
+
+  --cinnabar: #d92b2b;
+  --cinnabar-seal: #d92b2b;
+  --cinnabar-dim: rgba(217, 43, 43, 0.14);
+  --cinnabar-line: rgba(217, 43, 43, 0.48);
+
+  --color-cinnabar: var(--cinnabar);
+  --color-cinnabar-dim: var(--cinnabar-dim);
+  --color-cinnabar-line: var(--cinnabar-line);
+
+  --jade: #10b981;
+  --moon: #f1f5f9;
+  --color-jade: var(--jade);
+  --color-moon: var(--moon);
+
+  /* --- 颜色：文字排版 --- */
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --muted-2: #788296;
+
+  --color-text: var(--text);
+  --color-text-muted: var(--muted);
+  --color-text-dim: var(--muted-2);
+
+  /* --- 几何切角与浑天仪倒角 (Armillary Chamfers) --- */
+  --chamfer-lg: polygon(
+    12px 0,
+    calc(100% - 12px) 0,
+    100% 12px,
+    100% calc(100% - 12px),
+    calc(100% - 12px) 100%,
+    12px 100%,
+    0 calc(100% - 12px),
+    0 12px
+  );
+  --chamfer-md: polygon(
+    8px 0,
+    calc(100% - 8px) 0,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    0 calc(100% - 8px),
+    0 8px
+  );
+  --chamfer-sm: polygon(
+    4px 0,
+    calc(100% - 4px) 0,
+    100% 4px,
+    100% calc(100% - 4px),
+    calc(100% - 4px) 100%,
+    4px 100%,
+    0 calc(100% - 4px),
+    0 4px
+  );
+  --chamfer-cut: polygon(
+    0 0,
+    calc(100% - 8px) 0,
+    100% 8px,
+    100% 100%,
+    8px 100%,
+    0 calc(100% - 8px)
+  );
+
+  /* --- 圆角 --- */
+  --r-sm: 6px;
+  --r-md: 9px;
+  --r-lg: 14px;
+  --r-pill: 999px;
+
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-pill: var(--r-pill);
+
+  /* --- 阴影与光晕 --- */
+  --sh-1: 0 2px 10px rgba(0, 0, 0, 0.35);
+  --sh-2: 0 12px 42px rgba(0, 0, 0, 0.6);
+  --sh-glow: 0 0 18px rgba(0, 245, 212, 0.28);
+  --sh-gold-glow: 0 0 20px rgba(245, 184, 65, 0.3);
+
+  --shadow-sm: var(--sh-1);
+  --shadow-lg: var(--sh-2);
+  --shadow-glow-cyan: var(--sh-glow);
+  --shadow-glow-gold: var(--sh-gold-glow);
+
+  /* --- 空间与间距规范 --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* --- 字号体系 --- */
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 15px;
+  --fs-xl: 20px;
+  --fs-2xl: 24px;
+
+  /* --- 响应式断点标记 --- */
+  --bp-mobile: 640px;
+  --bp-tablet: 1024px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --fs-xs: 12px;
+  }
+}

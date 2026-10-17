@@ -1,0 +1,21 @@
+/* ============================================================
+ * 浑天璇玑 · 文字排印 (Typography)
+ * ============================================================ */
+
+/* 古典天文与题跋字体 */
+.font-celestial {
+  font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+  letter-spacing: 2px;
+}
+
+/* 等宽数值（计分、倒计时、坐标、百分比） */
+.font-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 强调朱印铭文 */
+.brand-seal-text {
+  font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
