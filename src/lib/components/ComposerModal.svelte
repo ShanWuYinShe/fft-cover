@@ -1,5 +1,7 @@
 <script lang="ts">
   import Icon from './Icon.svelte';
+  import Modal from './base/Modal.svelte';
+  import Button from './base/Button.svelte';
   import { engine } from '../game/engine.svelte';
   import { encodeCoeffs, type HarmonicCoeff } from '../game/levels';
   import { CIRCLED, DRAFT_KEY } from '../game/constants';
@@ -237,153 +239,98 @@
   }
 </script>
 
-<!-- Esc 关闭：与其他弹层（成就/设置/通关）同一交互 -->
-<svelte:window
-  onkeydown={(e) => {
-    if (e.key === 'Escape') onclose();
-  }}
-/>
+<Modal title="✦ 浑天璇玑 · 谐波星盘" size="md" {onclose}>
+  <p class="lead">调校各阶谐波幅值与周天宿度，铸造全新星轨。生成后可用密符邀好友破题。</p>
+  <div class="presets">
+    <span class="plabel">预设</span>
+    {#each Object.keys(PRESETS) as name (name)}
+      <button type="button" class="pchip" onclick={() => applyPreset(name)}>{name}</button>
+    {/each}
+    <button
+      type="button"
+      class="pchip import"
+      title="取当前关卡的主频率填进滑杆——合成器是单侧旋转曲线，画布即所得"
+      onclick={importCurrentLevel}>⤓ 取当前关主频</button
+    >
+    <button
+      type="button"
+      class="pchip"
+      class:rev={showOnlyActive}
+      disabled={activeCount === 0}
+      title={activeCount === 0
+        ? '还没有启用的谐波，先拉高某行的幅值'
+        : '只显示已启用（幅值 > 0）的行'}
+      aria-pressed={showOnlyActive}
+      onclick={() => setFilterPref(!showOnlyActive)}>⦿ 已启用</button
+    >
+  </div>
 
-<div class="modal">
-  <div class="box">
-    <div class="modal-header">
-      <h2>✦ 浑天璇玑 · 谐波星盘</h2>
-      <p class="lead">调校各阶谐波幅值与周天宿度，铸造全新星轨。生成后可用密符邀好友破题。</p>
-      <div class="presets">
-        <span class="plabel">预设</span>
-        {#each Object.keys(PRESETS) as name (name)}
-          <button type="button" class="pchip" onclick={() => applyPreset(name)}>{name}</button>
-        {/each}
-        <button
-          type="button"
-          class="pchip import"
-          title="取当前关卡的主频率填进滑杆——合成器是单侧旋转曲线，画布即所得"
-          onclick={importCurrentLevel}>⤓ 取当前关主频</button
-        >
+  <div class="composer-body">
+    <div class="sliders">
+      {#each coeffs as c, i (i)}
+        {#if i === 10}
+          <div class="neg-label">⟲ 反转（负频率）</div>
+        {/if}
+        {#if !showOnlyActive || c.mag > 0.5}
+          <div class="row" class:active={c.mag > 0.5}>
+            <span class="side" class:rev={c.k < 0}>{c.k < 0 ? '⟲' : '⟳'}</span>
+            <span class="k">{CIRCLED[Math.abs(c.k) - 1] || Math.abs(c.k)} {Math.abs(c.k)}×</span>
+            <input
+              type="range"
+              min="0"
+              max="150"
+              step="2"
+              value={c.mag}
+              oninput={(e) => setMag(i + 1, +(e.currentTarget as HTMLInputElement).value)}
+            />
+            <input
+              type="range"
+              min="0"
+              max="360"
+              step="5"
+              value={c.phase}
+              oninput={(e) => setPhase(i + 1, +(e.currentTarget as HTMLInputElement).value)}
+            />
+          </div>
+        {/if}
+      {/each}
+    </div>
+    <input
+      class="name-input"
+      placeholder="给作品起个名字（可选，最多 12 字）"
+      maxlength="12"
+      bind:value={levelName}
+      onblur={() => saveNamePref(levelName)}
+    />
+    <canvas bind:this={canvas} width="150" height="150"></canvas>
+    <p class="lead">
+      启用谐波 {activeCount} 个 · 邀请码 <b>{code || '—'}</b>
+      {#if code}
         <button
           type="button"
           class="pchip"
-          class:rev={showOnlyActive}
-          disabled={activeCount === 0}
-          title={activeCount === 0
-            ? '还没有启用的谐波，先拉高某行的幅值'
-            : '只显示已启用（幅值 > 0）的行'}
-          aria-pressed={showOnlyActive}
-          onclick={() => setFilterPref(!showOnlyActive)}>⦿ 已启用</button
+          title="复制邀请码，好友在邀请码输入框粘贴即可挑战同一关"
+          onclick={copyCode}>{copied ? '✓ 已复制' : '📋 复制'}</button
         >
-      </div>
-    </div>
-
-    <div class="modal-body">
-      <div class="sliders">
-        {#each coeffs as c, i (i)}
-          {#if i === 10}
-            <div class="neg-label">⟲ 反转（负频率）</div>
-          {/if}
-          {#if !showOnlyActive || c.mag > 0.5}
-            <div class="row" class:active={c.mag > 0.5}>
-              <span class="side" class:rev={c.k < 0}>{c.k < 0 ? '⟲' : '⟳'}</span>
-              <span class="k">{CIRCLED[Math.abs(c.k) - 1] || Math.abs(c.k)} {Math.abs(c.k)}×</span>
-              <input
-                type="range"
-                min="0"
-                max="150"
-                step="2"
-                value={c.mag}
-                oninput={(e) => setMag(i + 1, +(e.currentTarget as HTMLInputElement).value)}
-              />
-              <input
-                type="range"
-                min="0"
-                max="360"
-                step="5"
-                value={c.phase}
-                oninput={(e) => setPhase(i + 1, +(e.currentTarget as HTMLInputElement).value)}
-              />
-            </div>
-          {/if}
-        {/each}
-      </div>
-      <input
-        class="name-input"
-        placeholder="给作品起个名字（可选，最多 12 字）"
-        maxlength="12"
-        bind:value={levelName}
-        onblur={() => saveNamePref(levelName)}
-      />
-      <canvas bind:this={canvas} width="150" height="150"></canvas>
-      <p class="lead">
-        启用谐波 {activeCount} 个 · 邀请码 <b>{code || '—'}</b>
-        {#if code}
-          <button
-            type="button"
-            class="pchip"
-            title="复制邀请码，好友在邀请码输入框粘贴即可挑战同一关"
-            onclick={copyCode}>{copied ? '✓ 已复制' : '📋 复制'}</button
-          >
-        {/if}
-      </p>
-    </div>
-    <div class="modal-footer">
-      <button class="primary" disabled={activeCount === 0} onclick={play}>🎮 生成并游玩</button>
-      <button onclick={onclose}>关 闭</button>
-    </div>
+      {/if}
+    </p>
   </div>
-</div>
+
+  {#snippet footer()}
+    <Button variant="primary" size="md" disabled={activeCount === 0} onclick={play}>
+      🎮 生成并游玩
+    </Button>
+    <Button variant="outline" size="md" onclick={onclose}>
+      关 闭
+    </Button>
+  {/snippet}
+</Modal>
 
 <style>
-  .modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(4, 6, 14, 0.82);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 60;
-  }
-  .box {
+  .composer-body {
     display: flex;
     flex-direction: column;
-    width: min(94vw, 440px);
-    max-height: calc(100dvh - 36px);
-    background: linear-gradient(170deg, rgba(17, 24, 39, 0.98), rgba(9, 13, 22, 0.99));
-    border: 1px solid rgba(245, 197, 66, 0.35);
-    border-radius: 16px;
-    box-shadow:
-      0 20px 60px rgba(0, 0, 0, 0.75),
-      0 0 40px rgba(245, 197, 66, 0.08) inset;
-    overflow: hidden;
-  }
-  .modal-header {
-    padding: 18px 20px 12px;
-    border-bottom: 1px solid rgba(245, 197, 66, 0.15);
-    text-align: center;
-  }
-  .modal-body {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 14px 20px 20px;
-    text-align: center;
-  }
-  .modal-footer {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    padding: 12px 20px 16px;
-    background: rgba(9, 13, 22, 0.96);
-    border-top: 1px solid rgba(245, 197, 66, 0.15);
-  }
-  h2 {
-    margin: 0 0 6px;
-    letter-spacing: 3px;
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: 20px;
-    color: var(--gold-bright);
-    text-shadow: 0 0 16px rgba(245, 197, 66, 0.35);
+    align-items: center;
   }
   .lead {
     font-size: 12px;

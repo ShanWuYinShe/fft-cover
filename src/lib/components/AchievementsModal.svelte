@@ -1,5 +1,7 @@
 <script lang="ts">
   import Icon from './Icon.svelte';
+  import Modal from './base/Modal.svelte';
+  import Button from './base/Button.svelte';
   import { LEVEL_DEFS } from '../game/levels';
   import { chapterProgress, isLevelLocked } from '../game/campaign';
   import { levelGoals } from '../game/goals';
@@ -127,41 +129,25 @@
   }
 </script>
 
-<svelte:window
-  onkeydown={(e) => {
-    if (e.key === 'Escape') onclose();
-  }}
-/>
-
-<div
-  class="modal"
-  role="presentation"
-  onclick={(e) => {
-    if (e.target === e.currentTarget) onclose();
-  }}
+<Modal
+  title={tab === 'dex' ? '图鉴' : tab === 'stats' ? '统计' : tab === 'save' ? '存档管理' : '成就'}
+  icon={tab === 'dex' ? 'map' : tab === 'stats' ? 'chart' : 'trophy'}
+  subtitle={tab === 'dex'
+    ? `${litLevels} / ${LEVEL_DEFS.length} 关已点亮`
+    : tab === 'achv'
+      ? `${unlockedCount} / ${ACHIEVEMENTS.length} 解锁`
+      : undefined}
+  size="md"
+  {onclose}
 >
-  <div class="box">
-    <div class="modal-header">
-      <h2>
-        {#if tab === 'dex'}
-          <Icon name="map" size={16} /> 图鉴
-          <span class="muted">{litLevels} / {LEVEL_DEFS.length} 关已点亮</span>
-        {:else}
-          <Icon name="trophy" size={16} /> 成就
-          <span class="muted">{unlockedCount} / {ACHIEVEMENTS.length}</span>
-        {/if}
-      </h2>
-      <div class="tabs">
-        <button type="button" class:on={tab === 'achv'} onclick={() => (tab = 'achv')}>成就</button>
-        <button type="button" class:on={tab === 'dex'} onclick={() => (tab = 'dex')}>图鉴</button>
-        <button type="button" class:on={tab === 'stats'} onclick={() => (tab = 'stats')}
-          >统计</button
-        >
-        <button type="button" class:on={tab === 'save'} onclick={() => (tab = 'save')}>存档</button>
-      </div>
-    </div>
+  <div class="tabs">
+    <button type="button" class:on={tab === 'achv'} onclick={() => (tab = 'achv')}>成就</button>
+    <button type="button" class:on={tab === 'dex'} onclick={() => (tab = 'dex')}>图鉴</button>
+    <button type="button" class:on={tab === 'stats'} onclick={() => (tab = 'stats')}>统计</button>
+    <button type="button" class:on={tab === 'save'} onclick={() => (tab = 'save')}>存档</button>
+  </div>
 
-    <div class="modal-body">
+  <div class="achv-body">
       {#if tab === 'dex'}
         <div class="dex">
           {#each chapters as ch (ch.id)}
@@ -373,73 +359,24 @@
         {/each}
       </div>
     </div>
-    <div class="modal-footer">
-      <div class="hint">当前总星数 {totalStars} / {LEVEL_DEFS.length * 3}（随机关不计星）</div>
-      <button class="primary" onclick={onclose}>关 闭</button>
-    </div>
-  </div>
-</div>
+
+  {#snippet footer()}
+    <div class="hint font-tabular">当前总星数 {totalStars} / {LEVEL_DEFS.length * 3}（随机关不计星）</div>
+    <Button variant="primary" size="md" onclick={onclose}>关 闭</Button>
+  {/snippet}
+</Modal>
 
 <style>
-  .modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(4, 6, 14, 0.82);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 50;
-  }
-  .box {
+  .achv-body {
     display: flex;
     flex-direction: column;
-    width: min(92vw, 420px);
-    max-height: calc(100dvh - 36px);
-    background: linear-gradient(160deg, #101728 0%, #080d1a 100%);
-    border: 1px solid rgba(245, 184, 65, 0.35);
-    border-top: 2px solid rgba(255, 209, 102, 0.6);
-    border-radius: var(--r-lg);
-    box-shadow:
-      0 20px 70px rgba(0, 0, 0, 0.75),
-      0 0 25px rgba(245, 184, 65, 0.1);
-    overflow: hidden;
+    gap: 12px;
   }
-  .modal-header {
-    padding: 16px 20px 10px;
-    border-bottom: 1px solid var(--line-2);
-    text-align: center;
-  }
-  .modal-body {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 14px 20px;
-  }
-  .modal-footer {
-    padding: 10px 20px 14px;
-    border-top: 1px solid var(--line-2);
-    background: rgba(13, 17, 34, 0.95);
-    text-align: center;
-  }
-  .modal-footer .hint {
-    margin-bottom: 8px;
-  }
-  .modal-footer .primary {
-    width: 100%;
-    margin: 0;
-  }
-  h2 {
-    margin: 0 0 10px;
-    font-size: 17px;
-    letter-spacing: 2px;
-  }
-  .muted {
+  .hint {
+    font-size: var(--fs-xs);
     color: var(--muted);
-    font-size: 13px;
-    letter-spacing: 0;
+    text-align: center;
+    margin-bottom: 8px;
   }
   /* ---------- 图鉴 ---------- */
   .dex {
