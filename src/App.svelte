@@ -495,6 +495,11 @@
 
 <svelte:window onkeydown={onKeydown} />
 
+<div class="celestial-deep-cosmos" aria-hidden="true">
+  <div class="armillary-meridian-ring ring-1"></div>
+  <div class="armillary-meridian-ring ring-2"></div>
+</div>
+
 <header class="game-hud-bar">
   <div class="hud-left">
     <button

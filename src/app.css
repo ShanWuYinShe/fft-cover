@@ -176,7 +176,50 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ---------- 顶部座舱 HUD 状态梁（Observatory Celestial HUD Beam） ---------- */
+/* ---------- 全景深空天穹背景 (Celestial Deep Cosmos Background) ---------- */
+.celestial-deep-cosmos {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 90% 80% at 50% 20%, rgba(13, 20, 36, 0.95) 0%, rgba(4, 6, 12, 1) 100%),
+    radial-gradient(circle at 80% 80%, rgba(245, 184, 65, 0.03) 0%, transparent 50%);
+}
+.armillary-meridian-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  border: 1px dashed rgba(245, 184, 65, 0.06);
+  pointer-events: none;
+}
+.armillary-meridian-ring.ring-1 {
+  width: 900px;
+  height: 900px;
+  margin-top: -450px;
+  margin-left: -450px;
+  animation: slow-celestial-spin 240s linear infinite;
+  border-color: rgba(245, 184, 65, 0.05);
+}
+.armillary-meridian-ring.ring-2 {
+  width: 1200px;
+  height: 1200px;
+  margin-top: -600px;
+  margin-left: -600px;
+  animation: slow-celestial-spin 360s linear infinite reverse;
+  border: 1px solid rgba(0, 245, 212, 0.03);
+}
+@keyframes slow-celestial-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ---------- 顶部座舱天穹 HUD (Floating Celestial Game HUD Arch) ---------- */
 header.game-hud-bar {
   display: flex;
@@ -651,8 +694,8 @@ canvas {
 
 /* 操舵台翼板 (Arm Console Wing) */
 .arm-console-wing {
-  flex: 1 1 380px;
-  max-width: 440px;
+  flex: 1 1 500px;
+  max-width: 580px;
   min-width: 320px;
 }
 .console-deck {
