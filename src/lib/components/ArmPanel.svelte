@@ -316,8 +316,8 @@
   /* 水晶管身 */
   .pillar-glass-tube {
     width: 100%;
-    max-width: 36px;
-    height: 64px;
+    max-width: 32px;
+    height: 46px;
     background: #040710;
     border: 1px solid rgba(245, 184, 65, 0.2);
     border-radius: 4px;

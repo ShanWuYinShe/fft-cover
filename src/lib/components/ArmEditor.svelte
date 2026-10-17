@@ -523,27 +523,27 @@
   /* 分栏仪表台 */
   .instruments-split {
     display: grid;
-    grid-template-columns: 180px minmax(0, 1fr);
-    gap: 16px;
+    grid-template-columns: 136px minmax(0, 1fr);
+    gap: 12px;
     align-items: start;
   }
   @media (max-width: 640px) {
     .instruments-split {
       grid-template-columns: 1fr;
-      gap: 14px;
+      gap: 10px;
     }
   }
 
   .instrument-cell {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
   .instrument-label {
     display: flex;
     align-items: baseline;
     gap: 6px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--gold-bright);
     font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
@@ -558,8 +558,8 @@
   /* 360° 罗盘容器 */
   .compass-wrap {
     position: relative;
-    width: 160px;
-    height: 160px;
+    width: 124px;
+    height: 124px;
     margin: 0 auto;
     user-select: none;
     touch-action: none;
