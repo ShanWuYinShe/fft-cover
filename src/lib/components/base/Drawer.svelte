@@ -12,7 +12,7 @@
   }: {
     open: boolean;
     side?: 'left' | 'right' | 'bottom';
-    title?: string;
+    title?: string | Snippet;
     width?: string;
     showClose?: boolean;
     onclose?: () => void;
@@ -47,7 +47,13 @@
   {#if title || showClose}
     <div class="drawer-header">
       {#if title}
-        <h2 class="drawer-title font-celestial">{title}</h2>
+        <h2 class="drawer-title font-celestial">
+          {#if typeof title === 'function'}
+            {@render title()}
+          {:else}
+            {title}
+          {/if}
+        </h2>
       {/if}
       {#if showClose && onclose}
         <button
