@@ -1081,6 +1081,20 @@
 </div>
 
 <style>
+  canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    touch-action: none;
+    background: #050810;
+    border: 1px solid rgba(245, 184, 65, 0.3);
+    border-radius: var(--radius-md);
+    box-shadow:
+      0 16px 50px rgba(0, 0, 0, 0.8),
+      inset 0 0 60px rgba(0, 0, 0, 0.8),
+      0 0 30px rgba(245, 184, 65, 0.1);
+  }
+
   .zoom-bar {
     position: absolute;
     right: 10px;

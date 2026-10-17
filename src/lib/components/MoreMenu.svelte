@@ -81,12 +81,34 @@
     position: relative;
     display: inline-flex;
   }
-  /* 基础语言来自全局 .quiet-btn；这里只留菜单自身的尺寸 */
   .mm-btn {
+    appearance: none;
+    background: linear-gradient(180deg, #202b40 0%, #101726 100%);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    color: var(--muted);
     min-width: 44px;
     height: 44px;
     padding: 0 10px;
     font-size: 15px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    transition: all 0.15s ease;
+  }
+  .mm-btn:hover {
+    border-color: rgba(245, 184, 65, 0.5);
+    color: var(--gold-bright);
+    background: linear-gradient(180deg, #2a3955 0%, #172238 100%);
+  }
+  @media (max-width: 640px) {
+    .mm-btn {
+      height: 32px;
+      min-width: 36px;
+      padding: 0 8px;
+    }
   }
   .mm-dots {
     display: inline-flex;

@@ -69,7 +69,7 @@
 
   .canvas-box {
     position: relative;
-    width: min(100%, 780px);
+    width: min(100%, 780px, calc(100dvh - 225px));
     margin: 0 auto;
     transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -115,23 +115,23 @@
     .stage-wrap {
       flex: 0 0 auto;
       width: 100%;
-      gap: 6px;
+      gap: 4px;
     }
     .canvas-box {
-      width: min(96vw, 54vh);
+      width: min(96vw, 44vh);
       margin: 0 auto;
     }
   }
 
   @media (max-width: 640px) and (orientation: portrait) and (max-height: 700px) {
     .canvas-box {
-      width: min(94vw, 48vh);
+      width: min(94vw, 38vh);
     }
   }
 
   @media (max-width: 640px) and (orientation: portrait) and (max-height: 600px) {
     .canvas-box {
-      width: min(94vw, 44vh);
+      width: min(94vw, 34vh);
     }
   }
 

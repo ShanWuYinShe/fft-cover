@@ -72,8 +72,10 @@
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 0;
+    z-index: -1;
     overflow: hidden;
+    max-width: 100vw;
+    max-height: 100dvh;
     background:
       radial-gradient(
         ellipse 90% 80% at 50% 20%,
@@ -116,6 +118,8 @@
   }
 
   main {
+    position: relative;
+    z-index: 1;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -220,22 +224,45 @@
     }
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: 640px) and (orientation: portrait) {
     main {
-      margin-top: 4px;
-      padding: 0 8px 64px;
+      margin-top: 2px;
+      padding: 4px 6px 0;
+      gap: 4px;
+      flex: 1 1 auto;
+      min-height: 0;
+      height: auto;
+      overflow: hidden;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .sides {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: calc(52px + env(safe-area-inset-bottom));
       gap: 8px;
     }
+
     .arm-console-wing {
+      width: 100%;
       max-width: 100%;
+      min-width: 0;
+      flex: 1 1 auto;
     }
+
     main[data-tab='starmap'] .arm-console-wing {
       display: none;
     }
     main[data-tab='arms'] .arm-console-wing {
       display: block;
     }
-    main.panel-hidden .arm-console-wing {
+    main.panel-hidden .sides {
       display: none;
     }
   }
