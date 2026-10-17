@@ -34,108 +34,200 @@
 
 <div class="result">
   <div class="card">
+    <div class="glow"></div>
+    <div class="endless-seal" aria-hidden="true">{engine.endlessSurvived ? '破劫' : '力竭'}</div>
     <div class="card-body">
       {#if engine.endlessSurvived}
-        <div class="wave-ico"><Icon name="infinity" size={26} /></div>
-        <div class="line">第 {engine.endlessWave} 波通过！</div>
-        <div class="gain">
-          本波 {engine.score} 分 + 过波奖励 {engine.endlessWaveBonus}
+        <div class="wave-ico"><Icon name="infinity" size={30} /></div>
+        <div class="title-wrap">
+          <div class="eyebrow">✦ 周天无尽演武 ✦</div>
+          <h2 class="line">第 {engine.endlessWave} 宿破劫通达</h2>
         </div>
-        <div class="total">累计 <b>{engine.endlessScore}</b> 分</div>
+
+        <div class="stats-grid">
+          <div class="stat-cell">
+            <span class="sk">本宿实得</span>
+            <span class="sv">{engine.score} <small>分</small></span>
+          </div>
+          <div class="stat-cell">
+            <span class="sk">过宿嘉赏</span>
+            <span class="sv gold">+{engine.endlessWaveBonus}</span>
+          </div>
+          <div class="stat-cell full-width">
+            <span class="sk">璇玑总分</span>
+            <span class="sv total-val"><b>{engine.endlessScore}</b></span>
+          </div>
+        </div>
+
         {#if engine.endlessNewBest}
           <div class="rec">
-            <Icon name="trophy" size={13} /> 新纪录！（第 {engine.endlessWave} 波）
+            <Icon name="trophy" size={14} /> 登临新绝顶！（第 {engine.endlessWave} 宿）
           </div>
         {:else if engine.endlessBest.wave > 0}
           <div class="best">
-            最佳：第 {engine.endlessBest.wave} 波 · {engine.endlessBest.score} 分
+            历代最佳：第 {engine.endlessBest.wave} 宿 · {engine.endlessBest.score} 分
           </div>
         {/if}
-        <div class="next-hint">下一波：{nextDiff}难度 · 收集 ≥35% 才能继续</div>
-        <button type="button" class="primary go" onclick={goNext}>▶ 下一波</button>
-        <button type="button" class="ghost-btn" onclick={quit}
-          >带着 {engine.endlessScore} 分收工</button
-        >
-      {:else}
-        <div class="wave-ico dead"><Icon name="infinity" size={26} /></div>
-        <div class="line">挑战结束</div>
-        <div class="total">
-          止步第 <b>{engine.endlessWave}</b> 波 · 累计 <b>{engine.endlessScore}</b> 分
+
+        <div class="next-hint">
+          <span class="nh-tag">{nextDiff}</span> 下一宿星晷更疾 · 汲纳度需 ≥35% 方可延生
         </div>
+
+        <div class="actions">
+          <button type="button" class="primary go" onclick={goNext}>✦ 启赴下一宿 ✦</button>
+          <button type="button" class="ghost-btn" onclick={quit}>
+            载录 {engine.endlessScore} 分回阁
+          </button>
+        </div>
+      {:else}
+        <div class="wave-ico dead"><Icon name="infinity" size={30} /></div>
+        <div class="title-wrap">
+          <div class="eyebrow">✦ 演武终局 ✦</div>
+          <h2 class="line">周天星轨力竭</h2>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-cell">
+            <span class="sk">止步宿位</span>
+            <span class="sv">第 <b>{engine.endlessWave}</b> 宿</span>
+          </div>
+          <div class="stat-cell">
+            <span class="sk">璇玑总分</span>
+            <span class="sv gold"><b>{engine.endlessScore}</b></span>
+          </div>
+        </div>
+
         {#if newBest}
-          <div class="rec"><Icon name="trophy" size={13} /> 新纪录！</div>
+          <div class="rec"><Icon name="trophy" size={14} /> ✦ 创下璇玑新绝顶 ✦</div>
         {:else if engine.endlessBest.wave > 0}
           <div class="best">
-            最佳：第 {engine.endlessBest.wave} 波 · {engine.endlessBest.score} 分
+            历代最佳：第 {engine.endlessBest.wave} 宿 · {engine.endlessBest.score} 分
             {#if engine.endlessWave === engine.endlessBest.wave}
-              · 差 {engine.endlessBest.score - engine.endlessScore} 分
+              · 仅差 {engine.endlessBest.score - engine.endlessScore} 分
             {/if}
           </div>
         {/if}
-        <button type="button" class="primary go" onclick={retry}>↻ 再来一局</button>
-        <button type="button" class="ghost-btn" onclick={quit}>回到关卡</button>
+
+        <div class="actions">
+          <button type="button" class="primary go" onclick={retry}>↻ 重启周天璇玑</button>
+          <button type="button" class="ghost-btn" onclick={quit}>返回星图星宿</button>
+        </div>
       {/if}
     </div>
   </div>
 </div>
 
 <style>
-  /* 与 ResultOverlay 同一套玻璃拟态卡片语言，保持视觉一致 */
   .result {
     position: absolute;
     inset: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 12px;
-    background: radial-gradient(circle at 50% 45%, rgba(10, 14, 28, 0.62), rgba(5, 7, 14, 0.9));
-    backdrop-filter: blur(5px);
-    border-radius: 14px;
-    animation: fade-in 0.3s ease-out;
-    z-index: 5;
+    padding: 16px;
+    background:
+      radial-gradient(circle at 50% 45%, rgba(13, 20, 32, 0.85), rgba(5, 7, 13, 0.96)),
+      rgba(5, 7, 13, 0.88);
+    backdrop-filter: blur(8px);
+    border-radius: var(--chamfer-lg);
+    animation: fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 25;
   }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
   .card {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+    position: relative;
     width: min(100%, 360px);
     max-height: 100%;
     overflow: hidden;
-    border-radius: 20px;
-    background: linear-gradient(168deg, rgba(24, 30, 56, 0.96), rgba(12, 16, 32, 0.98));
-    border: 1px solid rgba(130, 150, 210, 0.22);
+    background: linear-gradient(170deg, rgba(17, 24, 39, 0.98), rgba(9, 13, 22, 0.99));
+    border: 1px solid rgba(245, 197, 66, 0.35);
+    clip-path: polygon(
+      0 12px,
+      12px 0,
+      calc(100% - 12px) 0,
+      100% 12px,
+      100% calc(100% - 12px),
+      calc(100% - 12px) 100%,
+      12px 100%,
+      0 calc(100% - 12px)
+    );
     box-shadow:
-      0 26px 70px rgba(0, 0, 0, 0.62),
-      0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-      0 1px 0 rgba(255, 255, 255, 0.07) inset;
+      0 24px 60px rgba(0, 0, 0, 0.75),
+      0 0 40px rgba(245, 197, 66, 0.08) inset;
     animation: card-in 0.42s cubic-bezier(0.34, 1.4, 0.64, 1);
     text-align: center;
   }
   @keyframes card-in {
     from {
       opacity: 0;
-      transform: translateY(14px) scale(0.94);
+      transform: translateY(16px) scale(0.93);
     }
     to {
       opacity: 1;
       transform: translateY(0) scale(1);
     }
   }
+
+  .glow {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(245, 197, 66, 0.25), transparent 70%);
+    pointer-events: none;
+  }
+
+  .endless-seal {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 28px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    letter-spacing: 2px;
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff1ed;
+    background: linear-gradient(160deg, #c0392b, #8e2a1f);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(192, 57, 43, 0.45);
+    z-index: 2;
+  }
+
   .card-body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 20px 18px;
+    gap: 10px;
+    padding: 22px 20px;
   }
+
   .wave-ico {
-    font-size: 40px;
+    font-size: 32px;
     line-height: 1;
-    filter: drop-shadow(0 0 14px rgba(79, 209, 197, 0.5));
+    color: var(--cyan);
+    filter: drop-shadow(0 0 12px rgba(45, 212, 191, 0.6));
     animation: pop 0.5s cubic-bezier(0.34, 1.6, 0.64, 1);
   }
   .wave-ico.dead {
-    filter: grayscale(0.6) drop-shadow(0 0 10px rgba(130, 150, 210, 0.25));
+    color: var(--muted-2);
+    filter: drop-shadow(0 0 8px rgba(148, 163, 184, 0.2));
   }
   @keyframes pop {
     from {
@@ -147,84 +239,143 @@
       transform: scale(1);
     }
   }
+
+  .title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .eyebrow {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--gold-bright);
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+  }
   .line {
-    font-size: var(--fs-lg);
+    margin: 0;
+    font-size: var(--fs-xl);
     font-weight: 700;
-    color: var(--text);
+    letter-spacing: 1px;
+    color: #f1f5f9;
   }
-  .gain {
-    font-size: var(--fs-xs);
-    color: var(--muted);
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+    margin: 4px 0;
   }
-  .total {
-    font-size: var(--fs-md);
-    color: var(--text);
-  }
-  .total b {
-    color: var(--gold);
-    font-size: 1.25em;
-  }
-  .next-hint {
-    font-size: var(--fs-xs);
-    color: var(--muted);
-    padding: 5px 10px;
+  .stat-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(245, 197, 66, 0.15);
     border-radius: var(--r-sm);
-    background: rgba(251, 191, 36, 0.08);
-    border: 1px dashed rgba(251, 191, 36, 0.35);
   }
-  .rec {
+  .stat-cell.full-width {
+    grid-column: span 2;
+    background: rgba(245, 197, 66, 0.04);
+    border-color: rgba(245, 197, 66, 0.3);
+  }
+  .sk {
+    font-size: var(--fs-xs);
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .sv {
     font-size: var(--fs-md);
-    color: var(--gold);
     font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .sv.gold {
+    color: var(--gold-bright);
+  }
+  .sv small {
+    font-size: var(--fs-xs);
+    font-weight: 400;
+    color: var(--muted-2);
+  }
+  .total-val {
+    font-size: var(--fs-xl);
+  }
+  .total-val b {
+    color: var(--gold-bright);
+    font-size: 1.2em;
+    text-shadow: 0 0 16px rgba(245, 197, 66, 0.35);
+  }
+
+  .next-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: var(--fs-xs);
+    color: var(--muted);
+    padding: 6px 12px;
+    border-radius: var(--r-sm);
+    background: rgba(45, 212, 191, 0.06);
+    border: 1px dashed rgba(45, 212, 191, 0.3);
+    width: 100%;
+  }
+  .nh-tag {
+    color: var(--cyan);
+    font-weight: 700;
+    padding: 1px 6px;
+    background: rgba(45, 212, 191, 0.15);
+    border-radius: 4px;
+  }
+
+  .rec {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: var(--fs-sm);
+    color: var(--gold-bright);
+    font-weight: 700;
+    letter-spacing: 1px;
   }
   .best {
     font-size: var(--fs-xs);
-    color: var(--muted);
+    color: var(--muted-2);
+  }
+
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-top: 4px;
   }
   .go {
     width: 100%;
-    margin-top: 4px;
-    padding: 9px 0;
-    border-radius: var(--r-sm);
-    font: inherit;
+    padding: 10px 0;
     font-size: var(--fs-md);
-    font-weight: 600;
-    color: #062a26;
-    background: linear-gradient(160deg, #4fd1c5, #38b2a3);
-    border: none;
-    cursor: pointer;
-    transition:
-      filter 0.15s,
-      transform 0.1s;
-  }
-  button.go:hover {
-    filter: brightness(1.08);
-  }
-  button.go:active {
-    transform: scale(0.98);
+    letter-spacing: 2px;
   }
   .ghost-btn {
     width: 100%;
-    padding: 7px 0;
+    padding: 8px 0;
     border-radius: var(--r-sm);
     font: inherit;
     font-size: var(--fs-xs);
     color: var(--muted);
     background: transparent;
-    border: 1px solid rgba(130, 150, 210, 0.25);
+    border: 1px solid rgba(245, 197, 66, 0.2);
     cursor: pointer;
-    transition:
-      color 0.15s,
-      border-color 0.15s;
+    transition: all 0.15s ease;
   }
-  button.ghost-btn:hover {
+  .ghost-btn:hover {
     color: var(--text);
-    border-color: rgba(130, 150, 210, 0.5);
+    border-color: rgba(245, 197, 66, 0.5);
+    background: rgba(245, 197, 66, 0.05);
   }
-  /* 矮视口（画布只有 ~180–250px 高）：结算卡若仍贴在画布框内，「收集 / 全清 /
-     完美全清 / 下一枚印」全被裁掉甚至与主按钮串行——实测 320×568（竖屏）只剩
-     星级与分数、640×360（横屏）下一枚印行被「下一关」压住。矮视口一律整屏
-     显示（z-index 高于底部标签栏，结算时整屏就是这一张卡），统计一行不落。 */
+
   @media (max-width: 900px) and (max-height: 700px) {
     .result {
       position: fixed;

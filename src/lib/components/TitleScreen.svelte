@@ -27,27 +27,29 @@
 <div class="title-screen">
   <div class="ts-inner">
     <div class="ts-logo">
-      <span class="ts-eyebrow">傅立叶级数 · 旋转连杆</span>
+      <span class="ts-eyebrow">浑 天 璇 玑 · 傅 立 叶 级 数</span>
       <h1>傅立叶指针<span class="ts-seal" title="朱印：旋">旋</span></h1>
-      <p class="ts-sub">转动指针，让指尖的轨迹贴合目标曲线</p>
+      <p class="ts-sub">转动连杆拟合日月星轨，聆听谐波共鸣之律</p>
     </div>
 
     {#if hasProgress}
       <div class="ts-progress">
         <div class="p-item"><b>{totalStars}</b><i>/{LEVEL_DEFS.length * 3} 星</i></div>
         <div class="p-item" title="四枚朱印：星 / 满 / 准 / 专">
-          <b>{seals.done}</b><i>/{seals.total} 印</i>
+          <b>{seals.done}</b><i>/{seals.total} 朱印</i>
         </div>
         {#if seals.chapters > 0}
           <div class="p-item" title="章节印：一章四印集齐">
-            <b>{seals.chapters}</b><i>/{seals.chaptersTotal} 章节印</i>
+            <b>{seals.chapters}</b><i>/{seals.chaptersTotal} 章节大印</i>
           </div>
         {/if}
         {#if perfectCount > 0}
           <div class="p-item"><b>{perfectCount}</b><i><Icon name="crown" size={12} /> 完美</i></div>
         {/if}
         {#if exactCount > 0}
-          <div class="p-item"><b>{exactCount}</b><i><Icon name="target" size={12} /> 精确解</i></div>
+          <div class="p-item">
+            <b>{exactCount}</b><i><Icon name="target" size={12} /> 精确解</i>
+          </div>
         {/if}
         {#if expertCount > 0}
           <div class="p-item"><b>{expertCount}</b><i>专家</i></div>
@@ -61,10 +63,10 @@
     {/if}
 
     <button type="button" class="ts-start" onclick={start}>
-      {hasProgress ? '▶ 继续游戏' : '▶ 开始游戏'}
+      {hasProgress ? '▶ 登台观测' : '✦ 启天动轨 ✦'}
     </button>
 
-    <p class="ts-tips">把最多 10 根旋转指针首尾相连——它们的合成就是一条傅立叶级数曲线</p>
+    <p class="ts-tips">以旋转指针首尾相连——在天穹画布上绘制谐和曲线，感应天地算法之美</p>
   </div>
 </div>
 
@@ -78,8 +80,8 @@
     justify-content: center;
     padding: 20px;
     background:
-      radial-gradient(circle at 50% 32%, rgba(79, 209, 197, 0.13), transparent 58%),
-      radial-gradient(circle at 50% 78%, rgba(167, 139, 250, 0.1), transparent 55%), #070912;
+      radial-gradient(circle at 50% 28%, rgba(245, 184, 65, 0.15), transparent 60%),
+      radial-gradient(circle at 50% 75%, rgba(0, 245, 212, 0.08), transparent 55%), #06080e;
     animation: ts-in 0.45s ease-out;
   }
 
@@ -98,7 +100,7 @@
     align-items: center;
     gap: 22px;
     text-align: center;
-    max-width: 420px;
+    max-width: 440px;
   }
 
   .ts-logo {
@@ -110,44 +112,46 @@
 
   .ts-eyebrow {
     font-size: var(--fs-xs);
-    letter-spacing: 4px;
-    font-weight: 500;
-    color: rgba(153, 246, 228, 0.55);
+    letter-spacing: 5px;
+    font-weight: 600;
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(245, 184, 65, 0.35);
   }
 
   h1 {
     margin: 0;
     font-size: clamp(34px, 9vw, 48px);
     letter-spacing: 8px;
-    font-weight: 700;
-    background: linear-gradient(135deg, #8ff2e6, var(--cyan) 45%, #c4b5fd);
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff7d6 0%, #ffd166 40%, #f5b841 75%, #d97706 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    filter: drop-shadow(0 6px 26px rgba(79, 209, 197, 0.28));
+    filter: drop-shadow(0 6px 26px rgba(245, 184, 65, 0.35));
   }
 
-  /* 朱印：标题旁的方形印章（篆刻样式）。h1 用了 background-clip:text，
-     印面必须显式还原背景与字色，否则会跟着标题一起变透明 */
+  /* 朱印：标题旁的方形印章（篆刻样式） */
   h1 .ts-seal {
     display: inline-block;
     vertical-align: 2px;
     margin-left: 10px;
-    width: 26px;
-    height: 26px;
-    line-height: 24px;
+    width: 28px;
+    height: 28px;
+    line-height: 26px;
     text-align: center;
     font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     letter-spacing: 0;
-    background: linear-gradient(160deg, #c0392b, #8e2a1f);
+    background: linear-gradient(160deg, #d92b2b, #991b1b);
     -webkit-background-clip: initial;
     background-clip: initial;
-    color: #fdece7;
-    border-radius: 2px;
-    border: 1px solid rgba(255, 200, 190, 0.35);
-    box-shadow: inset 0 0 0 1px #b91c1c, 0 2px 10px rgba(220, 38, 38, 0.35);
+    color: #ffffff;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 200, 190, 0.4);
+    box-shadow:
+      inset 0 0 0 1px #991b1b,
+      0 3px 12px rgba(217, 43, 43, 0.45);
     filter: none;
   }
 
@@ -155,10 +159,10 @@
     margin: 0;
     font-size: var(--fs-md);
     color: var(--muted);
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
   }
 
-  /* 进度概览：老玩家一眼看到自己的成绩 */
+  /* 进度概览：成绩徽章 */
   .ts-progress {
     display: flex;
     flex-wrap: wrap;
@@ -169,17 +173,19 @@
   .p-item {
     display: flex;
     align-items: baseline;
-    gap: 3px;
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.045);
-    border: 1px solid var(--line);
+    gap: 4px;
+    padding: 6px 14px;
+    border-radius: var(--r-pill);
+    background: rgba(14, 20, 34, 0.85);
+    border: 1px solid rgba(245, 184, 65, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 
   .p-item b {
     font-size: var(--fs-lg);
-    color: var(--gold);
+    color: var(--gold-bright);
     font-variant-numeric: tabular-nums;
+    font-weight: 700;
   }
 
   .p-item i {
@@ -189,39 +195,46 @@
   }
 
   .ts-start {
-    min-width: 200px;
-    min-height: 48px;
-    margin-top: 8px; /* 评审:与副标语 28~32px,聚拢 Hero CTA */
+    min-width: 210px;
+    min-height: 50px;
+    margin-top: 8px;
     font-size: var(--fs-lg);
     letter-spacing: 3px;
-    color: #06121a;
-    background: linear-gradient(135deg, #8ff2e6, var(--cyan));
-    border: none;
-    border-radius: 999px;
-    font-weight: 700;
+    color: #060911;
+    background: linear-gradient(135deg, #ffd166 0%, #f5b841 50%, #d97706 100%);
+    border: 1px solid #ffd166;
+    border-radius: var(--r-pill);
+    font-weight: 800;
     cursor: pointer;
-    box-shadow: 0 10px 32px rgba(79, 209, 197, 0.3);
+    box-shadow:
+      0 10px 32px rgba(245, 184, 65, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
     animation: ts-btn 2.4s ease-in-out infinite;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
   }
 
   @keyframes ts-btn {
     0%,
     100% {
-      box-shadow: 0 10px 32px rgba(79, 209, 197, 0.28);
+      box-shadow: 0 10px 32px rgba(245, 184, 65, 0.38);
     }
     50% {
-      box-shadow: 0 10px 40px rgba(79, 209, 197, 0.48);
+      box-shadow: 0 10px 44px rgba(245, 184, 65, 0.65);
     }
   }
 
   .ts-start:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 44px rgba(245, 184, 65, 0.6);
   }
 
   .ts-tips {
-    margin: 26px 0 0; /* 评审:与按钮拉开 44~52px,注脚独立于 CTA 区 */
+    margin: 24px 0 0;
     font-size: 13px;
     color: rgba(226, 232, 240, 0.65);
     line-height: 1.7;
+    letter-spacing: 0.5px;
   }
 </style>

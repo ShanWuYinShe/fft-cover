@@ -589,7 +589,9 @@
     border: 1px solid rgba(130, 150, 210, 0.24);
     border-top: 1px solid rgba(255, 255, 255, 0.15);
     background: linear-gradient(180deg, #131c30 0%, #090e1a 100%);
-    box-shadow: 0 3px 0 #04070d, inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 3px 0 #04070d,
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
   .nav {
     width: 30px;
@@ -611,7 +613,8 @@
   .nav-mid b {
     font-size: var(--fs-sm);
     letter-spacing: 1px;
-    color: var(--text);
+    color: var(--gold-bright);
+    font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -630,11 +633,11 @@
     max-width: 100%;
     min-width: 0;
   }
-  /* 章节印：本章四印集齐才出现的一方朱印 */
+  /* 章节印：本章四印集齐才出现的一方朱印 (Imperial Celestial Stamp) */
   .ch-seal {
     flex: none;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -643,9 +646,10 @@
     font-size: 13px;
     font-weight: 700;
     line-height: 1;
-    color: #fdece7;
-    background: linear-gradient(160deg, #c0392b, #8e2a1f);
-    box-shadow: 0 1px 8px rgba(192, 57, 43, 0.45);
+    color: #fff;
+    background: linear-gradient(160deg, #d92b2b, #991b1b);
+    border: 1px solid rgba(255, 200, 200, 0.3);
+    box-shadow: 0 2px 10px rgba(217, 43, 43, 0.5);
     animation: ch-seal-stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
   }
   @keyframes ch-seal-stamp {
@@ -683,14 +687,14 @@
   .dot.on {
     width: 20px;
     border-radius: 4px;
-    background: var(--cyan);
-    box-shadow: 0 0 10px rgba(79, 209, 197, 0.5);
+    background: var(--gold);
+    box-shadow: 0 0 10px rgba(245, 184, 65, 0.55);
   }
   .dot.done {
-    background: rgba(251, 191, 36, 0.6);
+    background: rgba(245, 184, 65, 0.5);
   }
   .dot.done.on {
-    background: linear-gradient(90deg, var(--cyan), var(--gold));
+    background: linear-gradient(90deg, var(--gold), var(--cyan));
   }
   .dot.locked {
     background: rgba(255, 255, 255, 0.07);
@@ -706,8 +710,8 @@
     margin: 0 0 10px;
     padding: 9px 12px;
     border-radius: var(--r-md);
-    border: 1px solid rgba(79, 209, 197, 0.32);
-    background: rgba(79, 209, 197, 0.07);
+    border: 1px solid rgba(245, 184, 65, 0.35);
+    background: rgba(245, 184, 65, 0.08);
   }
   .ep-row {
     display: flex;
@@ -722,7 +726,8 @@
     color: var(--muted);
   }
   .ep-wave {
-    color: var(--cyan);
+    color: var(--gold-bright);
+    font-weight: 700;
   }
   .ep-score {
     color: var(--gold);
@@ -747,7 +752,7 @@
   }
   .ch-key {
     margin-left: 6px;
-    color: rgba(196, 181, 253, 0.8);
+    color: rgba(196, 181, 253, 0.85);
     white-space: nowrap;
   }
   .map {
@@ -762,7 +767,7 @@
   .map-row:first-child {
     padding-top: 0;
   }
-  /* 关卡之间的连线：一条走过的路 */
+  /* 关卡之间的连线：一条走过的星轨路 */
   .map-row .link {
     position: absolute;
     left: 15px;
@@ -770,7 +775,7 @@
     width: 2px;
     height: 10px;
     border-radius: 1px;
-    background: linear-gradient(180deg, rgba(79, 209, 197, 0.5), rgba(167, 139, 250, 0.35));
+    background: linear-gradient(180deg, rgba(245, 184, 65, 0.5), rgba(0, 245, 212, 0.35));
   }
   .map-row .link.hidden {
     display: none;
@@ -783,10 +788,10 @@
     padding: 7px 10px 7px 8px;
     text-align: left;
     clip-path: var(--chamfer-sm);
-    background: linear-gradient(180deg, #12192a 0%, #0a0f1c 100%);
-    border: 1px solid rgba(130, 150, 210, 0.18);
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 2px 0 #04070d, inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    background: linear-gradient(180deg, #131c2e 0%, #0a1120 100%);
+    border: 1px solid rgba(245, 184, 65, 0.16);
+    border-top: 1px solid rgba(245, 184, 65, 0.28);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
     transition:
       border-color 0.15s,
       background 0.15s,
@@ -794,14 +799,14 @@
       transform 0.08s;
   }
   .node:hover:not(:disabled) {
-    background: linear-gradient(180deg, #182238 0%, #0d1424 100%);
-    border-color: rgba(79, 209, 197, 0.35);
+    background: linear-gradient(180deg, #1b2742 0%, #0e172a 100%);
+    border-color: rgba(245, 184, 65, 0.45);
     transform: translateY(-1px);
-    box-shadow: 0 3px 0 #04070d, 0 4px 12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
   }
   .node:active:not(:disabled) {
     transform: translateY(1.5px);
-    box-shadow: 0 0.5px 0 #04070d;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
   }
   .node .idx {
     flex: 0 0 auto;
@@ -814,21 +819,21 @@
     font-size: var(--fs-sm);
     font-weight: 700;
     color: var(--muted);
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(245, 184, 65, 0.2);
     transition: all 0.2s;
   }
   .node.done .idx {
-    background: linear-gradient(135deg, rgba(45, 212, 191, 0.35), rgba(15, 118, 110, 0.9));
-    border-color: #2dd4bf;
+    background: linear-gradient(135deg, rgba(245, 184, 65, 0.35), rgba(180, 83, 9, 0.85));
+    border-color: #ffd166;
     color: #ffffff;
-    box-shadow: 0 0 10px rgba(45, 212, 191, 0.45);
+    box-shadow: 0 0 10px rgba(245, 184, 65, 0.45);
   }
   .node.done.perfect .idx {
-    background: linear-gradient(135deg, #fbbf24 0%, #b45309 100%);
-    border-color: #fde047;
-    color: #0f172a;
-    box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+    background: linear-gradient(135deg, #f5b841 0%, #b45309 100%);
+    border-color: #ffe699;
+    color: #060911;
+    box-shadow: 0 0 12px rgba(245, 184, 65, 0.6);
   }
   .node .body {
     flex: 1;
@@ -843,13 +848,14 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--text);
   }
   .node .nm .pf {
     font-style: normal;
     font-size: 9px;
     margin-left: 2px;
   }
-  /* 关卡行的成绩摘要：最佳分 + 最快全清（已通关才显示，紧凑不挤压主信息） */
+  /* 关卡行的成绩摘要：最佳分 + 最快全清 */
   .node .stats {
     display: flex;
     align-items: baseline;
@@ -868,35 +874,26 @@
   }
 
   .node .st {
-    /* 跟随全局字号底线（移动 11px / 桌面 12px）：10px 中文星级+“未解锁”读不清 */
     font-size: var(--fs-xs);
     letter-spacing: 1px;
     color: var(--gold);
   }
-  .dot.on {
-    /* 当前章节微光(复查 B-3):形变已是胶囊,补光晕增强节奏感 */
-    box-shadow: 0 0 10px rgba(79, 209, 197, 0.4);
-  }
   .node.active {
-    border-color: rgba(79, 209, 197, 0.45);
-    border-left: 3px solid #2dd4bf;
-    color: var(--cyan);
-    background: linear-gradient(
-      90deg,
-      rgba(79, 209, 197, 0.18) 0%,
-      rgba(16, 23, 44, 0.85) 100%
-    );
-    box-shadow: 0 2px 12px rgba(45, 212, 191, 0.15);
-    padding-left: 3px; /* 补偿竖条宽度，内容不跳位 */
+    border-color: rgba(245, 184, 65, 0.6);
+    border-left: 3px solid var(--gold);
+    color: var(--gold-bright);
+    background: linear-gradient(90deg, rgba(245, 184, 65, 0.16) 0%, rgba(14, 22, 38, 0.95) 100%);
+    box-shadow: 0 4px 18px rgba(245, 184, 65, 0.2);
+    padding-left: 5px;
   }
   .node.active .idx {
-    color: #06121a;
-    background: var(--cyan);
-    border-color: transparent;
+    color: #060911;
+    background: var(--gold);
+    border-color: #ffd166;
   }
   .node.done .idx {
     color: var(--gold);
-    border-color: rgba(251, 191, 36, 0.45);
+    border-color: rgba(245, 184, 65, 0.45);
   }
   .node.locked {
     /* 0.5 时「未解锁」在深底只剩 ~2.4:1（WCAG 失败，评审高优先级）；

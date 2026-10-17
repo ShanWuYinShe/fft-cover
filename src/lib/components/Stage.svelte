@@ -1088,10 +1088,14 @@
     display: flex;
     align-items: center;
     gap: 3px;
-    padding: 3px;
+    padding: 3px 5px;
     border-radius: 999px;
-    background: rgba(16, 21, 42, 0.88);
-    border: 1px solid var(--line);
+    background: rgba(9, 13, 22, 0.92);
+    border: 1px solid rgba(245, 197, 66, 0.3);
+    box-shadow:
+      0 4px 16px rgba(0, 0, 0, 0.6),
+      0 0 12px rgba(245, 197, 66, 0.08) inset;
+    backdrop-filter: blur(6px);
     z-index: 5;
   }
   .zoom-bar button {
@@ -1105,11 +1109,12 @@
     background: transparent;
     border: none;
     color: var(--muted);
+    transition: all 0.15s ease;
   }
   .zoom-bar button:hover:not(:disabled) {
-    background: var(--cyan-dim);
-    color: var(--cyan);
-    box-shadow: none;
+    background: rgba(245, 197, 66, 0.15);
+    color: var(--gold-bright);
+    box-shadow: 0 0 8px rgba(245, 197, 66, 0.3);
   }
   .zoom-bar .zoom-reset {
     font-size: var(--fs-sm);
@@ -1118,7 +1123,8 @@
     min-width: 38px;
     text-align: center;
     font-size: var(--fs-xs);
-    color: var(--muted);
+    color: var(--gold-bright);
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
   }
   @media (pointer: coarse), (max-width: 640px) {

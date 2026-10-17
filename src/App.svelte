@@ -478,11 +478,22 @@
 
 <header class="game-hud-bar">
   <div class="hud-left">
-    <button type="button" class="title-btn" title="查看进度概览" onclick={() => (showTitle = true)}>
-      <span class="title-brand">✦ 傅立叶指针</span>
+    <button
+      type="button"
+      class="title-btn"
+      title="查看进度概览与浑天典仪"
+      onclick={() => (showTitle = true)}
+    >
+      <span class="title-brand">✦ 傅立叶指针 <span class="brand-seal">浑天</span></span>
     </button>
     {#if engine.level}
-      <span class="hud-level-tag">{engine.level.name}</span>
+      <span class="hud-level-tag">
+        {#if engine.endless}
+          第 {engine.endlessWave} 波
+        {:else}
+          {engine.level.name}
+        {/if}
+      </span>
     {/if}
   </div>
   <div class="hud-right-actions">
@@ -490,10 +501,10 @@
       <button
         type="button"
         class="hud-seal-badge"
-        title="本关朱印成就"
+        title="本关朱印成就（星·满·准·专）"
         onclick={() => (showAchv = true)}
       >
-        ◈ 印 {sealDone}/4
+        ◈ 朱印 {sealDone}/4
       </button>
     {/if}
     <button
@@ -641,7 +652,8 @@
               ⟲
             </button>
             <button type="button" class="cf-btn cf-primary" onclick={toggleRun}>
-              <span class="cf-play">▶</span> {engine.runLabel}
+              <span class="cf-play">▶</span>
+              {engine.runLabel}
             </button>
           {/if}
         </div>
@@ -780,7 +792,9 @@
       {:else}
         {#if engine.phase === 'running' || engine.phase === 'paused'}
           <button class="danger run-btn-main" onclick={stopRun}>
-            <Icon name="stop" size={13} /> <span class="bt-long">停止结算</span><span class="bt-short">停止</span>
+            <Icon name="stop" size={13} /> <span class="bt-long">停止结算</span><span
+              class="bt-short">停止</span
+            >
           </button>
           <button
             class="run-btn-aux"
@@ -823,7 +837,11 @@
                   },
                 ]
               : []),
-            { label: '⭯ 全部指针清零', title: '全部指针清零关闭', onclick: () => engine.clearArms() },
+            {
+              label: '⭯ 全部指针清零',
+              title: '全部指针清零关闭',
+              onclick: () => engine.clearArms(),
+            },
             {
               label: '音量：' + (volume === 1 ? '100%' : volume === 0.5 ? '50%' : '静音'),
               icon: 'volume-high',
@@ -915,7 +933,9 @@
         <h2 class="sec-arms-hd">
           指针
           <span class="muted arm-limit-sub">（本关最多 {engine.level?.armLimit ?? 10} 根）</span>
-          <span class="arm-count-badge">已启用 {engine.arms.filter((a) => a.on).length}/{engine.level?.armLimit ?? 10}</span>
+          <span class="arm-count-badge"
+            >已启用 {engine.arms.filter((a) => a.on).length}/{engine.level?.armLimit ?? 10}</span
+          >
         </h2>
         {#if engine.autoSolve}
           <p class="fitting-tip">🪄 自动拟合中——直接调整任意指针即可接管它；点击画布可打断</p>

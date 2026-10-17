@@ -57,8 +57,8 @@
     gap: 3px;
     padding: 9px 12px;
     border-radius: var(--r-md);
-    background: rgba(255, 255, 255, 0.025);
-    border: 1px solid var(--line-2);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(245, 197, 66, 0.16);
   }
   .metric .k {
     font-size: var(--fs-xs);
@@ -79,8 +79,8 @@
     color: var(--muted-2);
   }
   .metric .v.gold b {
-    color: var(--gold);
-    text-shadow: 0 0 18px rgba(251, 191, 36, 0.25);
+    color: var(--gold-bright);
+    text-shadow: 0 0 18px rgba(245, 197, 66, 0.35);
   }
   .meta {
     display: flex;
@@ -94,7 +94,7 @@
     color: var(--muted-2);
   }
   .meta .st {
-    color: var(--gold);
+    color: var(--gold-bright);
     font-style: normal;
     letter-spacing: 1px;
   }
@@ -102,13 +102,14 @@
     margin-top: 9px;
     padding: 6px 11px;
     border-radius: var(--r-sm);
-    background: var(--cyan-dim);
-    border: 1px solid rgba(79, 209, 197, 0.28);
+    background: rgba(45, 212, 191, 0.06);
+    border: 1px dashed rgba(45, 212, 191, 0.35);
     font-size: var(--fs-sm);
     color: var(--cyan);
   }
   .next b {
     font-size: var(--fs-md);
+    color: var(--gold-bright);
     font-variant-numeric: tabular-nums;
   }
 </style>

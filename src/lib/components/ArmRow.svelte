@@ -18,12 +18,7 @@
   }
 </script>
 
-<div
-  class="arm-slot"
-  class:on={arm.on}
-  class:sel={selected && arm.on}
-  class:locked={isLocked}
->
+<div class="arm-slot" class:on={arm.on} class:sel={selected && arm.on} class:locked={isLocked}>
   <button
     type="button"
     class="power-btn"

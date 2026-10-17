@@ -68,7 +68,7 @@
     padding: 7px 10px;
     border-radius: var(--r-sm);
     background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--line-2);
+    border: 1px solid rgba(245, 197, 66, 0.12);
   }
   /* 印章：楷体单字，未达成为空印（灰框），达成为朱砂实印 */
   .g-seal {
@@ -85,7 +85,7 @@
     line-height: 1;
     color: var(--muted-2);
     background: rgba(255, 255, 255, 0.035);
-    border: 1px solid var(--line);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
   .g-body {
     flex: 1;
@@ -111,8 +111,8 @@
   .goals li.done .g-seal {
     color: #fdece7;
     background: linear-gradient(160deg, #c0392b, #8e2a1f);
-    border-color: rgba(255, 255, 255, 0.22);
-    box-shadow: 0 2px 10px rgba(192, 57, 43, 0.35);
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 2px 10px rgba(192, 57, 43, 0.4);
   }
   .goals li.done .g-name {
     color: var(--text);
@@ -121,16 +121,18 @@
     color: rgba(226, 143, 131, 0.9);
   }
   .muted.all {
-    color: var(--gold);
+    color: var(--gold-bright);
+    font-weight: 700;
   }
   .all-done {
     margin: 9px 0 0;
     padding: 7px 10px;
     border-radius: var(--r-sm);
-    background: rgba(192, 57, 43, 0.09);
-    border: 1px solid rgba(192, 57, 43, 0.38);
+    background: rgba(192, 57, 43, 0.12);
+    border: 1px solid rgba(192, 57, 43, 0.45);
     font-size: var(--fs-xs);
-    color: #e9a99f;
+    color: #fca5a5;
     line-height: 1.7;
+    text-align: center;
   }
 </style>

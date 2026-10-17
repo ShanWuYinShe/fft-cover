@@ -99,34 +99,38 @@
     width: 4px;
     height: 4px;
     border-radius: 1px;
-    background: #38bdf8;
-    box-shadow: 0 0 6px #38bdf8;
-    transition: transform 0.15s ease, background 0.15s ease;
+    background: var(--gold-bright);
+    box-shadow: 0 0 6px rgba(245, 197, 66, 0.6);
+    transition:
+      transform 0.15s ease,
+      background 0.15s ease;
+  }
+  .mm-dots i:nth-child(2) {
+    background: var(--cyan);
+    box-shadow: 0 0 6px rgba(45, 212, 191, 0.6);
   }
   .mm-btn:hover .mm-dots i {
     background: #ffffff;
-    box-shadow: 0 0 8px #38bdf8;
+    box-shadow: 0 0 8px var(--gold-bright);
     transform: scale(1.25);
   }
-  /* 视觉语言必须放基础类：默认 direction='down' 也要是一块有底的面板。
-     此前视觉全挂在 .up 上，运行栏/工具栏两处 ⋯（App.svelte）的弹层
-     computed 实测 bg 透明 / border 0 / padding 0 —— 菜单项裸文字直接
-     压在内容上。.up 只负责翻到触发按钮上方。 */
+
   .mm-pop {
     position: absolute;
     top: calc(100% + 6px);
     right: 0;
     z-index: 30;
-    min-width: 168px;
+    min-width: 172px;
     display: flex;
     flex-direction: column;
-    padding: 5px;
-    border-radius: 12px;
-    background: linear-gradient(168deg, rgba(28, 34, 62, 0.98), rgba(16, 20, 38, 0.99));
-    border: 1px solid rgba(130, 150, 210, 0.3);
-    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
+    padding: 6px;
+    background: linear-gradient(168deg, rgba(17, 24, 39, 0.98), rgba(9, 13, 22, 0.99));
+    border: 1px solid rgba(245, 197, 66, 0.35);
+    border-radius: 8px;
+    box-shadow:
+      0 18px 44px rgba(0, 0, 0, 0.75),
+      0 0 20px rgba(245, 197, 66, 0.06) inset;
     animation: mm-in 0.16s ease-out;
-    /* 安全上限：菜单项变多或屏幕很矮时不至于超出视口（超出部分可滚） */
     max-height: calc(100dvh - 40px);
     overflow-y: auto;
   }
@@ -151,7 +155,7 @@
     width: 100%;
     text-align: left;
     padding: 10px 12px;
-    border-radius: 8px;
+    border-radius: 6px;
     border: none;
     background: transparent;
     color: var(--text);
@@ -159,16 +163,19 @@
     font-size: var(--fs-md);
     cursor: pointer;
     white-space: nowrap;
+    transition: all 0.15s ease;
   }
   .mm-pop .mi {
     display: inline-flex;
     color: var(--muted);
+    transition: color 0.15s ease;
   }
   .mm-pop button:hover:not(:disabled) .mi {
-    color: var(--cyan);
+    color: var(--gold-bright);
   }
   .mm-pop button:hover:not(:disabled) {
-    background: rgba(79, 209, 197, 0.12);
+    background: rgba(245, 197, 66, 0.08);
+    color: var(--gold-bright);
   }
   .mm-pop button:disabled {
     color: var(--muted);

@@ -11,6 +11,19 @@
   const onCount = $derived(engine.arms.filter((a) => a.on).length);
   const armLimit = $derived(engine.level?.armLimit ?? 10);
 
+  const CELESTIAL_NAMES = [
+    '天枢',
+    '天璇',
+    '天玑',
+    '天权',
+    '玉衡',
+    '开阳',
+    '摇光',
+    '洞明',
+    '隐元',
+    '紫微',
+  ];
+
   function pick(i: number): void {
     if (i >= armLimit) return;
     // 选中即启用
@@ -34,26 +47,32 @@
             class:active={isSelected}
             class:powered={arm.on}
             title={arm.on
-              ? `通道 ${CIRCLED[i]}：半径 ${arm.r}px · ${Math.abs(arm.freq)}×${arm.freq < 0 ? '逆' : '顺'} · 相位 ${Math.round((arm.phase * 180) / Math.PI)}°`
-              : `点击启用通道 ${CIRCLED[i]}`}
+              ? `通道 ${CIRCLED[i]}（${CELESTIAL_NAMES[i]}）：半径 ${arm.r}px · ${Math.abs(arm.freq)}×${arm.freq < 0 ? '逆' : '顺'} · 相位 ${Math.round((arm.phase * 180) / Math.PI)}°`
+              : `点击启用通道 ${CIRCLED[i]}（${CELESTIAL_NAMES[i]}）`}
             onclick={() => pick(i)}
           >
             <div class="slot-top">
               <span class="slot-led" class:on={arm.on}></span>
-              <span class="slot-id">#{String(i + 1).padStart(2, '0')}</span>
+              <span class="slot-id"
+                >#{String(i + 1).padStart(2, '0')}&nbsp;<span class="star-nm"
+                  >{CELESTIAL_NAMES[i]}</span
+                ></span
+              >
               {#if arm.on}
                 <span class="slot-f" class:ccw={arm.freq < 0}>
                   {Math.abs(arm.freq)}×{arm.freq < 0 ? '逆' : '顺'}
                 </span>
               {:else}
-                <span class="slot-off">待机</span>
+                <span class="slot-off">待命</span>
               {/if}
             </div>
             <div class="slot-bottom">
               {#if arm.on}
-                <span class="slot-readout">{arm.r}px · {Math.round((arm.phase * 180) / Math.PI)}°</span>
+                <span class="slot-readout"
+                  >{arm.r}px · {Math.round((arm.phase * 180) / Math.PI)}°</span
+                >
               {:else}
-                <span class="slot-prompt">+点击启用</span>
+                <span class="slot-prompt">+启通此道</span>
               {/if}
             </div>
           </button>
@@ -137,17 +156,18 @@
     width: 100%;
   }
 
-  /* 通道分段器与工具栏一体化 */
+  /* 通道分段器与工具栏一体化 (Celestial Astrolabe Channel Deck) */
   .channel-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 6px;
-    background: #0f131c;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
+    background: rgba(8, 12, 22, 0.92);
+    border: 1px solid rgba(245, 184, 65, 0.2);
+    border-radius: var(--r-sm);
     padding: 3px 6px;
     min-height: 40px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
   }
 
   .channel-slots {
@@ -163,38 +183,38 @@
     display: none;
   }
 
-  /* 单个音轨卡槽 */
+  /* 单个音轨卡槽 (Astrolabe Channel Slot) */
   .slot-card {
     appearance: none;
     flex: 1;
-    min-width: 72px;
-    max-width: 110px;
-    height: 34px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: #141a26;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    min-width: 82px;
+    max-width: 115px;
+    height: 35px;
+    padding: 2px 7px;
+    border-radius: var(--r-sm);
+    background: rgba(13, 19, 32, 0.9);
+    border: 1px solid rgba(245, 184, 65, 0.12);
     border-left: 2.5px solid #334155;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     cursor: pointer;
     text-align: left;
-    transition: all 0.1s ease;
+    transition: all 0.12s ease;
   }
   .slot-card:hover {
-    border-color: rgba(255, 255, 255, 0.15);
-    background: #1a2334;
+    border-color: rgba(245, 184, 65, 0.35);
+    background: #152035;
   }
   .slot-card.powered {
-    border-left-color: #00f5d4;
-    background: #131d2e;
+    border-left-color: var(--cyan);
+    background: rgba(16, 24, 42, 0.95);
   }
   .slot-card.active {
-    border-color: rgba(0, 245, 212, 0.45);
-    border-left-color: #00f5d4;
-    background: linear-gradient(90deg, rgba(0, 245, 212, 0.12) 0%, #162238 60%);
-    box-shadow: 0 0 8px rgba(0, 245, 212, 0.2);
+    border-color: rgba(245, 184, 65, 0.6);
+    border-left-color: var(--gold);
+    background: linear-gradient(90deg, rgba(245, 184, 65, 0.16) 0%, rgba(20, 32, 54, 0.9) 70%);
+    box-shadow: 0 0 10px rgba(245, 184, 65, 0.25);
   }
 
   .slot-top {
@@ -211,8 +231,8 @@
     flex-shrink: 0;
   }
   .slot-led.on {
-    background: #00f5d4;
-    box-shadow: 0 0 5px #00f5d4;
+    background: var(--gold);
+    box-shadow: 0 0 6px var(--gold);
   }
 
   .slot-id {
@@ -221,19 +241,25 @@
     font-family: 'JetBrains Mono', monospace;
     color: #cbd5e1;
   }
+  .star-nm {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--gold-bright);
+    font-family: -apple-system, sans-serif;
+  }
   .slot-card.active .slot-id {
-    color: #00f5d4;
+    color: var(--gold-bright);
   }
 
   .slot-f {
     font-size: 9px;
     font-weight: 600;
     font-family: 'JetBrains Mono', monospace;
-    color: #38bdf8;
+    color: var(--cyan);
     margin-left: auto;
   }
   .slot-f.ccw {
-    color: #c084fc;
+    color: var(--purple);
   }
   .slot-off {
     font-size: 9px;
@@ -258,10 +284,10 @@
   }
   .slot-prompt {
     font-size: 8px;
-    color: #475569;
+    color: #64748b;
   }
 
-  /* 右侧工具按键 */
+  /* 右侧工具按键 (Astrolabe Tool Buttons) */
   .action-btns {
     display: flex;
     align-items: center;
@@ -271,23 +297,24 @@
 
   .act-btn {
     appearance: none;
-    width: 24px;
-    height: 24px;
+    width: 25px;
+    height: 25px;
     padding: 0;
-    border-radius: 4px;
-    background: #182030;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: #94a3b8;
+    border-radius: var(--r-sm);
+    background: rgba(14, 20, 34, 0.85);
+    border: 1px solid rgba(245, 184, 65, 0.18);
+    color: var(--muted);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.1s ease;
+    transition: all 0.12s ease;
   }
   .act-btn:hover:not(:disabled) {
-    border-color: rgba(0, 245, 212, 0.4);
-    color: #00f5d4;
-    background: #202b40;
+    border-color: rgba(245, 184, 65, 0.55);
+    color: var(--gold-bright);
+    background: rgba(245, 184, 65, 0.12);
+    box-shadow: 0 0 8px rgba(245, 184, 65, 0.2);
   }
   .act-btn:disabled {
     opacity: 0.35;
@@ -300,22 +327,29 @@
 
   .best-btn {
     width: auto;
-    padding: 0 6px;
+    padding: 0 7px;
     font-size: 10px;
-    font-weight: 600;
-    color: #fbbf24;
-    border-color: rgba(251, 191, 36, 0.35);
-    background: rgba(251, 191, 36, 0.08);
+    font-weight: 700;
+    color: var(--gold-bright);
+    border-color: rgba(245, 184, 65, 0.45);
+    background: rgba(245, 184, 65, 0.12);
   }
   .best-btn:hover {
-    border-color: #fbbf24;
-    background: rgba(251, 191, 36, 0.18);
+    border-color: var(--gold-bright);
+    background: rgba(245, 184, 65, 0.22);
+    box-shadow: 0 0 10px rgba(245, 184, 65, 0.3);
   }
 
-  .expert-chip.active,
+  .expert-chip.active {
+    border-color: var(--purple);
+    color: var(--purple);
+    background: rgba(167, 139, 250, 0.16);
+    box-shadow: 0 0 8px rgba(167, 139, 250, 0.25);
+  }
   .spec-chip.active {
-    border-color: #00f5d4;
-    color: #00f5d4;
-    background: rgba(0, 245, 212, 0.12);
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: rgba(0, 245, 212, 0.14);
+    box-shadow: 0 0 8px rgba(0, 245, 212, 0.25);
   }
 </style>

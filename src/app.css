@@ -26,73 +26,104 @@
 }
 
 :root {
-  /* 色板 */
-  --bg: #0a0d18;
-  --bg-2: #0d1120;
-  --panel: rgba(255, 255, 255, 0.04);
-  --panel-2: rgba(255, 255, 255, 0.02);
-  --line: rgba(255, 255, 255, 0.1);
+  /* ============================================================
+   * 东方浑天星象与古典天文仪 · 设计令牌 (Celestial Astrolabe Tokens)
+   * ============================================================ */
+  /* 深曜苍穹与青黛底色 */
+  --bg: #06080e;
+  --bg-2: #0a0f19;
+  --bg-chassis: #0a0e1a;
+  --bg-bay-inset: #04060b;
+  --surface-armor: #0f1626;
+  --surface-keycap: #141c2e;
+
+  /* 面板与微质感 */
+  --panel: rgba(16, 23, 38, 0.78);
+  --panel-2: rgba(16, 23, 38, 0.45);
+  --line: rgba(245, 184, 65, 0.16);
   --line-2: rgba(255, 255, 255, 0.06);
-  --cyan: #4fd1c5;
-  --cyan-dim: rgba(79, 209, 197, 0.14);
-  --purple: #a78bfa;
-  --purple-dim: rgba(167, 139, 250, 0.14);
-  --gold: #fbbf24;
-  --gold-dim: rgba(251, 191, 36, 0.12);
-  --text: #e8ebf5;
-  --muted: #8b93a7;
-  /* 弱化文字下限:#666e80 对深底只有 ~3.7:1(WCAG 失败),提亮到 ≥5:1 */
-  --muted-2: #828aa0;
+  --line-quiet: rgba(148, 163, 184, 0.22);
+  --line-bright: rgba(245, 184, 65, 0.42);
 
-  /* 中国色：朱砂（印章／里程碑）、鎏金、黛青、月白 */
-  --cinnabar: #c0392b;
-  --cinnabar-dim: rgba(192, 57, 43, 0.14);
-  --cinnabar-line: rgba(192, 57, 43, 0.45);
-  --jade: #2f9e7f;
-  --moon: #dfe6f2;
-
-  /* 璇玑浑天火控舱 · 几何切角与装甲 Token */
-  --bg-chassis: #060911;
-  --bg-bay-inset: #030509;
-  --surface-armor: #0e1525;
-  --surface-keycap: #162035;
+  /* 天文灵色：碧空灵青、紫微星垣、鎏金星轨、朱砂印鉴、碧玉、月白 */
+  --cyan: #00f5d4;
+  --cyan-dim: rgba(0, 245, 212, 0.12);
+  --cyan-line: rgba(0, 245, 212, 0.35);
   --holo-cyan: #00f5d4;
-  --holo-purple: #9d4edd;
-  --imperial-gold: #f5b841;
-  --cinnabar-seal: #d92b2b;
 
+  --purple: #a78bfa;
+  --purple-dim: rgba(167, 139, 250, 0.12);
+  --holo-purple: #9d4edd;
+
+  --gold: #f5b841;
+  --gold-bright: #ffd166;
+  --gold-dim: rgba(245, 184, 65, 0.14);
+  --imperial-gold: #f5b841;
+
+  --cinnabar: #d92b2b;
+  --cinnabar-seal: #d92b2b;
+  --cinnabar-dim: rgba(217, 43, 43, 0.14);
+  --cinnabar-line: rgba(217, 43, 43, 0.48);
+
+  --jade: #10b981;
+  --moon: #f1f5f9;
+
+  /* 文字 */
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --muted-2: #788296;
+
+  /* 浑天仪璇玑几何倒角 (Armillary Chamfers) */
   --chamfer-lg: polygon(
-    14px 0, calc(100% - 14px) 0, 100% 14px,
-    100% calc(100% - 14px), calc(100% - 14px) 100%,
-    14px 100%, 0 calc(100% - 14px), 0 14px
+    12px 0,
+    calc(100% - 12px) 0,
+    100% 12px,
+    100% calc(100% - 12px),
+    calc(100% - 12px) 100%,
+    12px 100%,
+    0 calc(100% - 12px),
+    0 12px
   );
   --chamfer-md: polygon(
-    10px 0, calc(100% - 10px) 0, 100% 10px,
-    100% calc(100% - 10px), calc(100% - 10px) 100%,
-    10px 100%, 0 calc(100% - 10px), 0 10px
+    8px 0,
+    calc(100% - 8px) 0,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    0 calc(100% - 8px),
+    0 8px
   );
   --chamfer-sm: polygon(
-    5px 0, calc(100% - 5px) 0, 100% 5px,
-    100% calc(100% - 5px), calc(100% - 5px) 100%,
-    5px 100%, 0 calc(100% - 5px), 0 5px
+    4px 0,
+    calc(100% - 4px) 0,
+    100% 4px,
+    100% calc(100% - 4px),
+    calc(100% - 4px) 100%,
+    4px 100%,
+    0 calc(100% - 4px),
+    0 4px
   );
   --chamfer-cut: polygon(
-    0 0, calc(100% - 10px) 0, 100% 10px,
-    100% 100%, 10px 100%, 0 calc(100% - 10px)
+    0 0,
+    calc(100% - 8px) 0,
+    100% 8px,
+    100% 100%,
+    8px 100%,
+    0 calc(100% - 8px)
   );
 
-  /* 圆角:外大内小的嵌套节奏——弹窗/大面板 16 > 面板 14 > 控件 10 > 小件 8 */
-  --r-sm: 8px;
+  /* 圆角 */
+  --r-sm: 6px;
+  --r-md: 9px;
+  --r-lg: 14px;
   --r-pill: 999px;
-  /* 次级动作统一边框：全部"安静的按钮"共用一条线，消除视觉噪音 */
-  --line-quiet: rgba(130, 150, 210, 0.28);
-  --r-md: 10px;
-  --r-lg: 16px;
 
-  /* 阴影 */
-  --sh-1: 0 2px 8px rgba(0, 0, 0, 0.25);
-  --sh-2: 0 10px 40px rgba(0, 0, 0, 0.45);
-  --sh-glow: 0 0 18px rgba(79, 209, 197, 0.25);
+  /* 阴影与光晕 */
+  --sh-1: 0 2px 10px rgba(0, 0, 0, 0.35);
+  --sh-2: 0 12px 42px rgba(0, 0, 0, 0.6);
+  --sh-glow: 0 0 18px rgba(0, 245, 212, 0.28);
+  --sh-gold-glow: 0 0 20px rgba(245, 184, 65, 0.3);
 
   /* 字号 */
   --fs-xs: 11px;
@@ -126,7 +157,18 @@ body {
 }
 
 body {
-  background-color: #0b0e14;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(
+      circle at 50% 12%,
+      rgba(20, 36, 68, 0.45) 0%,
+      rgba(6, 8, 14, 0.95) 60%,
+      #030408 100%
+    ),
+    radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.15), transparent),
+    radial-gradient(1px 1px at 75% 18%, rgba(245, 184, 65, 0.18), transparent),
+    radial-gradient(1px 1px at 45% 65%, rgba(0, 245, 212, 0.12), transparent);
+  background-attachment: fixed;
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif;
   min-height: 100vh;
@@ -134,16 +176,17 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ---------- 顶部（紧凑：大标题属于开始画面，游戏内只留一行角标） ---------- */
-/* ---------- 顶部座舱 HUD 状态梁（Observatory HUD Beam） ---------- */
+/* ---------- 顶部座舱 HUD 状态梁（Observatory Celestial HUD Beam） ---------- */
 header.game-hud-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
   height: 44px;
-  background: #0f121a;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 12, 22, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
   position: relative;
   z-index: 20;
 }
@@ -169,26 +212,42 @@ header.game-hud-bar {
 .title-brand {
   font-size: 15px;
   font-weight: 700;
-  color: #f8fafc;
-  letter-spacing: 1px;
+  color: #f1f5f9;
+  letter-spacing: 1.5px;
   transition: color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
 }
 .title-btn:hover .title-brand {
-  color: var(--cyan);
+  color: var(--gold-bright);
+}
+
+.brand-seal {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffffff;
+  background: var(--cinnabar);
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: 6px;
+  letter-spacing: 1px;
+  line-height: 1.2;
+  box-shadow: 0 0 8px rgba(217, 43, 43, 0.4);
 }
 
 .hud-level-tag {
   font-size: 12px;
-  font-weight: 500;
-  color: #94a3b8;
-  padding: 2px 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
+  font-weight: 600;
+  color: var(--gold-bright);
+  padding: 2px 9px;
+  background: rgba(245, 184, 65, 0.08);
+  border: 1px solid rgba(245, 184, 65, 0.25);
+  border-radius: var(--r-sm);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 160px;
+  max-width: 170px;
 }
 
 .hud-right-actions {
@@ -199,29 +258,32 @@ header.game-hud-bar {
 
 .hud-seal-badge {
   appearance: none;
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  border-radius: 6px;
-  color: #fbbf24;
+  background: rgba(217, 43, 43, 0.12);
+  border: 1px solid rgba(217, 43, 43, 0.4);
+  border-radius: var(--r-sm);
+  color: #fca5a5;
   font-size: 11px;
   font-weight: 600;
-  padding: 3px 8px;
+  padding: 3px 9px;
   cursor: pointer;
   font-family: inherit;
   white-space: nowrap;
   transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 .hud-seal-badge:hover {
-  background: rgba(245, 158, 11, 0.18);
-  border-color: rgba(245, 158, 11, 0.45);
+  background: rgba(217, 43, 43, 0.22);
+  border-color: rgba(217, 43, 43, 0.7);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(217, 43, 43, 0.35);
 }
 
 .hud-action-btn {
   appearance: none;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(245, 184, 65, 0.2);
+  border-radius: var(--r-sm);
+  color: var(--muted);
   width: 32px;
   height: 32px;
   display: inline-flex;
@@ -230,6 +292,12 @@ header.game-hud-bar {
   cursor: pointer;
   padding: 0;
   transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+.hud-action-btn:hover {
+  color: var(--gold-bright);
+  border-color: rgba(245, 184, 65, 0.5);
+  background: rgba(245, 184, 65, 0.08);
 }
 .hud-action-btn:hover {
   color: #f8fafc;
@@ -314,14 +382,19 @@ canvas {
   width: 100%;
   aspect-ratio: 1 / 1;
   touch-action: none;
-  background: #080c14;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-  transition: border-color 0.2s;
+  background: #060910;
+  border: 1px solid rgba(245, 184, 65, 0.22);
+  border-radius: var(--r-lg);
+  box-shadow:
+    0 12px 42px rgba(0, 0, 0, 0.75),
+    inset 0 0 50px rgba(0, 0, 0, 0.6),
+    0 0 24px rgba(245, 184, 65, 0.08);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
-/* ---------- 画布 HUD ---------- */
+/* ---------- 画布 HUD (Celestial Stage HUD) ---------- */
 .hud {
   position: absolute;
   inset: 0;
@@ -338,17 +411,17 @@ canvas {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 11px;
-  border-radius: 999px;
-  /* HUD 芯片在 60fps canvas 上方:禁用毛玻璃(每帧重算模糊,低端机卡死),
-     用不透明度更高的纯色替代(Gemini 复查 C-2) */
-  background: rgba(15, 20, 25, 0.85);
-  /* 极弱青边(复查 B-2):悬浮感与青色科技感,不抢主图 */
-  border: 1px solid rgba(79, 209, 197, 0.16);
-  color: #e0f7fa;
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  background: rgba(8, 12, 22, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(245, 184, 65, 0.26);
+  color: var(--gold-bright);
   font-weight: 600;
   font-size: var(--fs-sm);
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
 /* 右上角：收集数 + 上届竞速差值（差值只在可与上届比较时出现） */
@@ -359,44 +432,44 @@ canvas {
   gap: 5px;
 }
 
-/* 本关印徽：精通线的"远处灯塔"——平时安静，点开直达成就 */
+/* 本关朱印徽：精通线的"远处灯塔"——平时安静，点开直达成就 */
 .hud .hud-seal {
   appearance: none;
-  /* .hud 整体 pointer-events:none（让画布拖拽不被 HUD 挡住），
-     这颗可点按钮必须显式收回指针事件，否则点击穿透到画布、
-     成就面板永远打不开（实测 elementFromPoint 命中 CANVAS）。 */
   pointer-events: auto;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 4px 10px;
+  gap: 4px;
+  padding: 3px 10px;
   border-radius: var(--r-pill);
-  border: 1px solid var(--line-quiet);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--muted);
+  border: 1px solid rgba(217, 43, 43, 0.45);
+  background: rgba(217, 43, 43, 0.12);
+  color: #fca5a5;
   font: inherit;
   font-size: var(--fs-xs);
   cursor: pointer;
-  transition:
-    color 0.15s,
-    border-color 0.15s;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 .hud .hud-seal b {
-  color: #e88073;
+  color: #ff8585;
   font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
 .hud .hud-seal:hover {
-  color: var(--text);
-  border-color: rgba(192, 57, 43, 0.55);
+  color: #ffffff;
+  border-color: rgba(217, 43, 43, 0.75);
+  background: rgba(217, 43, 43, 0.25);
+  box-shadow: 0 0 12px rgba(217, 43, 43, 0.4);
 }
 
 .hud .ghost-chip {
   display: inline-flex;
   align-items: center;
   padding: 3px 9px;
-  border-radius: 999px;
-  background: rgba(16, 21, 42, 0.88);
-  border: 1px solid rgba(251, 191, 36, 0.38);
+  border-radius: var(--r-pill);
+  background: rgba(8, 12, 22, 0.9);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(245, 184, 65, 0.35);
   font-size: var(--fs-xs);
   color: var(--gold);
   font-variant-numeric: tabular-nums;
@@ -412,11 +485,11 @@ canvas {
   margin-left: -1px;
   border-radius: 1px;
   background: var(--gold);
-  box-shadow: 0 0 6px rgba(251, 191, 36, 0.8);
+  box-shadow: 0 0 6px rgba(245, 184, 65, 0.8);
 }
 
 .hud .ghost-chip.ahead {
-  border-color: rgba(79, 209, 197, 0.55);
+  border-color: rgba(0, 245, 212, 0.55);
   color: var(--cyan);
 }
 
@@ -461,12 +534,12 @@ canvas {
   transition: width 0.3s ease-out;
 }
 
-/* ---------- 游戏级触感按钮 ---------- */
+/* ---------- 游戏级触感按钮 (Celestial Astrolabe Buttons) ---------- */
 button {
   appearance: none;
-  border: 1px solid rgba(130, 150, 210, 0.24);
+  border: 1px solid rgba(245, 184, 65, 0.2);
   border-radius: var(--r-md);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  background: linear-gradient(180deg, #182236 0%, #0d1424 100%);
   color: var(--text);
   font-size: var(--fs-md);
   font-family: inherit;
@@ -475,7 +548,7 @@ button {
   min-height: 38px;
   cursor: pointer;
   box-shadow:
-    0 2px 6px rgba(0, 0, 0, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transition:
     border-color 0.15s,
@@ -486,56 +559,68 @@ button {
 }
 
 button:hover:not(:disabled) {
-  border-color: rgba(79, 209, 197, 0.6);
-  color: #fff;
-  background: linear-gradient(180deg, rgba(79, 209, 197, 0.15), rgba(79, 209, 197, 0.04));
+  border-color: rgba(245, 184, 65, 0.55);
+  color: #ffd166;
+  background: linear-gradient(180deg, #22304c 0%, #121c32 100%);
   box-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.4),
-    0 0 14px rgba(79, 209, 197, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    0 0 14px rgba(245, 184, 65, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 button:active:not(:disabled) {
-  transform: translateY(2px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  transform: translateY(1.5px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
-/* 核心动力启动键（开始旋转） */
+/* 核心动力启动键（开始旋转 · 帝王赤金） */
 button.primary {
-  background: #14b8a6;
-  border: 1px solid #2dd4bf;
-  color: #ffffff;
+  background: linear-gradient(180deg, #f5b841 0%, #d97706 100%);
+  border: 1px solid #ffd166;
+  color: #060911;
   font-weight: 700;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 6px rgba(20, 184, 166, 0.3);
-  transition: background 0.15s, border-color 0.15s, transform 0.08s;
+  box-shadow:
+    0 3px 12px rgba(245, 184, 65, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.08s,
+    box-shadow 0.15s;
 }
 
 button.primary:hover:not(:disabled) {
-  background: #0d9488;
-  border-color: #14b8a6;
+  background: linear-gradient(180deg, #ffd166 0%, #f59e0b 100%);
+  border-color: #ffe699;
+  box-shadow:
+    0 4px 18px rgba(245, 184, 65, 0.6),
+    0 0 16px rgba(245, 184, 65, 0.35);
   transform: translateY(-1px);
 }
 
 button.primary:active:not(:disabled) {
   transform: translateY(1px);
-  box-shadow: 0 1px 3px rgba(20, 184, 166, 0.3);
+  box-shadow: 0 1px 4px rgba(245, 184, 65, 0.4);
 }
 
+/* 破坏与终止动作（朱砂古印） */
 button.danger {
-  background: rgba(239, 68, 68, 0.18);
-  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: linear-gradient(180deg, rgba(217, 43, 43, 0.3) 0%, rgba(153, 27, 27, 0.35) 100%);
+  border: 1px solid rgba(217, 43, 43, 0.65);
   color: #fca5a5;
-  box-shadow: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 button.danger:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.3);
+  background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
+  border-color: #ef4444;
   color: #ffffff;
+  box-shadow: 0 0 16px rgba(217, 43, 43, 0.45);
 }
 
 button:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: default;
 }
 
@@ -546,10 +631,14 @@ button:disabled {
   justify-content: center;
   flex-wrap: wrap;
   padding: 8px 14px;
-  background: #121620;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  background: rgba(10, 15, 26, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   width: 100%;
   box-sizing: border-box;
 }
@@ -562,7 +651,9 @@ button.run-btn-main {
   position: relative;
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  transition: transform 80ms ease, opacity 0.15s ease;
+  transition:
+    transform 80ms ease,
+    opacity 0.15s ease;
 }
 button.run-btn-main:active:not(:disabled) {
   transform: translateY(1px);
@@ -582,7 +673,7 @@ button.run-btn-main:active:not(:disabled) {
   }
 }
 
-/* ---------- 侧栏 ---------- */
+/* ---------- 侧栏 (Celestial Side Panels) ---------- */
 .side {
   display: flex;
   flex-direction: column;
@@ -592,11 +683,15 @@ button.run-btn-main:active:not(:disabled) {
 
 .side section {
   position: relative;
-  background: #121620;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 12px 14px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  background: rgba(14, 20, 34, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .side h2 {
@@ -604,12 +699,12 @@ button.run-btn-main:active:not(:disabled) {
   align-items: baseline;
   gap: 8px;
   flex-wrap: wrap;
-  margin: 0 0 11px;
-  padding-left: 9px;
+  margin: 0 0 12px;
+  padding-left: 10px;
   font-size: var(--fs-md);
   letter-spacing: 2px;
-  color: var(--text);
-  font-weight: 600;
+  color: var(--gold-bright);
+  font-weight: 700;
 }
 
 .side h2 > .muted {
@@ -794,7 +889,9 @@ input[type='range']::-webkit-slider-thumb {
   border: 1px solid rgba(0, 0, 0, 0.25);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
   cursor: grab;
-  transition: transform 0.12s ease, background 0.12s ease;
+  transition:
+    transform 0.12s ease,
+    background 0.12s ease;
 }
 
 input[type='range']::-webkit-slider-thumb:hover {
@@ -1353,7 +1450,7 @@ input[type='checkbox'] {
 }
 
 /* ============================================================
- * 手机竖屏：全息天象主舞台 + 一体化战术指令座舱底座（Unified Command Deck）
+ * 手机竖屏：浑天星穹主舞台 + 悬浮火控与璇玑调参 (Celestial Command Deck)
  * ============================================================ */
 @media (max-width: 640px) and (orientation: portrait) {
   /* 隐藏桌面独立顶部栏，避免与画布内 HUD 产生“双胞胎重复” */
@@ -1361,56 +1458,64 @@ input[type='checkbox'] {
     display: none !important;
   }
 
-  /* 顶部 HUD 切换为精美微型胶囊 */
+  /* 顶部 HUD 切换为精美星宿微型胶囊 */
   .desktop-lvl {
     display: none !important;
   }
   .mobile-lvl-btn {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    background: rgba(15, 23, 42, 0.78);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(0, 245, 212, 0.35);
-    border-radius: 4px;
-    padding: 2px 7px;
-    color: #f1f5f9;
+    gap: 5px;
+    background: rgba(8, 12, 22, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(245, 184, 65, 0.35);
+    border-radius: var(--r-pill);
+    padding: 3px 9px;
+    color: var(--gold-bright);
     font-size: 11px;
     font-weight: 600;
     cursor: pointer;
     touch-action: manipulation;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   }
   .mobile-lvl-btn .lvl-icon {
     font-size: 11px;
-    color: #00f5d4;
+    color: var(--gold);
   }
   .mobile-lvl-btn .lvl-name {
     font-size: 11px;
-    color: #e2e8f0;
+    color: var(--text);
   }
   .mobile-lvl-btn .lvl-caret {
     font-size: 9px;
-    color: #64748b;
+    color: var(--gold);
   }
   .mobile-only-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
-    background: rgba(15, 23, 42, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 4px;
-    color: #94a3b8;
+    width: 24px;
+    height: 24px;
+    background: rgba(8, 12, 22, 0.88);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(245, 184, 65, 0.25);
+    border-radius: var(--r-sm);
+    color: var(--muted);
     padding: 0;
     cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+  .mobile-only-btn:hover {
+    color: var(--gold-bright);
+    border-color: rgba(245, 184, 65, 0.5);
   }
 
   /* 整屏骨架：顶部紧凑、舞台居中、下方一体化底座贴合标签栏 */
   main {
     display: flex;
     flex-direction: column;
-    padding: 2px 6px 0;
+    padding: 4px 6px 0;
     gap: 0;
     flex: 1 1 auto;
     min-height: 0;
@@ -1430,23 +1535,27 @@ input[type='checkbox'] {
     width: min(96vw, 42vh);
     margin: 0 auto 3px;
     position: relative;
-    transition: width 0.25s ease, margin 0.25s ease;
+    transition:
+      width 0.25s ease,
+      margin 0.25s ease;
   }
 
   .canvas-box canvas {
-    border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    border-color: rgba(245, 184, 65, 0.22);
+    box-shadow:
+      0 6px 20px rgba(0, 0, 0, 0.5),
+      0 0 15px rgba(245, 184, 65, 0.06);
   }
 
-  /* 画布底缘悬浮操作区（手机端主控，释放中央空间） */
+  /* 画布底缘悬浮操作区（手机端浑天火控，释放中央空间） */
   .canvas-fire-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     position: absolute;
-    bottom: 5px;
-    left: 6px;
-    right: 6px;
+    bottom: 6px;
+    left: 8px;
+    right: 8px;
     z-index: 10;
     pointer-events: none;
   }
@@ -1456,79 +1565,87 @@ input[type='checkbox'] {
   .cf-left {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
   }
   .cf-preview {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 9px;
-    color: #fde68a;
-    background: rgba(15, 18, 10, 0.82);
-    border: 1px solid rgba(251, 191, 36, 0.35);
-    padding: 2px 6px;
-    border-radius: 3px;
+    font-size: 10px;
+    color: #ffd166;
+    background: rgba(8, 12, 22, 0.9);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(245, 184, 65, 0.35);
+    padding: 2px 7px;
+    border-radius: var(--r-pill);
     font-weight: 600;
   }
   .cf-dot {
-    width: 4px;
-    height: 4px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
-    background: #fbbf24;
-    box-shadow: 0 0 4px #fbbf24;
+    background: #f5b841;
+    box-shadow: 0 0 6px #f5b841;
   }
   .cf-right {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
   }
   .cf-btn {
     appearance: none;
-    height: 26px;
-    padding: 0 8px;
-    border-radius: 4px;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: var(--r-md);
     font-size: 11px;
     font-weight: 600;
     display: inline-flex;
     align-items: center;
-    gap: 3px;
+    gap: 4px;
     cursor: pointer;
     box-sizing: border-box;
-    transition: all 0.1s ease;
+    transition: all 0.15s ease;
   }
   .cf-primary {
-    background: #00f5d4;
-    color: #050b14;
-    border: none;
+    background: linear-gradient(180deg, #f5b841 0%, #d97706 100%);
+    color: #060911;
+    border: 1px solid #ffd166;
     font-weight: 700;
-    box-shadow: 0 0 10px rgba(0, 245, 212, 0.45);
+    box-shadow: 0 2px 10px rgba(245, 184, 65, 0.45);
   }
   .cf-danger {
-    background: #ef4444;
+    background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
     color: #ffffff;
-    border: none;
+    border: 1px solid #ef4444;
     font-weight: 700;
-    box-shadow: 0 0 8px rgba(239, 68, 68, 0.45);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
   }
   .cf-reset {
-    background: rgba(15, 23, 42, 0.85);
-    color: #cbd5e1;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    width: 26px;
+    background: rgba(14, 20, 34, 0.88);
+    backdrop-filter: blur(8px);
+    color: #e2e8f0;
+    border: 1px solid rgba(245, 184, 65, 0.25);
+    width: 28px;
     padding: 0;
     justify-content: center;
   }
   .cf-best {
-    background: rgba(251, 191, 36, 0.12);
-    color: #fbbf24;
-    border: 1px solid rgba(251, 191, 36, 0.35);
+    background: rgba(245, 184, 65, 0.15);
+    color: #ffd166;
+    border: 1px solid rgba(245, 184, 65, 0.4);
     font-size: 10px;
   }
   .cf-ff {
-    background: rgba(15, 23, 42, 0.85);
-    color: #cbd5e1;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(14, 20, 34, 0.88);
+    backdrop-filter: blur(8px);
+    color: #e2e8f0;
+    border: 1px solid rgba(245, 184, 65, 0.25);
     font-size: 10px;
+  }
+  .cf-ff.gold {
+    background: rgba(245, 184, 65, 0.25);
+    border-color: rgba(245, 184, 65, 0.6);
+    color: #ffd166;
   }
 
   /* 移动端隐藏原本横亘中央的粗大操作梁，彻底释放视线与空间 */
@@ -1549,7 +1666,7 @@ input[type='checkbox'] {
     flex: 1 1 auto;
     background: transparent;
     border: none;
-    padding: 2px 4px calc(42px + env(safe-area-inset-bottom));
+    padding: 2px 4px calc(44px + env(safe-area-inset-bottom));
     margin: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -1572,33 +1689,41 @@ input[type='checkbox'] {
     display: none;
   }
 
-  /* 底部模式切换栏：精致悬浮居中胶囊 */
+  /* 底部模式切换栏：精致悬浮居中胶囊 (Floating Celestial Pill) */
   .mobile-tabs {
     left: 50%;
     transform: translateX(-50%);
-    bottom: calc(6px + env(safe-area-inset-bottom));
+    bottom: calc(8px + env(safe-area-inset-bottom));
     width: auto;
     min-width: 220px;
     max-width: 280px;
     padding: 3px 6px;
     gap: 6px;
-    background: rgba(15, 23, 42, 0.88);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 999px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.55);
+    background: rgba(8, 12, 22, 0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(245, 184, 65, 0.3);
+    border-radius: var(--r-pill);
+    box-shadow:
+      0 4px 20px rgba(0, 0, 0, 0.6),
+      0 0 15px rgba(245, 184, 65, 0.1);
   }
   .mobile-tabs button {
-    border-radius: 999px;
-    height: 26px;
-    min-height: 26px;
+    border-radius: var(--r-pill);
+    height: 28px;
+    min-height: 28px;
     font-size: 11px;
-    padding: 0 10px;
+    padding: 0 12px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-weight: 500;
   }
   .mobile-tabs button.on {
-    background: #00f5d4;
-    color: #050b14;
+    background: linear-gradient(180deg, #f5b841 0%, #d97706 100%);
+    color: #060911;
     font-weight: 700;
+    box-shadow: 0 2px 8px rgba(245, 184, 65, 0.35);
   }
 
   /* 更新提示条抬到标签栏之上 */
@@ -1937,7 +2062,9 @@ input[type='checkbox'] {
   background: rgba(10, 16, 32, 0.92);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(79, 209, 197, 0.45);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 12px rgba(79, 209, 197, 0.25);
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.6),
+    0 0 12px rgba(79, 209, 197, 0.25);
   font-size: var(--fs-xs);
   line-height: 1.45;
   color: var(--text);
@@ -1956,7 +2083,9 @@ input[type='checkbox'] {
 .canvas-box .first-guide.ok {
   background: rgba(20, 26, 16, 0.94);
   border-color: rgba(251, 191, 36, 0.65);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 16px rgba(251, 191, 36, 0.35);
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.6),
+    0 0 16px rgba(251, 191, 36, 0.35);
 }
 
 .canvas-box .first-guide.ok b {

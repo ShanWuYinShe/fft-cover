@@ -508,15 +508,15 @@
     width: min(100%, 396px);
     max-height: 100%;
     overflow: hidden;
-    border-radius: 20px;
-    /* 高光时刻紫金质感（复查 B-1）：暗紫渐变底 + 顶部金光边 + 紫色泛光 */
-    background: linear-gradient(145deg, rgba(22, 18, 36, 0.95), rgba(10, 12, 18, 0.98));
-    border: 1px solid rgba(89, 66, 150, 0.4);
-    border-top: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: var(--r-lg);
+    /* 观象金榜质感：深曜黑底色 + 鎏金边框 + 金铜阴影 */
+    background: linear-gradient(155deg, rgba(16, 23, 40, 0.98), rgba(6, 9, 16, 0.98));
+    border: 1px solid rgba(245, 184, 65, 0.4);
+    border-top: 2px solid rgba(255, 209, 102, 0.7);
     box-shadow:
-      0 26px 70px rgba(0, 0, 0, 0.62),
-      0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-      0 1px 0 rgba(255, 255, 255, 0.07) inset;
+      0 26px 70px rgba(0, 0, 0, 0.8),
+      0 0 30px rgba(245, 184, 65, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
     animation: card-in 0.42s cubic-bezier(0.34, 1.4, 0.64, 1);
     text-align: center;
   }
@@ -544,8 +544,8 @@
     width: 100%;
     padding: 7px 10px;
     border-radius: var(--r-sm);
-    background: rgba(251, 191, 36, 0.09);
-    border: 1px dashed rgba(251, 191, 36, 0.4);
+    background: rgba(245, 184, 65, 0.08);
+    border: 1px dashed rgba(245, 184, 65, 0.4);
     font: inherit;
     font-size: var(--fs-xs);
     color: var(--muted);
@@ -556,8 +556,8 @@
       border-color 0.15s;
   }
   button.next-seal:hover {
-    background: rgba(251, 191, 36, 0.16);
-    border-color: rgba(251, 191, 36, 0.7);
+    background: rgba(245, 184, 65, 0.16);
+    border-color: rgba(245, 184, 65, 0.7);
   }
   .ns-txt {
     flex: 1;
@@ -567,14 +567,14 @@
     flex: none;
     padding: 3px 8px;
     border-radius: 999px;
-    border: 1px solid rgba(79, 209, 197, 0.5);
-    background: rgba(79, 209, 197, 0.12);
-    color: #8ff2e6;
+    border: 1px solid rgba(0, 245, 212, 0.5);
+    background: rgba(0, 245, 212, 0.12);
+    color: var(--cyan);
     font-size: 10px;
     white-space: nowrap;
   }
   .ns-txt b {
-    color: var(--gold);
+    color: var(--gold-bright);
   }
   .ns-seal {
     flex: none;
@@ -588,16 +588,17 @@
     font-size: 13px;
     font-weight: 700;
     line-height: 1;
-    color: #fdece7;
-    background: linear-gradient(160deg, #c0392b, #8e2a1f);
-    box-shadow: 0 1px 8px rgba(192, 57, 43, 0.4);
+    color: #fff;
+    background: linear-gradient(160deg, #d92b2b, #991b1b);
+    border: 1px solid rgba(255, 200, 200, 0.3);
+    box-shadow: 0 2px 8px rgba(217, 43, 43, 0.45);
   }
   .next-seal.all-done {
-    background: rgba(47, 158, 127, 0.1);
-    border-color: rgba(47, 158, 127, 0.45);
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.45);
   }
   .next-seal.all-done .ns-seal {
-    background: linear-gradient(160deg, #2f9e7f, #1f6f59);
+    background: linear-gradient(160deg, #10b981, #059669);
     box-shadow: none;
   }
   /* 每日连胜提示 */
@@ -608,9 +609,9 @@
     width: 100%;
     padding: 10px 12px;
     border-radius: var(--r-md);
-    background: linear-gradient(135deg, rgba(192, 57, 43, 0.22), rgba(251, 191, 36, 0.1));
-    border: 1px solid rgba(192, 57, 43, 0.62);
-    box-shadow: 0 0 28px rgba(192, 57, 43, 0.22);
+    background: linear-gradient(135deg, rgba(217, 43, 43, 0.22), rgba(245, 184, 65, 0.1));
+    border: 1px solid rgba(217, 43, 43, 0.6);
+    box-shadow: 0 0 28px rgba(217, 43, 43, 0.22);
     animation: ch-banner-in 0.36s ease-out 0.25s backwards;
   }
   @keyframes ch-banner-in {
@@ -625,19 +626,20 @@
   }
   .cs-seal {
     flex: none;
-    width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 7px;
+    border-radius: 6px;
     font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: 23px;
+    font-size: 24px;
     font-weight: 700;
     line-height: 1;
-    color: #fdece7;
-    background: linear-gradient(160deg, #c0392b, #8e2a1f);
-    box-shadow: 0 3px 16px rgba(192, 57, 43, 0.5);
+    color: #fff;
+    background: linear-gradient(160deg, #d92b2b, #991b1b);
+    border: 1px solid rgba(255, 200, 200, 0.4);
+    box-shadow: 0 4px 18px rgba(217, 43, 43, 0.55);
     animation: seal-stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s backwards;
   }
   .cs-txt {

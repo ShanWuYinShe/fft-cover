@@ -179,22 +179,29 @@
     position: relative;
     overflow: hidden;
     width: min(94vw, 430px);
-    /* dvh 而非 vh：移动端 vh 含地址栏，会算高导致底部按钮被推出屏幕 */
     max-height: calc(100dvh - 24px);
     overflow-y: auto;
-    /* 底部内距交给常驻动作栏（.foot）自带：sticky 底栏才能与滚动区下沿齐平 */
     padding: 26px 24px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 12px;
     text-align: center;
-    border-radius: 22px;
-    background: linear-gradient(170deg, rgba(26, 32, 60, 0.98), rgba(11, 15, 30, 0.99));
-    border: 1px solid rgba(251, 191, 36, 0.34);
+    background: linear-gradient(170deg, rgba(17, 24, 39, 0.98), rgba(9, 13, 22, 0.99));
+    border: 1px solid rgba(245, 197, 66, 0.38);
+    clip-path: polygon(
+      0 14px,
+      14px 0,
+      calc(100% - 14px) 0,
+      100% 14px,
+      100% calc(100% - 14px),
+      calc(100% - 14px) 100%,
+      14px 100%,
+      0 calc(100% - 14px)
+    );
     box-shadow:
-      0 26px 70px rgba(0, 0, 0, 0.66),
-      0 0 60px rgba(251, 191, 36, 0.09) inset;
+      0 26px 70px rgba(0, 0, 0, 0.75),
+      0 0 60px rgba(245, 197, 66, 0.12) inset;
     animation: fin-pop 0.5s cubic-bezier(0.34, 1.44, 0.64, 1);
   }
   @keyframes fin-pop {
@@ -249,6 +256,7 @@
     font-weight: 700;
     color: #fdece7;
     background: linear-gradient(160deg, #c0392b, #8e2a1f);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 6px;
     box-shadow: 0 4px 16px rgba(192, 57, 43, 0.45);
     animation: seal-stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.55s backwards;
@@ -288,7 +296,8 @@
     margin: 0;
     font-size: 26px;
     letter-spacing: 6px;
-    background: linear-gradient(96deg, var(--gold) 10%, #ffe6a8 50%, var(--purple) 96%);
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    background: linear-gradient(96deg, var(--gold-bright) 10%, #fff7ed 50%, var(--purple) 96%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -314,12 +323,12 @@
     gap: 2px;
     padding: 8px 6px;
     border-radius: var(--r-sm);
-    background: rgba(255, 255, 255, 0.035);
-    border: 1px solid var(--line-2);
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(245, 197, 66, 0.18);
   }
   .cell b {
     font-size: var(--fs-lg);
-    color: var(--gold);
+    color: var(--gold-bright);
     font-variant-numeric: tabular-nums;
     line-height: 1.15;
   }
@@ -343,8 +352,8 @@
     margin: 4px 0 2px;
     padding: 10px 10px 12px;
     border-radius: var(--r-md);
-    border: 1px solid rgba(130, 150, 210, 0.2);
-    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(245, 197, 66, 0.22);
+    background: rgba(245, 197, 66, 0.02);
   }
   .wall-ch {
     position: relative;

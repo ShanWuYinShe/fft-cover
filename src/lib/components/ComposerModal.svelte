@@ -247,8 +247,8 @@
 <div class="modal">
   <div class="box">
     <div class="modal-header">
-      <h2><Icon name="palette" size={16} /> 谐波合成器</h2>
-      <p class="lead">调节各频率的幅值与相位，合成你的专属曲线。生成后好友可用邀请码载入挑战。</p>
+      <h2>✦ 浑天璇玑 · 谐波星盘</h2>
+      <p class="lead">调校各阶谐波幅值与周天宿度，铸造全新星轨。生成后可用密符邀好友破题。</p>
       <div class="presets">
         <span class="plabel">预设</span>
         {#each Object.keys(PRESETS) as name (name)}
@@ -276,53 +276,53 @@
 
     <div class="modal-body">
       <div class="sliders">
-      {#each coeffs as c, i (i)}
-        {#if i === 10}
-          <div class="neg-label">⟲ 反转（负频率）</div>
+        {#each coeffs as c, i (i)}
+          {#if i === 10}
+            <div class="neg-label">⟲ 反转（负频率）</div>
+          {/if}
+          {#if !showOnlyActive || c.mag > 0.5}
+            <div class="row" class:active={c.mag > 0.5}>
+              <span class="side" class:rev={c.k < 0}>{c.k < 0 ? '⟲' : '⟳'}</span>
+              <span class="k">{CIRCLED[Math.abs(c.k) - 1] || Math.abs(c.k)} {Math.abs(c.k)}×</span>
+              <input
+                type="range"
+                min="0"
+                max="150"
+                step="2"
+                value={c.mag}
+                oninput={(e) => setMag(i + 1, +(e.currentTarget as HTMLInputElement).value)}
+              />
+              <input
+                type="range"
+                min="0"
+                max="360"
+                step="5"
+                value={c.phase}
+                oninput={(e) => setPhase(i + 1, +(e.currentTarget as HTMLInputElement).value)}
+              />
+            </div>
+          {/if}
+        {/each}
+      </div>
+      <input
+        class="name-input"
+        placeholder="给作品起个名字（可选，最多 12 字）"
+        maxlength="12"
+        bind:value={levelName}
+        onblur={() => saveNamePref(levelName)}
+      />
+      <canvas bind:this={canvas} width="150" height="150"></canvas>
+      <p class="lead">
+        启用谐波 {activeCount} 个 · 邀请码 <b>{code || '—'}</b>
+        {#if code}
+          <button
+            type="button"
+            class="pchip"
+            title="复制邀请码，好友在邀请码输入框粘贴即可挑战同一关"
+            onclick={copyCode}>{copied ? '✓ 已复制' : '📋 复制'}</button
+          >
         {/if}
-        {#if !showOnlyActive || c.mag > 0.5}
-          <div class="row" class:active={c.mag > 0.5}>
-            <span class="side" class:rev={c.k < 0}>{c.k < 0 ? '⟲' : '⟳'}</span>
-            <span class="k">{CIRCLED[Math.abs(c.k) - 1] || Math.abs(c.k)} {Math.abs(c.k)}×</span>
-            <input
-              type="range"
-              min="0"
-              max="150"
-              step="2"
-              value={c.mag}
-              oninput={(e) => setMag(i + 1, +(e.currentTarget as HTMLInputElement).value)}
-            />
-            <input
-              type="range"
-              min="0"
-              max="360"
-              step="5"
-              value={c.phase}
-              oninput={(e) => setPhase(i + 1, +(e.currentTarget as HTMLInputElement).value)}
-            />
-          </div>
-        {/if}
-      {/each}
-    </div>
-    <input
-      class="name-input"
-      placeholder="给作品起个名字（可选，最多 12 字）"
-      maxlength="12"
-      bind:value={levelName}
-      onblur={() => saveNamePref(levelName)}
-    />
-    <canvas bind:this={canvas} width="150" height="150"></canvas>
-    <p class="lead">
-      启用谐波 {activeCount} 个 · 邀请码 <b>{code || '—'}</b>
-      {#if code}
-        <button
-          type="button"
-          class="pchip"
-          title="复制邀请码，好友在邀请码输入框粘贴即可挑战同一关"
-          onclick={copyCode}>{copied ? '✓ 已复制' : '📋 复制'}</button
-        >
-      {/if}
-    </p>
+      </p>
     </div>
     <div class="modal-footer">
       <button class="primary" disabled={activeCount === 0} onclick={play}>🎮 生成并游玩</button>
@@ -348,15 +348,17 @@
     flex-direction: column;
     width: min(94vw, 440px);
     max-height: calc(100dvh - 36px);
-    background: #10152a;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    box-shadow: 0 16px 60px rgba(0, 0, 0, 0.6);
+    background: linear-gradient(170deg, rgba(17, 24, 39, 0.98), rgba(9, 13, 22, 0.99));
+    border: 1px solid rgba(245, 197, 66, 0.35);
+    border-radius: 16px;
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.75),
+      0 0 40px rgba(245, 197, 66, 0.08) inset;
     overflow: hidden;
   }
   .modal-header {
-    padding: 16px 20px 10px;
-    border-bottom: 1px solid var(--line-2);
+    padding: 18px 20px 12px;
+    border-bottom: 1px solid rgba(245, 197, 66, 0.15);
     text-align: center;
   }
   .modal-body {
@@ -372,20 +374,25 @@
     gap: 8px;
     justify-content: center;
     padding: 12px 20px 16px;
-    background: rgba(13, 17, 34, 0.95);
-    border-top: 1px solid var(--line-2);
+    background: rgba(9, 13, 22, 0.96);
+    border-top: 1px solid rgba(245, 197, 66, 0.15);
   }
   h2 {
     margin: 0 0 6px;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    font-size: 20px;
+    color: var(--gold-bright);
+    text-shadow: 0 0 16px rgba(245, 197, 66, 0.35);
   }
   .lead {
     font-size: 12px;
     color: var(--muted);
     margin: 4px 0 10px;
+    line-height: 1.6;
   }
   .lead b {
-    color: var(--gold);
+    color: var(--gold-bright);
   }
   .presets {
     display: flex;
@@ -396,17 +403,25 @@
   }
   .plabel {
     font-size: var(--fs-xs);
-    color: var(--muted-2);
+    color: var(--gold-bright);
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    letter-spacing: 1px;
   }
   .name-input {
     width: 100%;
     margin-bottom: 8px;
-    padding: 7px 9px;
+    padding: 8px 12px;
     border-radius: var(--r-sm);
-    border: 1px solid var(--line-2);
+    border: 1px solid rgba(245, 197, 66, 0.2);
     background: rgba(255, 255, 255, 0.03);
     color: var(--text);
     font-size: var(--fs-sm);
+    transition: all 0.15s ease;
+  }
+  .name-input:focus {
+    outline: none;
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 12px rgba(245, 197, 66, 0.2);
   }
 
   .pchip {
@@ -415,27 +430,32 @@
     min-height: 24px;
     border-radius: 999px;
     color: var(--muted);
+    border: 1px solid rgba(245, 197, 66, 0.18);
+    background: rgba(255, 255, 255, 0.02);
+    transition: all 0.15s ease;
   }
   .pchip:hover:not(:disabled) {
-    color: var(--cyan);
-    border-color: rgba(79, 209, 197, 0.5);
+    color: var(--gold-bright);
+    border-color: rgba(245, 197, 66, 0.5);
+    background: rgba(245, 197, 66, 0.06);
     box-shadow: none;
   }
-  /* 逆向导入当前关：与预设同款外框，但用青色系区分"这是分析不是预设" */
   .pchip.import {
-    border-color: rgba(79, 209, 197, 0.55);
-    color: var(--cyan, #4fd1c5);
+    border-color: rgba(45, 212, 191, 0.4);
+    color: var(--cyan);
   }
   .pchip.import:hover:not(:disabled) {
-    border-color: rgba(79, 209, 197, 0.9);
+    border-color: var(--cyan);
+    background: rgba(45, 212, 191, 0.08);
   }
   canvas {
     width: 150px;
     height: 150px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    background: #0d1120;
+    border: 1px solid rgba(245, 197, 66, 0.3);
+    border-radius: 12px;
+    background: #060913;
     margin-bottom: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6) inset;
   }
   .sliders {
     display: flex;
@@ -450,47 +470,35 @@
     font-size: 12px;
     color: var(--muted);
     opacity: 0.55;
+    transition: opacity 0.15s ease;
   }
   .row.active {
     opacity: 1;
+    color: var(--text);
   }
   .row .k {
     width: 44px;
     text-align: left;
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
   }
   .row input[type='range'] {
     flex: 1;
     min-width: 0;
+    accent-color: var(--gold-bright);
   }
-  /* 反转行的 ⟲ 徽标（负频率：与指针面板同款紫） */
   .row .side.rev {
-    color: #c084fc;
+    color: var(--purple);
   }
-  /* ⟲ 反转（负频率）分隔条：把 20 行分成正/反两组 */
   .neg-label {
-    margin: 4px 0 2px;
+    margin: 6px 0 3px;
     font-size: var(--fs-xs);
-    color: #c084fc;
+    color: var(--purple);
     text-align: center;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
   }
 
-
-  /* 触屏：预设 chip 的热区补够 */
   @media (pointer: coarse), (max-width: 640px) {
-    .name-input {
-      width: 100%;
-      margin-bottom: 8px;
-      padding: 7px 9px;
-      border-radius: var(--r-sm);
-      border: 1px solid var(--line-2);
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text);
-      font-size: var(--fs-sm);
-    }
-
-    /* 44 下限：38 是触控标准确立前的旧值（实测 390×844 下预设/取主频/
-       已启用/复制邀请码 9 颗全为 38 高） */
     .pchip {
       min-height: 44px;
     }

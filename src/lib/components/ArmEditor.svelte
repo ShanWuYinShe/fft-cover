@@ -109,11 +109,11 @@
 </script>
 
 <div class="editor-card">
-  <!-- 半径卡槽 (双层贯穿式高精度结构) -->
+  <!-- 半径卡槽 (双层贯穿式高精度结构 · 铜尺刻度) -->
   <div class="param-block">
     <div class="param-meta">
       <div class="param-title-wrap">
-        <span class="param-lbl">半径</span>
+        <span class="param-lbl">周径 · 半径</span>
         <span class="eng-lbl">RADIUS</span>
       </div>
       <div class="param-stepper">
@@ -164,18 +164,18 @@
         step="1"
         value={arm.r}
         oninput={setR}
-        title="半径推子"
+        title="周径推子"
         class="laser-slider"
       />
       <div class="ruler-marks"></div>
     </div>
   </div>
 
-  <!-- 相位卡槽 (双层带角度刻度尺) -->
+  <!-- 相位卡槽 (双层带宿度刻度尺) -->
   <div class="param-block">
     <div class="param-meta">
       <div class="param-title-wrap">
-        <span class="param-lbl">相位</span>
+        <span class="param-lbl">宿度 · 相位</span>
         <span class="eng-lbl">PHASE</span>
       </div>
       <div class="degree-snaps">
@@ -229,28 +229,28 @@
         step="1"
         value={deg}
         oninput={setPhase}
-        title="相位推子"
+        title="初相推子"
         class="laser-slider"
       />
     </div>
   </div>
 
-  <!-- 频率与极性：一体化金属琴键 + 翻转拨杆 -->
+  <!-- 频率与极性：一体化浑天律制琴键 + 顺逆璇玑拨杆 -->
   <div class="param-block freq-block">
     <div class="freq-header">
       <div class="param-title-wrap">
-        <span class="param-lbl">频率</span>
+        <span class="param-lbl">天行 · 频率</span>
         <span class="eng-lbl">FREQ</span>
       </div>
       <button
         type="button"
         class="dir-toggle"
         class:ccw={arm.freq < 0}
-        title={arm.freq < 0 ? '当前逆时针，点击切顺时针' : '当前顺时针，点击切逆时针'}
+        title={arm.freq < 0 ? '当前逆天运行，点击切顺天' : '当前顺天运行，点击切逆天'}
         onclick={toggleDir}
       >
         <span class="dir-dot"></span>
-        <span class="dir-txt">{arm.freq < 0 ? '↺ 逆时针' : '↻ 顺时针'}</span>
+        <span class="dir-txt">{arm.freq < 0 ? '↺ 逆天运' : '↻ 顺天行'}</span>
       </button>
     </div>
     <div class="freq-matrix" role="radiogroup" aria-label="旋转频率档位">
@@ -277,23 +277,26 @@
 
 <style>
   .editor-card {
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    background: #0f131c;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
-    padding: 4px 8px;
+    border: 1px solid rgba(245, 184, 65, 0.22);
+    border-radius: var(--r-sm);
+    background: rgba(8, 12, 22, 0.94);
+    backdrop-filter: blur(12px);
+    box-shadow:
+      0 4px 18px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    padding: 6px 10px;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
   }
 
-  /* 参数单块：扁平底盘 + 1px 淡分割线，消除套娃框 */
+  /* 参数单块：扁平底盘 + 1px 金铜淡分割线 */
   .param-block {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: 2px 0 3px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 3px 0 4px;
+    border-bottom: 1px solid rgba(245, 184, 65, 0.08);
   }
   .param-block:last-child {
     border-bottom: none;
@@ -305,42 +308,42 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 19px;
+    height: 20px;
   }
 
   .param-title-wrap {
     display: inline-flex;
     align-items: baseline;
-    gap: 4px;
+    gap: 5px;
   }
   .param-lbl {
     font-size: 11px;
-    font-weight: 600;
-    color: #cbd5e1;
+    font-weight: 700;
+    color: var(--gold-bright);
     letter-spacing: 0.5px;
   }
   .eng-lbl {
     font-size: 8px;
-    font-weight: 500;
+    font-weight: 600;
     color: #64748b;
-    font-family: monospace;
+    font-family: 'JetBrains Mono', monospace;
     letter-spacing: 0.5px;
   }
 
-  /* 角度刻度吸附标签 */
+  /* 宿度刻度吸附标签 */
   .degree-snaps {
     display: flex;
     gap: 10px;
     font-size: 8px;
-    color: #64748b;
-    font-family: monospace;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
     user-select: none;
   }
 
-  /* 下半层：全宽滑轨（占满 100% 容器宽度，手感翻倍） */
+  /* 下半层：全宽滑轨 */
   .slider-track-wrap {
     position: relative;
-    height: 16px;
+    height: 18px;
     display: flex;
     align-items: center;
     width: 100%;
@@ -348,26 +351,26 @@
 
   .ruler-marks {
     position: absolute;
-    inset: 4px 0;
+    inset: 5px 0;
     pointer-events: none;
     background-image: repeating-linear-gradient(
       to right,
-      rgba(255, 255, 255, 0.08) 0px,
-      rgba(255, 255, 255, 0.08) 1px,
+      rgba(245, 184, 65, 0.15) 0px,
+      rgba(245, 184, 65, 0.15) 1px,
       transparent 1px,
       transparent 10%
     );
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(245, 184, 65, 0.1);
     z-index: 1;
   }
 
-  /* 激光游标滑块 */
+  /* 激光金铜游标滑块 */
   .laser-slider {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
     height: 4px;
-    background: #080b12;
+    background: #050810;
     border-radius: 2px;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.85);
     outline: none;
@@ -377,31 +380,35 @@
     cursor: pointer;
   }
 
-  /* 菱形切角精密激光游标拨片（彻底干掉大白圆球！） */
+  /* 菱形浑天仪激光游标拨片 */
   .laser-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 12px;
-    height: 16px;
-    background: #111a2e;
-    border: 1.5px solid #00f5d4;
+    width: 13px;
+    height: 18px;
+    background: linear-gradient(180deg, #253350 0%, #101828 100%);
+    border: 1.5px solid var(--gold);
     border-radius: 2px;
-    box-shadow: 0 0 6px rgba(0, 245, 212, 0.45), inset 0 0 3px rgba(0, 245, 212, 0.3);
+    box-shadow:
+      0 0 8px rgba(245, 184, 65, 0.5),
+      inset 0 0 3px rgba(245, 184, 65, 0.3);
     cursor: ew-resize;
-    transition: transform 0.08s ease, border-color 0.1s ease;
+    transition:
+      transform 0.08s ease,
+      border-color 0.1s ease;
   }
   .laser-slider::-webkit-slider-thumb:hover {
     transform: scale(1.15);
-    border-color: #38bdf8;
-    box-shadow: 0 0 8px rgba(56, 189, 248, 0.65);
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 12px rgba(245, 184, 65, 0.7);
   }
   .laser-slider::-moz-range-thumb {
-    width: 12px;
-    height: 16px;
-    background: #111a2e;
-    border: 1.5px solid #00f5d4;
+    width: 13px;
+    height: 18px;
+    background: #101828;
+    border: 1.5px solid var(--gold);
     border-radius: 2px;
-    box-shadow: 0 0 6px rgba(0, 245, 212, 0.45);
+    box-shadow: 0 0 8px rgba(245, 184, 65, 0.5);
     cursor: ew-resize;
   }
 
@@ -409,23 +416,23 @@
   .param-stepper {
     display: inline-flex;
     align-items: center;
-    gap: 2px;
+    gap: 3px;
     flex-shrink: 0;
   }
 
   .sb {
     appearance: none;
-    width: 19px;
-    height: 19px;
+    width: 20px;
+    height: 20px;
     padding: 0;
     min-height: 0;
     line-height: 1;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
-    border-radius: 3px;
-    background: #161e2e;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: #94a3b8;
+    border-radius: var(--r-sm);
+    background: rgba(18, 25, 42, 0.9);
+    border: 1px solid rgba(245, 184, 65, 0.2);
+    color: var(--muted);
     cursor: pointer;
     touch-action: none;
     user-select: none;
@@ -435,9 +442,9 @@
     transition: all 0.1s ease;
   }
   .sb:hover {
-    border-color: rgba(0, 245, 212, 0.4);
-    color: #00f5d4;
-    background: #1e293b;
+    border-color: rgba(245, 184, 65, 0.6);
+    color: var(--gold-bright);
+    background: rgba(245, 184, 65, 0.12);
   }
   .sb:active {
     transform: translateY(1px);
@@ -445,47 +452,48 @@
 
   .val {
     appearance: none;
-    background: #080b12;
-    border: 1px solid rgba(0, 245, 212, 0.2);
-    border-radius: 3px;
-    padding: 0 4px;
-    height: 19px;
-    min-width: 44px;
+    background: #04060c;
+    border: 1px solid rgba(245, 184, 65, 0.3);
+    border-radius: var(--r-sm);
+    padding: 0 5px;
+    height: 20px;
+    min-width: 48px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 1px;
+    gap: 2px;
     cursor: pointer;
     transition: all 0.1s ease;
   }
   .val:hover {
-    border-color: #00f5d4;
-    box-shadow: 0 0 6px rgba(0, 245, 212, 0.2);
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 8px rgba(245, 184, 65, 0.35);
   }
   .val-num {
     font-family: 'JetBrains Mono', monospace;
     font-variant-numeric: tabular-nums;
     font-size: 11px;
     font-weight: 700;
-    color: #00f5d4;
+    color: var(--gold-bright);
   }
   .val-unit {
     font-size: 9px;
-    color: #64748b;
+    color: var(--muted);
   }
 
   .num-edit {
-    width: 44px;
-    height: 19px;
+    width: 48px;
+    height: 20px;
     padding: 0 2px;
     background: #000;
-    border: 1px solid #00f5d4;
-    border-radius: 3px;
-    color: #00f5d4;
+    border: 1px solid var(--gold);
+    border-radius: var(--r-sm);
+    color: var(--gold-bright);
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
     text-align: center;
     outline: none;
+    box-shadow: 0 0 8px rgba(245, 184, 65, 0.4);
   }
 
   /* 频率行 */
@@ -493,7 +501,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 19px;
+    height: 20px;
   }
 
   .dir-toggle {
@@ -501,51 +509,52 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    height: 18px;
-    padding: 0 6px;
-    border-radius: 3px;
-    background: #141c2c;
-    border: 1px solid rgba(0, 245, 212, 0.25);
-    color: #00f5d4;
+    height: 20px;
+    padding: 0 8px;
+    border-radius: var(--r-sm);
+    background: rgba(0, 245, 212, 0.1);
+    border: 1px solid rgba(0, 245, 212, 0.35);
+    color: var(--cyan);
     font-size: 10px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.1s ease;
+    transition: all 0.12s ease;
   }
   .dir-toggle.ccw {
-    border-color: rgba(168, 85, 247, 0.35);
-    color: #c084fc;
-    background: #1e152e;
+    border-color: rgba(167, 139, 250, 0.45);
+    color: var(--purple);
+    background: rgba(167, 139, 250, 0.14);
   }
   .dir-dot {
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background: #00f5d4;
-    box-shadow: 0 0 4px #00f5d4;
+    background: var(--cyan);
+    box-shadow: 0 0 5px var(--cyan);
   }
   .dir-toggle.ccw .dir-dot {
-    background: #c084fc;
-    box-shadow: 0 0 4px #c084fc;
+    background: var(--purple);
+    box-shadow: 0 0 5px var(--purple);
   }
 
-  /* 频率 10 阶一体式金属琴键 */
+  /* 频率 10 阶一体式金属琴键 (Astrolabe Harmonic Keycaps) */
   .freq-matrix {
     display: flex;
     width: 100%;
-    border-radius: 3px;
+    border-radius: var(--r-sm);
     overflow: hidden;
-    background: #090c14;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #050810;
+    border: 1px solid rgba(245, 184, 65, 0.18);
   }
   .freq-key {
     appearance: none;
     flex: 1;
     min-width: 0;
-    height: 20px;
+    height: 22px;
     border: none;
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    border-right: 1px solid rgba(245, 184, 65, 0.1);
     background: transparent;
-    color: #64748b;
+    color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     font-weight: 600;
@@ -560,18 +569,18 @@
     border-right: none;
   }
   .freq-key:hover {
-    color: #cbd5e1;
-    background: rgba(255, 255, 255, 0.04);
+    color: var(--gold-bright);
+    background: rgba(245, 184, 65, 0.08);
   }
   .freq-key.active {
-    background: #00f5d4;
-    color: #050b14;
+    background: linear-gradient(180deg, #f5b841 0%, #d97706 100%);
+    color: #060911;
     font-weight: 700;
-    box-shadow: 0 0 8px rgba(0, 245, 212, 0.5);
+    box-shadow: 0 0 10px rgba(245, 184, 65, 0.5);
   }
   .freq-key.active.ccw {
-    background: #a855f7;
-    color: #050b14;
-    box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+    background: linear-gradient(180deg, #a78bfa 0%, #7c3aed 100%);
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
   }
 </style>
