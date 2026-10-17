@@ -699,26 +699,30 @@
   }
   .stepper-pair {
     display: flex;
-    gap: 2px;
+    gap: 3px;
     margin-left: 4px;
   }
   .mini-step {
     appearance: none;
     background: #141c30;
     border: 1px solid rgba(245, 184, 65, 0.25);
-    border-radius: 3px;
+    border-radius: 4px;
     color: var(--text);
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
+    font-size: 13px;
+    font-weight: 700;
     cursor: pointer;
     font-family: 'JetBrains Mono', monospace;
+    touch-action: manipulation;
   }
   .mini-step:active {
     transform: scale(0.92);
+    border-color: var(--gold-bright);
+    color: var(--gold-bright);
   }
 
   /* 游标拉尺 */
@@ -775,22 +779,23 @@
 
   .meter-steppers {
     display: flex;
-    gap: 4px;
+    gap: 5px;
   }
   .gear-step-btn {
     appearance: none;
-    width: 26px;
-    height: 26px;
-    border-radius: 5px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
     background: linear-gradient(180deg, #202b40 0%, #101726 100%);
     border: 1px solid rgba(245, 184, 65, 0.35);
     color: #fff;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    touch-action: manipulation;
     transition: all 0.1s;
   }
   .gear-step-btn:hover {
@@ -799,6 +804,7 @@
   }
   .gear-step-btn:active {
     transform: translateY(1px);
+    border-color: var(--gold-bright);
   }
 
   /* 游标铜尺滑轨 */
@@ -809,7 +815,7 @@
   }
   .vernier-brass-ruler {
     position: relative;
-    height: 24px;
+    height: 28px;
     background: #050812;
     border: 1px solid rgba(245, 184, 65, 0.3);
     border-radius: 6px;

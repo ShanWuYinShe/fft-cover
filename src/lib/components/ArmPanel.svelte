@@ -278,6 +278,7 @@
     align-items: center;
     cursor: pointer;
     position: relative;
+    touch-action: manipulation;
     transition: transform 0.12s ease;
   }
   .pillar-col:hover {
@@ -285,6 +286,26 @@
   }
   .pillar-col.active {
     transform: translateY(-4px);
+  }
+
+  @media (max-width: 480px) {
+    .pillars-matrix {
+      display: flex;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      gap: 6px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .pillar-col {
+      flex: 0 0 34px;
+    }
+    .rack-actions {
+      gap: 3px;
+    }
+    .rack-btn {
+      height: 28px;
+      padding: 0 7px;
+    }
   }
 
   /* 顶冠宝珠 */
