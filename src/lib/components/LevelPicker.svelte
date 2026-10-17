@@ -10,6 +10,8 @@
   import ComposerModal from './ComposerModal.svelte';
   import Icon from './Icon.svelte';
 
+  let { onselect }: { onselect?: () => void } = $props();
+
   let showComposer = $state(false);
   /** 当前是否在特殊模式（每日/每周/随机关/无尽/创作）——折叠条上要点亮提示，免得"现在玩的是哪来着" */
   const inSpecialMode = $derived(
@@ -330,7 +332,10 @@
             class:perfect={!!engine.perfectLevels[def.id]}
             disabled={locked}
             title={locked ? '获得上一关至少 1★ 后解锁' : def.name}
-            onclick={() => engine.loadLevel(def)}
+            onclick={() => {
+              engine.loadLevel(def);
+              onselect?.();
+            }}
           >
             <span class="idx"
               >{#if locked}<Icon name="lock" size={13} />{:else}{i + 1}{/if}</span
@@ -426,7 +431,10 @@
           class="more-daily"
           class:active={engine.level?.id === makeDailyId(engine.difficulty)}
           title="按当前随机难度生成今日关卡"
-          onclick={() => engine.loadDaily()}
+          onclick={() => {
+            engine.loadDaily();
+            onselect?.();
+          }}
         >
           <span class="md-left"
             ><Icon name="calendar" size={14} /> 每日挑战{#if engine.dailyStreak.streak > 0}<i
@@ -454,7 +462,10 @@
           class="more-daily"
           class:active={engine.endless}
           title="无尽挑战：连续随机曲线，每波收集 ≥35% 才能进下一波，难度逐波爬升——看你最多撑几波"
-          onclick={() => engine.startEndless()}
+          onclick={() => {
+            engine.startEndless();
+            onselect?.();
+          }}
         >
           <span class="md-left"><Icon name="infinity" size={14} /> 无尽挑战</span>
           <span class="md-right"
@@ -474,7 +485,10 @@
             ? 'box-shadow: 0 0 0 1px rgba(240, 183, 107, 0.55)'
             : ''}
           title="本周挑战：固定困难档，一周里慢慢磨（还剩最后一天，记得来打）"
-          onclick={() => engine.loadWeekly()}
+          onclick={() => {
+            engine.loadWeekly();
+            onselect?.();
+          }}
         >
           <span class="md-left"><Icon name="calendar" size={14} /> 每周挑战</span>
           <span class="md-right"
@@ -521,7 +535,14 @@
             </button>
           {/each}
         </div>
-        <button class="gen-btn" title="按当前难度生成随机关卡" onclick={() => engine.loadRandom()}>
+        <button
+          class="gen-btn"
+          title="按当前难度生成随机关卡"
+          onclick={() => {
+            engine.loadRandom();
+            onselect?.();
+          }}
+        >
           <Icon name="dice" size={14} /> 生成
         </button>
         <button

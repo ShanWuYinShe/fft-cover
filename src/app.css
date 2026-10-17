@@ -177,16 +177,24 @@ body {
 }
 
 /* ---------- 顶部座舱 HUD 状态梁（Observatory Celestial HUD Beam） ---------- */
+/* ---------- 顶部座舱天穹 HUD (Floating Celestial Game HUD Arch) ---------- */
 header.game-hud-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  height: 44px;
-  background: rgba(8, 12, 22, 0.88);
+  height: 52px;
+  max-width: 1260px;
+  margin: 10px auto 0;
+  background: linear-gradient(180deg, rgba(16, 24, 42, 0.92) 0%, rgba(8, 12, 22, 0.95) 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--line);
+  border: 1px solid rgba(245, 184, 65, 0.3);
+  border-radius: 14px;
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 20px rgba(245, 184, 65, 0.08);
   position: relative;
   z-index: 20;
 }
@@ -195,9 +203,71 @@ header.game-hud-bar {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-width: 0;
 }
 
+/* 周天星图总闸大键 (Game Star Map Trigger) */
+.hud-starmap-btn {
+  appearance: none;
+  background: linear-gradient(180deg, #22324f 0%, #10192e 100%);
+  border: 1px solid rgba(245, 184, 65, 0.45);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.hud-starmap-btn:hover {
+  background: linear-gradient(180deg, #2e4369 0%, #172440 100%);
+  border-color: var(--gold-bright);
+  color: var(--gold-bright);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.5),
+    0 0 16px rgba(245, 184, 65, 0.3);
+  transform: translateY(-1px);
+}
+.hud-starmap-btn.active {
+  background: linear-gradient(180deg, #d97706 0%, #92400e 100%);
+  border-color: #ffd700;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(245, 184, 65, 0.5);
+}
+.starmap-ico {
+  color: var(--gold-bright);
+  display: inline-flex;
+}
+.starmap-label {
+  font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+  letter-spacing: 1.5px;
+  font-size: 14px;
+}
+.starmap-stars {
+  font-size: 11px;
+  color: #ffd700;
+  background: rgba(245, 184, 65, 0.15);
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(245, 184, 65, 0.3);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.starmap-caret {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.hud-center-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .title-btn {
   appearance: none;
   background: transparent;
@@ -208,18 +278,20 @@ header.game-hud-bar {
   display: inline-flex;
   align-items: center;
 }
-
 .title-brand {
-  font-size: 15px;
+  font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+  font-size: 18px;
   font-weight: 700;
-  color: #f1f5f9;
-  letter-spacing: 1.5px;
-  transition: color 0.15s ease;
+  color: #fff;
+  letter-spacing: 3px;
+  text-shadow: 0 0 16px rgba(245, 184, 65, 0.35);
+  transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
 }
 .title-btn:hover .title-brand {
   color: var(--gold-bright);
+  text-shadow: 0 0 20px rgba(245, 184, 65, 0.7);
 }
 
 .brand-seal {
@@ -227,27 +299,14 @@ header.game-hud-bar {
   font-size: 10px;
   font-weight: 700;
   color: #ffffff;
-  background: var(--cinnabar);
+  background: linear-gradient(160deg, #c0392b, #8e2a1f);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   padding: 1px 5px;
   border-radius: 3px;
-  margin-left: 6px;
+  margin-left: 8px;
   letter-spacing: 1px;
   line-height: 1.2;
-  box-shadow: 0 0 8px rgba(217, 43, 43, 0.4);
-}
-
-.hud-level-tag {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--gold-bright);
-  padding: 2px 9px;
-  background: rgba(245, 184, 65, 0.08);
-  border: 1px solid rgba(245, 184, 65, 0.25);
-  border-radius: var(--r-sm);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 170px;
+  box-shadow: 0 2px 8px rgba(192, 57, 43, 0.5);
 }
 
 .hud-right-actions {
@@ -258,54 +317,67 @@ header.game-hud-bar {
 
 .hud-seal-badge {
   appearance: none;
-  background: rgba(217, 43, 43, 0.12);
-  border: 1px solid rgba(217, 43, 43, 0.4);
-  border-radius: var(--r-sm);
+  background: rgba(192, 57, 43, 0.15);
+  border: 1px solid rgba(192, 57, 43, 0.5);
+  border-radius: 6px;
   color: #fca5a5;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
   cursor: pointer;
-  font-family: inherit;
+  font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+  letter-spacing: 1px;
   white-space: nowrap;
   transition: all 0.15s ease;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 .hud-seal-badge:hover {
-  background: rgba(217, 43, 43, 0.22);
-  border-color: rgba(217, 43, 43, 0.7);
+  background: rgba(192, 57, 43, 0.28);
+  border-color: rgba(192, 57, 43, 0.8);
   color: #fff;
-  box-shadow: 0 0 10px rgba(217, 43, 43, 0.35);
+  box-shadow: 0 0 12px rgba(192, 57, 43, 0.5);
 }
 
 .hud-action-btn {
   appearance: none;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(245, 184, 65, 0.2);
-  border-radius: var(--r-sm);
+  background: linear-gradient(180deg, #202b40 0%, #101726 100%);
+  border: 1px solid rgba(245, 184, 65, 0.28);
+  border-radius: 8px;
   color: var(--muted);
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   padding: 0;
   transition: all 0.15s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 .hud-action-btn:hover {
   color: var(--gold-bright);
-  border-color: rgba(245, 184, 65, 0.5);
-  background: rgba(245, 184, 65, 0.08);
-}
-.hud-action-btn:hover {
-  color: #f8fafc;
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(245, 184, 65, 0.6);
+  background: linear-gradient(180deg, #2b3955 0%, #172136 100%);
+  box-shadow: 0 0 14px rgba(245, 184, 65, 0.3);
+  transform: translateY(-1px);
 }
 
-/* 读屏专用：视觉隐藏、读屏可及（游戏进度播报用） */
+/* 星图抽屉背景遮罩 (Starmap Backdrop) */
+.starmap-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 6, 12, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 48;
+  border: none;
+  cursor: pointer;
+  animation: fade-in 0.25s ease-out;
+}
+
+/* 读屏专用 */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -318,63 +390,249 @@ header.game-hud-bar {
   border: 0;
 }
 
-/* ---------- 主布局（天文台控制中枢） ---------- */
+/* ---------- 游戏核心主台 (Game Arena & Instrument Cockpit) ---------- */
 main {
-  display: grid;
-  grid-template-columns: minmax(290px, 320px) minmax(460px, 560px) minmax(330px, 370px);
+  display: flex;
   justify-content: center;
-  align-items: start;
-  gap: 20px;
-  max-width: 1360px;
-  margin: 0 auto;
-  padding: 16px 24px 36px;
+  align-items: flex-start;
+  gap: 28px;
+  max-width: 1260px;
+  margin: 12px auto 0;
+  padding: 8px 16px 40px;
   width: 100%;
 }
 
-/* 侧栏容器：桌面 display:contents（两个 aside 直接参与 main 的三栏 grid），
-   移动端成为唯一的滚动容器 */
+/* 侧栏容器：桌面自适应（星图左翼抽屉 + 操舵台右翼） */
 .sides {
   display: contents;
 }
 
-/* 三栏定位：DOM 顺序是 画布 → 侧栏，需显式排到中/左/右 */
+/* 周天星图抽屉折屏 (Starmap Constellation Drawer) */
+.starmap-wing {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: min(440px, 94vw);
+  background: linear-gradient(170deg, rgba(16, 23, 40, 0.98), rgba(8, 12, 22, 0.99));
+  border-right: 1px solid rgba(245, 184, 65, 0.4);
+  box-shadow: 16px 0 60px rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-105%);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.starmap-wing.open {
+  transform: translateX(0);
+}
+.starmap-wing-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid rgba(245, 184, 65, 0.2);
+  background: rgba(245, 184, 65, 0.04);
+}
+.sm-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--gold-bright);
+  letter-spacing: 3px;
+  text-shadow: 0 0 14px rgba(245, 184, 65, 0.4);
+}
+.sm-gold-dot {
+  font-size: 14px;
+}
+.sm-count {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.starmap-wing-close {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(245, 184, 65, 0.25);
+  border-radius: 6px;
+  color: var(--muted);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s ease;
+}
+.starmap-wing-close:hover {
+  border-color: var(--gold-bright);
+  color: var(--gold-bright);
+  background: rgba(245, 184, 65, 0.1);
+}
+.starmap-scroll-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 14px 18px 24px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(245, 184, 65, 0.3) transparent;
+}
+
+/* 舞台视口容器 (Stage Viewport Wrap) */
 .stage-wrap {
-  grid-column: 2;
-  grid-row: 1;
+  flex: 1 1 580px;
+  max-width: 640px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-width: 0;
   align-items: center;
 }
-.side-left {
-  grid-column: 1;
-  grid-row: 1;
-  max-height: calc(100dvh - 100px);
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(79, 209, 197, 0.25) transparent;
-  padding-bottom: 24px;
+
+/* 关卡天冠顶饰 (Level Crown Banner) */
+.stage-crown-bezel {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  background: linear-gradient(
+    90deg,
+    rgba(245, 184, 65, 0.08) 0%,
+    rgba(16, 23, 40, 0.95) 25%,
+    rgba(16, 23, 40, 0.95) 75%,
+    rgba(245, 184, 65, 0.08) 100%
+  );
+  border: 1px solid rgba(245, 184, 65, 0.3);
+  border-radius: 12px;
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
-.side-right {
-  grid-column: 3;
-  grid-row: 1;
-  max-height: calc(100dvh - 100px);
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(167, 139, 250, 0.25) transparent;
-  padding-bottom: 24px;
+.crown-level-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.crown-eyebrow {
+  font-size: 11px;
+  color: var(--gold-bright);
+  letter-spacing: 2px;
+  font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+  font-weight: 600;
+}
+.crown-title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+  text-shadow: 0 0 14px rgba(245, 184, 65, 0.35);
 }
 
+/* 3 颗实体宝玉星槽 (Physical 3D Master Star Sockets) */
+.crown-star-sockets {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.star-gem-socket {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, #101626 40%, #060911 100%);
+  border: 1.5px solid rgba(245, 184, 65, 0.25);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.8),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.star-gem-socket .gem-star {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.12);
+  line-height: 1;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.star-gem-socket.lit {
+  border-color: #ffd700;
+  background: radial-gradient(circle, #453008 0%, #1c1303 100%);
+  box-shadow:
+    0 0 14px rgba(245, 184, 65, 0.65),
+    inset 0 1px 2px rgba(255, 255, 255, 0.7);
+}
+.star-gem-socket.lit .gem-star {
+  color: #ffd700;
+  text-shadow: 0 0 10px #ffd700;
+  transform: scale(1.18);
+}
+.star-gem-socket.active {
+  animation: star-burst 0.5s ease-out;
+}
+@keyframes star-burst {
+  0% {
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 画布基座与青铜神仪角花 (Hero Canvas Box & Astrolabe Brackets) */
 .canvas-box {
   position: relative;
   width: min(100%, 640px);
   margin: 0 auto;
 }
 
-.canvas-box::before,
-.canvas-box::after {
-  display: none;
+/* 4 隅古青铜角花 (Antique Celestial Brackets) */
+.stage-bracket {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  z-index: 4;
+}
+.stage-bracket.tl {
+  top: -2px;
+  left: -2px;
+  border-top: 3px solid var(--gold-bright);
+  border-left: 3px solid var(--gold-bright);
+  box-shadow: -2px -2px 6px rgba(245, 184, 65, 0.4);
+}
+.stage-bracket.tr {
+  top: -2px;
+  right: -2px;
+  border-top: 3px solid var(--gold-bright);
+  border-right: 3px solid var(--gold-bright);
+  box-shadow: 2px -2px 6px rgba(245, 184, 65, 0.4);
+}
+.stage-bracket.bl {
+  bottom: -2px;
+  left: -2px;
+  border-bottom: 3px solid var(--gold-bright);
+  border-left: 3px solid var(--gold-bright);
+  box-shadow: -2px 2px 6px rgba(245, 184, 65, 0.4);
+}
+.stage-bracket.br {
+  bottom: -2px;
+  right: -2px;
+  border-bottom: 3px solid var(--gold-bright);
+  border-right: 3px solid var(--gold-bright);
+  box-shadow: 2px 2px 6px rgba(245, 184, 65, 0.4);
 }
 
 canvas {
@@ -382,16 +640,81 @@ canvas {
   width: 100%;
   aspect-ratio: 1 / 1;
   touch-action: none;
-  background: #060910;
-  border: 1px solid rgba(245, 184, 65, 0.22);
-  border-radius: var(--r-lg);
+  background: #050810;
+  border: 1px solid rgba(245, 184, 65, 0.3);
+  border-radius: var(--r-md);
   box-shadow:
-    0 12px 42px rgba(0, 0, 0, 0.75),
-    inset 0 0 50px rgba(0, 0, 0, 0.6),
-    0 0 24px rgba(245, 184, 65, 0.08);
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+    0 16px 50px rgba(0, 0, 0, 0.8),
+    inset 0 0 60px rgba(0, 0, 0, 0.8),
+    0 0 30px rgba(245, 184, 65, 0.1);
+}
+
+/* 操舵台翼板 (Arm Console Wing) */
+.arm-console-wing {
+  flex: 1 1 380px;
+  max-width: 440px;
+  min-width: 320px;
+}
+.console-deck {
+  background: linear-gradient(170deg, rgba(16, 23, 40, 0.98), rgba(8, 12, 22, 0.99));
+  border: 1px solid rgba(245, 184, 65, 0.35);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow:
+    0 16px 44px rgba(0, 0, 0, 0.7),
+    inset 0 0 30px rgba(245, 184, 65, 0.05);
+}
+.console-deck-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(245, 184, 65, 0.18);
+}
+.deck-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.deck-badge {
+  font-size: 10px;
+  background: rgba(245, 184, 65, 0.15);
+  color: var(--gold-bright);
+  border: 1px solid rgba(245, 184, 65, 0.35);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+}
+.deck-title {
+  margin: 0;
+  font-size: 17px;
+  color: #fff;
+  letter-spacing: 2px;
+  font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+  font-weight: 700;
+}
+.deck-capacity-pips {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.cap-pip {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.15);
+  transition: all 0.2s ease;
+}
+.cap-pip.filled {
+  color: var(--cyan);
+  text-shadow: 0 0 8px var(--cyan);
+}
+.cap-num {
+  font-size: 12px;
+  color: var(--gold-bright);
+  margin-left: 6px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
 
 /* ---------- 画布 HUD (Celestial Stage HUD) ---------- */
@@ -626,38 +949,145 @@ button:disabled {
 
 .run-row {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  padding: 8px 14px;
-  background: rgba(10, 15, 26, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
+  padding: 10px 16px;
+  background: linear-gradient(180deg, rgba(16, 23, 40, 0.95) 0%, rgba(8, 12, 22, 0.98) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(245, 184, 65, 0.3);
+  border-radius: 16px;
   box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 10px 30px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   width: 100%;
   box-sizing: border-box;
 }
 
-button.run-btn-main {
-  border-radius: 8px;
-  font-family: inherit;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+/* 启晷大掣核心 (Massive 3D Arcade Ignition Button) */
+button.arcade-ignition-btn {
+  min-width: 190px;
+  height: 50px;
+  border-radius: 25px;
+  font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 3px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  transition:
-    transform 80ms ease,
-    opacity 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.1s ease;
 }
-button.run-btn-main:active:not(:disabled) {
-  transform: translateY(1px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+
+button.arcade-ignition-btn.ignite {
+  background: linear-gradient(180deg, #ffe58f 0%, #f59e0b 50%, #b45309 100%);
+  border: 2px solid #fff1b8;
+  color: #1a0f00;
+  box-shadow:
+    0 6px 0 #78350f,
+    0 10px 24px rgba(245, 184, 65, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+button.arcade-ignition-btn.ignite:hover:not(:disabled) {
+  background: linear-gradient(180deg, #fff1b8 0%, #fbbf24 50%, #d97706 100%);
+  box-shadow:
+    0 6px 0 #78350f,
+    0 14px 30px rgba(245, 184, 65, 0.7);
+  transform: translateY(-1px);
+}
+button.arcade-ignition-btn.ignite:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow:
+    0 2px 0 #78350f,
+    0 4px 10px rgba(245, 184, 65, 0.3);
+}
+
+button.arcade-ignition-btn.brake {
+  background: linear-gradient(180deg, #fca5a5 0%, #ef4444 50%, #991b1b 100%);
+  border: 2px solid #fecaca;
+  color: #ffffff;
+  box-shadow:
+    0 6px 0 #7f1d1d,
+    0 10px 24px rgba(239, 68, 68, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+button.arcade-ignition-btn.brake:hover:not(:disabled) {
+  background: linear-gradient(180deg, #fecaca 0%, #f87171 50%, #b91c1c 100%);
+  box-shadow:
+    0 6px 0 #7f1d1d,
+    0 14px 30px rgba(239, 68, 68, 0.7);
+  transform: translateY(-1px);
+}
+button.arcade-ignition-btn.brake:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow:
+    0 2px 0 #7f1d1d,
+    0 4px 10px rgba(239, 68, 68, 0.3);
+}
+
+/* 2× 超频晶核键 */
+button.overdrive-btn {
+  height: 50px;
+  padding: 0 18px;
+  border-radius: 25px;
+  background: linear-gradient(180deg, #202b40 0%, #0d1526 100%);
+  border: 1.5px solid rgba(245, 184, 65, 0.35);
+  font-weight: 700;
+  color: #f1f5f9;
+  box-shadow:
+    0 4px 0 #070c18,
+    0 6px 16px rgba(0, 0, 0, 0.4);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.1s ease;
+}
+button.overdrive-btn:hover:not(:disabled) {
+  border-color: var(--gold-bright);
+  color: var(--gold-bright);
+}
+button.overdrive-btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #070c18;
+}
+button.overdrive-btn.gold {
+  border-color: #ffd700;
+  color: #ffd700;
+  background: linear-gradient(180deg, #382909 0%, #171104 100%);
+  box-shadow:
+    0 4px 0 #78350f,
+    0 0 16px rgba(245, 184, 65, 0.5);
+}
+
+/* ⟲ 重置键 */
+button.rewind-btn {
+  height: 50px;
+  padding: 0 18px;
+  border-radius: 25px;
+  background: linear-gradient(180deg, #202b40 0%, #0d1526 100%);
+  border: 1.5px solid rgba(245, 184, 65, 0.25);
+  color: var(--muted);
+  font-weight: 700;
+  box-shadow:
+    0 4px 0 #070c18,
+    0 6px 16px rgba(0, 0, 0, 0.4);
+  transition: all 0.1s ease;
+}
+button.rewind-btn:hover:not(:disabled) {
+  border-color: rgba(245, 184, 65, 0.5);
+  color: var(--text);
+}
+button.rewind-btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #070c18;
 }
 
 /* 应用级图标（音量/音乐/成就）成组换行 */
@@ -1119,32 +1549,19 @@ input[type='checkbox'] {
   }
 }
 
-/* 中屏（两栏）：画布 + 右侧堆叠面板（面板独立滚动） */
-@media (max-width: 1180px) {
+/* 中屏/平板（641px - 1040px）：主舞台与指针神机自适应折行居中 */
+@media (min-width: 641px) and (max-width: 1040px) {
   main {
-    grid-template-columns: minmax(0, 1fr) 360px;
+    flex-wrap: wrap;
     justify-content: center;
+    gap: 20px;
   }
   .stage-wrap {
-    grid-column: 1;
+    flex: 0 1 600px;
   }
-  .sides {
-    grid-column: 2;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    min-width: 0;
-    max-height: calc(100dvh - 110px);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
-/* 中屏 / 竖屏平板：画布是方形的（受列宽限制），舞台整体在列内垂直居中。
-   768×1024 实测：舞台 67..592、main 高 968——下方空 429px，左轻右重。 */
-@media (min-width: 641px) and (max-width: 1180px) {
-  .stage-wrap {
-    align-self: center;
+  .arm-console-wing {
+    flex: 0 1 600px;
+    max-width: 600px;
   }
 }
 
@@ -1302,13 +1719,49 @@ input[type='checkbox'] {
 
   .run-row button {
     width: 100%;
-  }
-
-  .run-row button {
     font-size: var(--fs-sm);
     padding: 8px 10px;
     min-height: 42px; /* 触摸友好 */
     flex: 0 1 auto;
+  }
+
+  button.arcade-ignition-btn {
+    min-width: 0;
+    height: 42px;
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    grid-column: span 2;
+  }
+  button.overdrive-btn,
+  button.rewind-btn {
+    min-width: 0;
+    height: 42px;
+    padding: 0 4px;
+    font-size: 12px;
+  }
+
+  /* 移动端全屏周天星图抽屉 */
+  .starmap-wing {
+    width: 100vw;
+    max-width: 100vw;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    border-right: none;
+    z-index: 60;
+  }
+  .stage-crown-bezel {
+    padding: 6px 12px;
+  }
+  .crown-title {
+    font-size: 16px;
+  }
+  .star-gem-socket {
+    width: 26px;
+    height: 26px;
+  }
+  .star-gem-socket .gem-star {
+    font-size: 13px;
   }
 
   /* 侧栏容器：占满剩余高度，内部滚动（两个 aside 前后排列） */
@@ -1405,6 +1858,9 @@ input[type='checkbox'] {
  * 只看得见一行；收画布后仍「画布常在屏内」，但面板能正常浏览。
  * ============================================================ */
 @media (max-width: 640px) and (orientation: portrait) and (max-height: 700px) {
+  .stage-crown-bezel {
+    display: none;
+  }
   .canvas-box {
     width: min(92vw, 36vh);
   }

@@ -19,7 +19,7 @@
   import FinaleOverlay from './lib/components/FinaleOverlay.svelte';
   import ChapterIntroOverlay from './lib/components/ChapterIntroOverlay.svelte';
   import SettingsModal from './lib/components/SettingsModal.svelte';
-  import { decodeCoeffs, LEVEL_DEFS } from './lib/game/levels';
+  import { decodeCoeffs, LEVEL_DEFS, CHAPTERS } from './lib/game/levels';
   import { levelGoals } from './lib/game/goals';
   import { spectrumGaps, starsFor } from './lib/game/scoring';
   import { STAR_LEVELS } from './lib/game/constants';
@@ -43,6 +43,7 @@
 
   let showAchv = $state(false);
   let showSettings = $state(false);
+  let starMapOpen = $state(false);
   /** 开始画面：首次访问显示（老玩家直接进游戏，点标题可再看） */
   let showTitle = $state(false);
   /** 移动端底部标签：指针 / 关卡（默认调参，方便即刻开始操作） */
@@ -54,6 +55,11 @@
    */
   let panelExpanded = $state(false);
   function onTab(t: 'levels' | 'arms'): void {
+    if (t === 'levels') {
+      starMapOpen = true;
+    } else {
+      starMapOpen = false;
+    }
     if (mobileTab === t) {
       panelExpanded = !panelExpanded;
     } else {
@@ -87,6 +93,19 @@
       mobileTab = 'arms';
     }
   });
+
+  const curChapter = $derived(CHAPTERS.find((c) => c.id === engine.level?.chapter));
+  const curChapterName = $derived(
+    engine.endless
+      ? '周天无尽 · 演武'
+      : engine.sandbox
+        ? '万象演道 · 沙盒'
+        : (curChapter?.name ?? '周天星图'),
+  );
+  const curStars = $derived(engine.level?.id ? (engine.bestStars[engine.level.id] ?? 0) : 0);
+  const totalStars = $derived(LEVEL_DEFS.reduce((s, d) => s + (engine.bestStars[d.id] ?? 0), 0));
+  const maxStars = LEVEL_DEFS.length * 3;
+  const onArmCount = $derived(engine.arms.filter((a) => a.on).length);
 
   onMount(() => {
     (window as any).__ENGINE = engine;
@@ -480,22 +499,33 @@
   <div class="hud-left">
     <button
       type="button"
+      class="hud-starmap-btn"
+      class:active={starMapOpen}
+      title="打开/收起周天星图"
+      onclick={() => {
+        starMapOpen = !starMapOpen;
+        if (mobileTab === 'arms' && starMapOpen) mobileTab = 'levels';
+        haptic(10, engine.soundOn);
+      }}
+    >
+      <span class="starmap-ico"><Icon name="map" size={15} /></span>
+      <span class="starmap-label">周天星图</span>
+      <span class="starmap-stars">★ {totalStars}/{maxStars}</span>
+      <span class="starmap-caret">{starMapOpen ? '◂' : '▾'}</span>
+    </button>
+  </div>
+
+  <div class="hud-center-brand">
+    <button
+      type="button"
       class="title-btn"
-      title="查看进度概览与浑天典仪"
+      title="查看游戏题序与浑天典仪"
       onclick={() => (showTitle = true)}
     >
-      <span class="title-brand">✦ 傅立叶指针 <span class="brand-seal">浑天</span></span>
+      <span class="title-brand">✦ 浑 天 璇 玑 ✦ <span class="brand-seal">傅立叶</span></span>
     </button>
-    {#if engine.level}
-      <span class="hud-level-tag">
-        {#if engine.endless}
-          第 {engine.endlessWave} 波
-        {:else}
-          {engine.level.name}
-        {/if}
-      </span>
-    {/if}
   </div>
+
   <div class="hud-right-actions">
     {#if engine.level}
       <button
@@ -528,6 +558,15 @@
   </div>
 </header>
 
+{#if starMapOpen}
+  <button
+    type="button"
+    class="starmap-backdrop"
+    aria-label="收起周天星图"
+    onclick={() => (starMapOpen = false)}
+  ></button>
+{/if}
+
 <!-- 读屏播报：画布进度对读屏用户不可见，这里用 aria-live 转达 -->
 <div class="sr-only" role="status" aria-live="polite">{srLive}</div>
 
@@ -535,9 +574,54 @@
   data-tab={mobileTab}
   class:panel-expanded={panelExpanded}
   class:panel-hidden={engine.phase === 'running'}
+  class:starmap-open={starMapOpen}
 >
   <section class="stage-wrap">
+    <!-- 关卡天冠顶饰 (Level Crown Banner) -->
+    <div class="stage-crown-bezel">
+      <div class="crown-level-badge">
+        <span class="crown-eyebrow">{curChapterName}</span>
+        <h1 class="crown-title">
+          {#if engine.endless}
+            周天无尽 · 第 {engine.endlessWave} 宿
+          {:else}
+            {engine.level?.name ?? '自由星轨'}
+          {/if}
+        </h1>
+      </div>
+
+      {#if !engine.sandbox && engine.level}
+        <div class="crown-star-sockets" title="本关星级进度（收集 35% / 65% / 90%）">
+          <div
+            class="star-gem-socket"
+            class:lit={curStars >= 1}
+            class:active={engine.starReached >= 1}
+          >
+            <span class="gem-star">★</span>
+          </div>
+          <div
+            class="star-gem-socket"
+            class:lit={curStars >= 2}
+            class:active={engine.starReached >= 2}
+          >
+            <span class="gem-star">★</span>
+          </div>
+          <div
+            class="star-gem-socket"
+            class:lit={curStars >= 3}
+            class:active={engine.starReached >= 3}
+          >
+            <span class="gem-star">★</span>
+          </div>
+        </div>
+      {/if}
+    </div>
+
     <div class="canvas-box">
+      <span class="stage-bracket tl" aria-hidden="true"></span>
+      <span class="stage-bracket tr" aria-hidden="true"></span>
+      <span class="stage-bracket bl" aria-hidden="true"></span>
+      <span class="stage-bracket br" aria-hidden="true"></span>
       <Stage />
       <div class="hud">
         <button
@@ -791,23 +875,33 @@
         </span>
       {:else}
         {#if engine.phase === 'running' || engine.phase === 'paused'}
-          <button class="danger run-btn-main" onclick={stopRun}>
-            <Icon name="stop" size={13} /> <span class="bt-long">停止结算</span><span
-              class="bt-short">停止</span
+          <button class="danger run-btn-main arcade-ignition-btn brake" onclick={stopRun}>
+            <span class="btn-core-ring" aria-hidden="true"></span>
+            <Icon name="stop" size={14} /> <span class="bt-long">⏹ 止 轨 结 算</span><span
+              class="bt-short">⏹ 止轨</span
             >
           </button>
           <button
-            class="run-btn-aux"
+            class="run-btn-aux overdrive-btn"
             class:gold={engine.fastForward}
-            title="2× 快进"
+            title="2× 超频加速"
             onclick={() => (engine.fastForward = !engine.fastForward)}
           >
-            ⏩ {engine.fastForward ? '2×' : '1×'}
+            <span class="ff-flash" aria-hidden="true">⚡</span> ⏩ {engine.fastForward
+              ? '2×'
+              : '1×'}
           </button>
         {:else}
-          <button class="primary run-btn-main" onclick={toggleRun}>{engine.runLabel}</button>
+          <button class="primary run-btn-main arcade-ignition-btn ignite" onclick={toggleRun}>
+            <span class="btn-core-ring" aria-hidden="true"></span>
+            <span class="ignite-spark" aria-hidden="true">✦</span>
+            <span class="bt-long"
+              >{engine.phase === 'edit' ? '▶ 启 天 动 轨' : engine.runLabel}</span
+            >
+            <span class="bt-short">{engine.runLabel}</span>
+          </button>
           <button
-            class="run-btn-aux"
+            class="run-btn-aux rewind-btn"
             title="重置本局已收集点与指针"
             onclick={() => engine.resetRun()}
           >
@@ -923,20 +1017,50 @@
     <span class="handle-bar"></span>
   </button>
 
-  <div class="sides">
-    <aside class="side side-left">
-      <LevelPicker />
+  <div class="sides" class:starmap-open={starMapOpen}>
+    <aside class="side side-left starmap-wing" class:open={starMapOpen}>
+      <div class="starmap-wing-header">
+        <div class="sm-header-title">
+          <span class="sm-gold-dot">✦</span>
+          <span>周 天 星 宿 谱</span>
+          <span class="sm-count">({totalStars}/{maxStars}★)</span>
+        </div>
+        <button
+          type="button"
+          class="starmap-wing-close"
+          title="收起星图"
+          onclick={() => (starMapOpen = false)}
+        >
+          ✕
+        </button>
+      </div>
+      <div class="starmap-scroll-body">
+        <LevelPicker
+          onselect={() => {
+            starMapOpen = false;
+            if (mobileTab === 'levels') mobileTab = 'arms';
+          }}
+        />
+      </div>
     </aside>
 
-    <aside class="side side-right">
-      <section class="sec-arms">
-        <h2 class="sec-arms-hd">
-          指针
-          <span class="muted arm-limit-sub">（本关最多 {engine.level?.armLimit ?? 10} 根）</span>
-          <span class="arm-count-badge"
-            >已启用 {engine.arms.filter((a) => a.on).length}/{engine.level?.armLimit ?? 10}</span
+    <aside class="side side-right arm-console-wing">
+      <section class="sec-arms console-deck">
+        <div class="console-deck-header">
+          <div class="deck-title-wrap">
+            <span class="deck-badge">璇玑中枢</span>
+            <h2 class="deck-title">十方星宿律柱</h2>
+          </div>
+          <div
+            class="deck-capacity-pips"
+            title="本关最多启用 {engine.level?.armLimit ?? 10} 根指针"
           >
-        </h2>
+            {#each Array(engine.level?.armLimit ?? 10) as _, idx}
+              <span class="cap-pip" class:filled={idx < onArmCount}>◆</span>
+            {/each}
+            <span class="cap-num">{onArmCount}/{engine.level?.armLimit ?? 10}</span>
+          </div>
+        </div>
         {#if engine.autoSolve}
           <p class="fitting-tip">🪄 自动拟合中——直接调整任意指针即可接管它；点击画布可打断</p>
         {/if}
