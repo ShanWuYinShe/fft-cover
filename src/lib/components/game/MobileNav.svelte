@@ -23,7 +23,9 @@
     onclick={() => uiState.onTab('levels')}
   >
     <i class="tab-icon"><Icon name="map" size={17} /></i>
-    <span>{uiState.mobileTab === 'levels' && uiState.panelExpanded ? '星图关卡 ▾' : '星图关卡'}</span>
+    <span
+      >{uiState.mobileTab === 'levels' && uiState.panelExpanded ? '星图关卡 ▾' : '星图关卡'}</span
+    >
   </button>
 </nav>
 

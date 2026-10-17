@@ -15,7 +15,10 @@
   <LevelCrown />
 
   <!-- 浑天璇玑画布基座 -->
-  <div class="canvas-box" class:shake={engine.phase === 'done' && engine.collectedCount === engine.total}>
+  <div
+    class="canvas-box"
+    class:shake={engine.phase === 'done' && engine.collectedCount === engine.total}
+  >
     <span class="stage-bracket tl" aria-hidden="true"></span>
     <span class="stage-bracket tr" aria-hidden="true"></span>
     <span class="stage-bracket bl" aria-hidden="true"></span>

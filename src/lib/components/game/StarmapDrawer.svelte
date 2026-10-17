@@ -5,9 +5,7 @@
   import { LEVEL_DEFS } from '../../game/levels';
   import { uiState } from '../../stores/uiState.svelte';
 
-  const totalStars = $derived(
-    LEVEL_DEFS.reduce((s, d) => s + (engine.bestStars[d.id] ?? 0), 0),
-  );
+  const totalStars = $derived(LEVEL_DEFS.reduce((s, d) => s + (engine.bestStars[d.id] ?? 0), 0));
   const maxStars = LEVEL_DEFS.length * 3;
 
   function onLevelSelect(): void {

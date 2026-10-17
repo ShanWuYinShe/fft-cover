@@ -29,7 +29,9 @@ export function handleKeydown(e: KeyboardEvent): void {
   if (isTypingTarget(e.target)) return;
 
   // 有弹层开着（成就/设置/合成器/标题/教程/通关/入境）时：全局键让路，防止后台误触
-  if (document.querySelector('.modal, .modal-backdrop, .finale, .ch-intro, .title-screen, .tutorial')) {
+  if (
+    document.querySelector('.modal, .modal-backdrop, .finale, .ch-intro, .title-screen, .tutorial')
+  ) {
     return;
   }
 

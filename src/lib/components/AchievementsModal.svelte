@@ -148,220 +148,220 @@
   </div>
 
   <div class="achv-body">
-      {#if tab === 'dex'}
-        <div class="dex">
-          {#each chapters as ch (ch.id)}
-            {@const seal = engine.chapterSealsOf(ch.id)}
-            <div class="dex-ch">
-              <div class="dex-ch-head">
-                <b>{ch.unlocked ? ch.name : '？？？'}</b>
-                {#if ch.unlocked}
-                  <span class="dex-count">{seal.done}/{seal.total} 印</span>
-                  {#if seal.sealed}
-                    <span class="dex-ch-seal" title={'章节印「' + ch.seal + '」'}>{ch.seal}</span>
-                  {/if}
-                {:else}
-                  <span class="dex-count">通关上一章后解锁</span>
+    {#if tab === 'dex'}
+      <div class="dex">
+        {#each chapters as ch (ch.id)}
+          {@const seal = engine.chapterSealsOf(ch.id)}
+          <div class="dex-ch">
+            <div class="dex-ch-head">
+              <b>{ch.unlocked ? ch.name : '？？？'}</b>
+              {#if ch.unlocked}
+                <span class="dex-count">{seal.done}/{seal.total} 印</span>
+                {#if seal.sealed}
+                  <span class="dex-ch-seal" title={'章节印「' + ch.seal + '」'}>{ch.seal}</span>
                 {/if}
-              </div>
-              <div class="dex-grid">
-                {#each ch.levels as lv (lv.id)}
-                  {@const locked = !ch.unlocked || isLocked(lv.id)}
-                  {@const stars = engine.bestStars[lv.id] ?? 0}
-                  <button
-                    type="button"
-                    class="dex-item"
-                    class:locked
-                    class:dim={!locked && stars === 0}
-                    disabled={locked}
-                    title={locked ? '尚未解锁' : '玩「' + lv.name + '」'}
-                    onclick={() => onplay?.(lv.id)}
-                  >
-                    <svg class="dex-shape" viewBox="0 0 640 640" aria-hidden="true">
-                      {#if locked}
-                        <text x="320" y="420" text-anchor="middle" class="dex-q">？</text>
-                      {:else}
-                        <polyline points={shapePoints(lv.id)} />
-                      {/if}
-                    </svg>
-                    <span class="dex-nm">{locked ? '？？？' : lv.name}</span>
-                    <span class="dex-st"
-                      >{locked ? '' : '★'.repeat(stars) + '☆'.repeat(3 - stars)}</span
-                    >
-                    <span class="dex-seals">
-                      {#each levelGoals(engine.goalStateOf(lv.id)) as g (g.id)}
-                        <i class:on={g.done} title={g.name}>{g.seal}</i>
-                      {/each}
-                    </span>
-                  </button>
-                {/each}
-              </div>
-            </div>
-          {/each}
-        </div>
-      {/if}
-      {#if tab === 'stats'}
-        <div class="stats">
-          <!-- 每日打卡墙：最近 5 周（比 7 日格更能看出长期习惯） -->
-          <div class="cal">
-            <div class="cal-head">
-              <b>每日打卡</b>
-              <span class="cal-stat">累计 <i>{engine.dailyDaysTotal}</i> 天</span>
-              <span class="cal-stat">当前连续 <i>{engine.dailyStreak.streak}</i> 天</span>
-              <span class="cal-stat">最长 <i>{engine.longestDailyStreak}</i> 天</span>
-              {#if engine.dailyStreak.streak >= 30}
-                <span class="cal-stat goal done"
-                  ><Icon name="trophy" size={12} /> 月月有余已达成</span
-                >
               {:else}
-                <span class="cal-stat goal"
-                  >距「月月有余」还差 <i>{30 - engine.dailyStreak.streak}</i> 天</span
-                >
+                <span class="dex-count">通关上一章后解锁</span>
               {/if}
             </div>
-            <div class="cal-grid">
-              {#each ['一', '二', '三', '四', '五', '六', '日'] as w (w)}
-                <span class="cal-dow">{w}</span>
-              {/each}
-              {#each calendar as row, ri (ri)}
-                {#each row as c (c.date)}
-                  <span
-                    class="cal-cell"
-                    class:done={c.done}
-                    class:today={c.today}
-                    class:future={c.future}
-                    title={c.date + (c.done ? ' · 已完成' : c.future ? ' · 还没到' : ' · 未完成')}
-                    >{c.day}</span
-                  >
-                {/each}
-              {/each}
-            </div>
-          </div>
-          <div class="cards">
-            <div class="card"><span class="k">总对局</span><span class="v">{totalPlays}</span></div>
-            <div class="card">
-              <span class="k">总收集点</span><span class="v">{totalCollected}</span>
-            </div>
-            <div class="card">
-              <span class="k">玩过的关卡</span><span class="v"
-                >{playedLevels}<i>/{LEVEL_DEFS.length}</i></span
-              >
-            </div>
-            <div class="card">
-              <span class="k">三星关卡</span><span class="v"
-                >{perfectLevels}<i>/{LEVEL_DEFS.length}</i></span
-              >
-            </div>
-            <div class="card">
-              <span class="k"><Icon name="crown" size={13} /> 完美全清</span><span class="v"
-                >{perfectClears}<i>/{LEVEL_DEFS.length}</i></span
-              >
-            </div>
-            <div class="card">
-              <span class="k"><Icon name="target" size={13} /> 精确解</span><span class="v"
-                >{exactClears}<i>/{LEVEL_DEFS.length}</i></span
-              >
-            </div>
-          </div>
-          <div class="lvl-list">
-            {#each perLevel as l (l.id)}
-              <div class="lvl-row" class:dim={l.plays === 0}>
-                <span class="nm"
-                  >{l.name}{#if l.perfect}<i class="badge"><Icon name="crown" size={11} /></i
-                    >{/if}{#if l.exact}<i class="badge"><Icon name="target" size={11} /></i
-                    >{/if}</span
+            <div class="dex-grid">
+              {#each ch.levels as lv (lv.id)}
+                {@const locked = !ch.unlocked || isLocked(lv.id)}
+                {@const stars = engine.bestStars[lv.id] ?? 0}
+                <button
+                  type="button"
+                  class="dex-item"
+                  class:locked
+                  class:dim={!locked && stars === 0}
+                  disabled={locked}
+                  title={locked ? '尚未解锁' : '玩「' + lv.name + '」'}
+                  onclick={() => onplay?.(lv.id)}
                 >
-                <span class="st">{'★'.repeat(l.stars)}{'☆'.repeat(3 - l.stars)}</span>
-                {#if l.trend.length > 1}
-                  <svg
-                    class="spark"
-                    viewBox="0 0 64 18"
-                    width="64"
-                    height="18"
-                    aria-label="{l.name} 成绩趋势"
-                  >
-                    <polyline
-                      points={spark(l.trend)}
-                      fill="none"
-                      stroke="rgba(79,209,197,.7)"
-                      stroke-width="1.4"
-                    />
+                  <svg class="dex-shape" viewBox="0 0 640 640" aria-hidden="true">
+                    {#if locked}
+                      <text x="320" y="420" text-anchor="middle" class="dex-q">？</text>
+                    {:else}
+                      <polyline points={shapePoints(lv.id)} />
+                    {/if}
                   </svg>
-                {:else}
-                  <span class="spark-empty"></span>
-                {/if}
-                <span class="meta">{l.plays} 局</span>
-                <span class="best">{l.best > 0 ? l.best : '—'}</span>
-              </div>
+                  <span class="dex-nm">{locked ? '？？？' : lv.name}</span>
+                  <span class="dex-st"
+                    >{locked ? '' : '★'.repeat(stars) + '☆'.repeat(3 - stars)}</span
+                  >
+                  <span class="dex-seals">
+                    {#each levelGoals(engine.goalStateOf(lv.id)) as g (g.id)}
+                      <i class:on={g.done} title={g.name}>{g.seal}</i>
+                    {/each}
+                  </span>
+                </button>
+              {/each}
+            </div>
+          </div>
+        {/each}
+      </div>
+    {/if}
+    {#if tab === 'stats'}
+      <div class="stats">
+        <!-- 每日打卡墙：最近 5 周（比 7 日格更能看出长期习惯） -->
+        <div class="cal">
+          <div class="cal-head">
+            <b>每日打卡</b>
+            <span class="cal-stat">累计 <i>{engine.dailyDaysTotal}</i> 天</span>
+            <span class="cal-stat">当前连续 <i>{engine.dailyStreak.streak}</i> 天</span>
+            <span class="cal-stat">最长 <i>{engine.longestDailyStreak}</i> 天</span>
+            {#if engine.dailyStreak.streak >= 30}
+              <span class="cal-stat goal done"><Icon name="trophy" size={12} /> 月月有余已达成</span
+              >
+            {:else}
+              <span class="cal-stat goal"
+                >距「月月有余」还差 <i>{30 - engine.dailyStreak.streak}</i> 天</span
+              >
+            {/if}
+          </div>
+          <div class="cal-grid">
+            {#each ['一', '二', '三', '四', '五', '六', '日'] as w (w)}
+              <span class="cal-dow">{w}</span>
+            {/each}
+            {#each calendar as row, ri (ri)}
+              {#each row as c (c.date)}
+                <span
+                  class="cal-cell"
+                  class:done={c.done}
+                  class:today={c.today}
+                  class:future={c.future}
+                  title={c.date + (c.done ? ' · 已完成' : c.future ? ' · 还没到' : ' · 未完成')}
+                  >{c.day}</span
+                >
+              {/each}
             {/each}
           </div>
         </div>
-      {/if}
-      {#if tab === 'save'}
-        <div class="save">
-          <p class="desc">
-            进度保存在本机浏览器里。换设备或清理浏览器数据前，先导出备份。<br />
-            备份含：星级 / 最佳分 / 最快全清 / 完美与精确认证 / 每日成绩与连胜 / 成就与标记 / 解法存档
-            / 节奏记录 / 卡关次数 / 合成器草稿 / 音量音效音乐偏好。
-          </p>
-          <button type="button" class="mini" onclick={copySave}>📋 导出并复制存档</button>
-          {#if saveText}
-            <textarea class="io" readonly rows="3" value={saveText}></textarea>
-          {/if}
-          <textarea
-            class="io"
-            rows="3"
-            placeholder="粘贴存档文本（FFTP1:…）后点导入"
-            bind:value={importText}></textarea>
-          <div class="row">
-            <button type="button" class="mini" disabled={!importText.trim()} onclick={doImport}
-              >⬆ 导入并恢复</button
-            >
-            <button type="button" class="mini danger" onclick={doClear}
-              >{confirmClear ? '确认清空？' : '🗑 清空进度'}</button
+        <div class="cards">
+          <div class="card"><span class="k">总对局</span><span class="v">{totalPlays}</span></div>
+          <div class="card">
+            <span class="k">总收集点</span><span class="v">{totalCollected}</span>
+          </div>
+          <div class="card">
+            <span class="k">玩过的关卡</span><span class="v"
+              >{playedLevels}<i>/{LEVEL_DEFS.length}</i></span
             >
           </div>
-          {#if msg}
-            <p class="msg" class:bad={!msg.ok}>{msg.text}</p>
-          {/if}
+          <div class="card">
+            <span class="k">三星关卡</span><span class="v"
+              >{perfectLevels}<i>/{LEVEL_DEFS.length}</i></span
+            >
+          </div>
+          <div class="card">
+            <span class="k"><Icon name="crown" size={13} /> 完美全清</span><span class="v"
+              >{perfectClears}<i>/{LEVEL_DEFS.length}</i></span
+            >
+          </div>
+          <div class="card">
+            <span class="k"><Icon name="target" size={13} /> 精确解</span><span class="v"
+              >{exactClears}<i>/{LEVEL_DEFS.length}</i></span
+            >
+          </div>
         </div>
-      {/if}
-      <div class="list" class:hide={tab !== 'achv'}>
-        {#each achvGroups as g (g.id)}
-          <div class="ag-head">
-            <b>{g.name}</b>
-            <span class="ag-count">{g.got}/{g.total}</span>
-            <span class="ag-bar"
-              ><i style="width: {g.total ? (g.got / g.total) * 100 : 0}%"></i></span
-            >
-          </div>
-          {#each g.items as a (a.id)}
-            {@const got = !!engine.achievements[a.id]}
-            <div class="item" class:got>
-              <span class="icon"><Icon name={got ? 'trophy' : 'lock'} size={15} /></span>
-              <div class="txt">
-                <div class="nm">{a.name}</div>
-                <div class="desc">{a.desc}</div>
-                {#if !got}
-                  {@const p = progressOf(a.id)}
-                  {#if p}
-                    <div class="prog">
-                      <span class="prog-txt">{p.have} / {p.need} {UNIT_CN[p.unit] ?? p.unit}</span>
-                      <span class="prog-bar"
-                        ><i style="width: {Math.min(100, (p.have / p.need) * 100)}%"></i></span
-                      >
-                    </div>
-                  {/if}
-                {/if}
-              </div>
+        <div class="lvl-list">
+          {#each perLevel as l (l.id)}
+            <div class="lvl-row" class:dim={l.plays === 0}>
+              <span class="nm"
+                >{l.name}{#if l.perfect}<i class="badge"><Icon name="crown" size={11} /></i
+                  >{/if}{#if l.exact}<i class="badge"><Icon name="target" size={11} /></i
+                  >{/if}</span
+              >
+              <span class="st">{'★'.repeat(l.stars)}{'☆'.repeat(3 - l.stars)}</span>
+              {#if l.trend.length > 1}
+                <svg
+                  class="spark"
+                  viewBox="0 0 64 18"
+                  width="64"
+                  height="18"
+                  aria-label="{l.name} 成绩趋势"
+                >
+                  <polyline
+                    points={spark(l.trend)}
+                    fill="none"
+                    stroke="rgba(79,209,197,.7)"
+                    stroke-width="1.4"
+                  />
+                </svg>
+              {:else}
+                <span class="spark-empty"></span>
+              {/if}
+              <span class="meta">{l.plays} 局</span>
+              <span class="best">{l.best > 0 ? l.best : '—'}</span>
             </div>
           {/each}
-        {/each}
+        </div>
       </div>
+    {/if}
+    {#if tab === 'save'}
+      <div class="save">
+        <p class="desc">
+          进度保存在本机浏览器里。换设备或清理浏览器数据前，先导出备份。<br />
+          备份含：星级 / 最佳分 / 最快全清 / 完美与精确认证 / 每日成绩与连胜 / 成就与标记 / 解法存档 /
+          节奏记录 / 卡关次数 / 合成器草稿 / 音量音效音乐偏好。
+        </p>
+        <button type="button" class="mini" onclick={copySave}>📋 导出并复制存档</button>
+        {#if saveText}
+          <textarea class="io" readonly rows="3" value={saveText}></textarea>
+        {/if}
+        <textarea
+          class="io"
+          rows="3"
+          placeholder="粘贴存档文本（FFTP1:…）后点导入"
+          bind:value={importText}></textarea>
+        <div class="row">
+          <button type="button" class="mini" disabled={!importText.trim()} onclick={doImport}
+            >⬆ 导入并恢复</button
+          >
+          <button type="button" class="mini danger" onclick={doClear}
+            >{confirmClear ? '确认清空？' : '🗑 清空进度'}</button
+          >
+        </div>
+        {#if msg}
+          <p class="msg" class:bad={!msg.ok}>{msg.text}</p>
+        {/if}
+      </div>
+    {/if}
+    <div class="list" class:hide={tab !== 'achv'}>
+      {#each achvGroups as g (g.id)}
+        <div class="ag-head">
+          <b>{g.name}</b>
+          <span class="ag-count">{g.got}/{g.total}</span>
+          <span class="ag-bar"><i style="width: {g.total ? (g.got / g.total) * 100 : 0}%"></i></span
+          >
+        </div>
+        {#each g.items as a (a.id)}
+          {@const got = !!engine.achievements[a.id]}
+          <div class="item" class:got>
+            <span class="icon"><Icon name={got ? 'trophy' : 'lock'} size={15} /></span>
+            <div class="txt">
+              <div class="nm">{a.name}</div>
+              <div class="desc">{a.desc}</div>
+              {#if !got}
+                {@const p = progressOf(a.id)}
+                {#if p}
+                  <div class="prog">
+                    <span class="prog-txt">{p.have} / {p.need} {UNIT_CN[p.unit] ?? p.unit}</span>
+                    <span class="prog-bar"
+                      ><i style="width: {Math.min(100, (p.have / p.need) * 100)}%"></i></span
+                    >
+                  </div>
+                {/if}
+              {/if}
+            </div>
+          </div>
+        {/each}
+      {/each}
     </div>
+  </div>
 
   {#snippet footer()}
-    <div class="hint font-tabular">当前总星数 {totalStars} / {LEVEL_DEFS.length * 3}（随机关不计星）</div>
+    <div class="hint font-tabular">
+      当前总星数 {totalStars} / {LEVEL_DEFS.length * 3}（随机关不计星）
+    </div>
     <Button variant="primary" size="md" onclick={onclose}>关 闭</Button>
   {/snippet}
 </Modal>

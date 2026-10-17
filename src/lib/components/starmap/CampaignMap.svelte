@@ -144,7 +144,8 @@
               {#if !locked && st > 0}
                 <span class="stats font-tabular">
                   {#if engine.bestScores[def.id]}<b>{engine.bestScores[def.id]}</b>分{/if}
-                  {#if engine.bestClears[def.id]}<i>· {engine.bestClears[def.id].toFixed(1)}s</i>{/if}
+                  {#if engine.bestClears[def.id]}<i>· {engine.bestClears[def.id].toFixed(1)}s</i
+                    >{/if}
                 </span>
               {/if}
             </span>

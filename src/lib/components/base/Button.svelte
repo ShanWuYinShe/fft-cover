@@ -28,9 +28,7 @@
     children?: Snippet;
   } = $props();
 
-  const computedIconSize = $derived(
-    iconSize ?? (size === 'sm' ? 13 : size === 'lg' ? 18 : 15),
-  );
+  const computedIconSize = $derived(iconSize ?? (size === 'sm' ? 13 : size === 'lg' ? 18 : 15));
 </script>
 
 <button

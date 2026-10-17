@@ -75,7 +75,11 @@
     z-index: 0;
     overflow: hidden;
     background:
-      radial-gradient(ellipse 90% 80% at 50% 20%, rgba(13, 20, 36, 0.95) 0%, rgba(4, 6, 12, 1) 100%),
+      radial-gradient(
+        ellipse 90% 80% at 50% 20%,
+        rgba(13, 20, 36, 0.95) 0%,
+        rgba(4, 6, 12, 1) 100%
+      ),
       radial-gradient(circle at 80% 80%, rgba(245, 184, 65, 0.03) 0%, transparent 50%);
   }
   .armillary-meridian-ring {
@@ -225,10 +229,10 @@
     .arm-console-wing {
       max-width: 100%;
     }
-    main[data-tab="starmap"] .arm-console-wing {
+    main[data-tab='starmap'] .arm-console-wing {
       display: none;
     }
-    main[data-tab="arms"] .arm-console-wing {
+    main[data-tab='arms'] .arm-console-wing {
       display: block;
     }
     main.panel-hidden .arm-console-wing {

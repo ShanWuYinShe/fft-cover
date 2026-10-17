@@ -14,10 +14,7 @@
   } = $props();
 </script>
 
-<span
-  class="badge badge-{variant} badge-{size}"
-  class:chamfer
->
+<span class="badge badge-{variant} badge-{size}" class:chamfer>
   {#if children}
     {@render children()}
   {/if}

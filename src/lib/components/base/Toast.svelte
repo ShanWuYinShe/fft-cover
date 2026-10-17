@@ -33,14 +33,7 @@
     {/if}
   </span>
   {#if showClose && onclose}
-    <button
-      type="button"
-      class="toast-close"
-      onclick={onclose}
-      aria-label="关闭提示"
-    >
-      ✕
-    </button>
+    <button type="button" class="toast-close" onclick={onclose} aria-label="关闭提示"> ✕ </button>
   {/if}
 </div>
 

@@ -5,13 +5,9 @@
   import { levelGoals } from '../../game/goals';
   import { uiState } from '../../stores/uiState.svelte';
 
-  const totalStars = $derived(
-    LEVEL_DEFS.reduce((s, d) => s + (engine.bestStars[d.id] ?? 0), 0),
-  );
+  const totalStars = $derived(LEVEL_DEFS.reduce((s, d) => s + (engine.bestStars[d.id] ?? 0), 0));
   const maxStars = LEVEL_DEFS.length * 3;
-  const sealDone = $derived(
-    levelGoals(engine.levelGoalState).filter((x) => x.done).length,
-  );
+  const sealDone = $derived(levelGoals(engine.levelGoalState).filter((x) => x.done).length);
 </script>
 
 <header class="game-hud-bar">

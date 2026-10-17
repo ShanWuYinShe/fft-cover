@@ -4,9 +4,7 @@
   import { levelGoals } from '../../game/goals';
   import { uiState } from '../../stores/uiState.svelte';
 
-  const sealDone = $derived(
-    levelGoals(engine.levelGoalState).filter((x) => x.done).length,
-  );
+  const sealDone = $derived(levelGoals(engine.levelGoalState).filter((x) => x.done).length);
 
   /** 幽灵竞速差值文案：领先/落后上届多少点 */
   const ghostLabel = $derived.by(() => {
@@ -28,12 +26,7 @@
 </script>
 
 <div class="hud">
-  <button
-    type="button"
-    class="hud-lvl-badge"
-    title="切换关卡或打开星图"
-    onclick={onLevelClick}
-  >
+  <button type="button" class="hud-lvl-badge" title="切换关卡或打开星图" onclick={onLevelClick}>
     <span class="lvl-ico">
       {#if engine.endless}
         <Icon name="infinity" size={13} />

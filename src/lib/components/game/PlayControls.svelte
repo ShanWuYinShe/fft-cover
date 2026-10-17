@@ -22,19 +22,27 @@
       >
         🪄 {engine.autoSolve ? '拟合中…' : '自动拟合'}
       </button>
-      <button type="button" class="ctrl-btn" title="沙盒转速档位" onclick={() => engine.cycleSpeed()}>
+      <button
+        type="button"
+        class="ctrl-btn"
+        title="沙盒转速档位"
+        onclick={() => engine.cycleSpeed()}
+      >
         ⚡ {engine.speed}×
       </button>
-      <button type="button" class="ctrl-btn" onclick={() => engine.resetRun()}>
-        ⟲ 重置点
-      </button>
+      <button type="button" class="ctrl-btn" onclick={() => engine.resetRun()}> ⟲ 重置点 </button>
       <div class="aux-icon-group">
         <button
           type="button"
           class="icon-btn"
           class:music-off={audioController.volume === 0}
           title="音量（点击循环 全/半/静）"
-          aria-label={'音量：' + (audioController.volume === 1 ? '100%' : audioController.volume === 0.5 ? '50%' : '静音')}
+          aria-label={'音量：' +
+            (audioController.volume === 1
+              ? '100%'
+              : audioController.volume === 0.5
+                ? '50%'
+                : '静音')}
           onclick={() => audioController.cycleVolume()}
         >
           <Icon name={audioController.volIconName} size={16} />
@@ -74,11 +82,7 @@
   {:else}
     <div class="campaign-controls">
       {#if engine.phase === 'running' || engine.phase === 'paused'}
-        <button
-          type="button"
-          class="ctrl-btn danger ignition-btn brake"
-          onclick={stopRun}
-        >
+        <button type="button" class="ctrl-btn danger ignition-btn brake" onclick={stopRun}>
           <span class="btn-core-ring" aria-hidden="true"></span>
           <Icon name="stop" size={14} />
           <span class="bt-long font-celestial">⏹ 止 轨 结 算</span>
@@ -95,11 +99,7 @@
           ⏩ {engine.fastForward ? '2×' : '1×'}
         </button>
       {:else}
-        <button
-          type="button"
-          class="ctrl-btn primary ignition-btn ignite"
-          onclick={toggleRun}
-        >
+        <button type="button" class="ctrl-btn primary ignition-btn ignite" onclick={toggleRun}>
           <span class="btn-core-ring" aria-hidden="true"></span>
           <span class="ignite-spark" aria-hidden="true">✦</span>
           <span class="bt-long font-celestial">
@@ -182,9 +182,7 @@
           {
             label: '沙盒',
             icon: 'flask',
-            title: engine.endless
-              ? '无尽挑战中不能进沙盒'
-              : '无限时自由旋转',
+            title: engine.endless ? '无尽挑战中不能进沙盒' : '无限时自由旋转',
             disabled: engine.phase === 'running' || engine.phase === 'paused' || engine.endless,
             onclick: () => engine.enterSandbox(),
           },
@@ -199,7 +197,12 @@
           class="icon-btn"
           class:music-off={audioController.volume === 0}
           title="音量（点击循环 全/半/静）"
-          aria-label={'音量：' + (audioController.volume === 1 ? '100%' : audioController.volume === 0.5 ? '50%' : '静音')}
+          aria-label={'音量：' +
+            (audioController.volume === 1
+              ? '100%'
+              : audioController.volume === 0.5
+                ? '50%'
+                : '静音')}
           onclick={() => audioController.cycleVolume()}
         >
           <Icon name={audioController.volIconName} size={16} />

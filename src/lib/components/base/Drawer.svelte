@@ -30,12 +30,7 @@
 <svelte:window onkeydown={onKeydown} />
 
 {#if open}
-  <button
-    type="button"
-    class="drawer-backdrop"
-    aria-label="收起抽屉"
-    onclick={onclose}
-  ></button>
+  <button type="button" class="drawer-backdrop" aria-label="收起抽屉" onclick={onclose}></button>
 {/if}
 
 <aside
@@ -56,13 +51,7 @@
         </h2>
       {/if}
       {#if showClose && onclose}
-        <button
-          type="button"
-          class="drawer-close"
-          title="收起"
-          aria-label="收起"
-          onclick={onclose}
-        >
+        <button type="button" class="drawer-close" title="收起" aria-label="收起" onclick={onclose}>
           ✕
         </button>
       {/if}

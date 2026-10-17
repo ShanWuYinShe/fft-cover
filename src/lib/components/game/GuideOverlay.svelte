@@ -33,7 +33,8 @@
       <b><Icon name="check" size={13} /> 很好！</b>
       现在点「开始旋转」，指针尖端扫过金色点即可收集
     {:else}
-      <b>第 1 步</b>：把 ① 的半径调到 <b>120</b>（当前 {engine.arms[0]?.r}）——金色虚线是目标，紫色是你的轨迹
+      <b>第 1 步</b>：把 ① 的半径调到 <b>120</b>（当前 {engine.arms[0]
+        ?.r}）——金色虚线是目标，紫色是你的轨迹
     {/if}
   </div>
 {:else if engine.showEllipseGuide && engine.phase === 'edit'}

@@ -12,8 +12,8 @@ description: fft_cover UI 审查的「截图→Gemini 网页评审」工作流�
 
 1. 截图:agent-browser 独立 headless 会话(默认安全路径),覆盖
    桌面 1440×900(标题/主界面/底部/设置/成就)+ 移动 390×844(主界面/指针面板)
-   + 暂停菜单/结算卡(需真跑一局:频率下拉调 10x 加速,「停止结算」可提前出结算卡)。
-   落 .workwork/ui-audit/。
+   - 暂停菜单/结算卡(需真跑一局:频率下拉调 10x 加速,「停止结算」可提前出结算卡)。
+     落 .workwork/ui-audit/。
 2. 评审:直连用户日常 Chrome CDP(DevToolsActivePort 读 WS 端点),
    `Input.dispatchDragEvent` 拖图进 Gemini composer → `Input.insertText` 提示词
    → 点发送 → 轮询响应。工具脚本 `.workwork/ui-audit/gemini.mjs`。
@@ -27,6 +27,7 @@ ws-retry.mjs(单次 6 连发)当「探测」跨多轮反复执行,累计数十�
 面对一堆 Chrome 弹窗,被严厉批评。
 
 规则:
+
 1. **连接失败一次即停**:第一次握手失败就永久停止本轮所有 CDP 尝试,把「等用户
    重启 Chrome / 用户在场时再试」写进交接说明,绝不写重试循环、不跨轮反复探测。
 2. **重试上限 = 1 次/会话**(仅当有明确证据表明环境已变化,如 DevToolsActivePort
@@ -48,10 +49,12 @@ ws-retry.mjs(单次 6 连发)当「探测」跨多轮反复执行,累计数十�
 晚从 /tmp 迁入:/tmp 重启清空,不适合持久登录态;项目根在工作区内,Chrome 运行时
 写入畅行、持久、同项目全会话可达;gitignore 已覆盖。迁移实测零数据损失)。全部 Chrome 自动化
 (截图/e2e/Gemini headless)统一用:
+
 ```bash
 --session auto --profile /Users/liyou/work/fft_cover/.agent-profile   # 每条命令都带,缺了会落到别的 profile
 # 受限会话对该命令申请 danger-full-access(2026-10-14 晚起提权原生启动,不注入 --no-sandbox)
 ```
+
 - localStorage 跨浏览器重启持久(实测:写→close→重开→读回,含中文值)
 - Gemini 登录态:首次有头登录一次后持久;headless 下可正常操作(实测未登录
   可达 composer,登录后全功能)
@@ -78,12 +81,13 @@ screenshot×2、status)全部成功、零间隔限制——对比短进程方案
 **跨进程/跨会话复用(2026-10-14 晚实测)**:unix socket 是系统级 IPC,daemon 不绑定
 任何 DSH 会话。已实测:跨工作目录(绝对路径调用)、3 客户端并发(同时 eval+截图)
 全部成功。其他会话接入方式:
+
 1. `node /Users/liyou/work/fft_cover/.workwork/ui-audit/gemini-daemon.mjs where` — 查路径与运行态
 2. `... call '{"type":"eval",...}'` — 直接复用,零握手
 3. socket 不存在时 `start` — 幂等;未运行才会产生本会话的一次握手(预算独立计算)
-边界:连接请求预算按「会话」算,daemon 本身跨会话共享——谁先 start 谁付一次握手,
-之后所有会话零成本;对方沙盒若禁访问本路径,只能其自行 start。会话结束不影响 daemon
-(独立进程,空闲自退)。
+   边界:连接请求预算按「会话」算,daemon 本身跨会话共享——谁先 start 谁付一次握手,
+   之后所有会话零成本;对方沙盒若禁访问本路径,只能其自行 start。会话结束不影响 daemon
+   (独立进程,空闲自退)。
 
 生命周期:30 分钟空闲自动退出;Chrome 重启导致 WS 断开时自动退出并清 socket;
 start 幂等(活 daemon 直接复用;死 socket 自动清理)。daemonFail 独立于 review 闸。
@@ -91,12 +95,13 @@ start 幂等(活 daemon 直接复用;死 socket 自动清理)。daemonFail 独�
 ## 机制化(2026-10-14 晚,用户验收标准:一次会话最多一次连接请求)
 
 光靠纪律不够,必须机制保证——gemini.mjs 已重写为「单连接流水线」:
+
 1. **失败硬闸**:连接失败写 .workwork/ui-audit/cdp-state.json(result:fail),
    后续调用直接拒绝(exit 2),机制上不可能重试轰炸;删状态文件 = 显式重置。
 2. **结果复用**:响应文件已存在且完整 → 直接退出不重发。
 3. **单命令全流程**:连接→拖图→提示词→发送→轮询→存文本→截图→断开,
    一次执行完成所有步骤,整个进程只握手一次。
-验证方法(无副作用):写入 fail 状态跑 review 应 exit 2;造大结果文件应 exit 0 复用。
+   验证方法(无副作用):写入 fail 状态跑 review 应 exit 2;造大结果文件应 exit 0 复用。
 
 ## 已踩坑(不要再踩)
 
@@ -112,11 +117,11 @@ start 幂等(活 daemon 直接复用;死 socket 自动清理)。daemonFail 独�
 - 弹窗红线依旧:不 kill 用户 Chrome、不重启 Chrome、不反复重连(每次重连=弹窗风险)。
 - 备选等恢复:用户 Chrome 重启后 DevToolsActivePort 更新,WS 即恢复。
 
-
 ## 最终架构:常驻无头 Chrome + home profile(2026-10-14 深夜定案)
 
 经用户确认「profile 放用户目录」:特权启动一次常驻无头 Chrome
 (profile=~/.agent-browser/profiles/auto,调试端口 9223,detach 常驻)。
+
 - 复用:任何会话/项目经 agent-browser --cdp 9223 直连(独立实例 HTTP 端点
   正常,无日常 Chrome 的 404 限制),零弹窗。
 - 持久:localStorage 跨命令持久(实测写读一致),profile 落盘 home。
@@ -130,14 +135,17 @@ start 幂等(活 daemon 直接复用;死 socket 自动清理)。daemonFail 独�
 (profiles/main)已在运行时,用 lsof 找到它的监听端口后 Node 内置
 WebSocket 直连,不再需要 agent-browser(提权审批无人时应答会挂起到
 超时,本轮改为直连后全流程顺畅):
+
 ```bash
 lsof -iTCP -sTCP:LISTEN -nP | grep Google   # 找候选 pid
 lsof -p <pid> | grep -oE '[.]agent-browser/profiles/[a-z]+'  # 确认是 owner(非日常 Chrome)
 ```
+
 连上后 Target.getTargets 能看到 owner 内持久的 Gemini 登录态 tab。
 只动自建/既有的 Gemini tab,不碰用户日常 Chrome(9222 绝对禁区)。
 
 **Gemini 网页四坑(全部本轮实测,别再踩)**:
+
 1. **Page.navigate 会使本 CDP session 的 Input 域失效**——导航后
    dispatchMouseEvent/KeyEvent 全部石沉大海(实测连点 10 次无效),
    页面「陈化」后才恢复。开新对话改点侧栏「发起新对话」按钮,全程

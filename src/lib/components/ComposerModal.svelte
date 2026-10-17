@@ -320,9 +320,7 @@
     <Button variant="primary" size="md" disabled={activeCount === 0} onclick={play}>
       🎮 生成并游玩
     </Button>
-    <Button variant="outline" size="md" onclick={onclose}>
-      关 闭
-    </Button>
+    <Button variant="outline" size="md" onclick={onclose}>关 闭</Button>
   {/snippet}
 </Modal>
 

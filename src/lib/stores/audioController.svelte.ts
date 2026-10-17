@@ -3,19 +3,9 @@
  */
 
 import { engine } from '../game/engine.svelte';
-import {
-  setVolume as setAudioVolume,
-  initVolumeFromStorage,
-  uiClick,
-} from '../game/audio';
-import {
-  musicIntensity,
-} from '../game/harmony';
-import {
-  startMusic,
-  updateMusic,
-  setMusicSuspended,
-} from '../game/music';
+import { setVolume as setAudioVolume, initVolumeFromStorage, uiClick } from '../game/audio';
+import { musicIntensity } from '../game/harmony';
+import { startMusic, updateMusic, setMusicSuspended } from '../game/music';
 
 class AudioController {
   volume = $state(initVolumeFromStorage());
@@ -30,11 +20,7 @@ class AudioController {
 
   /** 音量图标名 */
   get volIconName(): string {
-    return this.volume === 1
-      ? 'volume-high'
-      : this.volume === 0.5
-        ? 'volume-low'
-        : 'volume-mute';
+    return this.volume === 1 ? 'volume-high' : this.volume === 0.5 ? 'volume-low' : 'volume-mute';
   }
 
   /** 背景音乐声部与动态强度同步 */

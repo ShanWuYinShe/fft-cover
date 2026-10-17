@@ -61,15 +61,9 @@
       <Icon name="bulb" size={13} /> 最该调：{pauseGaps}
     </p>
   {/if}
-  <button type="button" class="pm-btn primary" onclick={resume}>
-    ▶ 继续旋转
-  </button>
-  <button type="button" class="pm-btn" onclick={backToEdit}>
-    ⟲ 回到调参
-  </button>
-  <button type="button" class="pm-btn" onclick={restart}>
-    ↻ 重新开始
-  </button>
+  <button type="button" class="pm-btn primary" onclick={resume}> ▶ 继续旋转 </button>
+  <button type="button" class="pm-btn" onclick={backToEdit}> ⟲ 回到调参 </button>
+  <button type="button" class="pm-btn" onclick={restart}> ↻ 重新开始 </button>
 </div>
 
 <style>

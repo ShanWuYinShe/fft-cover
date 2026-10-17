@@ -27,25 +27,13 @@
 
   {#if !engine.sandbox && engine.level}
     <div class="crown-star-sockets" title="本关星级进度（收集 35% / 65% / 90%）">
-      <div
-        class="star-gem-socket"
-        class:lit={curStars >= 1}
-        class:active={engine.starReached >= 1}
-      >
+      <div class="star-gem-socket" class:lit={curStars >= 1} class:active={engine.starReached >= 1}>
         <span class="gem-star">★</span>
       </div>
-      <div
-        class="star-gem-socket"
-        class:lit={curStars >= 2}
-        class:active={engine.starReached >= 2}
-      >
+      <div class="star-gem-socket" class:lit={curStars >= 2} class:active={engine.starReached >= 2}>
         <span class="gem-star">★</span>
       </div>
-      <div
-        class="star-gem-socket"
-        class:lit={curStars >= 3}
-        class:active={engine.starReached >= 3}
-      >
+      <div class="star-gem-socket" class:lit={curStars >= 3} class:active={engine.starReached >= 3}>
         <span class="gem-star">★</span>
       </div>
     </div>
