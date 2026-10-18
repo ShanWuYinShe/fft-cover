@@ -58,7 +58,7 @@
       {/if}
       {#if showClose && onclose}
         <button type="button" class="drawer-close" title="收起" aria-label="收起" onclick={onclose}>
-          <Icon name="close" size={16} />
+          <Icon name="close" size={15} />
         </button>
       {/if}
     </div>
@@ -160,7 +160,7 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: 14px var(--space-4) 12px;
+    padding: 12px var(--space-3) 10px;
     border-bottom: 1px solid var(--edge-faint);
     flex-shrink: 0;
     position: relative;
@@ -176,18 +176,18 @@
     line-height: 1.3;
   }
 
-  /* 收起键：静息无描边，悬停显形（热区 44） */
+  /* 收起键：桌面 30×30（触屏 42），静息无描边，悬停显形 */
   .drawer-close {
     appearance: none;
     flex: none;
-    width: 44px;
-    height: 44px;
+    width: var(--ctl-md);
+    height: var(--ctl-md);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     color: var(--muted);
-    border-radius: 8px;
+    border-radius: var(--ctl-radius);
     border: 1px solid transparent;
     background: transparent;
     transition:
@@ -204,7 +204,7 @@
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: var(--space-4);
+    padding: var(--space-3);
     scrollbar-width: thin;
     scrollbar-color: rgba(245, 184, 65, 0.35) transparent;
     position: relative;

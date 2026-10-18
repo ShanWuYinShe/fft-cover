@@ -550,7 +550,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    padding: 12px 16px 10px;
+    padding: 10px 14px 8px;
     border-bottom: 1px solid var(--edge-faint);
     border-radius: 10px 10px 0 0;
     position: relative;
@@ -569,10 +569,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     min-height: 0;
     overflow-y: auto;
-    padding: 16px 18px 12px;
+    padding: 12px 16px 10px;
     text-align: center;
   }
 
@@ -726,10 +726,12 @@
     flex-wrap: wrap;
     gap: 8px;
     width: 100%;
+    /* 触屏命中区 ≥40（桌面 30） */
+    min-height: var(--ctl-md);
     margin-top: 2px;
-    padding: 10px 2px;
+    padding: 8px 2px;
     font: inherit;
-    font-size: var(--fs-sm);
+    font-size: var(--ctl-font-sm);
     color: var(--muted);
     text-align: left;
     background: none;
@@ -768,7 +770,7 @@
     display: flex;
     gap: 8px;
     width: 100%;
-    padding: 12px 14px 14px;
+    padding: 10px 14px 12px;
     box-sizing: border-box;
     flex: 0 0 auto;
     border-top: 1px solid var(--edge-faint);
@@ -781,12 +783,12 @@
   }
   /* ⋯ 菜单与主按钮等高（MoreMenu 是子组件，需 :global） */
   .btns :global(.mm) {
-    flex: 0 0 48px;
+    flex: 0 0 var(--ctl-lg);
   }
   .btns :global(.mm-btn) {
     width: 100%;
     height: 100%;
-    min-height: 52px;
+    min-height: var(--ctl-lg);
   }
 
   /* 矮屏（手机横屏 ~390px 高）：压缩密度 */

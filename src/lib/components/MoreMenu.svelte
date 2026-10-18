@@ -126,10 +126,11 @@
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    min-width: 44px;
-    min-height: 44px;
-    padding: 0 10px;
-    border-radius: 10px;
+    /* 桌面 30 / 触屏 42 */
+    min-width: var(--ctl-md);
+    min-height: var(--ctl-md);
+    padding: 0 6px;
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-soft);
     background: #111a2c;
     color: var(--muted);
@@ -195,15 +196,15 @@
     top: calc(100% + 8px);
     right: 0;
     z-index: 30;
-    min-width: 196px;
+    min-width: 180px;
     max-width: min(300px, 86vw);
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 6px;
+    gap: 1px;
+    padding: 4px;
     background: #0d1626;
     border: 1px solid var(--edge-soft);
-    border-radius: 10px;
+    border-radius: var(--ctl-radius);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     animation: mm-in 180ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
     max-height: calc(100dvh - 40px);
@@ -228,17 +229,18 @@
   .mm-pop .mm-item {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     width: 100%;
-    min-height: 44px;
-    padding: 8px 12px;
+    /* 桌面 34 / 触屏 44（触屏仍满足 ≥40 命中区） */
+    min-height: 34px;
+    padding: 4px 10px;
     text-align: left;
-    border-radius: 8px;
+    border-radius: var(--ctl-radius);
     border: 1px solid transparent;
     background: transparent;
     color: var(--text);
     font: inherit;
-    font-size: var(--fs-md);
+    font-size: var(--ctl-font);
     font-weight: 600;
     letter-spacing: 0.5px;
     white-space: nowrap;
@@ -291,12 +293,18 @@
   }
 
   /* 图标只做形状，不再套一格描边方槽 */
+  /* 图标尺寸随控件收（令牌驱动，触屏自动放大） */
+  .mm-pop .mi :global(svg) {
+    width: var(--ctl-icon-sm);
+    height: var(--ctl-icon-sm);
+  }
+
   .mm-pop .mi {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    width: 22px;
+    width: 20px;
     color: var(--muted);
     transition: color 0.12s ease;
   }
@@ -311,12 +319,10 @@
     cursor: default;
   }
 
-  /* 移动端不再缩成小胶囊：仍是 ≥40px 的机箱按键 */
-  @media (max-width: 640px) {
-    .mm-btn {
-      min-width: 40px;
-      min-height: 40px;
-      padding: 0 8px;
+  /* 触屏档位由 pointer: coarse 令牌决定，菜单项补到 44px */
+  @media (pointer: coarse) {
+    .mm-pop .mm-item {
+      min-height: 44px;
     }
   }
 

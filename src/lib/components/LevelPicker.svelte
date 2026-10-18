@@ -142,7 +142,7 @@
     justify-content: space-between;
     gap: 8px;
     flex-wrap: wrap;
-    padding: 0 0 10px;
+    padding: 0 0 8px;
     border-bottom: 1px solid var(--edge-faint);
   }
   .picker-title {
@@ -222,8 +222,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    /* 摘要也是可点热区：给足 44px */
-    min-height: 44px;
+    /* 摘要也是可点热区：走统一控件高度 */
+    min-height: var(--ctl-md);
     padding: 0 2px;
     cursor: pointer;
     font-size: var(--fs-sm);
@@ -258,7 +258,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    min-height: 44px;
+    min-height: var(--ctl-md);
     padding: 0 2px;
     cursor: pointer;
     font-size: var(--fs-sm);

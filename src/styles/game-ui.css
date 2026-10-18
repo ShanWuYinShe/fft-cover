@@ -91,25 +91,24 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 18px;
-  border-radius: 10px;
+  gap: 6px;
+  min-height: var(--ctl-md);
+  padding: 0 12px;
+  border-radius: var(--ctl-radius);
   border: 1px solid var(--edge);
   background: var(--face-metal);
   color: var(--text);
   font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--ctl-font);
+  font-weight: 600;
   letter-spacing: 1px;
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
   box-shadow:
     var(--bevel-top),
-    var(--bevel-bottom),
-    0 4px 0 rgba(0, 0, 0, 0.55),
-    0 8px 18px rgba(0, 0, 0, 0.45);
+    0 2px 0 rgba(0, 0, 0, 0.55),
+    0 4px 10px rgba(0, 0, 0, 0.35);
   transition:
     transform 0.09s ease,
     box-shadow 0.12s ease,
@@ -125,12 +124,11 @@
   color: var(--gold-bright);
   box-shadow:
     var(--bevel-top),
-    var(--bevel-bottom),
-    0 4px 0 rgba(0, 0, 0, 0.55),
-    0 10px 22px rgba(0, 0, 0, 0.5);
+    0 2px 0 rgba(0, 0, 0, 0.55),
+    0 6px 14px rgba(0, 0, 0, 0.4);
 }
 .g-btn:active:not(:disabled) {
-  transform: translateY(3px);
+  transform: translateY(2px);
   box-shadow:
     var(--bevel-top),
     inset 0 2px 8px rgba(0, 0, 0, 0.7),
@@ -149,9 +147,9 @@
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
   box-shadow:
     var(--bevel-top),
-    inset 0 -3px 0 rgba(140, 80, 0, 0.55),
-    0 4px 0 #7a4d05,
-    0 10px 26px rgba(245, 184, 65, 0.35);
+    inset 0 -2px 0 rgba(140, 80, 0, 0.5),
+    0 2px 0 #7a4d05,
+    0 6px 16px rgba(245, 184, 65, 0.28);
 }
 .g-btn--primary:hover:not(:disabled) {
   background: var(--face-gold-hover);
@@ -159,10 +157,9 @@
   color: #120a00;
   box-shadow:
     var(--bevel-top),
-    inset 0 -3px 0 rgba(140, 80, 0, 0.5),
-    0 4px 0 #7a4d05,
-    0 12px 34px rgba(255, 209, 102, 0.5),
-    0 0 26px rgba(245, 184, 65, 0.5);
+    inset 0 -2px 0 rgba(140, 80, 0, 0.5),
+    0 2px 0 #7a4d05,
+    0 8px 20px rgba(255, 209, 102, 0.35);
 }
 
 .g-btn--danger {
@@ -203,19 +200,19 @@
 }
 
 .g-btn--icon {
-  width: 44px;
-  min-width: 44px;
-  height: 44px;
+  width: var(--ctl-md);
+  min-width: var(--ctl-md);
+  height: var(--ctl-md);
   padding: 0;
-  border-radius: 10px;
+  border-radius: var(--ctl-radius);
 }
 
 .g-btn--lg {
-  min-height: 52px;
-  padding: 0 30px;
-  font-size: 17px;
-  letter-spacing: 3px;
-  border-radius: 12px;
+  min-height: var(--ctl-lg);
+  padding: 0 22px;
+  font-size: calc(var(--ctl-font) + 2px);
+  letter-spacing: 2px;
+  border-radius: var(--ctl-radius-lg);
 }
 
 /* ---------- 缎带：关卡名/章节标题 ---------- */

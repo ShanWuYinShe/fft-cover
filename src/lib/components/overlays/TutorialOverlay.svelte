@@ -45,11 +45,11 @@
   .tut-box {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
     width: 100%;
     max-width: 400px;
     box-sizing: border-box;
-    padding: 22px 24px 20px;
+    padding: 18px 20px 16px;
     background: #0c1424;
     border: 1px solid var(--edge-soft);
     border-radius: 12px;
@@ -83,14 +83,14 @@
     margin: 0;
     padding-left: 1.5em;
     color: var(--text);
-    font-size: var(--fs-md);
-    line-height: 1.7;
+    font-size: var(--ctl-font);
+    line-height: 1.55;
     list-style: decimal;
   }
 
   /* 三步逐条淡入：60ms 错峰 */
   .tut-list li {
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     animation: tut-step-in 240ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
 
@@ -130,10 +130,11 @@
   /* 唯一的主操作：整行金色按钮（尺寸/按压反馈来自全局 .g-btn） */
   .tut-box .tut-start-btn {
     width: 100%;
-    min-height: 48px;
-    margin-top: 4px;
-    font-size: var(--fs-lg);
-    letter-spacing: 4px;
+    /* 主操作档：桌面 40 / 触屏 46 */
+    min-height: var(--ctl-lg);
+    margin-top: 2px;
+    font-size: calc(var(--ctl-font) + 2px);
+    letter-spacing: 1.5px;
     /* 主按钮最后落位 */
     animation: tut-step-in 240ms cubic-bezier(0.16, 1, 0.3, 1) 340ms backwards;
   }
@@ -148,8 +149,8 @@
     }
 
     .tut-list {
-      font-size: var(--fs-sm);
-      line-height: 1.6;
+      font-size: var(--ctl-font-sm);
+      line-height: 1.55;
     }
   }
 

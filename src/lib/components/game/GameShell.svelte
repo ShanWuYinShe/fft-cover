@@ -141,14 +141,14 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    padding: 12px 14px;
+    padding: 8px 12px;
     background: transparent;
     border-bottom: 1px solid var(--edge-faint);
   }
 
   .dock-title {
     margin: 0;
-    font-size: 15px;
+    font-size: 14px;
     color: var(--text);
     letter-spacing: 1px;
     font-weight: 700;
@@ -156,7 +156,7 @@
   }
 
   .dock-count {
-    font-size: 12px;
+    font-size: var(--ctl-font-sm);
     color: var(--muted);
     font-weight: 600;
   }
@@ -167,7 +167,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior: contain;
-    padding: 10px 12px 12px;
+    padding: 8px 10px 10px;
     scrollbar-width: thin;
     scrollbar-color: rgba(245, 184, 65, 0.35) transparent;
     -webkit-overflow-scrolling: touch;
@@ -205,14 +205,9 @@
     .gs-stage {
       padding: 6px 12px 0;
     }
-    /* 机坞按内容高度自适应：内容少就不留空场，多了才内部滚动 */
     .gs-dock {
-      max-height: 46dvh;
       border-left: none;
       border-top: 1px solid var(--edge-soft);
-    }
-    .game-screen.panel-expanded .gs-dock {
-      max-height: 68dvh;
     }
     .gs-dock::before {
       display: none;
@@ -223,7 +218,8 @@
   @media (max-width: 640px) and (orientation: portrait) {
     .game-screen {
       grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: minmax(0, 1fr) auto auto auto;
+      /* 舞台按内容取高（画布不被压扁），机坞吃掉剩余高度并内部滚动 */
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
       grid-template-areas:
         'stage'
         'dock'
@@ -250,14 +246,10 @@
       background: linear-gradient(180deg, rgba(10, 15, 27, 0.92), rgba(5, 8, 15, 0.98));
     }
 
-    /* 机坞按内容高度自适应：内容少就不留空场，多了才内部滚动 */
+    /* 机坞吃掉剩余高度，内部滚动（高度由 grid 行决定，不再写 max-height） */
     .gs-dock {
-      max-height: 46dvh;
       border-left: none;
       border-top: 1px solid var(--edge-soft);
-    }
-    .game-screen.panel-expanded .gs-dock {
-      max-height: 68dvh;
     }
     .gs-dock::before {
       display: none;
@@ -273,6 +265,14 @@
 
     .dock-body {
       padding: 8px 10px 12px;
+    }
+
+    /* 展开态：面板独占整屏（否则画布会被压扁、引导条会压住面板控件） */
+    .game-screen.panel-expanded {
+      grid-template-rows: 0 minmax(0, 1fr) auto auto;
+    }
+    .game-screen.panel-expanded .gs-stage {
+      display: none;
     }
 
     /* 运行中：机坞让位给画布（保留指令栏与底部导航操作） */

@@ -641,7 +641,7 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: 6px 0 2px;
+    padding: 4px 0 2px;
     min-width: 0;
   }
   .param-head {
@@ -651,7 +651,7 @@
     gap: 8px;
   }
   .param-name {
-    font-size: 13px;
+    font-size: var(--ctl-font);
     font-weight: 700;
     letter-spacing: 1px;
     color: var(--text);
@@ -666,12 +666,14 @@
   .val-btn {
     display: inline-flex;
     align-items: baseline;
+    position: relative;
     gap: 2px;
-    min-height: 32px;
-    padding: 0 4px;
-    border-radius: 6px;
+    min-height: var(--ctl-md);
+    padding: 0 10px;
+    border-radius: var(--ctl-radius);
     background: transparent;
     border: 1px solid transparent;
+    font-size: var(--ctl-font-sm);
     cursor: text;
     transition:
       transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -685,7 +687,7 @@
     border-color: var(--edge-soft);
   }
   .param-value .val-num {
-    font-size: 26px;
+    font-size: 16px;
     line-height: 1.1;
     font-family: 'JetBrains Mono', monospace;
     color: var(--gold-bright);
@@ -707,19 +709,19 @@
   }
   .val-unit {
     font-style: normal;
-    font-size: 12px;
+    font-size: var(--ctl-font-sm);
     color: var(--muted);
   }
   .num-input {
-    width: 78px;
-    height: 40px;
+    width: 64px;
+    height: var(--ctl-md);
     padding: 0;
     background: var(--metal-deep);
     border: 1px solid var(--edge);
-    border-radius: 6px;
+    border-radius: var(--ctl-radius);
     color: var(--gold-bright);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 20px;
+    font-size: var(--ctl-font);
     text-align: center;
     outline: none;
     appearance: textfield;
@@ -734,7 +736,7 @@
   .freq-row {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     min-width: 0;
   }
   .freq-row .range-wrap {
@@ -746,15 +748,15 @@
   .dir-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     flex: 0 0 auto;
-    min-height: 40px;
-    padding: 0 12px;
-    border-radius: 8px;
+    min-height: var(--ctl-md);
+    padding: 0 10px;
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-soft);
     background: linear-gradient(180deg, #1a2438 0%, #0d1424 100%);
     color: var(--cyan);
-    font-size: 12px;
+    font-size: var(--ctl-font-sm);
     font-weight: 700;
     letter-spacing: 0.5px;
     white-space: nowrap;
@@ -789,14 +791,14 @@
     display: block;
     width: 100%;
     min-width: 0;
-    height: 40px;
+    height: 26px;
   }
   .range-track {
     position: absolute;
     top: 50%;
     left: 0;
     right: 0;
-    height: 8px;
+    height: 6px;
     transform: translateY(-50%);
     border-radius: 4px;
     border: 1px solid var(--edge-faint);
@@ -828,17 +830,17 @@
     touch-action: pan-y;
   }
   .c-range::-webkit-slider-runnable-track {
-    height: 8px;
+    height: 6px;
     background: transparent;
     border: none;
   }
   .c-range::-webkit-slider-thumb {
     appearance: none;
     -webkit-appearance: none;
-    width: 22px;
-    height: 22px;
-    margin-top: -8px;
-    border-radius: 7px;
+    width: 14px;
+    height: 14px;
+    margin-top: -4px;
+    border-radius: var(--ctl-radius);
     border: 1px solid #ffe7a3;
     background: linear-gradient(180deg, #ffe7a3 0%, #f7c250 50%, #d69214 100%);
     box-shadow:
@@ -864,18 +866,18 @@
     animation: thumb-bump 200ms ease-out;
   }
   .c-range::-moz-range-track {
-    height: 8px;
+    height: 6px;
     background: transparent;
     border: none;
   }
   .c-range::-moz-range-progress {
-    height: 8px;
+    height: 6px;
     background: transparent;
   }
   .c-range::-moz-range-thumb {
-    width: 22px;
-    height: 22px;
-    border-radius: 7px;
+    width: 14px;
+    height: 14px;
+    border-radius: var(--ctl-radius);
     border: 1px solid #ffe7a3;
     background: linear-gradient(180deg, #ffe7a3 0%, #f7c250 50%, #d69214 100%);
     box-shadow:
@@ -940,10 +942,38 @@
 
   /* 触屏：读数热区抬到 ≥44 */
   @media (pointer: coarse), (max-width: 640px) {
+    /* 读数键：触屏给足命中区（宽高都 ≥ --ctl-md=42） */
     .val-btn {
-      min-width: 44px;
-      min-height: 44px;
+      min-width: var(--ctl-md);
+      min-height: var(--ctl-md);
       justify-content: flex-end;
+    }
+    .param-value .val-num {
+      font-size: 17px;
+    }
+    /* 滑杆：视觉行高 34，输入层外扩到 40px 命中区（不靠放大视觉） */
+    .range-wrap {
+      height: 34px;
+    }
+    .range-track,
+    .c-range::-webkit-slider-runnable-track,
+    .c-range::-moz-range-track,
+    .c-range::-moz-range-progress {
+      height: 8px;
+    }
+    .c-range {
+      top: 50%;
+      height: 40px;
+      transform: translateY(-50%);
+    }
+    .c-range::-webkit-slider-thumb {
+      width: 22px;
+      height: 22px;
+      margin-top: -7px;
+    }
+    .c-range::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
     }
   }
 
@@ -956,12 +986,12 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    min-height: 44px;
+    min-height: var(--ctl-md);
     padding: 0 2px;
     border-top: 1px solid var(--edge-faint);
     list-style: none;
     cursor: pointer;
-    font-size: 13px;
+    font-size: var(--ctl-font);
     font-weight: 700;
     letter-spacing: 1px;
     color: var(--muted);
@@ -990,7 +1020,7 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    padding: 4px 0 2px;
+    padding: 3px 0 2px;
     min-width: 0;
   }
   .adv-head {
@@ -998,7 +1028,7 @@
     align-items: baseline;
     justify-content: space-between;
     gap: 8px;
-    font-size: 12px;
+    font-size: var(--ctl-font-sm);
     color: var(--muted);
     letter-spacing: 0.5px;
   }
@@ -1011,14 +1041,14 @@
   /* 罗盘 */
   .compass-row {
     display: grid;
-    grid-template-columns: 116px minmax(0, 1fr);
-    gap: 10px;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 8px;
     align-items: center;
   }
   .compass-wrap {
     position: relative;
-    width: 116px;
-    height: 116px;
+    width: 96px;
+    height: 96px;
     user-select: none;
     touch-action: none;
   }
@@ -1089,14 +1119,15 @@
     gap: 6px;
   }
   .snap-key {
-    min-height: 40px;
+    min-height: var(--ctl-md);
     padding: 0;
-    border-radius: 8px;
+    text-align: center;
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-soft);
     background: linear-gradient(180deg, #1a2438 0%, #0d1424 100%);
     color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
+    font-size: var(--ctl-font-sm);
     font-weight: 700;
     cursor: pointer;
     box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
@@ -1126,9 +1157,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 44px;
-    min-height: 44px;
-    border-radius: 8px;
+    min-width: var(--ctl-md);
+    min-height: var(--ctl-md);
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-soft);
     background: linear-gradient(180deg, #1a2438 0%, #0d1424 100%);
     color: var(--text);
@@ -1156,8 +1187,8 @@
     position: relative;
     flex: 1 1 auto;
     min-width: 0;
-    height: 40px;
-    border-radius: 6px;
+    height: 26px;
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-faint);
     background: rgba(4, 7, 14, 0.7);
     overflow: hidden;
@@ -1184,8 +1215,8 @@
   .ruler-scale {
     display: flex;
     justify-content: space-between;
-    padding: 0 54px;
-    font-size: 12px;
+    padding: 0 38px;
+    font-size: var(--ctl-font-sm);
     color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
   }
@@ -1197,15 +1228,17 @@
     gap: 6px;
   }
   .gear-key {
-    min-height: 44px;
+    min-height: var(--ctl-md);
     padding: 0;
-    border-radius: 8px;
+    text-align: center;
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-soft);
     background: linear-gradient(180deg, #1a2438 0%, #0d1424 100%);
     color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
+    font-size: var(--ctl-font-sm);
     font-weight: 700;
+    letter-spacing: 0.5px;
     cursor: pointer;
     box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
     transition:
@@ -1258,13 +1291,13 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    min-height: 44px;
-    padding: 0 12px;
-    border-radius: 8px;
+    min-height: var(--ctl-md);
+    padding: 0 10px;
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-soft);
     background: linear-gradient(180deg, #1a2438 0%, #0d1424 100%);
     color: var(--muted);
-    font-size: 12px;
+    font-size: var(--ctl-font-sm);
     font-weight: 700;
     letter-spacing: 0.5px;
     white-space: nowrap;

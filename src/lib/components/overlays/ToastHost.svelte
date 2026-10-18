@@ -65,12 +65,12 @@
     align-items: center;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 12px;
+    gap: 10px;
     max-width: min(92vw, 460px);
-    padding: 8px 12px;
+    padding: 5px 10px;
     background: #0d1626;
     border: 1px solid var(--edge-soft);
-    border-radius: 8px;
+    border-radius: var(--ctl-radius);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     /* 与提示条同一套滑入节奏：-12px → 0，240ms */
     animation: pwa-in 240ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
@@ -88,7 +88,7 @@
   }
 
   .pwa-text {
-    font-size: var(--fs-sm);
+    font-size: var(--ctl-font-sm);
     font-weight: 700;
     letter-spacing: 1px;
     color: var(--text);
@@ -103,9 +103,9 @@
 
   /* 卡片里的按键收紧尺寸，但热区仍 ≥40px（.g-btn 已经是 40px 下限） */
   .pwa-actions .pwa-btn {
-    min-height: 40px;
-    padding: 0 14px;
-    font-size: var(--fs-sm);
+    min-height: var(--ctl-md);
+    padding: 0 10px;
+    font-size: var(--ctl-font-sm);
     letter-spacing: 1px;
   }
 

@@ -455,9 +455,9 @@
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    padding: 7px 4px;
+    padding: 6px 4px;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--ctl-radius);
     background: none;
     color: inherit;
     font: inherit;
@@ -598,7 +598,7 @@
     display: flex;
     gap: 10px;
     align-items: center;
-    padding: 11px 2px;
+    padding: 8px 2px;
     border-bottom: 1px solid var(--edge-faint);
   }
   .item:last-child {
@@ -646,9 +646,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 44px;
+    min-height: var(--ctl-md);
     padding: 0 6px;
-    font-size: var(--fs-sm);
+    font-size: var(--ctl-font-sm);
     font-weight: 600;
     letter-spacing: 1px;
     white-space: nowrap;
@@ -765,7 +765,7 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: 10px 0;
+    padding: 8px 0;
     border-bottom: 1px solid var(--edge-faint);
   }
   .stats .card .k {
@@ -791,7 +791,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 0;
+    padding: 6px 0;
     font-size: var(--fs-sm);
     border-bottom: 1px solid var(--edge-faint);
   }
@@ -857,8 +857,8 @@
     color: var(--text);
     border: 1px solid var(--edge-faint);
     border-radius: var(--r-sm);
-    padding: 8px 10px;
-    font-size: var(--fs-sm);
+    padding: 6px 8px;
+    font-size: var(--ctl-font-sm);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     outline: none;
     word-break: break-all;
@@ -885,11 +885,11 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    font-size: var(--fs-sm);
+    font-size: var(--ctl-font-sm);
     font-weight: 600;
-    padding: 0 14px;
-    min-height: 44px;
-    border-radius: 8px;
+    padding: 0 12px;
+    min-height: var(--ctl-md);
+    border-radius: var(--ctl-radius);
     color: var(--text);
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid var(--edge-faint);
@@ -907,12 +907,6 @@
   .mini:disabled {
     opacity: 0.42;
     cursor: not-allowed;
-  }
-  /* 触屏：标签页与迷你按钮的热区补够 */
-  @media (pointer: coarse), (max-width: 640px) {
-    .tabs button {
-      min-height: 46px;
-    }
   }
   .mini.danger {
     color: #f0a6a6;

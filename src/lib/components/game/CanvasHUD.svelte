@@ -207,13 +207,13 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    height: 32px;
-    padding: 0 10px;
-    border-radius: 9px;
+    height: var(--ctl-sm);
+    padding: 0 8px;
+    border-radius: var(--ctl-radius);
     background: rgba(9, 14, 24, 0.82);
     border: 1px solid var(--edge-soft);
     color: var(--muted);
-    font-size: 12px;
+    font-size: var(--ctl-font-sm);
     transition:
       border-color 0.12s ease,
       color 0.12s ease;
@@ -231,9 +231,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
+    width: var(--ctl-sm);
+    height: var(--ctl-sm);
+    border-radius: var(--ctl-radius);
     background: rgba(9, 14, 24, 0.82);
     border: 1px solid var(--edge-soft);
     color: var(--muted);
@@ -244,15 +244,6 @@
   }
 
   /* ---------- 触屏：所有可点件 ≥40px ---------- */
-  @media (pointer: coarse) {
-    .hud-goal {
-      height: 40px;
-    }
-    .hud-settings-btn {
-      width: 40px;
-      height: 40px;
-    }
-  }
 
   @media (max-width: 640px) and (orientation: portrait) {
     .hud {
@@ -261,6 +252,9 @@
     .collect-readout {
       min-width: 92px;
       padding: 4px 10px 8px;
+    }
+    .hud-goal {
+      font-size: 11px;
     }
     .collect-value b {
       font-size: 26px;

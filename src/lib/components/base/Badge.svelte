@@ -36,7 +36,7 @@
     line-height: 1;
     letter-spacing: 0.5px;
     white-space: nowrap;
-    border-radius: 6px;
+    border-radius: var(--ctl-radius);
     background: linear-gradient(180deg, #18243c 0%, #0d1524 60%, #080e19 100%);
     border: 1px solid var(--edge-soft);
     color: var(--muted);
@@ -51,16 +51,17 @@
   }
 
   .badge-sm {
-    min-height: 18px;
-    /* 铭牌标签字号下限 11px（本轮字号收敛规则） */
+    /* 芯片最小档：桌面 22 / 触屏 32 */
+    min-height: var(--ctl-xs);
+    /* 铭牌标签字号下限 11px（第二轮字号收敛规则） */
     font-size: 11px;
-    padding: 3px 7px;
+    padding: 2px 7px;
   }
 
   .badge-md {
-    min-height: 22px;
-    font-size: var(--fs-xs);
-    padding: 4px 9px;
+    min-height: var(--ctl-sm);
+    font-size: var(--ctl-font-sm);
+    padding: 3px 9px;
   }
 
   .badge-gold {

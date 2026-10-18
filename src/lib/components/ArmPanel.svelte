@@ -88,7 +88,7 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
-    padding: 10px 12px 12px;
+    padding: 8px 10px 10px;
     border-radius: var(--radius-md);
     border: 1px solid var(--edge-faint);
     background: linear-gradient(180deg, rgba(12, 18, 30, 0.82), rgba(6, 10, 18, 0.9));
@@ -115,14 +115,14 @@
   }
   .deck-title {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--ctl-font);
     font-weight: 700;
-    letter-spacing: 1.5px;
+    letter-spacing: 1.2px;
     color: var(--gold-bright);
     white-space: nowrap;
   }
   .deck-hint {
-    font-size: 12px;
+    font-size: var(--ctl-font-sm);
     color: var(--muted);
     white-space: nowrap;
   }
@@ -132,7 +132,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 8px;
+    margin-top: 6px;
   }
   .slot {
     position: relative;
@@ -141,10 +141,10 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    min-width: 58px;
-    min-height: 44px;
-    padding: 0 10px;
-    border-radius: 8px;
+    min-width: 42px;
+    min-height: var(--ctl-md);
+    padding: 0 8px;
+    border-radius: var(--ctl-radius);
     border: 1px solid transparent;
     background: rgba(255, 255, 255, 0.04);
     color: var(--muted);
@@ -243,12 +243,12 @@
 
   .slot-no {
     font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: 15px;
+    font-size: var(--ctl-font);
     line-height: 1;
   }
   .slot .slot-lamp {
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
     background: #1b2334;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
   }

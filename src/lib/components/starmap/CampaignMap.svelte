@@ -247,23 +247,23 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 0 0 8px;
+    padding: 0 0 6px;
     border-bottom: 1px solid var(--edge-faint);
   }
 
-  /* 章节翻页键：安静的行内键（热区 44） */
+  /* 章节翻页键：桌面 30（触屏 42），安静的行内键 */
   .nav-btn {
     appearance: none;
     flex: none;
-    width: 44px;
-    height: 44px;
+    width: var(--ctl-md);
+    height: var(--ctl-md);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: var(--fs-sm);
+    font-size: var(--ctl-font-sm);
     color: var(--muted);
-    border-radius: 8px;
+    border-radius: var(--ctl-radius);
     border: 1px solid transparent;
     background: transparent;
     transition:
@@ -319,20 +319,20 @@
     letter-spacing: 0.5px;
   }
 
-  /* 章节翻页圆点：可视点很小，但按键本体给足 44×44 热区 */
+  /* 章节翻页圆点：可视点很小，按键本体走统一控件尺寸（桌面 30 / 触屏 42） */
   .dots {
     display: flex;
     justify-content: center;
-    /* 窄屏（320px 级）放不下 7×44 时换行，宁可两行也不缩热区 */
+    /* 窄屏放不下时换行，宁可两行也不缩热区 */
     flex-wrap: wrap;
     gap: 2px;
-    margin: 2px 0 6px;
+    margin: 2px 0 4px;
   }
   .dot {
     appearance: none;
     position: relative;
-    width: 44px;
-    height: 44px;
+    width: var(--ctl-md);
+    height: var(--ctl-md);
     padding: 0;
     display: inline-flex;
     align-items: center;
@@ -427,8 +427,8 @@
     align-items: center;
     gap: 10px;
     width: 100%;
-    min-height: 52px;
-    padding: 9px 6px;
+    min-height: 38px;
+    padding: 4px 6px;
     box-sizing: border-box;
     text-align: left;
     border: none;
@@ -499,13 +499,13 @@
 
   .node .idx {
     flex: 0 0 auto;
-    width: 30px;
-    height: 30px;
+    width: 24px;
+    height: 24px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    font-size: var(--fs-sm);
+    font-size: var(--ctl-font-sm);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--muted);
@@ -528,11 +528,12 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
   }
   .nm {
     font-weight: 600;
     font-size: var(--fs-sm);
+    line-height: 1.25;
     color: var(--text);
     display: flex;
     align-items: center;
@@ -546,6 +547,7 @@
 
   .st {
     font-size: var(--fs-sm);
+    line-height: 1.15;
     color: var(--gold);
     letter-spacing: 1px;
   }
@@ -564,8 +566,8 @@
   /* 下一章：一行提示（解锁时可点，未解锁是安静说明） */
   .teaser {
     margin-top: 4px;
-    padding: 12px 2px;
-    min-height: 48px;
+    padding: 8px 2px;
+    min-height: 38px;
     box-sizing: border-box;
     display: flex;
     align-items: center;
@@ -604,6 +606,14 @@
     font-style: normal;
     font-size: 12px;
     color: var(--muted);
+  }
+
+  /* 触屏：关卡行/下一章行补到统一控件高度（命中区 ≥40） */
+  @media (pointer: coarse) {
+    .node,
+    .teaser {
+      min-height: var(--ctl-md);
+    }
   }
 
   /* 减弱动态效果：位移/缩放动画关闭 */

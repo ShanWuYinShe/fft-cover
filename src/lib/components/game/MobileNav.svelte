@@ -70,12 +70,12 @@
       align-items: center;
       justify-content: center;
       gap: 7px;
-      min-height: 44px;
-      border-radius: 10px;
+      min-height: 40px;
+      border-radius: var(--ctl-radius);
       background: var(--face-metal);
       border: 1px solid var(--edge-soft);
       color: var(--muted);
-      font-size: 13px;
+      font-size: var(--ctl-font-sm);
       font-weight: 700;
       letter-spacing: 1px;
       white-space: nowrap;

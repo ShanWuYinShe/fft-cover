@@ -204,17 +204,17 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    height: 52px;
-    min-width: 200px;
-    padding: 0 28px;
-    border-radius: 12px;
+    gap: 8px;
+    height: var(--ctl-lg);
+    min-width: 168px;
+    padding: 0 20px;
+    border-radius: var(--ctl-radius-lg);
     border: 1px solid #ffe7a3;
     background: var(--face-gold);
     color: #1a1002;
-    font-size: 17px;
-    font-weight: 800;
-    letter-spacing: 3px;
+    font-size: calc(var(--ctl-font) + 2px);
+    font-weight: 700;
+    letter-spacing: 2px;
     white-space: nowrap;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
     box-shadow:
@@ -280,13 +280,13 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    height: 40px;
-    padding: 0 14px;
-    border-radius: 9px;
+    height: var(--ctl-md);
+    padding: 0 10px;
+    border-radius: var(--ctl-radius);
     background: rgba(19, 28, 46, 0.7);
     border: 1px solid var(--edge-soft);
     color: var(--text);
-    font-size: 13px;
+    font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
     transition:
@@ -322,10 +322,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 22px;
-    height: 20px;
-    padding: 0 5px;
-    border-radius: 5px;
+    min-width: 20px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 4px;
     background: rgba(30, 42, 66, 0.7);
     border: 1px solid var(--edge-faint);
     color: var(--muted);
@@ -355,10 +355,7 @@
     .cmd-primary {
       width: 100%;
       min-width: 0;
-      height: 46px;
-      padding: 0 16px;
-      font-size: 15px;
-      letter-spacing: 2px;
+      padding: 0 14px;
     }
     .primary-label {
       display: none;
@@ -371,9 +368,8 @@
       display: none;
     }
     .ctrl-btn {
-      height: 44px;
-      min-width: 44px;
-      padding: 0 10px;
+      min-width: var(--ctl-md);
+      padding: 0 8px;
     }
     .primary-ring {
       display: none;
@@ -386,10 +382,7 @@
       min-height: 52px;
     }
     .cmd-primary {
-      height: 42px;
-      min-width: 150px;
-      font-size: 14px;
-      letter-spacing: 2px;
+      min-width: 140px;
     }
     .desktop-only {
       display: none;

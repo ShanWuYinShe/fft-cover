@@ -104,8 +104,8 @@
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    padding: 18px 34px;
-    border-radius: 14px;
+    padding: 14px 28px;
+    border-radius: 12px;
     background: linear-gradient(180deg, rgba(14, 22, 38, 0.94), rgba(6, 10, 18, 0.96));
     border: 1px solid var(--edge);
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
@@ -126,7 +126,7 @@
   }
 
   .intro-name {
-    font-size: 34px;
+    font-size: 28px;
     font-weight: 700;
     letter-spacing: 4px;
     color: #fff;

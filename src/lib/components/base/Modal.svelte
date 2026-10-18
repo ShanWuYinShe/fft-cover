@@ -69,7 +69,7 @@
             aria-label="关闭窗口"
             title="关闭窗口"
           >
-            <Icon name="close" size={16} />
+            <Icon name="close" size={15} />
           </button>
         {/if}
       </header>
@@ -140,7 +140,7 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: 14px var(--space-5) 12px;
+    padding: 12px var(--space-4) 10px;
     border-bottom: 1px solid var(--edge-faint);
     flex-shrink: 0;
     position: relative;
@@ -174,18 +174,18 @@
     color: var(--muted);
   }
 
-  /* 关闭键：44×44 热区，静息无描边、悬停才显形 */
+  /* 关闭键：桌面 30×30（触屏 42，走 --ctl-md），静息无描边、悬停才显形 */
   .modal-close {
     appearance: none;
     flex: none;
-    width: 44px;
-    height: 44px;
+    width: var(--ctl-md);
+    height: var(--ctl-md);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     color: var(--muted);
-    border-radius: 8px;
+    border-radius: var(--ctl-radius);
     border: 1px solid transparent;
     background: transparent;
     transition:
@@ -203,7 +203,7 @@
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: var(--space-4) var(--space-5);
+    padding: 12px var(--space-4);
     scrollbar-width: thin;
     scrollbar-color: rgba(245, 184, 65, 0.3) transparent;
   }
@@ -213,14 +213,14 @@
     align-items: center;
     justify-content: flex-end;
     gap: var(--space-3);
-    padding: 12px var(--space-5) 14px;
+    padding: 10px var(--space-4) 12px;
     border-top: 1px solid var(--edge-faint);
     flex-shrink: 0;
     flex-wrap: wrap;
   }
-  /* 页脚里的裸按钮兜底：至少 44px 热区（外观仍由调用方/Button 决定） */
+  /* 页脚里的裸按钮兜底：走统一控件高度（桌面 30 / 触屏 42） */
   .modal-footer :global(button) {
-    min-height: 44px;
+    min-height: var(--ctl-md);
   }
 
   /* 矮屏：收紧留白，让内容区尽可能高 */

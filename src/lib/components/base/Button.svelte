@@ -66,15 +66,16 @@
     justify-content: center;
     gap: var(--space-2);
     box-sizing: border-box;
-    min-height: 40px;
-    padding: 0 16px;
-    border-radius: 10px;
+    /* 默认档：桌面 30 / 触屏 42（档位只由 pointer: coarse 决定） */
+    min-height: var(--ctl-md);
+    padding: 0 12px;
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-soft);
     background: var(--face-metal);
     color: var(--text);
     font-family: inherit;
-    font-size: var(--fs-md);
-    font-weight: 700;
+    font-size: var(--ctl-font);
+    font-weight: 600;
     letter-spacing: 1px;
     line-height: 1;
     white-space: nowrap;
@@ -114,25 +115,34 @@
     filter: grayscale(0.4);
   }
 
-  /* --- 尺寸 (Sizes)：全部 ≥40px 触控热区 --- */
+  /* --- 尺寸 (Sizes)：全部走 --ctl-* 令牌 --- */
   .btn-sm {
-    min-height: 40px;
-    padding: 0 10px;
-    font-size: var(--fs-sm);
+    min-height: var(--ctl-sm);
+    padding: 0 8px;
+    font-size: var(--ctl-font-sm);
     letter-spacing: 0.5px;
-    border-radius: 8px;
+    border-radius: var(--ctl-radius);
+  }
+
+  /* 触屏下 --ctl-sm 为 38px：用 ::after 外扩 1px 补到 40px 命中区（视觉不放大） */
+  @media (pointer: coarse) {
+    .btn-sm::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+    }
   }
 
   .btn-md {
-    min-height: 44px;
+    min-height: var(--ctl-md);
   }
 
   .btn-lg {
-    min-height: 52px;
-    padding: 0 28px;
-    font-size: var(--fs-lg);
-    letter-spacing: 3px;
-    border-radius: 12px;
+    min-height: var(--ctl-lg);
+    padding: 0 22px;
+    font-size: calc(var(--ctl-font) + 2px);
+    letter-spacing: 1.5px;
+    border-radius: var(--ctl-radius-lg);
   }
 
   /* --- 变体 (Variants) --- */
@@ -141,11 +151,12 @@
     background: var(--face-gold);
     border-color: #ffe7a3;
     color: #1a1002;
+    font-weight: 700;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.35),
-      inset 0 -3px 0 rgba(140, 80, 0, 0.5),
-      0 3px 0 #7a4d05,
+      inset 0 -2px 0 rgba(140, 80, 0, 0.45),
+      0 2px 0 #7a4d05,
       0 6px 16px rgba(245, 184, 65, 0.3);
   }
   .btn-primary:hover:not(:disabled) {
@@ -154,9 +165,9 @@
     color: #120a00;
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      inset 0 -3px 0 rgba(140, 80, 0, 0.45),
-      0 3px 0 #7a4d05,
-      0 8px 20px rgba(245, 184, 65, 0.42);
+      inset 0 -2px 0 rgba(140, 80, 0, 0.4),
+      0 2px 0 #7a4d05,
+      0 8px 20px rgba(245, 184, 65, 0.4);
   }
 
   /* 强调态（金描边 + 金字）：安静，只有选中时才发光 */
@@ -187,8 +198,8 @@
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.25),
-      inset 0 -3px 0 rgba(80, 10, 10, 0.5),
-      0 3px 0 #6b1010;
+      inset 0 -2px 0 rgba(80, 10, 10, 0.45),
+      0 2px 0 #6b1010;
   }
   .btn-danger:hover:not(:disabled) {
     filter: brightness(1.08);

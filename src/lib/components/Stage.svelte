@@ -1383,8 +1383,8 @@
     position: absolute;
     right: 10px;
     bottom: 10px;
-    width: 30px;
-    height: 30px;
+    width: var(--ctl-md);
+    height: var(--ctl-md);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1405,12 +1405,7 @@
     color: var(--gold-bright);
     border-color: var(--edge-soft);
   }
-  @media (pointer: coarse), (max-width: 640px) {
-    .view-reset {
-      width: 40px;
-      height: 40px;
-    }
-  }
+
   /* 手机竖屏：缩放/复位入口收进手势，键位隐藏 */
   @media (max-width: 640px) and (orientation: portrait) {
     .view-reset {

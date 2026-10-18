@@ -74,25 +74,25 @@
       <!-- 主菜单：第一项是唯一的金色主按钮，其余安静 -->
       <nav class="ts-menu" aria-label="主菜单">
         <button type="button" class="g-btn g-btn--primary ts-item ts-item--main" onclick={start}>
-          <span class="ts-glyph"><Icon name="play" size={18} /></span>
+          <span class="ts-glyph"><Icon name="play" size={16} /></span>
           <span class="ts-label">进入游戏</span>
           <span class="ts-arrow" aria-hidden="true"><Icon name="chevron-right" size={16} /></span>
         </button>
 
         <button type="button" class="g-btn ts-item" onclick={openStarMap}>
-          <span class="ts-glyph"><Icon name="map" size={17} /></span>
+          <span class="ts-glyph"><Icon name="map" size={16} /></span>
           <span class="ts-label">周天星图 · 关卡选择</span>
           <span class="ts-arrow" aria-hidden="true"><Icon name="chevron-right" size={16} /></span>
         </button>
 
         <button type="button" class="g-btn ts-item" onclick={openAchv}>
-          <span class="ts-glyph"><Icon name="trophy" size={17} /></span>
+          <span class="ts-glyph"><Icon name="trophy" size={16} /></span>
           <span class="ts-label">成就与图鉴</span>
           <span class="ts-arrow" aria-hidden="true"><Icon name="chevron-right" size={16} /></span>
         </button>
 
         <button type="button" class="g-btn ts-item" onclick={openSettings}>
-          <span class="ts-glyph"><Icon name="gear" size={17} /></span>
+          <span class="ts-glyph"><Icon name="gear" size={16} /></span>
           <span class="ts-label">浑天典仪 · 设置</span>
           <span class="ts-arrow" aria-hidden="true"><Icon name="chevron-right" size={16} /></span>
         </button>
@@ -352,13 +352,14 @@
   .ts-menu .ts-item {
     position: relative;
     width: 100%;
-    min-height: 50px;
+    /* 桌面 42 / 触屏 48：主项比非主项高一档，统一由 --ctl-menu 派生 */
+    min-height: calc(var(--ctl-menu) - 4px);
     justify-content: flex-start;
-    gap: 12px;
+    gap: 10px;
     padding: 0 14px;
-    font-size: 15px;
-    letter-spacing: 2px;
-    border-radius: 10px;
+    font-size: var(--ctl-font);
+    letter-spacing: 1px;
+    border-radius: var(--ctl-radius);
     /* 降噪：只留上高光 + 硬投影，去掉外发光 */
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.07),
@@ -373,14 +374,14 @@
 
   /* 主按钮：整页唯一的金光（一级元素） */
   .ts-menu .ts-item--main {
-    min-height: 58px;
-    font-size: 17px;
-    letter-spacing: 4px;
+    min-height: var(--ctl-menu);
+    font-size: calc(var(--ctl-font) + 2px);
+    letter-spacing: 1.5px;
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.35),
-      inset 0 -3px 0 rgba(140, 80, 0, 0.5),
-      0 3px 0 #7a4d05,
-      0 6px 16px rgba(245, 184, 65, 0.32);
+      inset 0 -2px 0 rgba(140, 80, 0, 0.45),
+      0 2px 0 #7a4d05,
+      0 6px 16px rgba(245, 184, 65, 0.3);
   }
 
   /* 唯一呼吸光：用伪元素的 opacity 呼吸（合成层友好，不重绘阴影） */
@@ -433,9 +434,9 @@
   .ts-menu .ts-item.ts-item--main:hover {
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      inset 0 -3px 0 rgba(140, 80, 0, 0.45),
-      0 3px 0 #7a4d05,
-      0 8px 20px rgba(245, 184, 65, 0.42);
+      inset 0 -2px 0 rgba(140, 80, 0, 0.4),
+      0 2px 0 #7a4d05,
+      0 8px 20px rgba(245, 184, 65, 0.4);
   }
 
   /* 左侧图标：直接显示，不再套一格描边方槽 */
@@ -443,8 +444,8 @@
     flex: 0 0 auto;
     display: grid;
     place-items: center;
-    width: 26px;
-    height: 26px;
+    width: var(--ctl-xs);
+    height: var(--ctl-xs);
     color: var(--gold);
   }
 
@@ -602,18 +603,6 @@
       gap: 6px;
     }
 
-    .ts-menu .ts-item {
-      min-height: 46px;
-      font-size: 14px;
-      letter-spacing: 1px;
-    }
-
-    .ts-menu .ts-item--main {
-      min-height: 52px;
-      font-size: 16px;
-      letter-spacing: 2px;
-    }
-
     .ts-steps-list {
       font-size: var(--fs-sm);
       line-height: 1.6;
@@ -633,14 +622,6 @@
 
     .ts-sub {
       display: none;
-    }
-
-    .ts-menu .ts-item {
-      min-height: 44px;
-    }
-
-    .ts-menu .ts-item--main {
-      min-height: 48px;
     }
   }
 

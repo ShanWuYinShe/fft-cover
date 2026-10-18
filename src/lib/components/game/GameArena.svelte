@@ -79,8 +79,8 @@
   /* 4 隅古青铜角花 */
   .stage-bracket {
     position: absolute;
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     pointer-events: none;
     z-index: 4;
   }

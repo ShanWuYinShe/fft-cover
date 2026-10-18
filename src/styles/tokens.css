@@ -203,6 +203,23 @@
   --face-danger: linear-gradient(180deg, #f47373 0%, #cf3131 45%, #8f1b1b 100%);
   --face-cyan: linear-gradient(180deg, #7ff5e5 0%, #00d9bc 45%, #028f7d 100%);
 
+  /* ============================================================
+   * 控件尺寸令牌（第四轮：桌面紧凑 / 触屏舒适）
+   * 默认值 = 桌面（鼠标）；@media (pointer: coarse) 下整体放大到触屏尺寸。
+   * 规则：组件里不许写死 px，一律走这些令牌。
+   * ============================================================ */
+  --ctl-xs: 22px; /* 行内小图标键、弹窗关闭键 */
+  --ctl-sm: 26px; /* 次级图标键、芯片、标签页 */
+  --ctl-md: 30px; /* 默认按钮 / 输入 / 滑杆行高 / 机坞键 */
+  --ctl-lg: 40px; /* 主操作（全屏唯一那颗金色按钮） */
+  --ctl-menu: 46px; /* 标题页菜单项 */
+  --ctl-font: 13px;
+  --ctl-font-sm: 12px;
+  --ctl-radius: 7px;
+  --ctl-radius-lg: 9px;
+  --ctl-icon: 15px; /* 控件内图标默认尺寸 */
+  --ctl-icon-sm: 13px; /* 小键内图标尺寸 */
+
   /* 座舱阴影：硬投影 + 金色外发光 */
   --sh-game: 0 8px 24px rgba(0, 0, 0, 0.65), 0 2px 0 rgba(0, 0, 0, 0.5);
   --sh-game-lg: 0 18px 48px rgba(0, 0, 0, 0.8), 0 3px 0 rgba(0, 0, 0, 0.55);
@@ -212,5 +229,22 @@
 @media (min-width: 1024px) {
   :root {
     --fs-xs: 12px;
+  }
+}
+
+/* 触屏（手机/平板/触屏笔电）：控件整体放大到舒适命中区 */
+@media (pointer: coarse) {
+  :root {
+    --ctl-xs: 32px;
+    --ctl-sm: 40px;
+    --ctl-md: 42px;
+    --ctl-lg: 46px;
+    --ctl-menu: 52px;
+    --ctl-font: 14px;
+    --ctl-font-sm: 12.5px;
+    --ctl-radius: 8px;
+    --ctl-radius-lg: 10px;
+    --ctl-icon: 16px;
+    --ctl-icon-sm: 14px;
   }
 }

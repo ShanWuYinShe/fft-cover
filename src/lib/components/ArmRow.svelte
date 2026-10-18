@@ -62,7 +62,7 @@
     display: flex;
     align-items: stretch;
     min-width: 0;
-    border-radius: 8px;
+    border-radius: var(--ctl-radius);
     border: 1px solid transparent;
     background: rgba(255, 255, 255, 0.03);
     transition:
@@ -80,13 +80,13 @@
     opacity: 0.5;
   }
 
-  /* 通电开关：物理小键，热区 ≥44 */
+  /* 通电开关：物理小键（桌面紧凑，触屏由令牌放大） */
   .power-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 44px;
-    min-height: 44px;
+    flex: 0 0 var(--ctl-md);
+    min-height: var(--ctl-md);
     padding: 0;
     cursor: pointer;
   }
@@ -97,9 +97,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
+    width: var(--ctl-xs);
+    height: var(--ctl-xs);
+    border-radius: var(--ctl-radius);
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--edge-faint);
     transition:
@@ -111,8 +111,8 @@
     transition-timing-function: ease-out;
   }
   .power-lamp {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     background: #1b2334;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
     transition: background 240ms ease;
@@ -130,7 +130,7 @@
     align-items: center;
     gap: 6px;
     min-width: 0;
-    height: 44px;
+    height: var(--ctl-md);
     padding: 0 10px 0 2px;
     cursor: pointer;
     font-variant-numeric: tabular-nums;
@@ -151,7 +151,7 @@
     text-align: center;
     color: var(--gold-bright);
     font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: 14px;
+    font-size: var(--ctl-font);
     line-height: 1;
   }
   .rv {
@@ -160,7 +160,7 @@
     text-align: center;
   }
   .rv .slot-num {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     font-family: 'JetBrains Mono', monospace;
     color: var(--text);
@@ -169,13 +169,13 @@
     color: var(--gold-bright);
   }
   .locked .rv .slot-num {
-    font-size: 12px;
+    font-size: var(--ctl-font-sm);
     color: var(--muted);
     font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
   }
   .dir {
     flex: 0 0 auto;
-    font-size: 12px;
+    font-size: var(--ctl-font-sm);
     font-weight: 700;
     color: var(--cyan);
   }
@@ -184,9 +184,9 @@
   }
   .fv {
     flex: 0 0 auto;
-    width: 34px;
+    width: 32px;
     text-align: right;
-    font-size: 12px;
+    font-size: var(--ctl-font-sm);
     font-weight: 700;
     color: var(--muted);
     font-family: 'JetBrains Mono', monospace;

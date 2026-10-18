@@ -152,14 +152,14 @@
   .diff-btn {
     flex: 1;
     appearance: none;
-    min-height: 44px;
+    min-height: var(--ctl-md);
     padding: 0 8px;
     cursor: pointer;
     color: var(--muted);
-    font-size: var(--fs-sm);
+    font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
-    border-radius: 8px;
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-faint);
     background: transparent;
     transition:
@@ -185,16 +185,16 @@
   .weekly-btn {
     appearance: none;
     width: 100%;
-    min-height: 48px;
+    min-height: 38px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 10px 0;
+    padding: 8px 0;
     box-sizing: border-box;
     cursor: pointer;
     color: var(--text);
-    font-size: var(--fs-sm);
+    font-size: var(--ctl-font-sm);
     background: none;
     border: none;
     border-bottom: 1px solid var(--edge-faint);
@@ -229,7 +229,7 @@
   }
   .dcell {
     flex: 1;
-    height: 30px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -253,6 +253,13 @@
     border-color: rgba(217, 43, 43, 0.6);
     color: #fdece7;
   }
+  /* 触屏：每周挑战行补到统一控件高度 */
+  @media (pointer: coarse) {
+    .weekly-btn {
+      min-height: var(--ctl-md);
+    }
+  }
+
   .dweek-cap {
     display: inline-flex;
     align-items: center;
@@ -278,14 +285,14 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-    min-height: 36px;
+    min-height: var(--ctl-md);
     padding: 0 10px;
     cursor: pointer;
     color: var(--muted);
-    font-size: 12px;
+    font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
-    border-radius: 8px;
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-faint);
     background: transparent;
     transition:
@@ -297,16 +304,5 @@
     color: var(--gold-bright);
     border-color: var(--edge);
     background: rgba(255, 255, 255, 0.05);
-  }
-
-  /* 触屏：所有可点元素补到 44 热区 */
-  @media (pointer: coarse), (max-width: 640px) {
-    .diff-btn {
-      min-height: 44px;
-    }
-    .mini-btn {
-      min-height: 40px;
-      padding: 0 10px;
-    }
   }
 </style>

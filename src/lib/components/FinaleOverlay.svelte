@@ -228,11 +228,11 @@
     max-height: 100%;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 0 24px;
+    padding: 0 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     text-align: center;
     background: var(--metal);
     border: 1px solid var(--edge-soft);
@@ -259,8 +259,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin: 0 -24px 2px;
-    padding: 12px 16px 10px;
+    margin: 0 -20px 2px;
+    padding: 10px 14px 8px;
     border-bottom: 1px solid var(--edge-faint);
     border-radius: 10px 10px 0 0;
   }
@@ -274,10 +274,10 @@
   /* 落款朱印：竖排两字（避开右上角） */
   .seal {
     position: absolute;
-    top: 52px;
+    top: 46px;
     right: 12px;
-    width: 40px;
-    height: 52px;
+    width: 36px;
+    height: 46px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -352,7 +352,7 @@
     align-items: baseline;
     justify-content: space-between;
     gap: 8px;
-    padding: 9px 0;
+    padding: 7px 0;
     border-bottom: 1px solid var(--edge-faint);
   }
   .cell b {
@@ -443,8 +443,8 @@
     white-space: nowrap;
   }
   .wall-item svg {
-    width: 46px;
-    height: 46px;
+    width: 38px;
+    height: 38px;
   }
   .wall-item polyline {
     fill: none;
@@ -524,8 +524,8 @@
     align-self: stretch;
     display: flex;
     justify-content: center;
-    margin: 0 -24px;
-    padding: 14px 24px 18px;
+    margin: 0 -20px;
+    padding: 12px 20px 16px;
     background: linear-gradient(
       180deg,
       rgba(11, 17, 30, 0) 0,
@@ -537,20 +537,20 @@
   button.primary {
     appearance: none;
     width: 100%;
-    min-height: 52px;
-    padding: 0 24px;
-    border-radius: 10px;
+    min-height: var(--ctl-lg);
+    padding: 0 20px;
+    border-radius: var(--ctl-radius-lg);
     cursor: pointer;
-    font-size: var(--fs-lg);
+    font-size: var(--ctl-font);
     font-weight: 700;
-    letter-spacing: 4px;
+    letter-spacing: 2px;
     color: #1a1002;
     border: 1px solid #ffe7a3;
     background: var(--face-gold);
     box-shadow:
       var(--bevel-top),
-      inset 0 -3px 0 rgba(140, 80, 0, 0.55),
-      0 3px 0 #7a4d05;
+      inset 0 -2px 0 rgba(140, 80, 0, 0.55),
+      0 2px 0 #7a4d05;
     -webkit-tap-highlight-color: transparent;
     transition:
       transform 0.09s ease,

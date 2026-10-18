@@ -93,14 +93,14 @@
   .hud-quiet-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    height: 38px;
-    padding: 0 12px;
-    border-radius: 9px;
+    gap: 6px;
+    height: var(--ctl-md);
+    padding: 0 10px;
+    border-radius: var(--ctl-radius);
     background: rgba(19, 28, 46, 0.75);
     border: 1px solid var(--edge-soft);
     color: var(--text);
-    font-size: 14px;
+    font-size: var(--ctl-font);
     font-weight: 600;
     transition:
       background 0.12s ease,
@@ -116,7 +116,7 @@
     transform: translateY(1px);
   }
   .hud-quiet-btn.icon-only {
-    width: 40px;
+    width: var(--ctl-md);
     padding: 0;
     justify-content: center;
     color: var(--muted);
@@ -133,7 +133,7 @@
   }
 
   .hud-stars {
-    font-size: 12px;
+    font-size: var(--ctl-font-sm);
     font-weight: 700;
     color: var(--gold-bright);
     background: rgba(245, 184, 65, 0.1);
@@ -157,8 +157,8 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 12px;
-    border-radius: 8px;
+    padding: 4px 10px;
+    border-radius: var(--ctl-radius);
     border: 1px solid transparent;
     transition: all 0.12s ease;
   }
@@ -167,7 +167,7 @@
     background: rgba(245, 184, 65, 0.05);
   }
   .title-brand {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: rgba(241, 245, 249, 0.85);
     letter-spacing: 3px;

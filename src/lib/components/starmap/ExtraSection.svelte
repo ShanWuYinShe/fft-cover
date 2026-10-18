@@ -200,16 +200,16 @@
   .endless-trigger-btn {
     appearance: none;
     width: 100%;
-    min-height: 48px;
+    min-height: 38px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 10px 0;
+    padding: 8px 0;
     box-sizing: border-box;
     cursor: pointer;
     color: var(--text);
-    font-size: var(--fs-sm);
+    font-size: var(--ctl-font-sm);
     background: none;
     border: none;
     border-bottom: 1px solid var(--edge-faint);
@@ -238,8 +238,8 @@
   .gen-box {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 12px 0;
+    gap: 8px;
+    padding: 10px 0;
     border-bottom: 1px solid var(--edge-faint);
   }
 
@@ -264,14 +264,14 @@
   }
   .diff-chip {
     appearance: none;
-    min-height: 36px;
+    min-height: var(--ctl-md);
     padding: 0 10px;
     cursor: pointer;
     color: var(--muted);
-    font-size: 12px;
+    font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
-    border-radius: 8px;
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-faint);
     background: transparent;
     transition:
@@ -298,18 +298,18 @@
   .action-btn {
     flex: 1;
     appearance: none;
-    min-height: 46px;
+    min-height: var(--ctl-md);
     padding: 0 8px;
     cursor: pointer;
     color: var(--text);
-    font-size: var(--fs-sm);
+    font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    border-radius: 8px;
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-faint);
     background: transparent;
     transition:
@@ -326,8 +326,8 @@
   .seed-box {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 12px 0 0;
+    gap: 8px;
+    padding: 10px 0 0;
   }
 
   .invite-header {
@@ -361,8 +361,8 @@
     border: 1px solid var(--edge-faint);
     border-radius: 8px;
     padding: 0 10px;
-    height: 40px;
-    font-size: var(--fs-sm);
+    height: var(--ctl-md);
+    font-size: var(--ctl-font-sm);
     color: var(--text);
   }
   .seed-input::placeholder {
@@ -383,12 +383,12 @@
     gap: 4px;
     cursor: pointer;
     color: var(--muted);
-    font-size: 12px;
+    font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
-    padding: 0 12px;
-    height: 40px;
-    border-radius: 8px;
+    padding: 0 10px;
+    height: var(--ctl-md);
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-faint);
     background: transparent;
     transition:
@@ -403,18 +403,12 @@
     background: rgba(255, 255, 255, 0.05);
   }
 
-  /* 触屏：热区补到 44 */
-  @media (pointer: coarse), (max-width: 640px) {
-    .action-btn {
-      min-height: 46px;
-    }
-    .load-btn,
-    .mini-btn,
-    .seed-input {
-      height: 44px;
-    }
-    .diff-chip {
-      min-height: 40px;
+  /* 触屏：无尽入口行补到统一控件高度 */
+  @media (pointer: coarse) {
+    .endless-trigger-btn {
+      min-height: var(--ctl-md);
     }
   }
+
+  /* 其余高度全部由 --ctl-* 按指针类型自动切换（桌面 30 / 触屏 42） */
 </style>

@@ -80,10 +80,11 @@
     align-items: center;
     gap: 10px;
     box-sizing: border-box;
-    min-height: 40px;
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-size: var(--fs-sm);
+    /* 桌面 30 / 触屏 42 */
+    min-height: var(--ctl-md);
+    padding: 5px 12px;
+    border-radius: var(--ctl-radius);
+    font-size: var(--ctl-font-sm);
     font-weight: 600;
     letter-spacing: 0.5px;
     background: #0d1626;
@@ -129,6 +130,11 @@
     animation: toast-icon-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1) 120ms backwards;
   }
 
+  .toast-icon :global(svg) {
+    width: var(--ctl-icon-sm);
+    height: var(--ctl-icon-sm);
+  }
+
   @keyframes toast-icon-pop {
     0% {
       transform: scale(1);
@@ -162,8 +168,8 @@
     min-width: 0;
   }
 
-  /* 视觉 30px，热区靠 ::after 外扩到 40×40（绝对定位以 padding box 为基准，
-     28px + 上下左右各 6px = 40px），保证点击目标不低于 40px 下限 */
+  /* 视觉 --ctl-xs（桌面 22 / 触屏 32），热区靠 ::after 外扩 9px：
+     22 + 18 = 40px（触屏 32 + 18 = 50px），点击目标始终不低于 40px */
   .toast-close {
     position: relative;
     flex: 0 0 auto;
@@ -171,10 +177,10 @@
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    width: 30px;
-    height: 30px;
+    width: var(--ctl-xs);
+    height: var(--ctl-xs);
     margin-left: 2px;
-    border-radius: 7px;
+    border-radius: var(--ctl-radius);
     border: 1px solid transparent;
     background: transparent;
     color: var(--muted);
@@ -188,7 +194,7 @@
   .toast-close::after {
     content: '';
     position: absolute;
-    inset: -6px;
+    inset: -9px;
   }
 
   .toast-close:hover {

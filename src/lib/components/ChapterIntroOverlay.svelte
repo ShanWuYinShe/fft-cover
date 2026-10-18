@@ -92,8 +92,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
-    padding: 24px 22px 0;
+    gap: 10px;
+    padding: 20px 18px 0;
     box-sizing: border-box;
     text-align: center;
     background: var(--metal);
@@ -198,8 +198,8 @@
     align-self: stretch;
     display: flex;
     justify-content: center;
-    margin: 4px -22px 0;
-    padding: 14px 22px 18px;
+    margin: 4px -18px 0;
+    padding: 12px 18px 16px;
     background: linear-gradient(
       180deg,
       rgba(11, 17, 30, 0) 0,
@@ -212,13 +212,13 @@
   button.primary {
     appearance: none;
     width: 100%;
-    min-height: 52px;
-    padding: 0 24px;
-    border-radius: 10px;
+    min-height: var(--ctl-lg);
+    padding: 0 20px;
+    border-radius: var(--ctl-radius-lg);
     cursor: pointer;
-    font-size: var(--fs-lg);
+    font-size: var(--ctl-font);
     font-weight: 700;
-    letter-spacing: 4px;
+    letter-spacing: 2px;
     color: #1a1002;
     border: 1px solid #ffe7a3;
     background: var(--face-gold);

@@ -122,8 +122,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 20px 18px;
+    gap: 8px;
+    padding: 16px;
     background: var(--metal);
     border: 1px solid var(--edge-soft);
     border-radius: 10px;
@@ -160,8 +160,8 @@
 
   .pm-panel h3 {
     margin: 0;
-    font-size: 22px;
-    letter-spacing: 5px;
+    font-size: 20px;
+    letter-spacing: 4px;
     color: var(--text);
   }
 
@@ -199,16 +199,16 @@
     justify-content: center;
     gap: 8px;
     width: 100%;
-    min-height: 48px;
+    min-height: var(--ctl-md);
     margin-top: 4px;
-    padding: 0 16px;
-    border-radius: 10px;
+    padding: 0 14px;
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-faint);
     background: rgba(255, 255, 255, 0.06);
     color: var(--text);
-    font-size: var(--fs-sm);
+    font-size: var(--ctl-font-sm);
     font-weight: 600;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     /* 按钮错峰进入（内联 animation-delay 40/90/140ms） */
@@ -236,12 +236,12 @@
 
   /* 主操作：金色实心（全屏唯一发光点之一） */
   .pm-btn.primary {
-    min-height: 52px;
+    min-height: var(--ctl-lg);
     margin-top: 0;
     margin-bottom: 4px;
-    font-size: var(--fs-lg);
+    font-size: var(--ctl-font);
     font-weight: 700;
-    letter-spacing: 4px;
+    letter-spacing: 2px;
     color: #1a1002;
     border-color: #ffe7a3;
     background: var(--face-gold);

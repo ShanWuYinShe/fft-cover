@@ -55,7 +55,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 6px 16px;
+    padding: 5px 14px;
     box-sizing: border-box;
     background: transparent;
     border-top: 1px solid transparent;
@@ -96,7 +96,7 @@
 
   .crown-title {
     margin: 0;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--text);
     letter-spacing: 2px;
@@ -111,8 +111,8 @@
   }
 
   .star-gem-socket {
-    width: 30px;
-    height: 30px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -127,7 +127,7 @@
   }
 
   .star-gem-socket .gem-star {
-    font-size: 15px;
+    font-size: 12px;
     color: rgba(255, 255, 255, 0.12);
     line-height: 1;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -167,11 +167,11 @@
       gap: 5px;
     }
     .star-gem-socket {
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
     }
     .star-gem-socket .gem-star {
-      font-size: 12px;
+      font-size: 11px;
     }
   }
 

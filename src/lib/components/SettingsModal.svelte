@@ -139,8 +139,8 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: 6px 0;
-    min-height: 56px;
+    padding: 4px 0;
+    min-height: 46px;
     box-sizing: border-box;
     border-bottom: 1px solid var(--edge-faint);
   }
@@ -166,15 +166,15 @@
     justify-content: center;
     gap: 7px;
     flex: none;
-    min-width: 78px;
-    min-height: 44px;
-    padding: 0 12px;
+    min-width: 68px;
+    min-height: var(--ctl-md);
+    padding: 0 10px;
     cursor: pointer;
     color: var(--muted);
-    font-size: var(--fs-sm);
+    font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
-    border-radius: 8px;
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-faint);
     background: transparent;
     -webkit-tap-highlight-color: transparent;
@@ -214,21 +214,21 @@
     display: inline-flex;
     align-items: flex-end;
     gap: 2px;
-    height: 14px;
+    height: 12px;
   }
   .bars .bar {
-    width: 4px;
+    width: 3px;
     border-radius: 1px;
     background: rgba(148, 163, 184, 0.25);
   }
   .bars .bar:nth-child(1) {
-    height: 6px;
+    height: 5px;
   }
   .bars .bar:nth-child(2) {
-    height: 10px;
+    height: 8px;
   }
   .bars .bar:nth-child(3) {
-    height: 14px;
+    height: 12px;
   }
   .bars .bar.lite {
     background: var(--gold-bright);
@@ -242,15 +242,15 @@
   }
   .chip {
     appearance: none;
-    min-width: 56px;
-    min-height: 40px;
-    padding: 0 12px;
+    min-width: 52px;
+    min-height: var(--ctl-md);
+    padding: 0 10px;
     cursor: pointer;
     color: var(--muted);
-    font-size: var(--fs-sm);
+    font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
-    border-radius: 8px;
+    border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-faint);
     background: transparent;
     transition:
@@ -274,9 +274,9 @@
   .settings-notes {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 14px;
-    padding-top: 14px;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
     border-top: 1px solid var(--edge-faint);
   }
   .desc {
@@ -290,16 +290,8 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   }
 
-  /* 触屏：热区补到 44，分段芯片占满一行 */
-  @media (pointer: coarse), (max-width: 640px) {
-    .toggle-btn {
-      min-height: 46px;
-      min-width: 96px;
-    }
-    .chip {
-      min-height: 44px;
-      min-width: 64px;
-    }
+  /* 窄屏：分段选择器占满一行（高度由 --ctl-* 按指针类型自动切换） */
+  @media (max-width: 640px) {
     .setting-row--seg .chips {
       width: 100%;
     }

@@ -259,8 +259,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 16px 20px 18px;
+    gap: 6px;
+    padding: 12px 16px 14px;
   }
 
   .wave-ico {
@@ -354,7 +354,7 @@
   .actions {
     display: flex;
     flex-direction: column;
-    gap: 9px;
+    gap: 7px;
     width: 100%;
     margin-top: 6px;
   }
@@ -362,13 +362,13 @@
   .go {
     appearance: none;
     width: 100%;
-    min-height: 52px;
-    padding: 0 20px;
-    border-radius: 10px;
+    min-height: var(--ctl-lg);
+    padding: 0 18px;
+    border-radius: var(--ctl-radius-lg);
     cursor: pointer;
-    font-size: var(--fs-lg);
+    font-size: var(--ctl-font);
     font-weight: 700;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     color: #1a1002;
     border: 1px solid #ffe7a3;
     background: var(--face-gold);
@@ -391,13 +391,13 @@
   .ghost-btn {
     appearance: none;
     width: 100%;
-    min-height: 46px;
-    padding: 0 16px;
-    border-radius: 9px;
+    min-height: var(--ctl-md);
+    padding: 0 14px;
+    border-radius: var(--ctl-radius);
     cursor: pointer;
     color: var(--muted);
     font: inherit;
-    font-size: var(--fs-sm);
+    font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
     border: 1px solid var(--edge-faint);
