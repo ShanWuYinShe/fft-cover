@@ -3,191 +3,248 @@
   import MobileNav from './MobileNav.svelte';
   import StarmapDrawer from './StarmapDrawer.svelte';
   import GameArena from './GameArena.svelte';
+  import PlayControls from './PlayControls.svelte';
+  import AmbientField from './AmbientField.svelte';
+  import ScreenFrame from './ScreenFrame.svelte';
   import ArmPanel from '../ArmPanel.svelte';
   import { engine } from '../../game/engine.svelte';
   import { uiState } from '../../stores/uiState.svelte';
   import { screenReader } from '../../stores/screenReader.svelte';
 
   const onArmCount = $derived(engine.arms.filter((a) => a.on).length);
+  const armLimit = $derived(engine.level?.armLimit ?? 10);
 </script>
 
-<!-- 深曜苍穹背景光环 -->
-<div class="celestial-deep-cosmos" aria-hidden="true">
-  <div class="armillary-meridian-ring ring-1"></div>
-  <div class="armillary-meridian-ring ring-2"></div>
-</div>
+<!-- 星空背景与环境演出 -->
+<AmbientField />
 
-<!-- 顶部座舱天穹 HUD -->
-<TopBar />
+<!-- 座舱外框（四角包边 + 视口发丝线） -->
+<ScreenFrame />
 
-<!-- 读屏实时播报 -->
-<div class="sr-only" role="status" aria-live="polite">{screenReader.srLive}</div>
-
-<!-- 游戏主舞台与操作台 -->
-<main
+<!-- 全屏座舱：顶栏 / 舞台 / 右侧机坞 / 底部指令栏 四区贴边 -->
+<div
+  class="game-screen"
   data-tab={uiState.mobileTab}
   class:panel-expanded={uiState.panelExpanded}
   class:panel-hidden={engine.phase === 'running'}
   class:starmap-open={uiState.starMapOpen}
 >
-  <!-- 画布核心竞技台 (包含天冠、画布视口、HUD、控制台、弹层) -->
-  <GameArena />
-
-  <!-- 侧边栏与操舵台中枢 -->
-  <div class="sides" class:starmap-open={uiState.starMapOpen}>
-    <aside class="side side-right arm-console-wing">
-      <section class="sec-arms console-deck">
-        <div class="console-deck-header">
-          <div class="deck-title-wrap">
-            <span class="deck-badge font-celestial">璇玑中枢</span>
-            <h2 class="deck-title font-celestial">十方星宿律柱</h2>
-          </div>
-          <div
-            class="deck-capacity-pips"
-            title="本关最多启用 {engine.level?.armLimit ?? 10} 根指针"
-          >
-            {#each Array(engine.level?.armLimit ?? 10) as _, idx}
-              <span class="cap-pip" class:filled={idx < onArmCount}>◆</span>
-            {/each}
-            <span class="cap-num font-tabular">{onArmCount}/{engine.level?.armLimit ?? 10}</span>
-          </div>
-        </div>
-        {#if engine.autoSolve}
-          <p class="fitting-tip">🪄 自动拟合中——直接调整任意指针即可接管它；点击画布可打断</p>
-        {/if}
-        <ArmPanel />
-      </section>
-    </aside>
+  <!-- 顶部座舱天穹 HUD -->
+  <div class="gs-hud">
+    <TopBar />
   </div>
-</main>
+
+  <!-- 读屏实时播报 -->
+  <div class="sr-only" role="status" aria-live="polite">{screenReader.srLive}</div>
+
+  <!-- 画布核心竞技台 -->
+  <main class="gs-stage">
+    <GameArena />
+  </main>
+
+  <!-- 右侧璇玑中枢机坞 -->
+  <aside class="gs-dock" aria-label="璇玑中枢 · 指针控制台">
+    <div class="dock-head">
+      <div class="dock-title-wrap">
+        <span class="dock-badge g-label">璇玑中枢</span>
+        <h2 class="dock-title font-celestial">十方星宿律柱</h2>
+      </div>
+      <div class="dock-capacity" title="本关最多启用 {armLimit} 根指针">
+        <span class="cap-pips" aria-hidden="true">
+          {#each Array(armLimit) as _, idx}
+            <span class="cap-pip" class:filled={idx < onArmCount}>◆</span>
+          {/each}
+        </span>
+        <span class="cap-num font-tabular">{onArmCount}/{armLimit}</span>
+      </div>
+
+      <!-- 移动端展开态：把面板收回去看画布 -->
+      {#if uiState.panelExpanded}
+        <button
+          type="button"
+          class="dock-collapse"
+          title="收起面板，回到画布"
+          aria-label="收起面板"
+          onclick={() => uiState.togglePanelExpanded()}
+        >
+          <span>收起</span>
+          <span class="collapse-ico">▴</span>
+        </button>
+      {/if}
+    </div>
+
+    <div class="dock-body">
+      {#if engine.autoSolve}
+        <p class="fitting-tip">自动拟合中——直接调整任意指针即可接管它；点击画布可打断</p>
+      {/if}
+      <ArmPanel />
+    </div>
+
+    <div class="dock-foot" aria-hidden="true">
+      <span
+        class="g-lamp {engine.phase === 'edit'
+          ? 'g-lamp--cyan'
+          : engine.phase === 'running'
+            ? 'g-lamp--red'
+            : ''}"
+      ></span>
+      <span class="foot-text">{engine.phase === 'running' ? '演算中' : '待机 · 可调参'}</span>
+      <span class="foot-line"></span>
+      <span class="foot-glyph font-celestial">璇玑</span>
+    </div>
+  </aside>
+
+  <!-- 底部指令栏 -->
+  <div class="gs-cmd">
+    <PlayControls />
+  </div>
+
+  <!-- 移动端底部切换条 -->
+  <div class="gs-nav">
+    <MobileNav />
+  </div>
+</div>
 
 <!-- 周天星图抽屉 -->
 <StarmapDrawer />
 
-<!-- 移动端底部切换条 -->
-<MobileNav />
-
 <style>
-  .celestial-deep-cosmos {
+  /* ============================================================
+   * 全屏座舱：整屏 grid，页面本身不滚动
+   * 桌面 ┌── 顶栏 ──┐ / ├ 舞台 │ 机坞 ┤ / └── 指令栏 ──┘
+   * 手机  舞台（含画布）→ 机坞面板（内部滚动）→ 指令栏 → 底部导航
+   * ============================================================ */
+  .game-screen {
     position: fixed;
     inset: 0;
-    pointer-events: none;
-    z-index: -1;
-    overflow: hidden;
-    max-width: 100vw;
-    max-height: 100dvh;
-    background:
-      radial-gradient(
-        ellipse 90% 80% at 50% 20%,
-        rgba(13, 20, 36, 0.95) 0%,
-        rgba(4, 6, 12, 1) 100%
-      ),
-      radial-gradient(circle at 80% 80%, rgba(245, 184, 65, 0.03) 0%, transparent 50%);
-  }
-  .armillary-meridian-ring {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    border-radius: 50%;
-    border: 1px dashed rgba(245, 184, 65, 0.06);
-    pointer-events: none;
-  }
-  .armillary-meridian-ring.ring-1 {
-    width: 900px;
-    height: 900px;
-    margin-top: -450px;
-    margin-left: -450px;
-    animation: slow-celestial-spin 240s linear infinite;
-    border-color: rgba(245, 184, 65, 0.05);
-  }
-  .armillary-meridian-ring.ring-2 {
-    width: 1200px;
-    height: 1200px;
-    margin-top: -600px;
-    margin-left: -600px;
-    animation: slow-celestial-spin 360s linear infinite reverse;
-    border: 1px solid rgba(0, 245, 212, 0.03);
-  }
-  @keyframes slow-celestial-spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  main {
-    position: relative;
     z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--dock-w);
+    grid-template-rows: var(--hud-h) minmax(0, 1fr) var(--cmd-h);
+    grid-template-areas:
+      'hud hud'
+      'stage dock'
+      'cmd cmd';
+    background: transparent;
+  }
+
+  .gs-hud {
+    grid-area: hud;
+    min-width: 0;
+    min-height: 0;
+    z-index: 3;
+  }
+
+  .gs-stage {
+    grid-area: stage;
+    position: relative;
+    min-width: 0;
+    min-height: 0;
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 24px;
-    max-width: 1320px;
-    margin: 10px auto 0;
-    padding: 8px 16px 36px;
-    width: 100%;
-    transition:
-      max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-      padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 8px 12px 4px 14px;
   }
 
-  .sides {
-    display: contents;
+  .gs-cmd {
+    grid-area: cmd;
+    z-index: 3;
+    min-width: 0;
   }
 
-  .arm-console-wing {
-    flex: 0 1 400px;
-    max-width: 440px;
-    min-width: 290px;
+  /* 移动端底部导航槽（桌面不占位） */
+  .gs-nav {
+    display: none;
+    grid-area: nav;
+    min-width: 0;
+    min-height: 0;
   }
-  .console-deck {
-    background: linear-gradient(170deg, rgba(16, 23, 40, 0.98), rgba(8, 12, 22, 0.99));
-    border: 1px solid rgba(245, 184, 65, 0.35);
-    border-radius: 16px;
-    padding: 14px 16px;
+
+  /* ---------- 右侧机坞：贴边立柱，内部滚动 ---------- */
+  .gs-dock {
+    grid-area: dock;
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, rgba(12, 18, 32, 0.96) 0%, rgba(6, 10, 19, 0.99) 100%);
+    border-left: 1px solid var(--edge);
     box-shadow:
-      0 16px 44px rgba(0, 0, 0, 0.7),
-      inset 0 0 30px rgba(245, 184, 65, 0.05);
+      inset 1px 0 0 rgba(255, 255, 255, 0.05),
+      -14px 0 34px rgba(0, 0, 0, 0.55);
   }
-  .console-deck-header {
+  /* 机坞左沿的金色发丝高光 */
+  .gs-dock::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgba(245, 184, 65, 0.55) 12%,
+      rgba(0, 245, 212, 0.35) 55%,
+      rgba(245, 184, 65, 0.5) 88%,
+      transparent
+    );
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  .dock-head {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: 12px;
-    margin-bottom: 10px;
-    border-bottom: 1px solid rgba(245, 184, 65, 0.18);
+    gap: 10px;
+    padding: 10px 14px;
+    background: linear-gradient(180deg, rgba(245, 184, 65, 0.09), rgba(245, 184, 65, 0.015));
+    border-bottom: 1px solid var(--edge-soft);
+    box-shadow: var(--bevel-top);
   }
-  .deck-title-wrap {
+
+  .dock-title-wrap {
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
   }
-  .deck-badge {
-    font-size: 10px;
-    background: rgba(245, 184, 65, 0.15);
+
+  .dock-badge {
+    background: rgba(245, 184, 65, 0.14);
+    border: 1px solid var(--edge-soft);
     color: var(--gold-bright);
-    border: 1px solid rgba(245, 184, 65, 0.35);
-    padding: 1px 6px;
+    padding: 2px 6px;
     border-radius: 4px;
-    font-weight: 700;
+    letter-spacing: 1px;
+    flex: 0 0 auto;
   }
-  .deck-title {
+
+  .dock-title {
     margin: 0;
-    font-size: 17px;
+    font-size: 16px;
     color: #fff;
     letter-spacing: 2px;
     font-weight: 700;
+    text-shadow: 0 0 14px rgba(245, 184, 65, 0.35);
+    white-space: nowrap;
   }
-  .deck-capacity-pips {
+
+  .dock-capacity {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
+    flex: 0 0 auto;
+  }
+  .cap-pips {
+    display: flex;
+    align-items: center;
+    gap: 2px;
   }
   .cap-pip {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.15);
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.16);
     transition: all 0.2s ease;
   }
   .cap-pip.filled {
@@ -197,9 +254,52 @@
   .cap-num {
     font-size: 12px;
     color: var(--gold-bright);
-    margin-left: 6px;
     font-weight: 700;
   }
+
+  /* 移动端展开态的收起键（桌面不显示） */
+  .dock-collapse {
+    display: none;
+  }
+
+  .dock-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    padding: 10px 12px 12px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(245, 184, 65, 0.35) transparent;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dock-foot {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-top: 1px solid var(--edge-faint);
+    background: rgba(4, 7, 13, 0.85);
+  }
+  .foot-text {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .foot-line {
+    flex: 1 1 auto;
+    height: 1px;
+    background: linear-gradient(90deg, var(--edge-soft), transparent);
+  }
+  .foot-glyph {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: rgba(245, 184, 65, 0.45);
+  }
+
   .fitting-tip {
     font-size: 12px;
     color: var(--cyan);
@@ -211,59 +311,180 @@
     line-height: 1.4;
   }
 
-  @media (max-width: 1180px) {
-    main {
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      padding-bottom: 24px;
-    }
-    .arm-console-wing {
-      width: 100%;
-      max-width: 680px;
+  /* ---------- 中等宽度：机坞收窄，避免舞台被压扁 ---------- */
+  @media (max-width: 1180px) and (min-width: 901px) {
+    .game-screen {
+      grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
     }
   }
 
+  /* ---------- 竖屏平板（641–900px）：顶栏在上、舞台居中、机坞在下 ---------- */
+  @media (min-width: 641px) and (max-width: 900px) and (orientation: portrait) {
+    .game-screen {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: var(--hud-h) auto minmax(160px, 1fr) var(--cmd-h);
+      grid-template-areas:
+        'hud'
+        'stage'
+        'dock'
+        'cmd';
+    }
+    .gs-stage {
+      padding: 6px 12px 0;
+    }
+    .gs-dock {
+      border-left: none;
+      border-top: 1px solid var(--edge);
+      box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.5);
+    }
+    .gs-dock::before {
+      display: none;
+    }
+  }
+
+  /* ---------- 手机竖屏：舞台 → 机坞面板 → 指令栏 → 底部导航 ---------- */
   @media (max-width: 640px) and (orientation: portrait) {
-    main {
-      margin-top: 2px;
-      padding: 4px 6px 0;
-      gap: 4px;
-      flex: 1 1 auto;
-      min-height: 0;
-      height: auto;
-      overflow: hidden;
-      width: 100%;
-      box-sizing: border-box;
+    .game-screen {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
+      grid-template-areas:
+        'stage'
+        'dock'
+        'cmd'
+        'nav';
     }
 
-    .sides {
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      width: 100%;
-      min-height: 0;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: calc(52px + env(safe-area-inset-bottom));
-      gap: 8px;
-    }
-
-    .arm-console-wing {
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
-      flex: 1 1 auto;
-    }
-
-    main[data-tab='starmap'] .arm-console-wing {
+    .gs-hud {
       display: none;
     }
-    main[data-tab='arms'] .arm-console-wing {
+
+    .gs-stage {
+      padding: 2px 4px 0;
+    }
+
+    .gs-nav {
       display: block;
+      height: var(--tab-h);
+      z-index: 3;
     }
-    main.panel-hidden .sides {
+
+    .gs-cmd {
+      border-top: 1px solid var(--edge-soft);
+      background: linear-gradient(180deg, rgba(10, 15, 27, 0.92), rgba(5, 8, 15, 0.98));
+    }
+
+    .gs-dock {
+      border-left: none;
+      border-top: 1px solid var(--edge);
+      box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.5);
+    }
+    .gs-dock::before {
       display: none;
+    }
+
+    /* 展开态：机坞面板吃掉整个舞台，专心调参 */
+    .game-screen.panel-expanded .gs-stage {
+      display: none;
+    }
+
+    .dock-head {
+      padding: 6px 12px;
+    }
+    .dock-title {
+      font-size: 14px;
+      letter-spacing: 1.5px;
+    }
+
+    /* 展开态才需要「收起」键：否则没有回到画布的出口 */
+    .game-screen.panel-expanded .dock-capacity {
+      display: none;
+    }
+    .game-screen.panel-expanded .dock-collapse {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 8px;
+      background: var(--face-metal);
+      border: 1px solid var(--edge);
+      color: var(--gold-bright);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      box-shadow:
+        var(--bevel-top),
+        0 2px 0 rgba(0, 0, 0, 0.5);
+    }
+    .game-screen.panel-expanded .dock-collapse:active {
+      transform: translateY(2px);
+      box-shadow: var(--bevel-inset);
+    }
+    .collapse-ico {
+      font-size: 10px;
+    }
+    .dock-body {
+      padding: 8px 10px 12px;
+    }
+
+    /* 运行中：机坞让位给画布（保留指令栏与底部导航操作） */
+    .game-screen.panel-hidden {
+      grid-template-rows: minmax(0, 1fr) 0 auto auto;
+    }
+    .game-screen.panel-hidden .gs-dock {
+      display: none;
+    }
+    .game-screen.panel-hidden .gs-stage {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      justify-content: center;
+    }
+    /* 机坞收起后，画布吃掉空出来的高度（缎带仍贴顶，画布在剩余区域居中） */
+    .game-screen.panel-hidden :global(.stage-wrap) {
+      flex: 1 1 auto;
+      justify-content: flex-start;
+    }
+    .game-screen.panel-hidden :global(.canvas-box) {
+      width: min(94vw, 58dvh);
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    .dock-foot {
+      display: none;
+    }
+  }
+
+  /* ---------- 手机横屏：舞台在左、机坞在右，指令栏贴底 ---------- */
+  @media (max-width: 900px) and (orientation: landscape) {
+    .gs-hud {
+      display: none;
+    }
+    .game-screen {
+      grid-template-columns: minmax(0, 52vw) minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr) auto;
+      grid-template-areas:
+        'stage dock'
+        'cmd cmd';
+    }
+    .gs-stage {
+      padding: 4px 6px;
+    }
+    .dock-head {
+      padding: 6px 10px;
+    }
+    .dock-title {
+      font-size: 13px;
+    }
+    .game-screen.panel-hidden .gs-dock {
+      display: none;
+    }
+    .game-screen.panel-hidden {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        'stage'
+        'cmd';
     }
   }
 </style>

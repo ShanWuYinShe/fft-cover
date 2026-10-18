@@ -8,23 +8,28 @@
 @import './styles/reset.css';
 @import './styles/typography.css';
 @import './styles/utilities.css';
+@import './styles/game-ui.css';
 
-/* ---------- 根应用容器与安全区 ---------- */
+/* ---------- 根应用容器与安全区 ----------
+ * 游戏化布局：整屏锁死，页面本身不滚动——滚动只发生在机坞/面板内部，
+ * 这样画面永远是一块「游戏屏」而不是一份可以上下拖的网页文档。 */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 #app {
-  min-height: 100dvh;
+  height: 100dvh;
+  width: 100%;
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 @media (max-width: 640px) and (orientation: portrait) {
-  html,
-  body {
-    height: 100%;
-    overflow: hidden;
-  }
-
   body {
     position: fixed;
     inset: 0;
@@ -33,9 +38,7 @@
   }
 
   #app {
-    height: 100dvh;
     height: 100%;
-    overflow: hidden;
     padding-bottom: env(safe-area-inset-bottom);
   }
 }

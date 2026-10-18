@@ -140,11 +140,36 @@
   size="md"
   {onclose}
 >
-  <div class="tabs">
-    <button type="button" class:on={tab === 'achv'} onclick={() => (tab = 'achv')}>成就</button>
-    <button type="button" class:on={tab === 'dex'} onclick={() => (tab = 'dex')}>图鉴</button>
-    <button type="button" class:on={tab === 'stats'} onclick={() => (tab = 'stats')}>统计</button>
-    <button type="button" class:on={tab === 'save'} onclick={() => (tab = 'save')}>存档</button>
+  <!-- 分区切换：金属芯片（reset 去皮后必须自己给面，否则会退化成裸文字） -->
+  <div class="tabs" role="tablist" aria-label="成就面板分区">
+    <button
+      type="button"
+      role="tab"
+      aria-selected={tab === 'achv'}
+      class:on={tab === 'achv'}
+      onclick={() => (tab = 'achv')}>成就</button
+    >
+    <button
+      type="button"
+      role="tab"
+      aria-selected={tab === 'dex'}
+      class:on={tab === 'dex'}
+      onclick={() => (tab = 'dex')}>图鉴</button
+    >
+    <button
+      type="button"
+      role="tab"
+      aria-selected={tab === 'stats'}
+      class:on={tab === 'stats'}
+      onclick={() => (tab = 'stats')}>统计</button
+    >
+    <button
+      type="button"
+      role="tab"
+      aria-selected={tab === 'save'}
+      class:on={tab === 'save'}
+      onclick={() => (tab = 'save')}>存档</button
+    >
   </div>
 
   <div class="achv-body">
@@ -237,28 +262,30 @@
           </div>
         </div>
         <div class="cards">
-          <div class="card"><span class="k">总对局</span><span class="v">{totalPlays}</span></div>
           <div class="card">
-            <span class="k">总收集点</span><span class="v">{totalCollected}</span>
+            <span class="k">总对局</span><span class="v g-num g-num--gold">{totalPlays}</span>
           </div>
           <div class="card">
-            <span class="k">玩过的关卡</span><span class="v"
+            <span class="k">总收集点</span><span class="v g-num g-num--gold">{totalCollected}</span>
+          </div>
+          <div class="card">
+            <span class="k">玩过的关卡</span><span class="v g-num g-num--gold"
               >{playedLevels}<i>/{LEVEL_DEFS.length}</i></span
             >
           </div>
           <div class="card">
-            <span class="k">三星关卡</span><span class="v"
+            <span class="k">三星关卡</span><span class="v g-num g-num--gold"
               >{perfectLevels}<i>/{LEVEL_DEFS.length}</i></span
             >
           </div>
           <div class="card">
-            <span class="k"><Icon name="crown" size={13} /> 完美全清</span><span class="v"
-              >{perfectClears}<i>/{LEVEL_DEFS.length}</i></span
+            <span class="k"><Icon name="crown" size={13} /> 完美全清</span><span
+              class="v g-num g-num--gold">{perfectClears}<i>/{LEVEL_DEFS.length}</i></span
             >
           </div>
           <div class="card">
-            <span class="k"><Icon name="target" size={13} /> 精确解</span><span class="v"
-              >{exactClears}<i>/{LEVEL_DEFS.length}</i></span
+            <span class="k"><Icon name="target" size={13} /> 精确解</span><span
+              class="v g-num g-num--gold">{exactClears}<i>/{LEVEL_DEFS.length}</i></span
             >
           </div>
         </div>
@@ -303,7 +330,9 @@
           备份含：星级 / 最佳分 / 最快全清 / 完美与精确认证 / 每日成绩与连胜 / 成就与标记 / 解法存档 /
           节奏记录 / 卡关次数 / 合成器草稿 / 音量音效音乐偏好。
         </p>
-        <button type="button" class="mini" onclick={copySave}>📋 导出并复制存档</button>
+        <button type="button" class="mini" onclick={copySave}>
+          <Icon name="link" size={13} /> 导出并复制存档
+        </button>
         {#if saveText}
           <textarea class="io" readonly rows="3" value={saveText}></textarea>
         {/if}
@@ -313,12 +342,12 @@
           placeholder="粘贴存档文本（FFTP1:…）后点导入"
           bind:value={importText}></textarea>
         <div class="row">
-          <button type="button" class="mini" disabled={!importText.trim()} onclick={doImport}
-            >⬆ 导入并恢复</button
-          >
-          <button type="button" class="mini danger" onclick={doClear}
-            >{confirmClear ? '确认清空？' : '🗑 清空进度'}</button
-          >
+          <button type="button" class="mini" disabled={!importText.trim()} onclick={doImport}>
+            <Icon name="refresh" size={13} /> 导入并恢复
+          </button>
+          <button type="button" class="mini danger" onclick={doClear}>
+            {confirmClear ? '确认清空？' : '清空进度'}
+          </button>
         </div>
         {#if msg}
           <p class="msg" class:bad={!msg.ok}>{msg.text}</p>
@@ -426,20 +455,28 @@
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    padding: 5px 4px 6px;
-    border: 1px solid var(--line);
+    padding: 6px 4px 7px;
+    border: 1px solid var(--edge-faint);
     border-radius: 9px;
-    background: rgba(255, 255, 255, 0.02);
+    background: linear-gradient(180deg, rgba(14, 21, 36, 0.95), rgba(6, 10, 18, 0.95));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 2px 6px rgba(0, 0, 0, 0.4);
     color: inherit;
     font: inherit;
     cursor: pointer;
     transition:
       border-color 0.15s,
-      transform 0.15s;
+      transform 0.15s,
+      box-shadow 0.15s;
   }
   .dex-item:not(:disabled):hover {
-    border-color: rgba(79, 209, 197, 0.55);
+    border-color: var(--edge);
     transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 4px 14px rgba(0, 0, 0, 0.5),
+      0 0 14px rgba(0, 245, 212, 0.2);
   }
   .dex-item:disabled {
     cursor: default;
@@ -500,7 +537,7 @@
     color: #fdece7;
   }
 
-  /* 可量化成就的进度条（锁着的显示"还差多少"） */
+  /* 可量化成就的进度条（凹槽 + 发光填充） */
   .prog {
     display: flex;
     align-items: center;
@@ -515,9 +552,11 @@
   }
   .prog-bar {
     flex: 1;
-    height: 4px;
-    border-radius: 2px;
-    background: rgba(255, 255, 255, 0.08);
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--edge-faint);
+    box-shadow: var(--bevel-inset);
     overflow: hidden;
   }
   .prog-bar i {
@@ -525,6 +564,7 @@
     height: 100%;
     border-radius: 2px;
     background: linear-gradient(90deg, var(--cyan), var(--gold));
+    box-shadow: 0 0 8px rgba(245, 184, 65, 0.5);
   }
 
   .list {
@@ -532,16 +572,14 @@
     flex-direction: column;
     gap: 6px;
     margin-bottom: 12px;
-    max-height: 46vh;
-    overflow-y: auto;
     text-align: left;
   }
-  /* 成就分组标题：组名 + 计数 + 细进度条 */
+  /* 成就分组标题：组名 + 计数 + 凹槽进度条 */
   .ag-head {
     display: flex;
     align-items: center;
     gap: 7px;
-    margin: 6px 0 1px;
+    margin: 8px 0 1px;
     font-size: 11px;
     color: var(--muted);
   }
@@ -551,32 +589,40 @@
   .ag-head b {
     font-size: 12px;
     letter-spacing: 2px;
-    color: var(--cyan);
+    color: var(--gold);
   }
   .ag-count {
     font-variant-numeric: tabular-nums;
+    color: var(--muted);
   }
   .ag-bar {
     flex: 1;
-    height: 3px;
-    border-radius: 2px;
-    background: rgba(255, 255, 255, 0.07);
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--edge-faint);
+    box-shadow: var(--bevel-inset);
     overflow: hidden;
   }
   .ag-bar i {
     display: block;
     height: 100%;
     border-radius: 2px;
-    background: linear-gradient(90deg, rgba(79, 209, 197, 0.7), rgba(251, 191, 36, 0.75));
+    background: linear-gradient(90deg, rgba(0, 245, 212, 0.75), rgba(245, 184, 65, 0.9));
+    box-shadow: 0 0 10px rgba(245, 184, 65, 0.5);
   }
+  /* 成就条目：嵌进面板的凹槽；已解锁的描金并透出内光 */
   .item {
     display: flex;
     gap: 10px;
     align-items: center;
-    padding: 8px 10px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.02);
+    padding: 9px 11px;
+    border: 1px solid var(--edge-faint);
+    border-radius: 9px;
+    background: linear-gradient(180deg, rgba(10, 16, 28, 0.9), rgba(5, 8, 15, 0.85));
+    box-shadow:
+      var(--bevel-inset),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
   /* 未解锁降级只动装饰与标题，描述保持 --muted 实色。
      整卡 opacity 会把 12px 描述压到 2.38:1（实测远低于 AA 4.5:1）。 */
@@ -588,9 +634,11 @@
     font-weight: 500;
   }
   .item.got {
-    border-color: rgba(251, 191, 36, 0.45);
-    background: rgba(251, 191, 36, 0.05);
-    box-shadow: 0 0 10px rgba(251, 191, 36, 0.12);
+    border-color: rgba(245, 184, 65, 0.5);
+    background: linear-gradient(180deg, rgba(245, 184, 65, 0.1), rgba(245, 184, 65, 0.02));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 0 14px rgba(245, 184, 65, 0.16);
   }
   .icon {
     font-size: 20px;
@@ -608,24 +656,86 @@
     color: var(--muted);
     margin-bottom: 12px;
   }
-  /* 分区切换 */
+  /* 分区切换：嵌进面板的凹槽 + 四枚金属芯片（选中金色实心） */
   .tabs {
     display: flex;
-    gap: 6px;
-    justify-content: center;
+    gap: 5px;
     margin-bottom: 12px;
+    padding: 5px;
+    background: linear-gradient(180deg, rgba(3, 5, 10, 0.92), rgba(8, 12, 22, 0.78));
+    border: 1px solid var(--edge-soft);
+    border-radius: 12px;
+    box-shadow: var(--bevel-inset);
   }
   .tabs button {
+    flex: 1 1 0;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 0 8px;
     font-size: var(--fs-sm);
-    padding: 4px 16px;
-    min-height: 28px;
-    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    white-space: nowrap;
+    cursor: pointer;
     color: var(--muted);
+    border-radius: 8px;
+    border: 1px solid var(--edge-soft);
+    background: var(--face-metal);
+    box-shadow:
+      var(--bevel-top),
+      0 3px 0 rgba(0, 0, 0, 0.5);
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform 0.09s ease,
+      color 0.12s ease,
+      border-color 0.12s ease,
+      background 0.12s ease,
+      box-shadow 0.12s ease;
+  }
+  /* 选中芯片左侧的状态灯：亮起的金色指示灯 */
+  .tabs button::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(148, 163, 184, 0.35);
+    box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.6);
+    flex: none;
+    transition: background 0.12s ease;
+  }
+  .tabs button:hover {
+    color: var(--gold-bright);
+    border-color: var(--edge);
+    background: var(--face-metal-hover);
+  }
+  .tabs button:active {
+    transform: translateY(2px);
+    box-shadow: var(--bevel-top);
   }
   .tabs button.on {
-    border-color: rgba(79, 209, 197, 0.7);
-    color: var(--cyan);
-    background: var(--cyan-dim);
+    color: #1a1002;
+    border-color: #ffe7a3;
+    background: var(--face-gold);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+    box-shadow:
+      var(--bevel-top),
+      inset 0 -3px 0 rgba(140, 80, 0, 0.55),
+      0 3px 0 #7a4d05,
+      0 0 16px rgba(245, 184, 65, 0.4);
+  }
+  .tabs button.on::before {
+    background: #6b3d00;
+    box-shadow:
+      inset 0 0 3px rgba(255, 255, 255, 0.8),
+      0 0 6px rgba(120, 70, 0, 0.8);
+  }
+  .tabs button.on:hover {
+    color: #120a00;
+    background: var(--face-gold-hover);
   }
   .list.hide {
     display: none;
@@ -644,12 +754,13 @@
     margin-bottom: 12px;
     text-align: left;
   }
-  /* 每日打卡墙：7 列（周一 → 周日）× 5 行 */
+  /* 每日打卡墙：7 列（周一 → 周日）× 5 行，嵌进面板的凹槽 */
   .cal {
     padding: 9px 10px 10px;
-    border: 1px solid var(--line);
+    border: 1px solid var(--edge-faint);
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.02);
+    background: linear-gradient(180deg, rgba(8, 12, 22, 0.92), rgba(4, 7, 13, 0.9));
+    box-shadow: var(--bevel-inset);
   }
   .cal-head {
     display: flex;
@@ -663,7 +774,7 @@
   .cal-head b {
     font-size: 12px;
     letter-spacing: 2px;
-    color: var(--cyan);
+    color: var(--gold);
   }
   .cal-stat i {
     font-style: normal;
@@ -729,27 +840,29 @@
   .stats .card {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 8px 11px;
+    gap: 3px;
+    padding: 9px 11px;
     border-radius: var(--r-md);
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--line-2);
+    background: linear-gradient(180deg, rgba(14, 21, 36, 0.9), rgba(6, 10, 18, 0.9));
+    border: 1px solid var(--edge-faint);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 2px 6px rgba(0, 0, 0, 0.35);
   }
   .stats .card .k {
     font-size: var(--fs-xs);
     color: var(--muted);
+    letter-spacing: 1px;
   }
   .stats .card .v {
-    font-size: var(--fs-lg);
-    font-weight: 700;
-    color: var(--text);
-    font-variant-numeric: tabular-nums;
+    font-size: 22px;
   }
   .stats .card .v i {
     font-style: normal;
     font-size: var(--fs-xs);
     font-weight: 400;
     color: var(--muted-2);
+    text-shadow: none;
   }
   .lvl-list {
     display: flex;
@@ -760,10 +873,11 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 5px 8px;
+    padding: 6px 9px;
     border-radius: var(--r-sm);
     font-size: var(--fs-sm);
-    background: rgba(255, 255, 255, 0.02);
+    background: linear-gradient(180deg, rgba(11, 17, 30, 0.85), rgba(5, 8, 15, 0.8));
+    border: 1px solid var(--edge-faint);
   }
   /* 未玩过的关卡行：只压暗星级与火花图，文字（.nm/.meta/.best）保持实色。
      整行 opacity 会把 12px .meta 压到 2.03:1（实测）。 */
@@ -823,15 +937,16 @@
     width: 100%;
     box-sizing: border-box;
     resize: vertical;
-    background: #0f1428;
+    background: var(--metal-deep);
     color: var(--text);
-    border: 1px solid var(--line);
+    border: 1px solid var(--edge-faint);
     border-radius: var(--r-sm);
-    padding: 7px 9px;
+    padding: 8px 10px;
     font-size: var(--fs-xs);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     outline: none;
     word-break: break-all;
+    box-shadow: var(--bevel-inset);
   }
   .save .io:focus {
     border-color: rgba(79, 209, 197, 0.6);
@@ -848,27 +963,68 @@
   .save .row .mini {
     flex: 1;
   }
+  /* 存档区动作键：金属面 + 立体按压（原来没有背景，reset 后会变成裸文字） */
   .mini {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     font-size: var(--fs-sm);
-    padding: 6px 12px;
-    min-height: 32px;
-    border-radius: var(--r-sm);
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 0 14px;
+    min-height: 40px;
+    border-radius: 9px;
+    color: var(--text);
+    background: var(--face-metal);
+    border: 1px solid var(--edge-soft);
+    box-shadow:
+      var(--bevel-top),
+      0 3px 0 rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    transition:
+      transform 0.09s ease,
+      color 0.12s ease,
+      border-color 0.12s ease,
+      background 0.12s ease;
+  }
+  .mini:hover:not(:disabled) {
+    color: var(--gold-bright);
+    border-color: var(--edge);
+    background: var(--face-metal-hover);
+  }
+  .mini:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: var(--bevel-top);
+  }
+  .mini:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
   }
   /* 触屏：标签页与迷你按钮的热区补够 */
   @media (pointer: coarse), (max-width: 640px) {
     /* 实测 390×844 下 Tab 只有 58×38，低于 44 下限 */
     .tabs button {
-      min-height: 44px;
-      padding: 8px 16px;
+      min-height: 46px;
+      padding: 0 8px;
     }
     .mini {
       min-height: 44px;
     }
   }
+  .mini.danger {
+    color: #f0a6a6;
+    border-color: rgba(217, 43, 43, 0.45);
+    background: linear-gradient(180deg, #3a1414, #200a0a);
+  }
   .mini.danger:hover:not(:disabled) {
-    border-color: rgba(248, 113, 113, 0.7);
-    color: #f87171;
-    box-shadow: none;
+    color: #ffd9d9;
+    border-color: rgba(248, 113, 113, 0.8);
+    background: linear-gradient(180deg, #55201f, #2c0d0d);
+    box-shadow:
+      var(--bevel-top),
+      0 3px 0 rgba(0, 0, 0, 0.5),
+      0 0 16px rgba(217, 43, 43, 0.35);
   }
   .msg {
     font-size: var(--fs-xs);

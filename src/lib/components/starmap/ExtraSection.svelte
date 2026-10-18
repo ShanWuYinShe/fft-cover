@@ -115,12 +115,13 @@
   <div class="gen-box">
     <div class="gen-header">
       <span class="gen-label">随机星轨</span>
-      <div class="diff-chips">
+      <div class="diff-chips" role="group" aria-label="随机星轨难度">
         {#each DIFFS as d (d.id)}
           <button
             type="button"
             class="diff-chip"
             class:active={engine.difficulty === d.id}
+            aria-pressed={engine.difficulty === d.id}
             onclick={() => engine.setDifficulty(d.id)}
           >
             {d.nm}
@@ -159,10 +160,13 @@
         <span class="invite-code font-tabular">邀请码 <b>{inviteCode}</b></span>
         <div class="invite-btns">
           <button type="button" class="mini-btn" title="复制邀请码" onclick={copySeed}>
-            🔗 复制
+            <Icon name="link" size={11} /> 复制
           </button>
           <button type="button" class="mini-btn" title="分享链接" onclick={shareLevel}>
-            {shareCopied ? '✓ 已复制' : '📤 分享'}
+            {#if shareCopied}<Icon name="check" size={11} /> 已复制{:else}<Icon
+                name="share"
+                size={11}
+              /> 分享{/if}
           </button>
         </div>
       </div>
@@ -195,79 +199,135 @@
   .endless-trigger-btn {
     appearance: none;
     width: 100%;
+    min-height: 50px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 12px;
-    border-radius: var(--radius-sm);
-    background: linear-gradient(180deg, #182236 0%, #0d1524 100%);
-    border: 1px solid rgba(245, 184, 65, 0.35);
-    color: var(--text);
-    cursor: pointer;
-    font-size: var(--fs-xs);
-    transition: all 0.15s ease;
+    gap: 8px;
+    padding: 9px 12px;
     box-sizing: border-box;
+    cursor: pointer;
+    color: var(--text);
+    font-size: var(--fs-xs);
+    border-radius: 9px;
+    background: linear-gradient(180deg, var(--metal-3) 0%, var(--metal) 60%, #070c16 100%);
+    border: 1px solid var(--edge);
+    box-shadow:
+      var(--bevel-top),
+      0 3px 0 rgba(0, 0, 0, 0.5);
+    transition:
+      transform 0.09s ease,
+      color 0.12s ease,
+      border-color 0.12s ease,
+      background 0.12s ease,
+      box-shadow 0.12s ease;
   }
   .endless-trigger-btn:hover {
     border-color: var(--gold-bright);
     color: var(--gold-bright);
-    box-shadow: 0 0 12px rgba(245, 184, 65, 0.25);
+    background: var(--face-metal-hover);
+    box-shadow:
+      var(--bevel-top),
+      0 3px 0 rgba(0, 0, 0, 0.5),
+      0 0 18px rgba(245, 184, 65, 0.3);
+  }
+  .endless-trigger-btn:active {
+    transform: translateY(2px);
   }
   .endless-trigger-btn.active {
     border-color: var(--gold-bright);
-    background: rgba(245, 184, 65, 0.15);
+    background: linear-gradient(180deg, rgba(245, 184, 65, 0.24), rgba(245, 184, 65, 0.05));
+    box-shadow:
+      var(--bevel-top),
+      0 0 20px rgba(245, 184, 65, 0.35);
   }
   .et-left {
     display: flex;
     align-items: center;
     gap: 6px;
     font-weight: 700;
+    letter-spacing: 1px;
     color: var(--gold-bright);
+    white-space: nowrap;
   }
   .et-right {
     font-size: 11px;
     color: var(--muted);
+    white-space: nowrap;
   }
 
   .gen-box {
-    background: linear-gradient(180deg, #131c2e 0%, #0a1120 100%);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, var(--metal-2) 0%, var(--metal) 60%, #070c16 100%);
+    border: 1px solid var(--edge-soft);
+    border-radius: 10px;
     padding: var(--space-2) var(--space-3);
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    box-shadow: var(--bevel-top);
   }
 
   .gen-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
   }
   .gen-label {
     font-size: var(--fs-xs);
     color: var(--gold-bright);
     font-weight: 700;
+    letter-spacing: 1.5px;
+    white-space: nowrap;
   }
   .diff-chips {
     display: flex;
     gap: 4px;
+    flex: none;
+    padding: 3px;
+    background: linear-gradient(180deg, rgba(3, 5, 10, 0.9), rgba(8, 12, 22, 0.75));
+    border: 1px solid var(--edge-faint);
+    border-radius: 9px;
+    box-shadow: var(--bevel-inset);
   }
   .diff-chip {
     appearance: none;
-    padding: 2px 7px;
-    font-size: 10px;
-    border-radius: var(--radius-sm);
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--line);
-    color: var(--muted);
+    min-height: 30px;
+    padding: 0 9px;
     cursor: pointer;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    border-radius: 6px;
+    border: 1px solid var(--edge-soft);
+    background: var(--face-metal);
+    box-shadow: var(--bevel-top);
+    transition:
+      transform 0.09s ease,
+      color 0.12s ease,
+      border-color 0.12s ease,
+      background 0.12s ease;
+  }
+  .diff-chip:hover {
+    color: var(--gold-bright);
+    border-color: var(--edge);
+    background: var(--face-metal-hover);
+  }
+  .diff-chip:active {
+    transform: translateY(2px);
   }
   .diff-chip.active {
-    background: var(--gold);
-    color: #060911;
-    font-weight: 700;
-    border-color: var(--gold-bright);
+    color: #1a1002;
+    border-color: #ffe7a3;
+    background: var(--face-gold);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+    box-shadow:
+      var(--bevel-top),
+      inset 0 -2px 0 rgba(140, 80, 0, 0.5),
+      0 2px 0 #7a4d05;
   }
 
   .gen-actions {
@@ -277,46 +337,64 @@
   .action-btn {
     flex: 1;
     appearance: none;
-    height: 30px;
-    background: linear-gradient(180deg, #1c2842 0%, #10192e 100%);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
+    min-height: 42px;
+    padding: 0 8px;
+    cursor: pointer;
     color: var(--text);
     font-size: var(--fs-xs);
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 1px;
+    white-space: nowrap;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 5px;
-    cursor: pointer;
-    transition: all 0.15s ease;
+    border-radius: 8px;
+    border: 1px solid var(--edge-soft);
+    background: var(--face-metal);
+    box-shadow:
+      var(--bevel-top),
+      0 3px 0 rgba(0, 0, 0, 0.5);
+    transition:
+      transform 0.09s ease,
+      color 0.12s ease,
+      border-color 0.12s ease,
+      background 0.12s ease;
   }
   .action-btn:hover {
-    border-color: var(--gold);
+    border-color: var(--edge);
     color: var(--gold-bright);
+    background: var(--face-metal-hover);
+  }
+  .action-btn:active {
+    transform: translateY(2px);
   }
 
   .seed-box {
-    background: linear-gradient(180deg, #101726 0%, #080d17 100%);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, rgba(8, 12, 22, 0.92), rgba(4, 7, 13, 0.9));
+    border: 1px solid var(--edge-faint);
+    border-radius: 10px;
     padding: var(--space-2) var(--space-3);
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    box-shadow: var(--bevel-inset);
   }
 
   .invite-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
   }
   .invite-code {
     font-size: var(--fs-xs);
     color: var(--muted);
+    white-space: nowrap;
   }
   .invite-code b {
-    color: var(--gold);
+    color: var(--gold-bright);
+    letter-spacing: 1px;
   }
   .invite-btns {
     display: flex;
@@ -329,36 +407,77 @@
   }
   .seed-input {
     flex: 1;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    padding: 0 8px;
-    height: 28px;
+    min-width: 0;
+    background: var(--metal-deep);
+    border: 1px solid var(--edge-faint);
+    border-radius: 8px;
+    padding: 0 10px;
+    height: 38px;
     font-size: var(--fs-xs);
     color: var(--text);
+    box-shadow: var(--bevel-inset);
+  }
+  .seed-input::placeholder {
+    color: var(--muted-2);
   }
   .seed-input:focus {
     border-color: var(--cyan);
     outline: none;
+    box-shadow:
+      var(--bevel-inset),
+      0 0 0 1px rgba(0, 245, 212, 0.35);
   }
 
+  /* 载入 / 复制 / 分享：金属小键 */
   .load-btn,
   .mini-btn {
     appearance: none;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius-sm);
-    color: var(--text);
-    font-size: 10px;
-    padding: 0 8px;
-    height: 28px;
-    cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+    padding: 0 10px;
+    height: 38px;
+    border-radius: 8px;
+    border: 1px solid var(--edge-soft);
+    background: var(--face-metal);
+    box-shadow:
+      var(--bevel-top),
+      0 2px 0 rgba(0, 0, 0, 0.5);
+    transition:
+      transform 0.09s ease,
+      color 0.12s ease,
+      border-color 0.12s ease,
+      background 0.12s ease;
   }
   .load-btn:hover,
   .mini-btn:hover {
-    background: rgba(255, 255, 255, 0.16);
+    color: var(--gold-bright);
+    border-color: var(--edge);
+    background: var(--face-metal-hover);
+  }
+  .load-btn:active,
+  .mini-btn:active {
+    transform: translateY(2px);
+  }
+
+  /* 触屏：热区补到 44 */
+  @media (pointer: coarse), (max-width: 640px) {
+    .action-btn {
+      min-height: 46px;
+    }
+    .load-btn,
+    .mini-btn,
+    .seed-input {
+      height: 44px;
+    }
+    .diff-chip {
+      min-height: 40px;
+    }
   }
 </style>

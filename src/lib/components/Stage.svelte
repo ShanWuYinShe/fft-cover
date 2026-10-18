@@ -1101,50 +1101,59 @@
     bottom: 10px;
     display: flex;
     align-items: center;
-    gap: 3px;
-    padding: 3px 5px;
-    border-radius: 999px;
-    background: rgba(9, 13, 22, 0.92);
-    border: 1px solid rgba(245, 197, 66, 0.3);
+    gap: 4px;
+    padding: 4px 6px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(16, 24, 41, 0.94), rgba(6, 10, 19, 0.96));
+    border: 1px solid var(--edge-soft);
     box-shadow:
-      0 4px 16px rgba(0, 0, 0, 0.6),
-      0 0 12px rgba(245, 197, 66, 0.08) inset;
+      var(--bevel-top),
+      0 4px 16px rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(6px);
     z-index: 5;
   }
+  /* 缩放键：与座舱一致的小金属键（不再是裸按钮） */
   .zoom-bar button {
-    width: 26px;
-    height: 26px;
+    width: 30px;
+    height: 30px;
     min-height: 0;
     padding: 0;
     line-height: 1;
     font-size: var(--fs-md);
-    border-radius: 50%;
-    background: transparent;
-    border: none;
+    border-radius: 8px;
+    background: var(--face-metal);
+    border: 1px solid var(--edge-soft);
     color: var(--muted);
-    transition: all 0.15s ease;
+    box-shadow:
+      var(--bevel-top),
+      0 2px 0 rgba(0, 0, 0, 0.5);
+    transition: all 0.12s ease;
   }
   .zoom-bar button:hover:not(:disabled) {
-    background: rgba(245, 197, 66, 0.15);
+    background: var(--face-metal-hover);
+    border-color: var(--edge);
     color: var(--gold-bright);
-    box-shadow: 0 0 8px rgba(245, 197, 66, 0.3);
+  }
+  .zoom-bar button:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: var(--bevel-inset);
   }
   .zoom-bar .zoom-reset {
     font-size: var(--fs-sm);
   }
   .zoom-val {
-    min-width: 38px;
+    min-width: 40px;
+    padding: 0 4px;
     text-align: center;
     font-size: var(--fs-xs);
     color: var(--gold-bright);
-    font-weight: 600;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
   @media (pointer: coarse), (max-width: 640px) {
     .zoom-bar button {
-      width: 34px;
-      height: 34px;
+      width: 40px;
+      height: 40px;
     }
   }
   /* 移动端隐藏缩放控件：双指捏合/平移已足够，且避免遮挡画布底部的预览徽章 */

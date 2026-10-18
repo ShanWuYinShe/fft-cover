@@ -167,6 +167,46 @@
   /* --- 响应式断点标记 --- */
   --bp-mobile: 640px;
   --bp-tablet: 1024px;
+
+  /* ============================================================
+   * 游戏化座舱（HUD）令牌 —— 全屏游戏化布局专用
+   * 顶栏 / 底部指令栏 / 右侧机坞 / 底部导航的基准尺寸与金属质感
+   * ============================================================ */
+  --hud-h: 56px;
+  --cmd-h: 78px;
+  --dock-w: 384px;
+  --tab-h: 54px;
+  --frame-inset: 8px;
+
+  /* 金属层级：从最深的机箱内腔到抬起的装甲面 */
+  --metal-deep: #05080f;
+  --metal: #0b1220;
+  --metal-2: #121b2d;
+  --metal-3: #1a2540;
+
+  /* 座舱描边：暗金发丝线 / 亮金高光 */
+  --edge: rgba(245, 184, 65, 0.42);
+  --edge-soft: rgba(245, 184, 65, 0.18);
+  --edge-faint: rgba(245, 184, 65, 0.09);
+  --edge-hot: rgba(255, 209, 102, 0.88);
+
+  /* 立体质感：上高光 / 下暗边 / 内嵌凹陷 */
+  --bevel-top: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --bevel-bottom: inset 0 -2px 0 rgba(0, 0, 0, 0.55);
+  --bevel-inset: inset 0 2px 8px rgba(0, 0, 0, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+
+  /* 按钮/面板的可复用渐变面 */
+  --face-metal: linear-gradient(180deg, #1d2942 0%, #111a2c 55%, #0a1120 100%);
+  --face-metal-hover: linear-gradient(180deg, #263553 0%, #16213a 55%, #0d1526 100%);
+  --face-gold: linear-gradient(180deg, #ffe7a3 0%, #f7c250 42%, #d69214 100%);
+  --face-gold-hover: linear-gradient(180deg, #fff0bd 0%, #ffd166 42%, #e9a51d 100%);
+  --face-danger: linear-gradient(180deg, #f47373 0%, #cf3131 45%, #8f1b1b 100%);
+  --face-cyan: linear-gradient(180deg, #7ff5e5 0%, #00d9bc 45%, #028f7d 100%);
+
+  /* 座舱阴影：硬投影 + 金色外发光 */
+  --sh-game: 0 8px 24px rgba(0, 0, 0, 0.65), 0 2px 0 rgba(0, 0, 0, 0.5);
+  --sh-game-lg: 0 18px 48px rgba(0, 0, 0, 0.8), 0 3px 0 rgba(0, 0, 0, 0.55);
+  --sh-glow-hot: 0 0 22px rgba(245, 184, 65, 0.45), 0 0 6px rgba(255, 209, 102, 0.35);
 }
 
 @media (min-width: 1024px) {

@@ -37,12 +37,15 @@
   <!-- 每日挑战难度行 -->
   <div class="daily-card">
     <div class="dc-header">
-      <span class="dc-title font-celestial">
-        <Icon name="calendar" size={14} /> 每日一练
+      <span class="dc-title g-label">
+        <Icon name="calendar" size={13} /> 每日一练
       </span>
       {#if isDaily}
         <button type="button" class="mini-btn" title="分享今日挑战链接" onclick={shareDaily}>
-          {dailyShared ? '✓ 已复制' : '📤 分享'}
+          {#if dailyShared}<Icon name="check" size={11} /> 已复制{:else}<Icon
+              name="share"
+              size={11}
+            /> 分享{/if}
         </button>
       {/if}
     </div>
@@ -53,6 +56,7 @@
           type="button"
           class="diff-btn"
           class:active={isDaily && dailyDiff === d.id}
+          aria-pressed={isDaily && dailyDiff === d.id}
           onclick={() => {
             engine.setDifficulty(d.id);
             engine.loadDaily();
@@ -98,9 +102,9 @@
     {/each}
     <span class="dweek-cap font-tabular" class:full={weekFull} class:atrisk={streakAtRisk}>
       {#if weekFull}
-        🎉 本周全勤
+        <Icon name="award" size={11} /> 本周全勤
       {:else if streakAtRisk}
-        ⚠️ 今天不打，连胜就断
+        <Icon name="flame" size={11} /> 今天不打，连胜就断
       {:else if engine.dailyStreak.streak > 0}
         连续 {engine.dailyStreak.streak} 天
       {:else}
@@ -119,22 +123,21 @@
   }
 
   .daily-card {
-    background: linear-gradient(180deg, #131c2e 0%, #0a1120 100%);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, var(--metal-2) 0%, var(--metal) 60%, #070c16 100%);
+    border: 1px solid var(--edge-soft);
+    border-radius: 10px;
     padding: var(--space-2) var(--space-3);
+    box-shadow: var(--bevel-top);
   }
 
   .dc-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
     margin-bottom: var(--space-2);
   }
   .dc-title {
-    font-size: var(--fs-xs);
-    color: var(--gold-bright);
-    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 5px;
@@ -142,31 +145,50 @@
 
   .diff-btn-group {
     display: flex;
-    gap: var(--space-2);
+    gap: 6px;
   }
+  /* 难度键：金属面；当前档金色实心 */
   .diff-btn {
     flex: 1;
     appearance: none;
-    height: 28px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
+    min-height: 40px;
+    padding: 0 8px;
+    cursor: pointer;
     color: var(--muted);
     font-size: var(--fs-xs);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s ease;
+    font-weight: 700;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    border-radius: 8px;
+    border: 1px solid var(--edge-soft);
+    background: var(--face-metal);
+    box-shadow:
+      var(--bevel-top),
+      0 3px 0 rgba(0, 0, 0, 0.5);
+    transition:
+      transform 0.09s ease,
+      color 0.12s ease,
+      border-color 0.12s ease,
+      background 0.12s ease;
   }
   .diff-btn:hover {
-    color: var(--text);
-    border-color: var(--gold);
+    color: var(--gold-bright);
+    border-color: var(--edge);
+    background: var(--face-metal-hover);
+  }
+  .diff-btn:active {
+    transform: translateY(2px);
   }
   .diff-btn.active {
-    background: var(--gold);
-    color: #060911;
-    border-color: var(--gold-bright);
-    font-weight: 700;
-    box-shadow: 0 0 10px rgba(245, 184, 65, 0.4);
+    color: #1a1002;
+    border-color: #ffe7a3;
+    background: var(--face-gold);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+    box-shadow:
+      var(--bevel-top),
+      inset 0 -3px 0 rgba(140, 80, 0, 0.5),
+      0 3px 0 #7a4d05,
+      0 0 14px rgba(245, 184, 65, 0.4);
   }
 
   .weekly-card {
@@ -175,48 +197,69 @@
   .weekly-btn {
     appearance: none;
     width: 100%;
+    min-height: 48px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 7px 12px;
-    border-radius: var(--radius-sm);
-    background: linear-gradient(180deg, #162035 0%, #0d1524 100%);
-    border: 1px solid var(--line);
-    color: var(--text);
-    cursor: pointer;
-    font-size: var(--fs-xs);
-    transition: all 0.15s ease;
+    gap: 8px;
+    padding: 8px 12px;
     box-sizing: border-box;
+    cursor: pointer;
+    color: var(--text);
+    font-size: var(--fs-xs);
+    border-radius: 9px;
+    background: linear-gradient(180deg, var(--metal-3) 0%, var(--metal) 60%, #070c16 100%);
+    border: 1px solid var(--edge-soft);
+    box-shadow:
+      var(--bevel-top),
+      0 3px 0 rgba(0, 0, 0, 0.5);
+    transition:
+      transform 0.09s ease,
+      color 0.12s ease,
+      border-color 0.12s ease,
+      background 0.12s ease;
   }
   .weekly-btn:hover {
-    border-color: var(--gold);
+    border-color: var(--edge);
     color: var(--gold-bright);
+    background: var(--face-metal-hover);
+  }
+  .weekly-btn:active {
+    transform: translateY(2px);
   }
   .weekly-btn.active {
     border-color: var(--cyan);
-    box-shadow: 0 0 10px rgba(0, 245, 212, 0.3);
+    box-shadow:
+      var(--bevel-top),
+      0 0 16px rgba(0, 245, 212, 0.3);
   }
   .w-left {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 1px;
+    white-space: nowrap;
   }
   .w-right {
     color: var(--muted);
+    white-space: nowrap;
   }
 
+  /* 打卡格：嵌进面板的小凹槽 */
   .dweek {
     display: flex;
     align-items: center;
     gap: 4px;
     padding: 6px 10px;
-    background: rgba(0, 0, 0, 0.25);
-    border-radius: var(--radius-sm);
+    background: linear-gradient(180deg, rgba(3, 5, 10, 0.9), rgba(8, 12, 22, 0.75));
+    border: 1px solid var(--edge-faint);
+    border-radius: 9px;
+    box-shadow: var(--bevel-inset);
   }
   .dcell {
     flex: 1;
-    height: 24px;
+    height: 26px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -238,13 +281,17 @@
   .dcell.today {
     border-color: var(--gold);
     color: var(--gold-bright);
+    box-shadow: 0 0 8px rgba(245, 184, 65, 0.3);
   }
   .dcell.done {
-    background: rgba(217, 43, 43, 0.25);
-    border-color: rgba(217, 43, 43, 0.5);
-    color: #fca5a5;
+    background: linear-gradient(160deg, rgba(217, 43, 43, 0.55), rgba(142, 42, 31, 0.45));
+    border-color: rgba(217, 43, 43, 0.6);
+    color: #fdece7;
   }
   .dweek-cap {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     font-size: 10px;
     color: var(--muted);
     margin-left: 6px;
@@ -259,17 +306,49 @@
     font-weight: 700;
   }
 
+  /* 分享键：金属小键 */
   .mini-btn {
     appearance: none;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 30px;
+    padding: 0 8px;
+    cursor: pointer;
     color: var(--text);
     font-size: 10px;
-    padding: 2px 6px;
-    cursor: pointer;
+    font-weight: 700;
+    white-space: nowrap;
+    border-radius: 7px;
+    border: 1px solid var(--edge-soft);
+    background: var(--face-metal);
+    box-shadow:
+      var(--bevel-top),
+      0 2px 0 rgba(0, 0, 0, 0.5);
+    transition:
+      transform 0.09s ease,
+      color 0.12s ease,
+      border-color 0.12s ease,
+      background 0.12s ease;
   }
   .mini-btn:hover {
-    background: rgba(255, 255, 255, 0.16);
+    color: var(--gold-bright);
+    border-color: var(--edge);
+    background: var(--face-metal-hover);
+  }
+  .mini-btn:active {
+    transform: translateY(2px);
+  }
+
+  /* 触屏：所有可点元素补到 44 热区 */
+  @media (pointer: coarse), (max-width: 640px) {
+    .diff-btn {
+      min-height: 44px;
+    }
+    .mini-btn {
+      min-height: 40px;
+      padding: 0 10px;
+    }
   }
 </style>

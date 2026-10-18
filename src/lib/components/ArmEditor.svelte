@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Icon from './Icon.svelte';
   import { engine } from '../game/engine.svelte';
   import type { Arm } from '../game/types';
   import { beep } from '../game/audio';
@@ -19,6 +20,8 @@
   const deg = $derived(Math.round((arm.phase * 180) / Math.PI));
   const isCCW = $derived(arm.freq < 0);
   const absFreq = $derived(Math.abs(arm.freq || 1));
+  /** 通道编号：机箱铭牌上的两位通道号 */
+  const channelNo = $derived(String(index + 1).padStart(2, '0'));
 
   function setR(val: number): void {
     const clamped = Math.max(0, Math.min(R_MAX, Math.round(val)));
@@ -153,32 +156,45 @@
   }
 </script>
 
-<div class="astrolabe-instrument-bay">
-  <!-- 顶栏：通道仪表题序与物理读数 -->
-  <div class="bay-header">
-    <div class="bay-title-wrap">
-      <span class="bay-crest">璇玑调谐仪</span>
-      <span class="bay-badge">通道 #{index + 1}</span>
+<!-- 璇玑调谐仪：装甲面板外壳 + 三块嵌入式仪表凹槽 -->
+<section class="tune-bay g-plate g-plate--lit g-corners" aria-labelledby="tune-title">
+  <span class="g-corner tl" aria-hidden="true"></span>
+  <span class="g-corner tr" aria-hidden="true"></span>
+  <span class="g-corner bl" aria-hidden="true"></span>
+  <span class="g-corner br" aria-hidden="true"></span>
+
+  <!-- 铭牌头：段头小铭牌 + 通道号 + 三枚快速读数 -->
+  <header class="bay-head">
+    <div class="bay-ident">
+      <span class="bay-gem" aria-hidden="true"><Icon name="sliders" size={12} /></span>
+      <h3 id="tune-title" class="g-label bay-title">璇玑调谐仪</h3>
+      <span class="bay-ch">CH {channelNo}</span>
     </div>
     <div class="bay-quick-readout">
-      <span class="read-chip radius-chip">径 <b>{arm.r}</b><i>px</i></span>
-      <span class="read-chip phase-chip">宿 <b>{deg}</b><i>°</i></span>
-      <span class="read-chip freq-chip" class:ccw={isCCW}>
-        {absFreq}×{isCCW ? '逆天' : '顺天'}
+      <span class="read-chip">
+        <i>径</i><b class="g-num read-num">{arm.r}</b><em>px</em>
+      </span>
+      <span class="read-chip">
+        <i>宿</i><b class="g-num read-num phase-num">{deg}</b><em>°</em>
+      </span>
+      <span class="read-chip" class:ccw={isCCW}>
+        <b class="g-num read-num freq-num">{absFreq}×</b><em>{isCCW ? '逆' : '顺'}</em>
       </span>
     </div>
-  </div>
+  </header>
 
-  <!-- 双子机巧仪：左侧周天 360° 罗盘，右侧精密游标伸缩铜尺 -->
-  <div class="instruments-split">
-    <!-- 仪一：周天 360° 宿度罗盘 (Phase Astrolabe Compass) -->
-    <div class="instrument-cell compass-cell">
-      <div class="instrument-label">
-        <span class="inst-icon">✦</span>
-        <span>周天宿度仪</span>
-        <span class="inst-sub">PHASE DIAL</span>
-      </div>
+  <hr class="g-divider bay-divider" />
 
+  <!-- 仪一：周天 360° 宿度罗盘 (Phase Astrolabe Compass) -->
+  <div class="instrument g-inset phase-instrument">
+    <div class="inst-head">
+      <span class="inst-icon" aria-hidden="true"><Icon name="compass" size={12} /></span>
+      <span class="g-label inst-title">周天宿度仪</span>
+      <span class="inst-sub">PHASE DIAL</span>
+      <span class="g-lamp g-lamp--cyan inst-lamp" aria-hidden="true"></span>
+    </div>
+
+    <div class="phase-body">
       <div class="compass-wrap">
         <svg
           bind:this={dialEl}
@@ -238,11 +254,11 @@
           </g>
 
           <!-- 轴心青铜印钮 -->
-          <circle cx="80" cy="80" r="26" class="center-hub-bg" />
-          <circle cx="80" cy="80" r="24" class="center-hub-ring" />
+          <circle cx="80" cy="80" r="29" class="center-hub-bg" />
+          <circle cx="80" cy="80" r="27" class="center-hub-ring" />
         </svg>
 
-        <!-- 轴心数值交互按钮 -->
+        <!-- 轴心数值交互按钮（大号读数，点按可直接输入） -->
         <div class="compass-center-display">
           {#if editing === 'p'}
             <!-- svelte-ignore a11y_autofocus -->
@@ -263,126 +279,118 @@
               title="点击手动输入角度"
               onclick={() => beginEdit('p')}
             >
-              <b class="dial-deg-num">{deg}</b>
+              <b class="g-num dial-deg-num">{deg}</b>
               <span class="dial-deg-unit">°</span>
             </button>
           {/if}
         </div>
       </div>
 
-      <!-- 四极快速卡准按纽与微步进 -->
-      <div class="cardinal-snaps">
-        <button
-          type="button"
-          class="snap-btn"
-          class:active={deg === 0}
-          onclick={() => setPhaseDeg(0)}>0°</button
-        >
-        <button
-          type="button"
-          class="snap-btn"
-          class:active={deg === 90}
-          onclick={() => setPhaseDeg(90)}>90°</button
-        >
-        <button
-          type="button"
-          class="snap-btn"
-          class:active={deg === 180}
-          onclick={() => setPhaseDeg(180)}>180°</button
-        >
-        <button
-          type="button"
-          class="snap-btn"
-          class:active={deg === 270}
-          onclick={() => setPhaseDeg(270)}>270°</button
-        >
-        <div class="stepper-pair">
+      <!-- 右侧：四象快速卡准 + 微步进物理键 -->
+      <div class="phase-side">
+        <div class="snap-grid">
           <button
             type="button"
-            class="mini-step"
-            onpointerdown={pMinus.onDown}
-            onpointerup={pMinus.onUp}
-            onclick={pMinus.onClick}>−</button
+            class="g-btn snap-key"
+            class:active={deg === 0}
+            onclick={() => setPhaseDeg(0)}>0°</button
           >
           <button
             type="button"
-            class="mini-step"
+            class="g-btn snap-key"
+            class:active={deg === 90}
+            onclick={() => setPhaseDeg(90)}>90°</button
+          >
+          <button
+            type="button"
+            class="g-btn snap-key"
+            class:active={deg === 180}
+            onclick={() => setPhaseDeg(180)}>180°</button
+          >
+          <button
+            type="button"
+            class="g-btn snap-key"
+            class:active={deg === 270}
+            onclick={() => setPhaseDeg(270)}>270°</button
+          >
+        </div>
+        <div class="micro-row">
+          <span class="g-label g-label--dim micro-label">微调</span>
+          <button
+            type="button"
+            class="g-btn g-btn--icon step-key"
+            title="相位 −1°（长按连发）"
+            onpointerdown={pMinus.onDown}
+            onpointerup={pMinus.onUp}
+            onpointerleave={pMinus.onUp}
+            onclick={pMinus.onClick}><Icon name="minus" size={16} /></button
+          >
+          <button
+            type="button"
+            class="g-btn g-btn--icon step-key"
+            title="相位 +1°（长按连发）"
             onpointerdown={pPlus.onDown}
             onpointerup={pPlus.onUp}
-            onclick={pPlus.onClick}>+</button
+            onpointerleave={pPlus.onUp}
+            onclick={pPlus.onClick}><Icon name="plus" size={16} /></button
           >
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- 仪二：周径伸缩铜尺 (Radius Vernier Caliper) -->
-    <div class="instrument-cell vernier-cell">
-      <div class="instrument-label">
-        <span class="inst-icon">◈</span>
-        <span>周径游标规</span>
-        <span class="inst-sub">RADIUS CALIPER</span>
-      </div>
-
-      <!-- 游标铜尺读数台 -->
-      <div class="vernier-meter">
-        <div class="vernier-readout-wrap">
-          <span class="meter-name">律臂半径</span>
-          {#if editing === 'r'}
-            <!-- svelte-ignore a11y_autofocus -->
-            <input
-              class="vernier-input"
-              type="number"
-              inputmode="numeric"
-              autofocus
-              value={draft}
-              oninput={(e) => (draft = e.currentTarget.value)}
-              onblur={commitEdit}
-              onkeydown={onEditKey}
-            />
-          {:else}
-            <button
-              type="button"
-              class="vernier-val-btn"
-              title="点击手动输入半径"
-              onclick={() => beginEdit('r')}
-            >
-              <b class="vernier-val-num">{arm.r}</b>
-              <span class="vernier-val-unit">px</span>
-            </button>
-          {/if}
-        </div>
-
-        <div class="meter-steppers">
+  <!-- 仪二：周径伸缩铜尺 (Radius Vernier Caliper) -->
+  <div class="instrument g-inset radius-instrument">
+    <div class="inst-head">
+      <span class="inst-icon" aria-hidden="true"><Icon name="ruler" size={12} /></span>
+      <span class="g-label inst-title">周径游标规</span>
+      <span class="inst-sub">RADIUS CALIPER</span>
+      <span class="g-lamp inst-lamp" aria-hidden="true"></span>
+      <div class="radius-readout">
+        {#if editing === 'r'}
+          <!-- svelte-ignore a11y_autofocus -->
+          <input
+            class="vernier-input"
+            type="number"
+            inputmode="numeric"
+            autofocus
+            value={draft}
+            oninput={(e) => (draft = e.currentTarget.value)}
+            onblur={commitEdit}
+            onkeydown={onEditKey}
+          />
+        {:else}
           <button
             type="button"
-            class="gear-step-btn"
-            title="半径 −1"
-            onpointerdown={rMinus.onDown}
-            onpointerup={rMinus.onUp}
-            onpointerleave={rMinus.onUp}
-            onclick={rMinus.onClick}
+            class="vernier-val-btn"
+            title="点击手动输入半径"
+            onclick={() => beginEdit('r')}
           >
-            −
+            <b class="g-num radius-num">{arm.r}</b>
+            <span class="radius-unit">px</span>
           </button>
-          <button
-            type="button"
-            class="gear-step-btn"
-            title="半径 +1"
-            onpointerdown={rPlus.onDown}
-            onpointerup={rPlus.onUp}
-            onpointerleave={rPlus.onUp}
-            onclick={rPlus.onClick}
-          >
-            +
-          </button>
-        </div>
+        {/if}
       </div>
+    </div>
 
-      <!-- 仿古黄铜游标拉尺滑轨 -->
+    <!-- 游标铜尺滑轨：− 键 | 凹槽滑轨（原生 range + 金色立方滑块） | + 键 -->
+    <div class="radius-rail">
+      <button
+        type="button"
+        class="g-btn g-btn--icon step-key rail-key"
+        title="半径 −1"
+        onpointerdown={rMinus.onDown}
+        onpointerup={rMinus.onUp}
+        onpointerleave={rMinus.onUp}
+        onclick={rMinus.onClick}
+      >
+        <Icon name="minus" size={17} />
+      </button>
+
       <div class="vernier-track-container">
-        <div class="vernier-brass-ruler">
-          <div class="ruler-laser-line" style={`width: ${(arm.r / R_MAX) * 100}%`}></div>
-          <div class="ruler-hash-marks"></div>
+        <div class="vernier-groove">
+          <div class="ruler-fill" style={`width: ${(arm.r / R_MAX) * 100}%`}></div>
+          <div class="ruler-hash-marks" aria-hidden="true"></div>
           <input
             type="range"
             min="0"
@@ -392,9 +400,10 @@
             oninput={(e) => setR(+e.currentTarget.value)}
             class="vernier-range-slider"
             title="拖动调整周径"
+            aria-label="律臂半径"
           />
         </div>
-        <div class="ruler-milestones">
+        <div class="ruler-milestones" aria-hidden="true">
           <span>0</span>
           <span>50</span>
           <span>100</span>
@@ -403,164 +412,220 @@
         </div>
       </div>
 
-      <!-- 仪三：天行档位齿轮箱与顺逆拨杆 -->
-      <div class="gearbox-section">
-        <div class="gearbox-meta">
-          <div class="gear-title">
-            <span class="gear-dot">⚙</span>
-            <span>天行谐波倍率</span>
-          </div>
-          <!-- 顺逆玄极机械拨杆 -->
-          <button
-            type="button"
-            class="polarity-lever"
-            class:ccw={isCCW}
-            title={isCCW ? '当前为逆天旋转，点击拨为顺天' : '当前为顺天旋转，点击拨为逆天'}
-            onclick={toggleDir}
-          >
-            <span class="lever-knob"></span>
-            <span class="lever-label">{isCCW ? '↺ 逆天' : '↻ 顺天'}</span>
-          </button>
-        </div>
-
-        <!-- 10 阶黄铜档位按键 -->
-        <div class="gear-matrix">
-          {#each freqOptions as f}
-            {@const active = absFreq === f}
-            <button
-              type="button"
-              class="gear-tooth"
-              class:active
-              class:ccw={active && isCCW}
-              title={`切至 ${f}× 谐波`}
-              onclick={() => setFreqMag(f)}
-            >
-              <span class="tooth-num">{f}×</span>
-            </button>
-          {/each}
-        </div>
-      </div>
+      <button
+        type="button"
+        class="g-btn g-btn--icon step-key rail-key"
+        title="半径 +1"
+        onpointerdown={rPlus.onDown}
+        onpointerup={rPlus.onUp}
+        onpointerleave={rPlus.onUp}
+        onclick={rPlus.onClick}
+      >
+        <Icon name="plus" size={17} />
+      </button>
     </div>
   </div>
-</div>
+
+  <!-- 仪三：天行谐波倍率齿轮箱与顺逆拨杆 -->
+  <div class="instrument g-inset freq-instrument">
+    <div class="inst-head">
+      <span class="inst-icon" aria-hidden="true"><Icon name="gear" size={12} /></span>
+      <span class="g-label inst-title">天行谐波倍率</span>
+      <span class="inst-sub">HARMONIC GEARBOX</span>
+      <span class="g-lamp g-lamp--cyan inst-lamp" aria-hidden="true"></span>
+      <!-- 顺逆玄极机械拨杆 -->
+      <button
+        type="button"
+        class="polarity-lever"
+        class:ccw={isCCW}
+        title={isCCW ? '当前为逆天旋转，点击拨为顺天' : '当前为顺天旋转，点击拨为逆天'}
+        onclick={toggleDir}
+      >
+        <span class="lever-knob" aria-hidden="true"></span>
+        <span class="lever-label">
+          <Icon name={isCCW ? 'undo' : 'refresh'} size={13} />
+          {isCCW ? '逆天' : '顺天'}
+        </span>
+      </button>
+    </div>
+
+    <!-- 10 阶黄铜档位按键：5×2 物理键盘 -->
+    <div class="gear-matrix">
+      {#each freqOptions as f}
+        {@const active = absFreq === f}
+        <button
+          type="button"
+          class="g-btn gear-key"
+          class:active
+          class:ccw={active && isCCW}
+          title={`切至 ${f}× 谐波`}
+          onclick={() => setFreqMag(f)}
+        >
+          <span class="tooth-num">{f}×</span>
+        </button>
+      {/each}
+    </div>
+  </div>
+</section>
 
 <style>
-  .astrolabe-instrument-bay {
+  /* ============================================================
+   * 璇玑调谐仪 · 机箱仪表台
+   * 结构：装甲面板(g-plate) 内嵌三块凹槽(g-inset)仪表：
+   *   周天宿度仪（罗盘）/ 周径游标规（滑轨）/ 天行谐波倍率（档位键）
+   * 所有按键都是「有厚度」的物理键；读数用 .g-num 大号发光。
+   * ============================================================ */
+  .tune-bay {
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    background: linear-gradient(180deg, rgba(16, 23, 40, 0.95) 0%, rgba(8, 12, 22, 0.98) 100%);
-    border: 1px solid rgba(245, 184, 65, 0.3);
-    border-radius: 14px;
-    padding: 12px 14px;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      0 8px 24px rgba(0, 0, 0, 0.6);
+    gap: 8px;
+    padding: 9px;
+    min-width: 0;
   }
 
-  .bay-header {
+  /* ---------- 铭牌头 ---------- */
+  .bay-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(245, 184, 65, 0.16);
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
   }
-  .bay-title-wrap {
+  .bay-ident {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    min-width: 0;
   }
-  .bay-crest {
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: 15px;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: 2px;
-  }
-  .bay-badge {
-    font-size: 10px;
+  .bay-gem {
+    display: inline-flex;
+    align-items: center;
     color: var(--gold-bright);
-    background: rgba(245, 184, 65, 0.15);
-    border: 1px solid rgba(245, 184, 65, 0.35);
+    font-size: 11px;
+    text-shadow: 0 0 8px rgba(245, 184, 65, 0.8);
+  }
+  .bay-title {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+  .bay-ch {
     padding: 1px 6px;
+    border: 1px solid var(--edge-soft);
     border-radius: 4px;
-    font-weight: 700;
+    background: rgba(4, 7, 14, 0.72);
+    color: var(--gold-bright);
     font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    white-space: nowrap;
   }
   .bay-quick-readout {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
+    flex-wrap: wrap;
   }
   .read-chip {
-    font-size: 11px;
-    font-family: 'JetBrains Mono', monospace;
-    padding: 2px 7px;
-    border-radius: 4px;
-    background: #060912;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: var(--muted);
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+    padding: 2px 6px 3px;
+    border: 1px solid var(--edge-faint);
+    border-radius: 5px;
+    background: rgba(4, 7, 14, 0.72);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
   }
-  .read-chip b {
-    color: #fff;
-    margin: 0 2px;
+  .read-chip i {
+    font-style: normal;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    color: var(--muted-2);
   }
-  .read-chip.radius-chip b {
+  .read-chip .read-num {
+    font-size: 14px;
+    line-height: 1.2;
     color: var(--gold-bright);
+    font-family: 'JetBrains Mono', monospace;
   }
-  .read-chip.phase-chip b {
+  .read-chip .phase-num {
     color: var(--cyan);
+    text-shadow: 0 0 10px rgba(0, 245, 212, 0.45);
   }
-  .read-chip.freq-chip {
-    color: var(--cyan);
-    border-color: rgba(0, 245, 212, 0.3);
+  .read-chip em {
+    font-style: normal;
+    font-size: 9px;
+    color: var(--muted-2);
   }
-  .read-chip.freq-chip.ccw {
+  .read-chip.ccw .freq-num {
     color: var(--purple);
-    border-color: rgba(167, 139, 250, 0.3);
+    text-shadow: 0 0 10px rgba(167, 139, 250, 0.45);
   }
 
-  /* 分栏仪表台 */
-  .instruments-split {
-    display: grid;
-    grid-template-columns: 136px minmax(0, 1fr);
-    gap: 12px;
-    align-items: start;
-  }
-  @media (max-width: 640px) {
-    .instruments-split {
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
+  .bay-divider {
+    margin: 0;
   }
 
-  .instrument-cell {
+  /* ---------- 仪表凹槽通用 ---------- */
+  .instrument {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 7px;
+    padding: 7px 8px 8px;
+    min-width: 0;
   }
-  .instrument-label {
+  .inst-head {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 6px;
-    font-size: 11px;
-    font-weight: 700;
+    min-width: 0;
+  }
+  .inst-icon {
+    display: inline-flex;
+    align-items: center;
     color: var(--gold-bright);
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    letter-spacing: 1px;
+    font-size: 10px;
+    line-height: 1;
+    text-shadow: 0 0 6px rgba(245, 184, 65, 0.7);
+    flex: 0 0 auto;
+  }
+  .inst-title {
+    font-size: 10px;
+    letter-spacing: 1.6px;
+    white-space: nowrap;
+    flex: 0 0 auto;
   }
   .inst-sub {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 8px;
-    color: var(--muted);
+    letter-spacing: 1px;
+    color: var(--muted-2);
     font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+  }
+  .inst-head .inst-lamp {
+    flex: 0 0 auto;
   }
 
-  /* 360° 罗盘容器 */
+  /* ---------- 仪一：周天宿度仪 ---------- */
+  .phase-body {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 9px;
+    align-items: center;
+  }
   .compass-wrap {
     position: relative;
-    width: 124px;
-    height: 124px;
-    margin: 0 auto;
+    width: 120px;
+    height: 120px;
     user-select: none;
     touch-action: none;
   }
@@ -574,13 +639,13 @@
     cursor: grabbing;
   }
   .dial-outer-track {
-    fill: #060912;
-    stroke: rgba(245, 184, 65, 0.35);
+    fill: #05080f;
+    stroke: var(--edge);
     stroke-width: 1.5;
   }
   .dial-inner-plate {
-    fill: #0a0f1d;
-    stroke: rgba(245, 184, 65, 0.15);
+    fill: #0a101c;
+    stroke: var(--edge-faint);
     stroke-width: 1;
   }
   .dial-tick {
@@ -624,11 +689,11 @@
   }
 
   .center-hub-bg {
-    fill: #0c1222;
+    fill: #0b1120;
   }
   .center-hub-ring {
-    fill: #141c30;
-    stroke: rgba(245, 184, 65, 0.4);
+    fill: #121b2c;
+    stroke: var(--edge);
     stroke-width: 1.5;
   }
 
@@ -640,198 +705,198 @@
     pointer-events: auto;
   }
   .dial-val-btn {
-    appearance: none;
-    background: transparent;
-    border: none;
-    color: #fff;
     display: flex;
-    align-items: baseline;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    width: 46px;
+    height: 46px;
+    padding: 0 0 1px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 245, 212, 0.35);
+    background: radial-gradient(circle at 50% 32%, rgba(0, 245, 212, 0.16), rgba(4, 7, 14, 0.94));
+    box-shadow:
+      var(--bevel-inset),
+      0 0 12px rgba(0, 245, 212, 0.25);
     cursor: pointer;
-    padding: 4px;
   }
-  .dial-deg-num {
-    font-size: 15px;
-    color: var(--cyan);
+  .compass-center-display .dial-deg-num {
+    font-size: 16px;
     font-family: 'JetBrains Mono', monospace;
-    text-shadow: 0 0 8px rgba(0, 245, 212, 0.6);
+    color: var(--cyan);
+    text-shadow: 0 0 14px rgba(0, 245, 212, 0.6);
   }
   .dial-deg-unit {
-    font-size: 11px;
-    color: var(--muted);
+    font-size: 10px;
+    color: var(--muted-2);
   }
   .dial-input {
-    width: 44px;
-    height: 24px;
-    background: #000;
-    border: 1px solid var(--gold-bright);
+    width: 62px;
+    height: 38px;
+    padding: 0;
+    background: var(--metal-deep);
+    border: 1px solid var(--edge-hot);
+    border-radius: 8px;
     color: var(--cyan);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    text-align: center;
-    border-radius: 4px;
-    outline: none;
-  }
-
-  .cardinal-snaps {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    margin-top: 4px;
-  }
-  .snap-btn {
-    appearance: none;
-    background: rgba(16, 23, 40, 0.8);
-    border: 1px solid rgba(245, 184, 65, 0.2);
-    border-radius: 4px;
-    color: var(--muted);
-    font-size: 10px;
-    padding: 2px 5px;
-    cursor: pointer;
-    font-family: 'JetBrains Mono', monospace;
-    transition: all 0.12s;
-  }
-  .snap-btn:hover,
-  .snap-btn.active {
-    border-color: var(--gold-bright);
-    color: var(--gold-bright);
-    background: rgba(245, 184, 65, 0.15);
-  }
-  .stepper-pair {
-    display: flex;
-    gap: 3px;
-    margin-left: 4px;
-  }
-  .mini-step {
-    appearance: none;
-    background: #141c30;
-    border: 1px solid rgba(245, 184, 65, 0.25);
-    border-radius: 4px;
-    color: var(--text);
-    width: 24px;
-    height: 24px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: 'JetBrains Mono', monospace;
-    touch-action: manipulation;
-  }
-  .mini-step:active {
-    transform: scale(0.92);
-    border-color: var(--gold-bright);
-    color: var(--gold-bright);
-  }
-
-  /* 游标拉尺 */
-  .vernier-meter {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #080d1a;
-    border: 1px solid rgba(245, 184, 65, 0.22);
-    border-radius: 8px;
-    padding: 6px 12px;
-  }
-  .vernier-readout-wrap {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-  }
-  .meter-name {
-    font-size: 12px;
-    color: var(--muted);
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-  }
-  .vernier-val-btn {
-    appearance: none;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: baseline;
-    gap: 2px;
-  }
-  .vernier-val-num {
     font-size: 18px;
-    color: var(--gold-bright);
-    font-family: 'JetBrains Mono', monospace;
-    text-shadow: 0 0 10px rgba(245, 184, 65, 0.5);
-  }
-  .vernier-val-unit {
-    font-size: 10px;
-    color: var(--muted);
-  }
-  .vernier-input {
-    width: 50px;
-    height: 24px;
-    background: #000;
-    border: 1px solid var(--gold-bright);
-    color: var(--gold-bright);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
     text-align: center;
-    border-radius: 4px;
     outline: none;
+    box-shadow:
+      var(--bevel-inset),
+      0 0 12px rgba(0, 245, 212, 0.35);
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+  .dial-input::-webkit-outer-spin-button,
+  .dial-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
 
-  .meter-steppers {
-    display: flex;
-    gap: 5px;
-  }
-  .gear-step-btn {
-    appearance: none;
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    background: linear-gradient(180deg, #202b40 0%, #101726 100%);
-    border: 1px solid rgba(245, 184, 65, 0.35);
-    color: #fff;
-    font-size: 15px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    touch-action: manipulation;
-    transition: all 0.1s;
-  }
-  .gear-step-btn:hover {
-    border-color: var(--gold-bright);
-    color: var(--gold-bright);
-  }
-  .gear-step-btn:active {
-    transform: translateY(1px);
-    border-color: var(--gold-bright);
-  }
-
-  /* 游标铜尺滑轨 */
-  .vernier-track-container {
+  .phase-side {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
+    min-width: 0;
   }
-  .vernier-brass-ruler {
-    position: relative;
-    height: 28px;
-    background: #050812;
-    border: 1px solid rgba(245, 184, 65, 0.3);
-    border-radius: 6px;
+  .snap-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .snap-key {
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+    border-radius: 8px;
+  }
+  .snap-key.active {
+    background: rgba(0, 245, 212, 0.14);
+    border-color: var(--cyan-line);
+    color: var(--cyan);
+    box-shadow:
+      var(--bevel-top),
+      inset 0 -2px 0 rgba(0, 0, 0, 0.5),
+      0 0 14px rgba(0, 245, 212, 0.3);
+  }
+  .snap-key.active:hover:not(:disabled) {
+    color: var(--cyan);
+    border-color: var(--cyan);
+  }
+
+  .micro-row {
     display: flex;
     align-items: center;
-    padding: 0 4px;
-    overflow: hidden;
+    gap: 6px;
+    min-width: 0;
   }
-  .ruler-laser-line {
+  .micro-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+  }
+  .step-key {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    font-size: 17px;
+    font-weight: 700;
+    border-radius: 9px;
+    flex: 0 0 auto;
+  }
+
+  /* ---------- 仪二：周径游标规 ---------- */
+  .radius-readout {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+  }
+  .vernier-val-btn {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+    min-height: 34px;
+    padding: 1px 7px;
+    border: 1px solid var(--edge-soft);
+    border-radius: 6px;
+    background: rgba(4, 7, 14, 0.72);
+    box-shadow: var(--bevel-inset);
+    cursor: pointer;
+  }
+  .radius-num {
+    font-size: 26px;
+    line-height: 1.1;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--gold-bright);
+    text-shadow: 0 0 18px rgba(245, 184, 65, 0.55);
+  }
+  .radius-unit {
+    font-size: 9px;
+    color: var(--muted-2);
+  }
+  .vernier-input {
+    width: 72px;
+    height: 38px;
+    padding: 0;
+    background: var(--metal-deep);
+    border: 1px solid var(--edge-hot);
+    border-radius: 6px;
+    color: var(--gold-bright);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    text-align: center;
+    outline: none;
+    box-shadow:
+      var(--bevel-inset),
+      0 0 12px rgba(245, 184, 65, 0.35);
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+  .vernier-input::-webkit-outer-spin-button,
+  .vernier-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .radius-rail {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+  .rail-key {
+    flex: 0 0 auto;
+  }
+
+  /* 游标铜尺滑轨：凹槽 + 金色立方滑块（跨浏览器） */
+  .vernier-track-container {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .vernier-groove {
+    position: relative;
+    height: 44px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(2, 4, 9, 0.96), rgba(9, 14, 26, 0.92));
+    border: 1px solid var(--edge-soft);
+    box-shadow: var(--bevel-inset);
+  }
+  .ruler-fill {
     position: absolute;
-    left: 0;
     top: 0;
     bottom: 0;
-    background: linear-gradient(90deg, rgba(245, 184, 65, 0.15) 0%, rgba(245, 184, 65, 0.4) 100%);
-    border-right: 2px solid var(--gold-bright);
-    box-shadow: 0 0 10px rgba(245, 184, 65, 0.5);
+    left: 0;
+    background: linear-gradient(90deg, rgba(245, 184, 65, 0.07) 0%, rgba(245, 184, 65, 0.26) 100%);
+    border-right: 2px solid var(--edge-hot);
+    box-shadow: 0 0 12px rgba(245, 184, 65, 0.4);
     pointer-events: none;
   }
   .ruler-hash-marks {
@@ -840,130 +905,234 @@
     pointer-events: none;
     background-image: repeating-linear-gradient(
       to right,
-      rgba(245, 184, 65, 0.25) 0px,
-      rgba(245, 184, 65, 0.25) 1px,
+      rgba(245, 184, 65, 0.22) 0px,
+      rgba(245, 184, 65, 0.22) 1px,
       transparent 1px,
       transparent 10px
     );
   }
+  .ruler-milestones {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2px;
+    font-size: 9px;
+    line-height: 1;
+    color: var(--muted-2);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* 原生 range：两条轨道都透明，视觉轨道由上面的凹槽承担；
+     滑块是金色立方，WebKit 与 Firefox 分别声明。 */
   .vernier-range-slider {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    opacity: 0;
-    cursor: ew-resize;
-    z-index: 3;
     margin: 0;
-  }
-  .ruler-milestones {
-    display: flex;
-    justify-content: space-between;
-    font-size: 9px;
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    padding: 0 4px;
-  }
-
-  /* 档位齿轮箱 */
-  .gearbox-section {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    background: #070c18;
-    border: 1px solid rgba(245, 184, 65, 0.2);
-    border-radius: 8px;
-    padding: 10px 12px;
-  }
-  .gearbox-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .gear-title {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: #fff;
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-  }
-  .gear-dot {
-    color: var(--gold-bright);
-    font-size: 13px;
-  }
-
-  .polarity-lever {
+    padding: 0;
+    background: transparent;
     appearance: none;
+    -webkit-appearance: none;
+    cursor: ew-resize;
+    z-index: 2;
+    touch-action: pan-y;
+  }
+  /* WebKit / Blink */
+  .vernier-range-slider::-webkit-slider-runnable-track {
+    height: 100%;
+    background: transparent;
+    border: none;
+  }
+  .vernier-range-slider::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 34px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ffe7a3;
+    background: linear-gradient(180deg, #ffe7a3 0%, #f7c250 45%, #d69214 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.65),
+      inset 0 -3px 0 rgba(140, 80, 0, 0.5),
+      0 3px 0 rgba(0, 0, 0, 0.55),
+      0 0 12px rgba(245, 184, 65, 0.5);
+    cursor: grab;
+  }
+  .vernier-range-slider:active::-webkit-slider-thumb {
+    cursor: grabbing;
+    box-shadow:
+      inset 0 2px 6px rgba(0, 0, 0, 0.4),
+      inset 0 -1px 0 rgba(140, 80, 0, 0.4),
+      0 1px 0 rgba(0, 0, 0, 0.5),
+      0 0 16px rgba(245, 184, 65, 0.75);
+  }
+  .vernier-range-slider:focus-visible::-webkit-slider-thumb {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.65),
+      0 0 0 2px var(--cyan),
+      0 0 16px rgba(245, 184, 65, 0.7);
+  }
+  /* Firefox */
+  .vernier-range-slider::-moz-range-track {
+    height: 100%;
+    background: transparent;
+    border: none;
+  }
+  .vernier-range-slider::-moz-range-thumb {
+    width: 22px;
+    height: 34px;
+    border-radius: 5px;
+    border: 1px solid #ffe7a3;
+    background: linear-gradient(180deg, #ffe7a3 0%, #f7c250 45%, #d69214 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.65),
+      inset 0 -3px 0 rgba(140, 80, 0, 0.5),
+      0 3px 0 rgba(0, 0, 0, 0.55),
+      0 0 12px rgba(245, 184, 65, 0.5);
+    cursor: grab;
+  }
+  .vernier-range-slider:focus-visible::-moz-range-thumb {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.65),
+      0 0 0 2px var(--cyan),
+      0 0 16px rgba(245, 184, 65, 0.7);
+  }
+
+  /* ---------- 仪三：天行谐波倍率 ---------- */
+  .polarity-lever {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 3px 10px;
-    border-radius: 14px;
-    background: rgba(0, 245, 212, 0.12);
-    border: 1.5px solid rgba(0, 245, 212, 0.4);
+    gap: 7px;
+    min-height: 40px;
+    padding: 0 10px 0 5px;
+    border-radius: 9px;
+    border: 1px solid var(--edge-soft);
+    background: var(--face-metal);
+    box-shadow:
+      var(--bevel-top),
+      inset 0 -2px 0 rgba(0, 0, 0, 0.55),
+      0 3px 0 rgba(0, 0, 0, 0.5);
     color: var(--cyan);
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s ease;
     font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    cursor: pointer;
+    flex: 0 0 auto;
+    transition:
+      transform 0.09s ease,
+      box-shadow 0.12s ease,
+      border-color 0.12s ease,
+      color 0.12s ease;
   }
-  .polarity-lever .lever-knob {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--cyan);
-    box-shadow: 0 0 6px var(--cyan);
-    transition: all 0.15s ease;
+  .polarity-lever:active {
+    transform: translateY(2px);
+    box-shadow:
+      var(--bevel-top),
+      inset 0 2px 8px rgba(0, 0, 0, 0.7),
+      0 1px 0 rgba(0, 0, 0, 0.5);
+  }
+  .lever-knob {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid #a7fff3;
+    background: var(--face-cyan);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      0 2px 0 rgba(0, 0, 0, 0.5),
+      0 0 10px rgba(0, 245, 212, 0.5);
+    flex: 0 0 auto;
+    transition:
+      background 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+  .lever-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
   }
   .polarity-lever.ccw {
-    background: rgba(167, 139, 250, 0.15);
-    border-color: rgba(167, 139, 250, 0.5);
     color: var(--purple);
+    border-color: rgba(167, 139, 250, 0.4);
   }
   .polarity-lever.ccw .lever-knob {
-    background: var(--purple);
-    box-shadow: 0 0 6px var(--purple);
+    border-color: #ddd6fe;
+    background: linear-gradient(180deg, #c4b5fd 0%, #a78bfa 45%, #6d4fc4 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      0 2px 0 rgba(0, 0, 0, 0.5),
+      0 0 10px rgba(167, 139, 250, 0.5);
   }
 
   .gear-matrix {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    gap: 4px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
   }
-  .gear-tooth {
-    appearance: none;
-    height: 32px;
-    border-radius: 4px;
-    background: linear-gradient(180deg, #182235 0%, #0c1220 100%);
-    border: 1px solid rgba(245, 184, 65, 0.2);
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+  .gear-key {
+    height: 40px;
+    min-height: 40px;
     padding: 0;
-    transition: all 0.12s;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.5px;
   }
-  .gear-tooth:hover {
-    border-color: rgba(245, 184, 65, 0.5);
-    color: #fff;
-  }
-  .gear-tooth.active {
-    background: linear-gradient(180deg, #382909 0%, #1a1304 100%);
-    border-color: #ffd700;
-    color: #ffd700;
-    box-shadow: 0 0 10px rgba(245, 184, 65, 0.4);
+  .gear-key.active {
+    background: var(--face-gold);
+    border-color: #ffe7a3;
+    color: #1a1002;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+    box-shadow:
+      var(--bevel-top),
+      inset 0 -3px 0 rgba(140, 80, 0, 0.5),
+      0 2px 0 #7a4d05,
+      0 0 16px rgba(245, 184, 65, 0.45);
     transform: translateY(1px);
   }
-  .gear-tooth.active.ccw {
-    background: linear-gradient(180deg, #2b1742 0%, #140b20 100%);
-    border-color: #a78bfa;
-    color: #a78bfa;
-    box-shadow: 0 0 10px rgba(167, 139, 250, 0.4);
+  .gear-key.active:hover:not(:disabled) {
+    background: var(--face-gold-hover);
+    border-color: #fff2c4;
+    color: #120a00;
+  }
+  .gear-key.active.ccw {
+    background: linear-gradient(180deg, #c4b5fd 0%, #a78bfa 45%, #6d4fc4 100%);
+    border-color: #ddd6fe;
+    color: #160c2e;
+    box-shadow:
+      var(--bevel-top),
+      inset 0 -3px 0 rgba(70, 40, 130, 0.5),
+      0 2px 0 #3d2a6b,
+      0 0 16px rgba(167, 139, 250, 0.45);
+  }
+
+  /* ---------- 触屏：物理键与滑轨放大到 ≥44 高 ---------- */
+  @media (pointer: coarse), (max-width: 640px) {
+    .snap-key {
+      height: 44px;
+      min-height: 44px;
+    }
+    .step-key {
+      width: 44px;
+      min-width: 44px;
+      height: 44px;
+    }
+    .gear-key {
+      height: 46px;
+      min-height: 46px;
+      font-size: 14px;
+    }
+    .polarity-lever {
+      min-height: 44px;
+    }
+    .radius-num {
+      font-size: 28px;
+    }
+    .vernier-val-btn {
+      min-height: 44px;
+    }
   }
 </style>

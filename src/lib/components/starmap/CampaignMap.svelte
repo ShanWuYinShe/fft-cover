@@ -188,39 +188,51 @@
   .ch-nav {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 8px;
+    gap: 8px;
+    padding: 7px 9px;
     clip-path: var(--chamfer-sm);
-    border: 1px solid rgba(130, 150, 210, 0.24);
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-    background: linear-gradient(180deg, #131c30 0%, #090e1a 100%);
+    border: 1px solid var(--edge-soft);
+    background: linear-gradient(180deg, var(--metal-3) 0%, var(--metal) 55%, #070c16 100%);
     box-shadow:
-      0 3px 0 #04070d,
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      var(--bevel-top),
+      0 3px 0 rgba(0, 0, 0, 0.55);
   }
 
+  /* 章节翻页键：方形金属键，热区 44 */
   .nav-btn {
     appearance: none;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid var(--line);
-    color: var(--text);
-    width: 30px;
-    height: 30px;
-    border-radius: var(--radius-sm);
+    flex: none;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: var(--fs-xs);
-    transition: all 0.15s ease;
+    font-size: var(--fs-sm);
+    color: var(--muted);
+    border-radius: 9px;
+    border: 1px solid var(--edge-soft);
+    background: var(--face-metal);
+    box-shadow:
+      var(--bevel-top),
+      0 3px 0 rgba(0, 0, 0, 0.5);
+    transition:
+      transform 0.09s ease,
+      color 0.12s ease,
+      border-color 0.12s ease,
+      background 0.12s ease;
   }
   .nav-btn:hover:not(:disabled) {
-    border-color: var(--gold-bright);
+    border-color: var(--edge);
     color: var(--gold-bright);
-    background: rgba(245, 184, 65, 0.12);
+    background: var(--face-metal-hover);
+  }
+  .nav-btn:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: var(--bevel-top);
   }
   .nav-btn:disabled {
-    opacity: 0.3;
+    opacity: 0.35;
     cursor: not-allowed;
   }
 
@@ -261,39 +273,71 @@
   .ch-summary {
     font-size: var(--fs-xs);
     color: var(--muted);
+    letter-spacing: 0.5px;
   }
 
+  /* 章节翻页圆点：可视点很小，但按键本体给足 44×44 热区 */
   .dots {
     display: flex;
     justify-content: center;
-    gap: 6px;
-    margin: 4px 0 8px;
+    /* 窄屏（320px 级）放不下 7×44 时换行，宁可两行也不缩热区 */
+    flex-wrap: wrap;
+    gap: 2px;
+    margin: 2px 0 6px;
   }
   .dot {
     appearance: none;
-    width: 8px;
-    height: 8px;
+    position: relative;
+    width: 44px;
+    height: 44px;
     padding: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.12);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: transparent;
     border: 1px solid transparent;
     cursor: pointer;
-    transition: all 0.18s ease;
+    transition:
+      background 0.18s ease,
+      border-color 0.18s ease;
+  }
+  .dot::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.6);
+    transition:
+      width 0.18s ease,
+      border-radius 0.18s ease,
+      background 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+  .dot:hover:not(:disabled) {
+    background: rgba(245, 184, 65, 0.08);
+    border-color: var(--edge-soft);
   }
   .dot.on {
-    width: 20px;
+    border-color: var(--edge-soft);
+  }
+  .dot.on::before {
+    width: 24px;
     border-radius: 4px;
     background: var(--gold);
-    box-shadow: 0 0 10px rgba(245, 184, 65, 0.55);
+    box-shadow: 0 0 12px rgba(245, 184, 65, 0.6);
   }
-  .dot.done {
-    background: rgba(245, 184, 65, 0.5);
+  .dot.done::before {
+    background: rgba(245, 184, 65, 0.55);
   }
-  .dot.done.on {
+  .dot.done.on::before {
     background: linear-gradient(90deg, var(--gold), var(--cyan));
   }
-  .dot.locked {
+  .dot.locked::before {
     background: rgba(255, 255, 255, 0.07);
+  }
+  .dot:disabled {
     cursor: not-allowed;
   }
 
@@ -323,73 +367,107 @@
 
   .link {
     position: absolute;
-    left: 15px;
+    left: 22px;
     top: 0;
     width: 2px;
     height: 10px;
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.5), rgba(0, 245, 212, 0.35));
+    background: linear-gradient(180deg, rgba(245, 184, 65, 0.6), rgba(0, 245, 212, 0.35));
+    box-shadow: 0 0 6px rgba(245, 184, 65, 0.3);
   }
   .link.hidden {
     display: none;
   }
 
+  /* 星图航段：每一关是一段带倒角的金属板 */
   .node {
     appearance: none;
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: 10px;
     width: 100%;
+    min-height: 52px;
     padding: 7px 10px 7px 8px;
+    box-sizing: border-box;
     text-align: left;
     clip-path: var(--chamfer-sm);
-    background: linear-gradient(180deg, #131c2e 0%, #0a1120 100%);
-    border: 1px solid rgba(245, 184, 65, 0.16);
-    border-top: 1px solid rgba(245, 184, 65, 0.28);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+    background: linear-gradient(180deg, var(--metal-3) 0%, var(--metal) 60%, #070c16 100%);
+    border: 1px solid var(--edge-soft);
+    box-shadow:
+      var(--bevel-top),
+      0 3px 0 rgba(0, 0, 0, 0.5);
     cursor: pointer;
-    transition: all 0.15s ease;
-    box-sizing: border-box;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      transform 0.09s ease,
+      box-shadow 0.15s ease;
   }
   .node:hover:not(:disabled) {
-    background: linear-gradient(180deg, #1b2742 0%, #0e172a 100%);
-    border-color: rgba(245, 184, 65, 0.45);
+    background: var(--face-metal-hover);
+    border-color: var(--edge);
     transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+    box-shadow:
+      var(--bevel-top),
+      0 5px 0 rgba(0, 0, 0, 0.5),
+      0 0 18px rgba(245, 184, 65, 0.2);
   }
+  .node:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: var(--bevel-top);
+  }
+  /* 选中航段：金色包边 + 发光（不再是青色细描边） */
   .node.active {
-    border-color: var(--cyan);
-    box-shadow: 0 0 12px rgba(0, 245, 212, 0.4);
+    border-color: var(--gold-bright);
+    background: linear-gradient(
+      180deg,
+      rgba(245, 184, 65, 0.2),
+      rgba(245, 184, 65, 0.04) 60%,
+      #0a1120
+    );
+    box-shadow:
+      var(--bevel-top),
+      0 0 0 1px rgba(245, 184, 65, 0.45),
+      0 0 22px rgba(245, 184, 65, 0.35);
   }
+  /* 锁定航段：暗金属，不可点 */
   .node:disabled {
-    opacity: 0.5;
+    opacity: 0.55;
+    filter: grayscale(0.5);
     cursor: not-allowed;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
   .node .idx {
     flex: 0 0 auto;
-    width: 26px;
-    height: 26px;
+    width: 30px;
+    height: 30px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     font-size: var(--fs-sm);
-    font-weight: 700;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
     color: var(--muted);
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(245, 184, 65, 0.2);
+    background: linear-gradient(180deg, rgba(6, 9, 16, 0.9), rgba(12, 18, 30, 0.9));
+    border: 1px solid var(--edge-soft);
+    box-shadow: var(--bevel-inset);
   }
   .node.done .idx {
-    background: linear-gradient(135deg, rgba(245, 184, 65, 0.35), rgba(180, 83, 9, 0.85));
+    background: linear-gradient(180deg, #f5c05a, #b45309);
     border-color: #ffd166;
-    color: #ffffff;
-    box-shadow: 0 0 10px rgba(245, 184, 65, 0.45);
+    color: #1a1002;
+    box-shadow:
+      var(--bevel-top),
+      0 0 12px rgba(245, 184, 65, 0.5);
   }
   .node.done.perfect .idx {
-    background: linear-gradient(135deg, #f5b841 0%, #b45309 100%);
+    background: var(--face-gold);
     border-color: #ffe699;
-    color: #060911;
-    box-shadow: 0 0 12px rgba(245, 184, 65, 0.6);
+    color: #1a1002;
+    box-shadow:
+      var(--bevel-top),
+      0 0 16px rgba(245, 184, 65, 0.7);
   }
 
   .node-body {
@@ -432,29 +510,44 @@
 
   .teaser {
     margin-top: 10px;
-    padding: 8px 12px;
-    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    min-height: 48px;
+    box-sizing: border-box;
+    border-radius: 9px;
     display: flex;
     align-items: center;
     gap: 10px;
     text-align: left;
-    box-sizing: border-box;
     width: 100%;
   }
   .teaser.open {
     appearance: none;
     cursor: pointer;
-    background: rgba(0, 245, 212, 0.08);
-    border: 1px solid rgba(0, 245, 212, 0.3);
     color: var(--cyan);
+    background: linear-gradient(180deg, rgba(0, 245, 212, 0.12), rgba(0, 245, 212, 0.03));
+    border: 1px solid rgba(0, 245, 212, 0.35);
+    box-shadow:
+      var(--bevel-top),
+      0 3px 0 rgba(0, 0, 0, 0.5);
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      transform 0.09s ease;
   }
   .teaser.open:hover {
-    background: rgba(0, 245, 212, 0.15);
+    background: linear-gradient(180deg, rgba(0, 245, 212, 0.2), rgba(0, 245, 212, 0.06));
     border-color: var(--cyan);
+    box-shadow:
+      var(--bevel-top),
+      0 3px 0 rgba(0, 0, 0, 0.5),
+      0 0 18px rgba(0, 245, 212, 0.3);
+  }
+  .teaser.open:active {
+    transform: translateY(2px);
   }
   .teaser.locked {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(10, 14, 24, 0.9), rgba(5, 8, 15, 0.9));
+    border: 1px solid var(--edge-faint);
     color: var(--muted);
   }
 

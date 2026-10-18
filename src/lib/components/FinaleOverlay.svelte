@@ -60,93 +60,112 @@
   aria-modal="true"
   aria-label={mastered ? '全部关卡三星达成' : '通关达成'}
 >
-  <div class="card">
-    <div class="glow"></div>
-    <!-- 落款朱印：书画收尾的那一方印 -->
-    <div class="seal" aria-hidden="true">{mastered ? '大成' : '通关'}</div>
-    <div class="burst"><Icon name={mastered ? 'crown' : 'flag'} size={30} /></div>
-    <h2>{mastered ? '谐波大师' : '通关！'}</h2>
-    <p class="sub">
-      {#if mastered}
-        全部 {LEVEL_DEFS.length} 关三星——任意周期曲线，你都能反解出它的傅立叶系数
-      {:else}
-        {CHAPTERS.length} 个章节、{LEVEL_DEFS.length} 关全部走完——从一根指针画圆，到七根齐发的团花与古钟
-      {/if}
-    </p>
+  <!-- 完结演出：外框承载四角包边，内层卡片滚动 -->
+  <div class="card-wrap">
+    <span class="g-corner tl" aria-hidden="true"></span>
+    <span class="g-corner tr" aria-hidden="true"></span>
+    <span class="g-corner bl" aria-hidden="true"></span>
+    <span class="g-corner br" aria-hidden="true"></span>
+    <div class="card">
+      <span class="g-scanlines card-scan" aria-hidden="true"></span>
+      <div class="glow" aria-hidden="true"></div>
+      <!-- 顶部铭牌 -->
+      <div class="card-rail">
+        <span class="g-label">周 天 完 结</span>
+        <span class="rail-lv">{mastered ? '三星精通' : '首次通关'}</span>
+      </div>
+      <!-- 落款朱印：书画收尾的那一方印 -->
+      <div class="seal" aria-hidden="true">{mastered ? '大成' : '通关'}</div>
+      <div class="burst"><Icon name={mastered ? 'crown' : 'flag'} size={30} /></div>
+      <h2>{mastered ? '谐波大师' : '通关！'}</h2>
+      <p class="sub">
+        {#if mastered}
+          全部 {LEVEL_DEFS.length} 关三星——任意周期曲线，你都能反解出它的傅立叶系数
+        {:else}
+          {CHAPTERS.length} 个章节、{LEVEL_DEFS.length} 关全部走完——从一根指针画圆，到七根齐发的团花与古钟
+        {/if}
+      </p>
+      <span class="g-divider card-div" aria-hidden="true"></span>
 
-    <div class="grid">
-      <div class="cell">
-        <b>{totalStars}<i>/{maxStars}</i></b><span>总星数</span>
-      </div>
-      <div class="cell">
-        <b>{cleared}<i>/{LEVEL_DEFS.length}</i></b><span>已通关</span>
-      </div>
-      <div class="cell">
-        <b>{perfectCount}<i>/{LEVEL_DEFS.length}</i></b><span
-          ><Icon name="crown" size={13} /> 完美全清</span
-        >
-      </div>
-      <div class="cell">
-        <b>{exactCount}<i>/{LEVEL_DEFS.length}</i></b><span
-          ><Icon name="target" size={13} /> 精确解</span
-        >
-      </div>
-      <div class="cell">
-        <b>{expertCount}<i>/{LEVEL_DEFS.length}</i></b><span
-          ><Icon name="gem" size={13} /> 专家全清</span
-        >
-      </div>
-      <div class="cell">
-        <b>{seals.done}<i>/{seals.total}</i></b><span>朱印（星/满/准/专）</span>
-      </div>
-      <div class="cell">
-        <b>{seals.chapters}<i>/{seals.chaptersTotal}</i></b><span>章节印</span>
-      </div>
-    </div>
-
-    <!-- 战利品墙：这一路画过的曲线全在这里，拿过星的点亮 -->
-    <div class="wall" aria-label="全部关卡的曲线">
-      {#each wall as ch (ch.id)}
-        <div class="wall-ch">
-          <span class="wall-name">{ch.short}</span>
-          {#each ch.levels as lv (lv.id)}
-            <button
-              type="button"
-              class="wall-item"
-              class:lit={lv.stars > 0}
-              class:full={lv.stars === 3}
-              style="animation-delay: {0.15 + lv.idx * 0.055}s"
-              title={'再玩「' + lv.name + '」'}
-              onclick={() => playLevel(lv.id)}
-            >
-              <svg viewBox="0 0 640 640" aria-hidden="true">
-                <polyline points={shapePoints(lv.id)} />
-              </svg>
-              <span class="wall-st">{'★'.repeat(lv.stars)}{'☆'.repeat(3 - lv.stars)}</span>
-              <!-- 悬停/聚焦才显示关卡名：静态堆 21 个名字会挤成一团 -->
-              <span class="wall-tip" aria-hidden="true">{lv.name}</span>
-            </button>
-          {/each}
-          {#if ch.sealed}
-            <span class="wall-seal" title={'章节印「' + ch.seal + '」'}>{ch.seal}</span>
-          {/if}
+      <div class="grid">
+        <div class="cell">
+          <b class="g-num g-num--gold">{totalStars}<i>/{maxStars}</i></b><span>总星数</span>
         </div>
-      {/each}
-    </div>
+        <div class="cell">
+          <b class="g-num g-num--gold">{cleared}<i>/{LEVEL_DEFS.length}</i></b><span>已通关</span>
+        </div>
+        <div class="cell">
+          <b class="g-num g-num--gold">{perfectCount}<i>/{LEVEL_DEFS.length}</i></b><span
+            ><Icon name="crown" size={13} /> 完美全清</span
+          >
+        </div>
+        <div class="cell">
+          <b class="g-num g-num--gold">{exactCount}<i>/{LEVEL_DEFS.length}</i></b><span
+            ><Icon name="target" size={13} /> 精确解</span
+          >
+        </div>
+        <div class="cell">
+          <b class="g-num g-num--gold">{expertCount}<i>/{LEVEL_DEFS.length}</i></b><span
+            ><Icon name="gem" size={13} /> 专家全清</span
+          >
+        </div>
+        <div class="cell">
+          <b class="g-num g-num--gold">{seals.done}<i>/{seals.total}</i></b><span
+            >朱印（星/满/准/专）</span
+          >
+        </div>
+        <div class="cell">
+          <b class="g-num g-num--gold">{seals.chapters}<i>/{seals.chaptersTotal}</i></b><span
+            >章节印</span
+          >
+        </div>
+      </div>
 
-    <p class="note">
-      {#if mastered}
-        接下来：随机关（困难档含有超过 10× 的分量）· 每日挑战连胜 · 用谐波合成器创作关卡分享给朋友。
-      {:else}
-        每一关都还留着更高的目标：完美全清（100% 收集）· 精确解认证（参数与傅立叶分解一致）·
-        专家模式全清（不显示轮廓）——四枚朱印集齐后，章头还会盖上该章的章节印。
-      {/if}
-    </p>
+      <!-- 战利品墙：这一路画过的曲线全在这里，拿过星的点亮 -->
+      <div class="wall" aria-label="全部关卡的曲线">
+        {#each wall as ch (ch.id)}
+          <div class="wall-ch">
+            <span class="wall-name">{ch.short}</span>
+            {#each ch.levels as lv (lv.id)}
+              <button
+                type="button"
+                class="wall-item"
+                class:lit={lv.stars > 0}
+                class:full={lv.stars === 3}
+                style="animation-delay: {0.15 + lv.idx * 0.055}s"
+                title={'再玩「' + lv.name + '」'}
+                onclick={() => playLevel(lv.id)}
+              >
+                <svg viewBox="0 0 640 640" aria-hidden="true">
+                  <polyline points={shapePoints(lv.id)} />
+                </svg>
+                <span class="wall-st">{'★'.repeat(lv.stars)}{'☆'.repeat(3 - lv.stars)}</span>
+                <!-- 悬停/聚焦才显示关卡名：静态堆 21 个名字会挤成一团 -->
+                <span class="wall-tip" aria-hidden="true">{lv.name}</span>
+              </button>
+            {/each}
+            {#if ch.sealed}
+              <span class="wall-seal" title={'章节印「' + ch.seal + '」'}>{ch.seal}</span>
+            {/if}
+          </div>
+        {/each}
+      </div>
 
-    <div class="foot">
-      <button type="button" class="primary" onclick={() => engine.dismissFinale()}>
-        继续挑战
-      </button>
+      <p class="note">
+        {#if mastered}
+          接下来：随机关（困难档含有超过 10× 的分量）· 每日挑战连胜 ·
+          用谐波合成器创作关卡分享给朋友。
+        {:else}
+          每一关都还留着更高的目标：完美全清（100% 收集）· 精确解认证（参数与傅立叶分解一致）·
+          专家模式全清（不显示轮廓）——四枚朱印集齐后，章头还会盖上该章的章节印。
+        {/if}
+      </p>
+
+      <div class="foot">
+        <button type="button" class="primary" onclick={() => engine.dismissFinale()}>
+          继 续 挑 战
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -175,34 +194,51 @@
     }
   }
 
-  .card {
+  /* 外框：承载四角包边，本身不滚动 */
+  .card-wrap {
     position: relative;
-    overflow: hidden;
     width: min(94vw, 430px);
     max-height: calc(100dvh - 24px);
+    display: flex;
+  }
+
+  .card {
+    position: relative;
+    width: 100%;
+    max-height: 100%;
     overflow-y: auto;
-    padding: 26px 24px 0;
+    overscroll-behavior: contain;
+    padding: 0 24px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 12px;
     text-align: center;
-    background: linear-gradient(170deg, rgba(17, 24, 39, 0.98), rgba(9, 13, 22, 0.99));
-    border: 1px solid rgba(245, 197, 66, 0.38);
-    clip-path: polygon(
-      0 14px,
-      14px 0,
-      calc(100% - 14px) 0,
-      100% 14px,
-      100% calc(100% - 14px),
-      calc(100% - 14px) 100%,
-      14px 100%,
-      0 calc(100% - 14px)
-    );
+    background: linear-gradient(180deg, var(--metal-2) 0%, var(--metal) 45%, #070c16 100%);
+    border: 1px solid var(--edge-soft);
+    border-radius: var(--radius-md);
     box-shadow:
-      0 26px 70px rgba(0, 0, 0, 0.75),
-      0 0 60px rgba(245, 197, 66, 0.12) inset;
+      var(--sh-game-lg),
+      var(--bevel-top),
+      inset 0 0 70px rgba(245, 184, 65, 0.07);
     animation: fin-pop 0.5s cubic-bezier(0.34, 1.44, 0.64, 1);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(245, 184, 65, 0.35) transparent;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: -1px -1px auto;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--edge-hot) 14%,
+      var(--edge-hot) 86%,
+      transparent
+    );
+    opacity: 0.8;
+    pointer-events: none;
   }
   @keyframes fin-pop {
     from {
@@ -213,6 +249,41 @@
       opacity: 1;
       transform: translateY(0) scale(1);
     }
+  }
+
+  .card-scan {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0.65;
+  }
+
+  /* 顶部铭牌：通栏 */
+  .card-rail {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 0 -24px 2px;
+    padding: 10px 14px 9px;
+    border-bottom: 1px solid var(--edge-soft);
+    background: linear-gradient(180deg, rgba(245, 184, 65, 0.12), rgba(245, 184, 65, 0.02));
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+  }
+  .rail-lv {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  .card-div {
+    width: 100%;
+    margin: 0;
   }
 
   /* 顶部光晕：通关是这一局的终点，值得一点排场 */
@@ -238,11 +309,11 @@
     }
   }
 
-  /* 落款朱印：竖排两字，微斜，盖上时有"啪"的一下 */
+  /* 落款朱印：竖排两字，微斜，盖上时有"啪"的一下（下移，避开右上角包边） */
   .seal {
     position: absolute;
-    top: 14px;
-    right: 14px;
+    top: 48px;
+    right: 12px;
     width: 44px;
     height: 58px;
     display: flex;
@@ -320,16 +391,15 @@
   .cell {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 8px 6px;
+    gap: 3px;
+    padding: 9px 6px;
     border-radius: var(--r-sm);
-    background: rgba(255, 255, 255, 0.025);
-    border: 1px solid rgba(245, 197, 66, 0.18);
+    background: linear-gradient(180deg, rgba(3, 5, 10, 0.88), rgba(8, 12, 22, 0.72));
+    border: 1px solid var(--edge-faint);
+    box-shadow: var(--bevel-inset);
   }
   .cell b {
-    font-size: var(--fs-lg);
-    color: var(--gold-bright);
-    font-variant-numeric: tabular-nums;
+    font-size: 22px;
     line-height: 1.15;
   }
   .cell b i {
@@ -337,23 +407,30 @@
     font-size: var(--fs-xs);
     color: var(--muted-2);
     font-weight: 400;
+    text-shadow: none;
   }
   .cell span {
     font-size: var(--fs-xs);
     color: var(--muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
   }
 
-  /* 战利品墙：按章排列全部曲线的缩略轮廓 */
+  /* 战利品墙：按章排列全部曲线的缩略轮廓（嵌进面板的凹槽） */
   .wall {
     display: flex;
     flex-direction: column;
     gap: 7px;
     width: 100%;
+    box-sizing: border-box;
     margin: 4px 0 2px;
     padding: 10px 10px 12px;
     border-radius: var(--r-md);
-    border: 1px solid rgba(245, 197, 66, 0.22);
-    background: rgba(245, 197, 66, 0.02);
+    border: 1px solid var(--edge-faint);
+    background: linear-gradient(180deg, rgba(3, 5, 10, 0.9), rgba(7, 11, 20, 0.85));
+    box-shadow: var(--bevel-inset);
   }
   .wall-ch {
     position: relative;
@@ -489,10 +566,11 @@
 
   .note {
     margin: 0;
-    padding: 9px 12px;
+    padding: 10px 12px;
     border-radius: var(--r-sm);
-    background: rgba(167, 139, 250, 0.09);
-    border: 1px dashed rgba(167, 139, 250, 0.38);
+    background: linear-gradient(180deg, rgba(14, 10, 28, 0.9), rgba(8, 6, 18, 0.88));
+    border: 1px solid rgba(167, 139, 250, 0.35);
+    box-shadow: var(--bevel-inset);
     font-size: var(--fs-xs);
     color: var(--muted);
     line-height: 1.8;
@@ -507,27 +585,73 @@
     display: flex;
     justify-content: center;
     margin: 0 -24px;
-    padding: 10px 24px 22px;
+    padding: 10px 24px 18px;
     background: linear-gradient(
       180deg,
-      rgba(11, 15, 30, 0) 0,
-      rgba(11, 15, 30, 0.96) 16px,
-      #0b0f1e 100%
+      rgba(9, 13, 22, 0) 0,
+      rgba(9, 13, 22, 0.96) 16px,
+      #090d16 100%
     );
   }
 
+  /* 主按钮：金色厚键（与 .g-btn--primary .g-btn--lg 同规格） */
   button.primary {
+    appearance: none;
     width: 100%;
-    min-height: 44px;
-    font-size: var(--fs-md);
-    letter-spacing: 2px;
+    min-height: 52px;
+    padding: 0 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: var(--fs-lg);
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #1a1002;
+    border: 1px solid #ffe7a3;
+    background: var(--face-gold);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+    box-shadow:
+      var(--bevel-top),
+      inset 0 -3px 0 rgba(140, 80, 0, 0.55),
+      0 4px 0 #7a4d05,
+      0 10px 26px rgba(245, 184, 65, 0.35);
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform 0.09s ease,
+      background 0.12s ease,
+      box-shadow 0.12s ease;
+  }
+  button.primary:hover {
+    background: var(--face-gold-hover);
+  }
+  button.primary:active {
+    transform: translateY(3px);
+    box-shadow:
+      var(--bevel-top),
+      inset 0 2px 8px rgba(0, 0, 0, 0.5);
   }
 
   /* 精通结局：金色更重，边框更亮 */
   .mastered .card {
-    border-color: rgba(251, 191, 36, 0.6);
+    border-color: rgba(245, 184, 65, 0.6);
     box-shadow:
-      0 26px 76px rgba(0, 0, 0, 0.7),
-      0 0 80px rgba(251, 191, 36, 0.14) inset;
+      var(--sh-game-lg),
+      var(--bevel-top),
+      inset 0 0 90px rgba(245, 184, 65, 0.12);
+  }
+
+  /* 矮屏：收紧密度 */
+  @media (max-height: 520px) {
+    .card {
+      gap: 8px;
+      padding: 0 16px 0;
+    }
+    .card-rail {
+      margin: 0 -16px 0;
+      padding: 8px 12px;
+    }
+    .foot {
+      margin: 0 -16px;
+      padding: 8px 16px 14px;
+    }
   }
 </style>

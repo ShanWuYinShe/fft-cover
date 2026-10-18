@@ -13,7 +13,11 @@
   const curStars = $derived(engine.level?.id ? (engine.bestStars[engine.level.id] ?? 0) : 0);
 </script>
 
+<!-- 关卡缎带：章节 · 关卡名 · 星槽（贴在画布上方的一条青铜铭牌） -->
 <div class="stage-crown-bezel">
+  <span class="crown-cap left" aria-hidden="true"></span>
+  <span class="crown-cap right" aria-hidden="true"></span>
+
   <div class="crown-level-badge">
     <span class="crown-eyebrow font-celestial">{curChapterName}</span>
     <h1 class="crown-title font-celestial">
@@ -41,58 +45,85 @@
 </div>
 
 <style>
+  /* ============================================================
+   * 关卡缎带：一条横贯舞台顶部的铭牌，两端有菱形收口
+   * ============================================================ */
   .stage-crown-bezel {
+    position: relative;
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-2) var(--space-4);
+    gap: 12px;
+    padding: 6px 16px;
+    box-sizing: border-box;
     background: linear-gradient(
       90deg,
-      rgba(245, 184, 65, 0.08) 0%,
-      rgba(16, 23, 40, 0.95) 25%,
-      rgba(16, 23, 40, 0.95) 75%,
-      rgba(245, 184, 65, 0.08) 100%
+      rgba(245, 184, 65, 0.03) 0%,
+      rgba(18, 27, 46, 0.96) 14%,
+      rgba(18, 27, 46, 0.96) 86%,
+      rgba(245, 184, 65, 0.03) 100%
     );
-    border: 1px solid rgba(245, 184, 65, 0.3);
-    border-radius: var(--radius-lg);
+    border-top: 1px solid var(--edge-soft);
+    border-bottom: 1px solid var(--edge);
     box-shadow:
-      0 6px 20px rgba(0, 0, 0, 0.6),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    box-sizing: border-box;
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 8px 22px rgba(0, 0, 0, 0.5);
+  }
+
+  /* 两端的菱形收口 */
+  .crown-cap {
+    position: absolute;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    transform: translateY(-50%) rotate(45deg);
+    background: var(--metal-2);
+    border: 1px solid var(--edge);
+    box-shadow: 0 0 8px rgba(245, 184, 65, 0.35);
+  }
+  .crown-cap.left {
+    left: -4px;
+  }
+  .crown-cap.right {
+    right: -4px;
   }
 
   .crown-level-badge {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    align-items: baseline;
+    gap: 12px;
+    min-width: 0;
   }
 
   .crown-eyebrow {
-    font-size: var(--fs-xs);
-    color: var(--gold-bright);
-    letter-spacing: 2px;
-    font-weight: 600;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 2.5px;
+    font-weight: 700;
+    white-space: nowrap;
   }
 
   .crown-title {
     margin: 0;
-    font-size: 21px;
+    font-size: 20px;
     font-weight: 700;
     color: #fff;
     letter-spacing: 2px;
-    text-shadow: 0 0 14px rgba(245, 184, 65, 0.35);
+    text-shadow: 0 0 16px rgba(245, 184, 65, 0.4);
+    white-space: nowrap;
   }
 
   .crown-star-sockets {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: 8px;
+    flex: 0 0 auto;
   }
 
   .star-gem-socket {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -107,7 +138,7 @@
   }
 
   .star-gem-socket .gem-star {
-    font-size: 16px;
+    font-size: 15px;
     color: rgba(255, 255, 255, 0.12);
     line-height: 1;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -130,24 +161,36 @@
     animation: star-burst 0.5s ease-out;
   }
 
+  /* ---------- 手机竖屏：压缩成一条窄铭牌 ---------- */
   @media (max-width: 640px) and (orientation: portrait) {
     .stage-crown-bezel {
-      padding: 6px 12px;
+      padding: 4px 12px;
+    }
+    .crown-level-badge {
+      gap: 8px;
+    }
+    .crown-eyebrow {
+      font-size: 10px;
+      letter-spacing: 1.5px;
     }
     .crown-title {
       font-size: 16px;
+      letter-spacing: 1.5px;
+    }
+    .crown-star-sockets {
+      gap: 5px;
     }
     .star-gem-socket {
-      width: 26px;
-      height: 26px;
+      width: 24px;
+      height: 24px;
     }
     .star-gem-socket .gem-star {
-      font-size: 13px;
+      font-size: 12px;
     }
   }
 
   @media (max-width: 640px) and (orientation: portrait) and (max-height: 700px) {
-    .stage-crown-bezel {
+    .crown-eyebrow {
       display: none;
     }
   }

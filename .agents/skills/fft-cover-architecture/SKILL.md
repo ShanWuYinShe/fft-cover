@@ -1,11 +1,49 @@
 ---
 name: fft-cover-architecture
-description: 傅立叶指针（fft_cover）项目架构事实：存档键清单与备份域、无尽模式语义（波次难度爬升/35% 过波线/断点续玩/结算）、画布坐标系与物理补偿体系（canvasK）、里程碑反馈清单（音效/触觉/读屏）、e2e 冒烟运行要点。触发：改引擎/存档/画布绘制/无尽模式/结算卡/可访问性；需要知道某个 localStorage 键的语义；改难度曲线或收集判定；写 e2e 脚本。
+description: 傅立叶指针（fft_cover）项目架构事实：全屏座舱 UI 架构（grid 四区/tokens/game-ui 公共件/触屏热区）、本地免提权截图链路、存档键清单与备份域、无尽模式语义（波次难度爬升/35% 过波线/断点续玩/结算）、画布坐标系与物理补偿体系（canvasK）、里程碑反馈清单（音效/触觉/读屏）、e2e 冒烟运行要点。触发：改界面布局/样式/弹层/截图链路；改引擎/存档/画布绘制/无尽模式/结算卡/可访问性；需要知道某个 localStorage 键的语义；改难度曲线或收集判定；写 e2e 脚本。
 ---
 
 # 傅立叶指针 · 项目架构事实
 
 **全部为会话内实测验证的事实（2026-10-13，代码与单测为准）。** 改动相关区域前先读本节，避免重新踩坑。
+
+## 界面架构（浑天座舱 HUD，2026-10-18 落地）
+
+- **整屏锁死**：`html/body/#app` 是 `height:100dvh + overflow:hidden`，页面不滚动；滚动只发生在
+  `.gs-dock .dock-body`（右侧机坞 / 移动端机坞面板）与弹层内部。新弹层必须自带上限 + 内滚。
+- **GameShell 是 grid 四区**：`--hud-h`(56) 顶栏 / 舞台 / `--dock-w`(384) 机坞 / `--cmd-h`(78) 指令栏；
+  手机竖屏改成 `stage → dock → cmd → nav` 四行（`panel-expanded` 时机坞独占舞台、`panel-hidden`
+  （运行态）时机坞让位且画布吃掉高度）。竖屏平板 641–900 与横屏 ≤900 各有一套单独 grid。
+- **公共件**在 `src/styles/game-ui.css`（`.g-btn` / `.g-plate` / `.g-inset` / `.g-label` / `.g-num` /
+  `.g-divider` / `.g-corners` / `.g-lamp` / `.g-scanlines`），尺寸与金属质感令牌在 `tokens.css`
+  （`--hud-h/--cmd-h/--dock-w/--tab-h`、`--metal-*`、`--face-*`、`--edge*`、`--bevel-*`）。
+- **`reset.css` 给原生 `button` 去了皮**（background/border/padding 清零）：凡按钮必须自己声明背景，
+  否则透明（成就页「白色胶囊」就是没重置原生按钮导致的）。**触屏可点件一律 ≥40px 高**。
+- 装饰层 `AmbientField`（浑天环 + 星点 + 暗角）与 `ScreenFrame`（四角包边）都是
+  `position:fixed; pointer-events:none`，`z-index:0/40`；`inert` 门控在 `App.svelte`
+  （有浮层时整个 `.game-layer` 失效，避免 Tab 跑到背景 HUD）。
+- **快捷键门控类名**必须保留：`.modal / .modal-backdrop / .finale / .ch-intro / .title-screen / .tutorial`。
+
+## 本地截图链路（免提权、免打扰，2026-10-18 实测）
+
+agent-browser 的 owner（headless Chrome）可能中途消失（实测 62425 掉线），而沙盒里
+`agent-browser` 因 `~/.agent-browser` 不可写会硬失败。**兜底且更稳的一条**：自己在
+workspace 内起一个专属 headless Chrome，用 CDP HTTP + 内置 WebSocket 直连截图：
+
+```bash
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
+  --remote-debugging-port=9411 --no-sandbox --disable-gpu --no-first-run \
+  --user-data-dir="$PWD/.workwork/ui-redesign/chrome-profile" about:blank &
+```
+
+- 脚本：`.workwork/ui-redesign/shot.mjs <scenario> <out.png> [宽] [高] [mobile]`（单场景截图）
+  与 `verify.mjs`（17 个场景批量：截图 + 布局度量：不滚屏 / 无横向溢出 / 未声明背景的按钮 /
+  <40px 触屏热区 / 画布尺寸），报告落 `verify-report.json`。
+- `PUT /json/new?<url>` 开自己的标签（用完 `/json/close/<id>`），不抢焦点、不写 home。
+- **同一 Chrome 下 localStorage 按 origin 共享**：多个会话同时截图会互相覆盖
+  `fft-pointers-flags-v1`（表现为 title 场景截不出来）——用 `http://[::1]:5200/` 与
+  `http://localhost:5200/` 两个 origin 隔离。
+- dev server 端口：本仓库会话用 5200（`pnpm dev --port 5200`），别和 5199/5173 混。
 
 ## 存档键清单（constants.ts，全部登记在 SAVE_KEYS 参与备份）
 

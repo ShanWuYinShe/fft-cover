@@ -339,7 +339,7 @@
     if (engine.streakJustBumped > 1)
       out.push({ icon: 'flame', text: '连胜 ' + engine.streakJustBumped + ' 天', fresh: true });
     if (engine.newSeals.length > 0)
-      out.push({ icon: '🆕', text: '新盖 ' + engine.newSeals.length + ' 印', fresh: true });
+      out.push({ icon: 'award', text: '新盖 ' + engine.newSeals.length + ' 印', fresh: true });
     return out;
   });
 
@@ -347,18 +347,28 @@
   const mainAction = $derived.by(() => {
     if (engine.newlyUnlockedNext) {
       const def = engine.newlyUnlockedNext;
-      return { label: '▶ ' + def.name, fn: () => engine.loadLevel(def) };
+      return { icon: 'play', label: def.name, fn: () => engine.loadLevel(def) };
     }
     if (engine.nextLevelDef && (engine.bestStars[engine.level?.id ?? ''] ?? 0) >= 1) {
       const def = engine.nextLevelDef;
-      return { label: '▶ 下一关 · ' + def.name, fn: () => engine.loadLevel(def) };
+      return { icon: 'play', label: '下一关 · ' + def.name, fn: () => engine.loadLevel(def) };
     }
-    return { label: '⟲ 再来一次', fn: () => engine.resetRun() };
+    return { icon: 'refresh', label: '再来一次', fn: () => engine.resetRun() };
   });
 </script>
 
 <div class="result">
   <div class="card">
+    <!-- 座舱装饰：扫描线 + 四角青铜包边 + 结算铭牌 -->
+    <span class="g-scanlines card-scan" aria-hidden="true"></span>
+    <span class="g-corner tl" aria-hidden="true"></span>
+    <span class="g-corner tr" aria-hidden="true"></span>
+    <span class="g-corner bl" aria-hidden="true"></span>
+    <span class="g-corner br" aria-hidden="true"></span>
+    <div class="card-rail">
+      <span class="g-label">观 测 结 算</span>
+      <span class="rail-lv">{engine.level?.name ?? '自由观测'}</span>
+    </div>
     <div class="card-body">
       {#if engine.lastRunSandbox}
         <div class="stars"><Icon name="flask" size={22} /></div>
@@ -373,7 +383,7 @@
           {/each}
         </div>
         <div class="score-big">
-          <b>{shownScore}</b>
+          <b class="g-num g-num--gold">{shownScore}</b>
           <span class="score-cap">
             得分{#if engine.newRecord}<i class="rec">新纪录</i>{/if}
           </span>
@@ -395,7 +405,7 @@
               class="ghost-line"
               class:ahead={engine.lastGhostDelta > 0}
               class:even={engine.lastGhostDelta === 0}
-              >👻 {engine.lastGhostDelta > 0
+              >上届对比 {engine.lastGhostDelta > 0
                 ? '+'
                 : ''}{engine.lastGhostDelta}{' '}{engine.lastGhostVsBest ? '最佳' : '上届'}</span
             >
@@ -428,6 +438,7 @@
             </span>
           </div>
         {/if}
+        <span class="g-divider card-div" aria-hidden="true"></span>
         {#if nextSeal}
           <button
             type="button"
@@ -448,13 +459,15 @@
       {/if}
     </div>
     <div class="btns">
-      <button class="primary" onclick={mainAction.fn}>{mainAction.label}</button>
+      <button class="g-btn g-btn--primary g-btn--lg primary" onclick={mainAction.fn}>
+        {mainAction.label}
+      </button>
       <!-- 方向自适应：窄屏向下（避开卡片里的星级/得分），桌面向上（避开下方运行栏） -->
       <MoreMenu
         direction={narrow ? 'down' : 'up'}
         items={[
-          { label: '⟲ 再来一次', onclick: () => engine.resetRun() },
-          { label: '👁 查看轨迹', onclick: () => (engine.resultDismissed = true) },
+          { icon: 'refresh', label: '再来一次', onclick: () => engine.resetRun() },
+          { label: '查看轨迹', onclick: () => (engine.resultDismissed = true) },
           {
             label:
               shareState === 'ok'
@@ -462,19 +475,19 @@
                 : copyState === 'ok'
                   ? '✓ 已复制战报'
                   : copyState === 'fail'
-                    ? '⚠ 复制失败'
-                    : '📤 分享战报',
+                    ? '复制失败'
+                    : '分享战报',
             onclick: () => void copyReport(),
           },
           {
-            label: imgState === 'ok' ? '✓ 已保存' : '📸 保存成绩图',
+            label: imgState === 'ok' ? '✓ 已保存' : '保存成绩图',
             onclick: () => void saveImage(),
           },
-          { label: '🔗 挑战好友（分享解法）', onclick: () => void shareArms() },
+          { label: '挑战好友（分享解法）', onclick: () => void shareArms() },
           ...(engine.hintUnlocked && st < 3
             ? [
                 {
-                  label: applied ? '✓ 已套用精确解' : '✨ 套用精确参数',
+                  label: applied ? '✓ 已套用精确解' : '套用精确参数',
                   title: '卡关求助：把精确分解参数直接落到指针上（可撤销）',
                   onclick: () => applyExact(),
                 },
@@ -494,36 +507,77 @@
     justify-content: center;
     align-items: center;
     padding: 12px;
-    background: radial-gradient(circle at 50% 45%, rgba(10, 14, 28, 0.62), rgba(5, 7, 14, 0.9));
+    background: radial-gradient(circle at 50% 45%, rgba(8, 12, 22, 0.66), rgba(3, 5, 11, 0.92));
     backdrop-filter: blur(5px);
     border-radius: 14px;
     animation: fade-in 0.3s ease-out;
     z-index: 5;
   }
-  /* 结果面板：游戏结算卡（玻璃拟态 + 上浮入场） */
+  /* 结果面板：游戏结算卡（金属装甲板 + 四角包边 + 上浮入场） */
   .card {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    width: min(100%, 396px);
+    width: min(100%, 400px);
     max-height: 100%;
-    overflow: hidden;
-    border-radius: var(--r-lg);
-    /* 观象金榜质感：深曜黑底色 + 鎏金边框 + 金铜阴影 */
-    background: linear-gradient(155deg, rgba(16, 23, 40, 0.98), rgba(6, 9, 16, 0.98));
-    border: 1px solid rgba(245, 184, 65, 0.4);
-    border-top: 2px solid rgba(255, 209, 102, 0.7);
+    /* 默认放行溢出：四角包边贴在外沿，且「⋯」菜单向下展开时不能被裁 */
+    overflow: visible;
+    border-radius: 8px;
+    background: linear-gradient(180deg, var(--metal-2) 0%, var(--metal) 45%, #070c16 100%);
+    border: 1px solid var(--edge-soft);
     box-shadow:
-      0 26px 70px rgba(0, 0, 0, 0.8),
-      0 0 30px rgba(245, 184, 65, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      var(--sh-game-lg),
+      var(--bevel-top),
+      inset 0 0 60px rgba(245, 184, 65, 0.06);
     animation: card-in 0.42s cubic-bezier(0.34, 1.4, 0.64, 1);
     text-align: center;
   }
-  /* 卡片默认 overflow:hidden（圆角裁切内部滚动区），但这会把「⋯」菜单一并
-     裁掉——菜单向下展开时整块不可见（实测）。菜单打开期间放行。 */
-  .card:has(:global(.mm-pop)) {
-    overflow: visible;
+  /* 顶部亮金发丝线 */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: -1px -1px auto;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--edge-hot) 14%,
+      var(--edge-hot) 86%,
+      transparent
+    );
+    opacity: 0.8;
+    pointer-events: none;
+  }
+  .card-scan {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0.65;
+  }
+  /* 结算铭牌：左侧小标题 + 右侧关卡名 */
+  .card-rail {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 14px 8px;
+    border-bottom: 1px solid var(--edge-soft);
+    background: linear-gradient(180deg, rgba(245, 184, 65, 0.1), rgba(245, 184, 65, 0.015));
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+    border-radius: 8px 8px 0 0;
+    position: relative;
+    z-index: 1;
+  }
+  .rail-lv {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   @keyframes card-in {
     from {
@@ -542,10 +596,13 @@
     align-items: center;
     gap: 9px;
     width: 100%;
-    padding: 7px 10px;
+    padding: 8px 10px;
     border-radius: var(--r-sm);
-    background: rgba(245, 184, 65, 0.08);
-    border: 1px dashed rgba(245, 184, 65, 0.4);
+    background: linear-gradient(180deg, rgba(245, 184, 65, 0.14), rgba(245, 184, 65, 0.035));
+    border: 1px solid rgba(245, 184, 65, 0.42);
+    box-shadow:
+      var(--bevel-top),
+      0 2px 0 rgba(0, 0, 0, 0.45);
     font: inherit;
     font-size: var(--fs-xs);
     color: var(--muted);
@@ -553,11 +610,20 @@
     cursor: pointer;
     transition:
       background 0.15s,
-      border-color 0.15s;
+      border-color 0.15s,
+      transform 0.09s;
   }
   button.next-seal:hover {
-    background: rgba(245, 184, 65, 0.16);
-    border-color: rgba(245, 184, 65, 0.7);
+    background: linear-gradient(180deg, rgba(245, 184, 65, 0.22), rgba(245, 184, 65, 0.07));
+    border-color: rgba(245, 184, 65, 0.75);
+  }
+  button.next-seal:active {
+    transform: translateY(2px);
+  }
+  /* 分区金线 */
+  .card-div {
+    width: 100%;
+    margin: 4px 0 2px;
   }
   .ns-txt {
     flex: 1;
@@ -727,17 +793,25 @@
     background: linear-gradient(135deg, #ffe9a8, var(--gold));
     font-weight: 700;
   }
-  /* 次要统计行 */
+  /* 次要统计行：嵌进面板的读数条 */
   .stat-row {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
     gap: 7px;
+    width: 100%;
+    padding: 6px 10px;
+    box-sizing: border-box;
+    border-radius: var(--r-sm);
+    background: linear-gradient(180deg, rgba(3, 5, 10, 0.85), rgba(8, 12, 22, 0.7));
+    border: 1px solid var(--edge-faint);
+    box-shadow: var(--bevel-inset);
     font-size: var(--fs-md);
     color: var(--muted);
   }
   .stat-row b {
-    color: var(--text);
+    color: var(--gold-bright);
     font-variant-numeric: tabular-nums;
   }
   /* 成就徽章：一行小 chip，有才出现；fresh（本局新达成）描金 */
@@ -745,22 +819,28 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 9px;
+    gap: 8px;
     width: 100%;
   }
   .chip {
-    padding: 3px 9px;
+    padding: 4px 10px;
     border-radius: 999px;
     font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: 0.5px;
     color: var(--muted);
-    background: rgba(130, 150, 210, 0.08);
-    border: 1px solid rgba(130, 150, 210, 0.22);
+    background: linear-gradient(180deg, var(--metal-2), var(--metal-deep));
+    border: 1px solid var(--edge-soft);
+    box-shadow: var(--bevel-top);
     white-space: nowrap;
   }
   .chip.fresh {
-    color: var(--gold);
-    border-color: rgba(251, 191, 36, 0.5);
-    background: rgba(251, 191, 36, 0.08);
+    color: var(--gold-bright);
+    border-color: rgba(245, 184, 65, 0.55);
+    background: linear-gradient(180deg, rgba(245, 184, 65, 0.24), rgba(245, 184, 65, 0.06));
+    box-shadow:
+      var(--bevel-top),
+      0 0 14px rgba(245, 184, 65, 0.3);
   }
   .stat-row .dot {
     color: var(--muted-2);
@@ -825,26 +905,28 @@
     display: flex;
     gap: 8px;
     width: 100%;
-    padding: 8px 14px 12px;
+    padding: 10px 14px 13px;
+    box-sizing: border-box;
     flex: 0 0 auto;
+    border-top: 1px solid var(--edge-faint);
+    background: linear-gradient(180deg, rgba(4, 7, 13, 0.6), rgba(4, 7, 13, 0.95));
+    border-radius: 0 0 8px 8px;
   }
+  /* 主按钮已用 .g-btn--lg 规格：这里只负责占位宽度 */
   .btns button {
     width: 100%;
-    font-size: var(--fs-sm);
-    min-height: 38px;
-    padding: 8px 10px;
   }
   /* 主按钮占满，⋯ 收紧为方形（MoreMenu 是子组件，需 :global） */
   .btns button.primary {
     flex: 1;
   }
   .btns :global(.mm) {
-    flex: 0 0 44px;
+    flex: 0 0 48px;
   }
   .btns :global(.mm-btn) {
     width: 100%;
     height: 100%;
-    min-height: 38px;
+    min-height: 44px;
   }
   /* 矮屏（手机横屏 ~390px 高）：压缩结算卡密度，不靠隐蔽滚动也能看全 */
   @media (max-height: 460px) {
@@ -866,8 +948,9 @@
   /* 矮视口（画布只有 ~180–250px 高）：结算卡若仍贴在画布框内，「收集 / 全清 /
      完美全清 / 下一枚印」全被裁掉甚至与主按钮串行——实测 320×568（竖屏）只剩
      星级与分数、640×360（横屏）下一枚印行被「下一关」压住。矮视口一律整屏
-     显示（z-index 高于底部标签栏，结算时整屏就是这一张卡），统计一行不落。 */
-  @media (max-width: 900px) and (max-height: 700px) {
+     显示（z-index 高于底部标签栏，结算时整屏就是这一张卡），统计一行不落。
+     手机竖屏（≤640 宽）同理：座舱壳下画布只有 ~430px 高，结算卡必须整屏。 */
+  @media (max-width: 900px) and (max-height: 700px), (max-width: 640px) {
     .result {
       position: fixed;
       inset: 0;

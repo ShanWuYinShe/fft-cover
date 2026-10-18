@@ -25,39 +25,29 @@
   }
 </script>
 
+<!-- 画布内 HUD：贴角读数，不遮挡中央星域 -->
 <div class="hud">
-  <button type="button" class="hud-lvl-badge" title="切换关卡或打开星图" onclick={onLevelClick}>
-    <span class="lvl-ico">
-      {#if engine.endless}
-        <Icon name="infinity" size={13} />
-      {:else}
-        ☰
-      {/if}
-    </span>
-    <span class="lvl-title">
-      {#if engine.endless}
-        第 {engine.endlessWave} 波 · 累计 {engine.endlessScore} 分
-      {:else}
-        {engine.level?.name ?? '自由'}{#if engine.sandbox}&nbsp;<Icon name="flask" size={12} />{/if}
-      {/if}
-    </span>
-    <span class="lvl-caret">▾</span>
-  </button>
-
-  <div class="hud-right">
-    <span
-      class="score"
-      style="--progress: {engine.total ? (engine.collectedCount / engine.total) * 100 : 0}%"
-    >
-      收集
-      {#key engine.collectedCount}
-        <b class="hud-pulse font-tabular">{engine.collectedCount}</b>
-      {/key}
-      /{engine.total}
-      {#if ghostLabel}
-        <i class="ghost-tick" style="left: {engine.ghostRatio * 100}%"></i>
-      {/if}
-    </span>
+  <div class="hud-tl">
+    <button type="button" class="hud-lvl-badge" title="切换关卡或打开星图" onclick={onLevelClick}>
+      <span class="lvl-ico">
+        {#if engine.endless}
+          <Icon name="infinity" size={14} />
+        {:else}
+          <Icon name="grid" size={14} />
+        {/if}
+      </span>
+      <span class="lvl-title">
+        {#if engine.endless}
+          第 {engine.endlessWave} 波 · 累计 {engine.endlessScore} 分
+        {:else}
+          {engine.level?.name ?? '自由'}{#if engine.sandbox}&nbsp;<Icon
+              name="flask"
+              size={12}
+            />{/if}
+        {/if}
+      </span>
+      <span class="lvl-caret">▾</span>
+    </button>
 
     {#if ghostLabel}
       <span
@@ -69,27 +59,50 @@
         {ghostLabel}
       </span>
     {/if}
+  </div>
 
-    {#if engine.level}
+  <div class="hud-tr">
+    <div
+      class="collect-readout"
+      style="--progress: {engine.total ? (engine.collectedCount / engine.total) * 100 : 0}%"
+      title="本局已收集 / 目标总数"
+    >
+      <span class="g-label collect-label">收集</span>
+      <span class="collect-value">
+        {#key engine.collectedCount}
+          <b class="g-num hud-pulse font-tabular">{engine.collectedCount}</b>
+        {/key}
+        <i class="collect-total font-tabular">/{engine.total}</i>
+      </span>
+      <span class="collect-bar" aria-hidden="true"></span>
+      {#if ghostLabel}
+        <i class="ghost-tick" style="left: {engine.ghostRatio * 100}%"></i>
+      {/if}
+    </div>
+
+    <div class="hud-tr-row">
+      {#if engine.level}
+        <button
+          type="button"
+          class="hud-seal font-celestial"
+          title={'本关朱印 ' + sealDone + '/4（星 满 准 专）——点开图鉴与成就'}
+          onclick={() => (uiState.showAchv = true)}
+        >
+          <span class="seal-mark">印</span>
+          <b class="font-tabular">{sealDone}</b><i>/4</i>
+        </button>
+      {/if}
+
       <button
         type="button"
-        class="hud-seal font-celestial"
-        title={'本关朱印 ' + sealDone + '/4（星 满 准 专）——点开图鉴与成就'}
-        onclick={() => (uiState.showAchv = true)}
+        class="hud-settings-btn mobile-only-btn"
+        title="设置"
+        aria-label="设置"
+        onclick={() => (uiState.showSettings = true)}
       >
-        印 <b>{sealDone}</b>/4
+        <Icon name="gear" size={15} />
       </button>
-    {/if}
-
-    <button
-      type="button"
-      class="hud-settings-btn mobile-only-btn"
-      title="设置"
-      aria-label="设置"
-      onclick={() => (uiState.showSettings = true)}
-    >
-      <Icon name="gear" size={13} />
-    </button>
+    </div>
   </div>
 </div>
 
@@ -101,89 +114,108 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 12px 14px;
-    font-size: var(--fs-md);
-    color: var(--muted);
+    padding: 10px 12px;
     z-index: 8;
   }
   .hud > * {
     pointer-events: auto;
   }
 
+  .hud-tl {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    max-width: 60%;
+  }
+
   .hud-lvl-badge {
-    appearance: none;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    border-radius: var(--radius-pill);
-    background: rgba(8, 12, 22, 0.88);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(245, 184, 65, 0.26);
+    gap: 7px;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 9px;
+    background: linear-gradient(180deg, rgba(16, 24, 41, 0.94), rgba(6, 10, 19, 0.96));
+    border: 1px solid var(--edge-soft);
     color: var(--gold-bright);
-    font-weight: 600;
-    font-size: var(--fs-sm);
+    font-size: 13px;
+    font-weight: 700;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
-    cursor: pointer;
-    transition: all 0.15s ease;
+    box-shadow:
+      var(--bevel-top),
+      0 4px 14px rgba(0, 0, 0, 0.5);
+    transition: all 0.12s ease;
   }
   .hud-lvl-badge:hover {
-    border-color: var(--gold);
+    border-color: var(--edge);
     color: #fff;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(245, 184, 65, 0.25);
+    box-shadow:
+      var(--bevel-top),
+      0 6px 18px rgba(245, 184, 65, 0.25);
   }
 
   .lvl-ico {
     display: flex;
     align-items: center;
     color: var(--gold);
-    font-size: 11px;
   }
   .lvl-title {
     color: var(--text);
+    white-space: nowrap;
   }
   .lvl-caret {
     font-size: 9px;
     color: var(--gold);
   }
 
-  .hud-right {
+  /* ---------- 右上：大号收集读数 ---------- */
+  .hud-tr {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 5px;
+    gap: 6px;
   }
 
-  .score {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 4px;
-    padding: 5px 12px 7px;
-    border-radius: 14px;
-    background: rgba(16, 21, 42, 0.88);
-    border: 1px solid var(--line);
-    font-size: var(--fs-xs);
-    letter-spacing: 0.5px;
+  .collect-readout {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+    min-width: 116px;
+    padding: 6px 12px 9px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(16, 24, 41, 0.94), rgba(6, 10, 19, 0.96));
+    border: 1px solid var(--edge-soft);
+    box-shadow:
+      var(--bevel-top),
+      0 4px 14px rgba(0, 0, 0, 0.5);
     overflow: hidden;
   }
-
-  .score b {
-    color: var(--text);
-    font-size: 21px;
-    font-weight: 800;
-    line-height: 1;
-    text-shadow: 0 0 14px rgba(232, 235, 245, 0.25);
+  .collect-label {
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--gold);
   }
-
-  .score::after {
-    content: '';
+  .collect-value {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+  }
+  .collect-value b {
+    font-size: 30px;
+  }
+  .collect-total {
+    font-style: normal;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .collect-bar {
     position: absolute;
-    bottom: 0;
     left: 0;
+    bottom: 0;
     height: 3px;
     width: var(--progress, 0%);
     background: linear-gradient(90deg, #10b981 0%, #00f5d4 50%, #f5b841 100%);
@@ -195,7 +227,7 @@
     position: absolute;
     bottom: 0;
     width: 2px;
-    height: 7px;
+    height: 8px;
     margin-left: -1px;
     border-radius: 1px;
     background: var(--gold);
@@ -205,12 +237,11 @@
   .ghost-chip {
     display: inline-flex;
     align-items: center;
-    padding: 3px 9px;
-    border-radius: var(--radius-pill);
+    padding: 3px 10px;
+    border-radius: 999px;
     background: rgba(8, 12, 22, 0.9);
-    backdrop-filter: blur(6px);
-    border: 1px solid rgba(245, 184, 65, 0.35);
-    font-size: var(--fs-xs);
+    border: 1px solid var(--edge-soft);
+    font-size: 12px;
     color: var(--gold);
     letter-spacing: 0.5px;
   }
@@ -223,30 +254,49 @@
     color: #f87171;
   }
 
+  .hud-tr-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   .hud-seal {
-    appearance: none;
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 10px;
-    border-radius: var(--radius-pill);
-    border: 1px solid rgba(217, 43, 43, 0.45);
-    background: rgba(217, 43, 43, 0.12);
-    color: #fca5a5;
-    font-size: var(--fs-xs);
-    cursor: pointer;
-    transition: all 0.15s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    height: 30px;
+    padding: 0 10px;
+    border-radius: 9px;
+    border: 1px solid rgba(217, 43, 43, 0.55);
+    background: linear-gradient(180deg, rgba(120, 26, 26, 0.8), rgba(60, 12, 12, 0.88));
+    color: #ffd7d7;
+    font-size: 12px;
+    letter-spacing: 1px;
+    box-shadow:
+      var(--bevel-top),
+      0 3px 10px rgba(0, 0, 0, 0.4);
+    transition: all 0.12s ease;
+  }
+  .seal-mark {
+    font-size: 11px;
+    color: #ff8585;
   }
   .hud-seal b {
-    color: #ff8585;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 900;
+    color: #fff;
+  }
+  .hud-seal i {
+    font-style: normal;
+    font-size: 11px;
+    opacity: 0.65;
   }
   .hud-seal:hover {
     color: #ffffff;
-    border-color: rgba(217, 43, 43, 0.75);
-    background: rgba(217, 43, 43, 0.25);
-    box-shadow: 0 0 12px rgba(217, 43, 43, 0.4);
+    border-color: rgba(217, 43, 43, 0.85);
+    box-shadow:
+      var(--bevel-top),
+      0 0 14px rgba(217, 43, 43, 0.45);
   }
 
   .mobile-only-btn {
@@ -254,34 +304,85 @@
   }
 
   @media (max-width: 640px) and (orientation: portrait) {
+    .hud {
+      padding: 6px 8px;
+    }
+    /* 触屏下限 40px：画布内 HUD 的三枚可点件都要够高 */
     .hud-lvl-badge {
-      padding: 3px 9px;
+      height: 40px;
+      padding: 0 10px;
       font-size: 11px;
     }
     .hud-lvl-badge .lvl-title {
       font-size: 11px;
     }
+    .collect-readout {
+      min-width: 96px;
+      padding: 4px 9px 7px;
+    }
+    .collect-label {
+      font-size: 9px;
+      letter-spacing: 3px;
+    }
+    .collect-value b {
+      font-size: 24px;
+    }
+    .collect-total {
+      font-size: 12px;
+    }
     .mobile-only-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 24px;
-      height: 24px;
-      background: rgba(8, 12, 22, 0.88);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(245, 184, 65, 0.25);
-      border-radius: var(--radius-sm);
+      width: 40px;
+      height: 40px;
+      background: rgba(8, 12, 22, 0.9);
+      border: 1px solid var(--edge-soft);
+      border-radius: 8px;
       color: var(--muted);
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      box-shadow:
+        var(--bevel-top),
+        0 2px 6px rgba(0, 0, 0, 0.35);
     }
-    .mobile-only-btn:hover {
-      color: var(--gold-bright);
-      border-color: rgba(245, 184, 65, 0.5);
+    .hud-seal {
+      height: 40px;
+      padding: 0 10px;
     }
   }
 
   @media (max-width: 640px) and (orientation: portrait) and (max-height: 700px) {
+    .hud-seal {
+      display: none;
+    }
+  }
+
+  /* 触屏（含横屏手机）：画布内可点件一律 ≥40px 热区 */
+  @media (pointer: coarse) {
+    .hud-lvl-badge {
+      height: 40px;
+    }
+    .hud-seal {
+      height: 40px;
+      padding: 0 10px;
+    }
+    .mobile-only-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: rgba(8, 12, 22, 0.9);
+      border: 1px solid var(--edge-soft);
+      border-radius: 8px;
+      color: var(--muted);
+      box-shadow:
+        var(--bevel-top),
+        0 2px 6px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  /* 矮横屏：画布很小，收起朱印读数，给画布让路 */
+  @media (orientation: landscape) and (max-height: 700px) {
     .hud-seal {
       display: none;
     }

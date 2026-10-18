@@ -14,7 +14,7 @@
   <div class="remote-tip">
     <span>
       <Icon name="share" size={14} />
-      <b>好友的解法挑战</b>——参数已载入，点「▶ 开始旋转」试试能不能全清
+      <b>好友的解法挑战</b>——参数已载入，点「开始旋转」试试能不能全清
     </span>
     <button
       type="button"
@@ -43,7 +43,7 @@
       <b><Icon name="check" size={13} /> 对了！</b>
       再微调两根的半径与相位，让紫色轨迹贴上金色虚线（细节见提示）
     {:else}
-      <b>椭圆的秘密在"反转"</b>：启用 <b>②</b> 并把它切到 <b>⟲ 反转</b>—— 一顺一反才叠得出椭圆
+      <b>椭圆的秘密在"反转"</b>：启用 <b>②</b> 并把它切到 <b>反转</b>—— 一顺一反才叠得出椭圆
     {/if}
     <button type="button" class="mini-btn" onclick={() => engine.markFlag('ellipseGuideDone')}>
       知道了
@@ -52,26 +52,26 @@
 {/if}
 
 <style>
+  /* 引导条：贴在画布下沿的一条任务提示铭牌 */
   .first-guide {
     position: absolute;
     bottom: 52px;
     left: 50%;
     transform: translateX(-50%);
     width: calc(100% - 24px);
-    max-width: 420px;
+    max-width: 460px;
     display: block;
-    padding: 7px 12px;
+    padding: 8px 14px;
     margin: 0;
-    border-radius: var(--radius-lg);
-    background: rgba(10, 16, 32, 0.92);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(79, 209, 197, 0.45);
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(14, 24, 42, 0.95), rgba(6, 12, 22, 0.96));
+    border: 1px solid rgba(0, 245, 212, 0.45);
     box-shadow:
-      0 4px 18px rgba(0, 0, 0, 0.6),
-      0 0 12px rgba(79, 209, 197, 0.25);
-    font-size: var(--fs-xs);
-    line-height: 1.45;
+      var(--bevel-top),
+      0 6px 20px rgba(0, 0, 0, 0.65),
+      0 0 16px rgba(0, 245, 212, 0.18);
+    font-size: 12.5px;
+    line-height: 1.5;
     color: var(--text);
     text-align: center;
     z-index: 15;
@@ -86,30 +86,45 @@
   }
 
   .first-guide.ok {
-    background: rgba(20, 26, 16, 0.94);
-    border-color: rgba(251, 191, 36, 0.65);
+    background: linear-gradient(180deg, rgba(30, 26, 10, 0.95), rgba(14, 12, 4, 0.96));
+    border-color: rgba(245, 184, 65, 0.7);
     box-shadow:
-      0 4px 18px rgba(0, 0, 0, 0.6),
-      0 0 16px rgba(251, 191, 36, 0.35);
+      var(--bevel-top),
+      0 6px 20px rgba(0, 0, 0, 0.65),
+      0 0 18px rgba(245, 184, 65, 0.3);
   }
 
   .first-guide.ok b {
-    color: var(--gold);
+    color: var(--gold-bright);
   }
 
+  /* 小按键：有厚度的微型游戏键 */
   .mini-btn {
-    appearance: none;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 26px;
+    padding: 0 10px;
+    margin-left: 8px;
+    border-radius: 7px;
+    background: var(--face-metal);
+    border: 1px solid var(--edge);
     color: var(--text);
-    border-radius: var(--radius-sm);
-    padding: 2px 8px;
-    font-size: 10px;
-    margin-left: 6px;
-    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    box-shadow:
+      var(--bevel-top),
+      0 2px 0 rgba(0, 0, 0, 0.5);
+    transition: all 0.1s ease;
   }
   .mini-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--face-metal-hover);
+    color: var(--gold-bright);
+    border-color: var(--edge-hot);
+  }
+  .mini-btn:active {
+    transform: translateY(2px);
+    box-shadow: var(--bevel-inset);
   }
 
   .remote-tip {
@@ -120,10 +135,13 @@
     padding: 7px 12px;
     margin: 0 auto;
     max-width: 100%;
-    border-radius: var(--radius-md);
-    background: linear-gradient(135deg, rgba(167, 139, 250, 0.16), rgba(79, 209, 197, 0.1));
-    border: 1px solid rgba(167, 139, 250, 0.5);
-    font-size: var(--fs-sm);
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.18), rgba(0, 245, 212, 0.08));
+    border: 1px solid rgba(167, 139, 250, 0.55);
+    box-shadow:
+      var(--bevel-top),
+      0 4px 14px rgba(0, 0, 0, 0.5);
+    font-size: 12.5px;
     color: var(--text);
     text-align: center;
     animation: guide-in 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
@@ -133,32 +151,37 @@
     color: var(--purple);
   }
   .remote-tip .rt-close {
-    appearance: none;
-    background: transparent;
-    border: none;
-    padding: 0 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    background: rgba(10, 16, 28, 0.6);
+    border: 1px solid var(--edge-soft);
     color: var(--muted);
-    font-size: var(--fs-sm);
-    cursor: pointer;
-    border-radius: var(--radius-sm);
+    font-size: 12px;
   }
   .remote-tip .rt-close:hover {
     color: var(--text);
-    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--edge);
   }
 
   .expert-tip {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     padding: 7px 12px;
     margin: 0 auto;
     max-width: 100%;
-    border-radius: var(--radius-md);
-    background: linear-gradient(135deg, rgba(167, 139, 250, 0.18), rgba(79, 209, 197, 0.08));
-    border: 1px solid rgba(167, 139, 250, 0.5);
-    font-size: var(--fs-sm);
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.2), rgba(0, 245, 212, 0.06));
+    border: 1px solid rgba(167, 139, 250, 0.55);
+    box-shadow:
+      var(--bevel-top),
+      0 4px 14px rgba(0, 0, 0, 0.5);
+    font-size: 12.5px;
     color: var(--text);
     text-align: center;
     animation: guide-in 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);

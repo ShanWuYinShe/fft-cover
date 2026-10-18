@@ -9,6 +9,30 @@
 - Canvas 2D 渲染（requestAnimationFrame 命令式循环），UI 面板为响应式组件
 - 包管理：pnpm
 
+## 界面（浑天座舱 HUD）
+
+整屏读起来是**一台占满屏幕的游戏座舱**，而不是一份可以上下拖的网页：`html/body/#app` 锁
+`100dvh` 且 `overflow:hidden`，页面本身不滚动——滚动只发生在右侧机坞、机坞面板与弹层内部。
+
+- **桌面（≥1024px）四区贴边**：顶栏（`--hud-h` 56px：星图出入口 / 当前章节星数 / 品牌 / 朱印与图标键）
+  —— 舞台（关卡缎带 + 画布，画布按 `min(可用宽, 视口高 - 顶栏 - 指令栏 - 缎带)` 自适应取方）
+  —— 右侧机坞（`--dock-w` 384px「璇玑中枢」：律柱矩阵 + 调谐仪表，高度撑满、内部滚动）
+  —— 底部指令栏（`--cmd-h` 78px：主操作「启天动轨 / 止轨结算」居中，次要键、键位提示与图标键分列两侧）。
+- **手机竖屏（≤640px）**：关卡缎带 → 画布（收集读数与朱印叠在画布上）→ 机坞面板（内部滚动；
+  点底部「指针调参」可展开为整屏面板，`panel-expanded`）→ 常驻指令栏（主操作不再随内容滚走）
+  → 底部两个大按键（指针调参 / 星图关卡）。**运行态机坞自动让位**，画布吃掉整块高度。
+- **竖屏平板（641–900px）** 与 **横屏（≤900px）** 各有一套独立的 grid 分区，横屏为「舞台在左、机坞在右」。
+- **通用件**在 `src/styles/game-ui.css`：`.g-btn`（立体按键，含 primary/danger/cyan/ghost/icon/lg）、
+  `.g-plate` / `.g-inset`（装甲面板 / 机箱凹槽）、`.g-label` / `.g-num`（铭牌标签 / 大号读数）、
+  `.g-ribbon` / `.g-divider` / `.g-corners` / `.g-lamp` / `.g-scanlines`。
+- **令牌**在 `src/styles/tokens.css`：`--hud-h` / `--cmd-h` / `--dock-w` / `--tab-h`、
+  `--metal-*`（金属层级）、`--face-*`（按钮/面板渐变面）、`--edge*`（暗金发丝描边）、`--bevel-*`（立体高光/暗边）。
+- **装饰层**：`AmbientField`（缓慢旋转的浑天环 + 星点 + 暗角）与 `ScreenFrame`（视口四角包边 + 上下光带），
+  纯 CSS、`pointer-events:none`、尊重 `.reduce-motion`。
+- **原生按钮已全局去皮**（`src/styles/reset.css` 把 `button` 的 background/border/padding 清零）：
+  新写的按钮必须自己声明背景（用 `.g-btn` 或组件内样式），否则会变成透明——这也是此前成就页
+  「白色胶囊标签」的根因。
+
 ## 玩法
 
 1. 右侧面板勾选启用指针（⟲ 按钮切换旋转方向，点击数值精确输入）；**每关有指针上限**（圆 1 根、椭圆 2 根、心形 8 根……），上限恰好容纳该关的精确傅立叶分解；编辑态可直接**拖拽画布关节**调半径与相位（实时显示数值）
@@ -252,11 +276,13 @@ pnpm preview        # 预览构建产物
       lib/components/  Stage（canvas 渲染循环）、ArmPanel / ArmRow / ArmEditor、
                        LevelPicker（章节化关卡表）、ScorePanel、ResultOverlay、FinaleOverlay（结局）、
                        TitleScreen、AchievementsModal、ComposerModal、ChapterIntroOverlay、GoalPanel、SettingsModal
+      lib/components/game/  GameShell（全屏座舱 grid：顶栏/舞台/机坞/指令栏）、GameArena（缎带+画布+浮层）、
+                       TopBar、PlayControls（底部指令栏）、MobileNav（移动端底部大按键）、CanvasHUD、
+                       LevelCrown（关卡缎带）、AmbientField / ScreenFrame（背景与包边装饰）、
+                       StarmapDrawer、PauseOverlay、GuideOverlay
+      lib/components/base/  Modal / Drawer / Button / Badge / Toast（座舱化基础件）
+      styles/          tokens（设计令牌：颜色/几何/座舱尺寸）、game-ui（座舱通用件）、reset / typography / animations / utilities
       scripts/        e2e-smoke.js + e2e-smoke-part2.js（端到端冒烟巡检）+ e2e-smoke.md（用法）
-      App.svelte       布局与组装
-      lib/components/  Stage（canvas 渲染循环）、ArmPanel / ArmRow / ArmEditor、
-                       LevelPicker（章节化关卡表）、ScorePanel、ResultOverlay、FinaleOverlay（结局）、
-                       TitleScreen、AchievementsModal、ComposerModal
       App.svelte       布局与组装
 
 legacy/vanilla.html 是重写前的单文件原型，仅作参考。
@@ -301,3 +327,11 @@ legacy/vanilla.html 是重写前的单文件原型，仅作参考。
 - **改造弹层/容器结构时，先跑 div 深度追踪再提交**（aa99e9c 的连胜提示改造吞掉了
   `.dweek` 的闭合 `</div>`，尾部替位让总数恰好平衡——svelte-check 平静、浏览器容错、
   十几轮后才发现）。改完用深度脚本核对「final-depth=0 且无未闭合」再验证。
+- **整屏锁死后，任何新弹层都要自己内部可滚**：`html/body/#app` 已是 `height:100dvh +
+overflow:hidden`，页面不会替你滚——弹层/抽屉必须写 `max-height: calc(100dvh - 24px)` +
+  `overflow-y:auto`，否则矮屏（横屏 390px 高）上按钮够不着（2026-10 实测过同类问题）。
+- **`<button>` 已全局去皮**：`reset.css` 清零了 background/border/padding，凡是没有显式
+  背景的按钮都会渲染成透明（曾经成就页的白色胶囊就是没重置原生按钮导致的）。
+  新增图标键/标签键时用 `game-ui.css` 的 `.g-btn` 或自己声明背景。
+- **全屏座舱的四区尺寸走令牌**：`--hud-h` / `--cmd-h` / `--dock-w` / `--tab-h`；
+  媒体查询覆盖规则要放在样式块末尾（同特异性靠顺序取胜）。

@@ -50,20 +50,39 @@
   }
 </script>
 
+<!-- 暂停舱：整块盖住画布；画布很矮时外层滚动，保证三个按钮都能点到 -->
 <div class="pause-menu" role="dialog" aria-modal="true">
-  <h3 class="font-celestial">已暂停</h3>
-  <p class="pm-sub">调整策略后继续，或者重新来过</p>
-  {#if pauseProgress}
-    <p class="pm-prog font-tabular">{pauseProgress}</p>
-  {/if}
-  {#if pauseGaps}
-    <p class="pm-gaps" title="当前拟合最需要补/削的两个频率">
-      <Icon name="bulb" size={13} /> 最该调：{pauseGaps}
-    </p>
-  {/if}
-  <button type="button" class="pm-btn primary" onclick={resume}> ▶ 继续旋转 </button>
-  <button type="button" class="pm-btn" onclick={backToEdit}> ⟲ 回到调参 </button>
-  <button type="button" class="pm-btn" onclick={restart}> ↻ 重新开始 </button>
+  <div class="pm-panel">
+    <span class="g-scanlines pm-scan" aria-hidden="true"></span>
+    <span class="g-corner tl" aria-hidden="true"></span>
+    <span class="g-corner tr" aria-hidden="true"></span>
+    <span class="g-corner bl" aria-hidden="true"></span>
+    <span class="g-corner br" aria-hidden="true"></span>
+
+    <span class="pm-eyebrow g-label">观测暂止</span>
+    <h3 class="font-celestial">已暂停</h3>
+    <p class="pm-sub">调整策略后继续，或者重新来过</p>
+    <span class="g-divider pm-div" aria-hidden="true"></span>
+
+    {#if pauseProgress}
+      <p class="pm-prog font-tabular">{pauseProgress}</p>
+    {/if}
+    {#if pauseGaps}
+      <p class="pm-gaps" title="当前拟合最需要补/削的两个频率">
+        <Icon name="bulb" size={13} /> 最该调：{pauseGaps}
+      </p>
+    {/if}
+
+    <button type="button" class="pm-btn primary" onclick={resume}>
+      <Icon name="play" size={14} /> 继 续 旋 转
+    </button>
+    <button type="button" class="pm-btn" onclick={backToEdit}>
+      <Icon name="sliders" size={14} /> 回 到 调 参
+    </button>
+    <button type="button" class="pm-btn" onclick={restart}>
+      <Icon name="refresh" size={14} /> 重 新 开 始
+    </button>
+  </div>
 </div>
 
 <style>
@@ -71,89 +90,183 @@
     position: absolute;
     inset: 0;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 9px;
-    padding: var(--space-4);
-    background: rgba(6, 8, 16, 0.88);
+    padding: 12px;
+    box-sizing: border-box;
+    background: rgba(5, 7, 14, 0.86);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border-radius: var(--radius-lg);
     z-index: 12;
     animation: fade-in 0.25s ease-out;
-    box-sizing: border-box;
+    /* 画布矮（手机竖屏）时整块可滚，按钮不会被裁掉 */
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
-  .pause-menu h3 {
-    margin: 0 0 2px;
-    font-size: 22px;
-    letter-spacing: 6px;
+  /* 座舱面板：居中，撑不满就滚动 */
+  .pm-panel {
+    position: relative;
+    margin: auto;
+    width: min(100%, 320px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 18px 18px;
+    background: linear-gradient(180deg, var(--metal-2) 0%, var(--metal) 45%, #070c16 100%);
+    border: 1px solid var(--edge-soft);
+    border-radius: var(--radius-md);
+    box-shadow: var(--sh-game-lg), var(--bevel-top);
+    text-align: center;
+  }
+  .pm-panel::before {
+    content: '';
+    position: absolute;
+    inset: -1px -1px auto;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--edge-hot) 16%,
+      var(--edge-hot) 84%,
+      transparent
+    );
+    opacity: 0.75;
+    pointer-events: none;
+  }
+
+  .pm-scan {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  .pm-eyebrow {
+    position: relative;
+  }
+
+  .pm-panel h3 {
+    position: relative;
+    margin: 0;
+    font-size: 24px;
+    letter-spacing: 8px;
     color: var(--text);
+    text-shadow: 0 0 18px rgba(245, 184, 65, 0.35);
+  }
+
+  .pm-div {
+    width: 100%;
+    margin: 2px 0 4px;
   }
 
   .pm-sub {
-    margin: 0 0 10px;
+    position: relative;
+    margin: 0;
     font-size: var(--fs-xs);
     color: var(--muted);
   }
 
+  /* 本局读数：小铭牌 + 等宽数字的凹槽条 */
   .pm-prog {
-    margin: 0 0 10px;
-    padding: 5px 12px;
-    border-radius: var(--radius-pill);
-    background: rgba(79, 209, 197, 0.1);
-    border: 1px solid rgba(79, 209, 197, 0.32);
+    position: relative;
+    margin: 0;
+    width: 100%;
+    padding: 7px 10px;
+    box-sizing: border-box;
+    border-radius: var(--r-sm);
+    background: linear-gradient(180deg, rgba(3, 8, 12, 0.9), rgba(6, 14, 16, 0.85));
+    border: 1px solid rgba(0, 245, 212, 0.32);
+    box-shadow: var(--bevel-inset);
     font-size: var(--fs-sm);
     color: var(--cyan);
+    text-shadow: 0 0 12px rgba(0, 245, 212, 0.3);
   }
 
+  /* 最该调的频率：金色警示凹槽 */
   .pm-gaps {
-    margin: 0 0 10px;
-    max-width: 100%;
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    background: rgba(251, 191, 36, 0.1);
-    border: 1px dashed rgba(251, 191, 36, 0.4);
+    position: relative;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 7px 10px;
+    border-radius: var(--r-sm);
+    background: linear-gradient(180deg, rgba(24, 16, 3, 0.9), rgba(12, 8, 2, 0.88));
+    border: 1px solid rgba(245, 184, 65, 0.4);
+    box-shadow: var(--bevel-inset);
     font-size: var(--fs-xs);
-    color: #fbbf24;
+    color: var(--gold-bright);
     line-height: 1.6;
-    text-align: center;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
   }
 
+  /* 暂停菜单按键：满宽厚键，主操作金色 */
   .pm-btn {
+    position: relative;
     appearance: none;
-    width: min(100%, 240px);
-    min-height: 42px;
-    border-radius: var(--radius-md);
-    background: linear-gradient(180deg, #202b40 0%, #101726 100%);
-    border: 1px solid var(--line);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 48px;
+    margin-top: 2px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1px solid var(--edge-soft);
+    background: var(--face-metal);
     color: var(--text);
     font-size: var(--fs-sm);
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 2px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    box-shadow:
+      var(--bevel-top),
+      0 4px 0 rgba(0, 0, 0, 0.55);
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform 0.09s ease,
+      color 0.12s ease,
+      border-color 0.12s ease,
+      background 0.12s ease,
+      box-shadow 0.12s ease;
   }
-
   .pm-btn:hover {
-    background: linear-gradient(90deg, rgba(79, 209, 197, 0.1), transparent);
-    transform: translateX(4px);
-    border-color: rgba(79, 209, 197, 0.4);
-    color: var(--cyan);
+    color: var(--gold-bright);
+    border-color: var(--edge);
+    background: var(--face-metal-hover);
+  }
+  .pm-btn:active {
+    transform: translateY(3px);
+    box-shadow: var(--bevel-top);
   }
 
   .pm-btn.primary {
-    background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 100%);
-    color: #060911;
-    border: 1px solid var(--gold-bright);
-    box-shadow: 0 2px 10px rgba(245, 184, 65, 0.4);
+    min-height: 52px;
+    font-size: var(--fs-lg);
+    letter-spacing: 5px;
+    color: #1a1002;
+    border-color: #ffe7a3;
+    background: var(--face-gold);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+    box-shadow:
+      var(--bevel-top),
+      inset 0 -3px 0 rgba(140, 80, 0, 0.55),
+      0 4px 0 #7a4d05,
+      0 0 22px rgba(245, 184, 65, 0.35);
   }
   .pm-btn.primary:hover {
-    filter: brightness(1.1);
-    transform: translateX(4px);
+    color: #120a00;
+    background: var(--face-gold-hover);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pm-btn {
+      transition: none;
+    }
   }
 </style>

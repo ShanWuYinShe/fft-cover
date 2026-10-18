@@ -10,6 +10,10 @@ description: fft_cover UI 审查的「截图→Gemini 网页评审」工作流�
 
 ## 管线
 
+0. **截图链路更新(2026-10-18)**:agent-browser owner 可能中途消失(实测 62425 掉线),此时别再纠缠,
+   改用「workspace 内自带 headless Chrome + 固定端口 9411 + CDP HTTP 直连」——可复现脚本与用法见
+   fft-cover-architecture skill 的「本地截图链路」一节(`.workwork/ui-redesign/shot.mjs` / `verify.mjs`)。
+   下面第 1 条是旧路径,仍可用但不是唯一选择。
 1. 截图:agent-browser 独立 headless 会话(默认安全路径),覆盖
    桌面 1440×900(标题/主界面/底部/设置/成就)+ 移动 390×844(主界面/指针面板)
    - 暂停菜单/结算卡(需真跑一局:频率下拉调 10x 加速,「停止结算」可提前出结算卡)。

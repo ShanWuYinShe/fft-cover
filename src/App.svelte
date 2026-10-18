@@ -101,6 +101,25 @@
   // 新手引导是否已看
   const tutorialSeen = $derived(!!engine.flags['tutorialSeen']);
 
+  /** 除教程外的浮层（标题/成就/设置/星图/章节入场/通关演出） */
+  const otherOverlayUp = $derived(
+    uiState.showTitle ||
+      uiState.showAchv ||
+      uiState.showSettings ||
+      uiState.starMapOpen ||
+      !!uiState.chapterIntro ||
+      !!engine.finale,
+  );
+
+  /**
+   * 新手教程只在「没有别的浮层」时出现：
+   * 从标题页直接点「星图 / 成就 / 设置」时，目标浮层优先，教程不抢镜。
+   */
+  const tutorialUp = $derived(!tutorialSeen && !otherOverlayUp);
+
+  /** 任一浮层开着时，把游戏骨架整块 inert：焦点不会跑到背景 HUD 上 */
+  const overlayUp = $derived(otherOverlayUp || tutorialUp);
+
   onMount(() => {
     // 挂载全局调试桥梁
     (window as any).__ENGINE = engine;
@@ -154,8 +173,10 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<!-- 游戏主骨架 -->
-<GameShell />
+<!-- 游戏主骨架（有浮层时整块 inert：背景不可点、不可 Tab 到） -->
+<div class="game-layer" inert={overlayUp}>
+  <GameShell />
+</div>
 
 <!-- 浮层通知托管 -->
 <ToastHost />
@@ -177,7 +198,7 @@
   />
 {/if}
 
-{#if !tutorialSeen && !uiState.showTitle}
+{#if tutorialUp}
   <TutorialOverlay />
 {/if}
 

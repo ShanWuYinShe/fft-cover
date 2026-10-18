@@ -2,7 +2,6 @@
   import Stage from '../Stage.svelte';
   import LevelCrown from './LevelCrown.svelte';
   import CanvasHUD from './CanvasHUD.svelte';
-  import PlayControls from './PlayControls.svelte';
   import PauseOverlay from './PauseOverlay.svelte';
   import GuideOverlay from './GuideOverlay.svelte';
   import ResultOverlay from '../ResultOverlay.svelte';
@@ -11,7 +10,7 @@
 </script>
 
 <section class="stage-wrap">
-  <!-- 关卡天冠顶饰 -->
+  <!-- 关卡天冠缎带 -->
   <LevelCrown />
 
   <!-- 浑天璇玑画布基座 -->
@@ -47,106 +46,112 @@
     <!-- 目标引导与提示 -->
     <GuideOverlay />
   </div>
-
-  <!-- 运行主控制台 -->
-  <PlayControls />
 </section>
 
 <style>
+  /* 舞台：画布吃满机坞左侧的可用高度 */
   .stage-wrap {
-    flex: 1 1 760px;
-    max-width: 820px;
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
-    min-width: 0;
     align-items: center;
-    transition:
-      max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-      flex 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    justify-content: center;
+    gap: 8px;
     box-sizing: border-box;
   }
 
   .canvas-box {
     position: relative;
-    width: min(100%, 780px, calc(100dvh - 225px));
+    flex: 0 0 auto;
+    /* 视口高 - 顶栏 - 指令栏 - 缎带与间隙 —— 剩下的都留给画布 */
+    width: min(100%, calc(100dvh - var(--hud-h) - var(--cmd-h) - 60px));
+    max-width: 100%;
     margin: 0 auto;
-    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   /* 4 隅古青铜角花 */
   .stage-bracket {
     position: absolute;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     pointer-events: none;
     z-index: 4;
   }
   .stage-bracket.tl {
-    top: -2px;
-    left: -2px;
+    top: -3px;
+    left: -3px;
     border-top: 3px solid var(--gold-bright);
     border-left: 3px solid var(--gold-bright);
-    box-shadow: -2px -2px 6px rgba(245, 184, 65, 0.4);
+    filter: drop-shadow(0 0 5px rgba(245, 184, 65, 0.5));
   }
   .stage-bracket.tr {
-    top: -2px;
-    right: -2px;
+    top: -3px;
+    right: -3px;
     border-top: 3px solid var(--gold-bright);
     border-right: 3px solid var(--gold-bright);
-    box-shadow: 2px -2px 6px rgba(245, 184, 65, 0.4);
+    filter: drop-shadow(0 0 5px rgba(245, 184, 65, 0.5));
   }
   .stage-bracket.bl {
-    bottom: -2px;
-    left: -2px;
+    bottom: -3px;
+    left: -3px;
     border-bottom: 3px solid var(--gold-bright);
     border-left: 3px solid var(--gold-bright);
-    box-shadow: -2px 2px 6px rgba(245, 184, 65, 0.4);
+    filter: drop-shadow(0 0 5px rgba(245, 184, 65, 0.5));
   }
   .stage-bracket.br {
-    bottom: -2px;
-    right: -2px;
+    bottom: -3px;
+    right: -3px;
     border-bottom: 3px solid var(--gold-bright);
     border-right: 3px solid var(--gold-bright);
-    box-shadow: 2px 2px 6px rgba(245, 184, 65, 0.4);
+    filter: drop-shadow(0 0 5px rgba(245, 184, 65, 0.5));
   }
 
+  /* ---------- 手机竖屏：画布按视口高与宽取小，机坞面板留在下方 ---------- */
   @media (max-width: 640px) and (orientation: portrait) {
     .stage-wrap {
       flex: 0 0 auto;
-      width: 100%;
+      justify-content: flex-start;
       gap: 4px;
     }
     .canvas-box {
-      width: min(96vw, 44vh);
-      margin: 0 auto;
+      width: min(94vw, 40dvh);
+    }
+    .stage-bracket {
+      width: 16px;
+      height: 16px;
     }
   }
 
-  @media (max-width: 640px) and (orientation: portrait) and (max-height: 700px) {
+  @media (max-width: 640px) and (orientation: portrait) and (max-height: 720px) {
     .canvas-box {
-      width: min(94vw, 38vh);
+      width: min(92vw, 34dvh);
     }
   }
 
-  @media (max-width: 640px) and (orientation: portrait) and (max-height: 600px) {
-    .canvas-box {
-      width: min(94vw, 34vh);
-    }
-  }
-
-  @media (max-width: 900px) and (orientation: landscape) {
+  /* ---------- 竖屏平板（641–900px）：画布按视口高占比收一收，给机坞留空间 ---------- */
+  @media (min-width: 641px) and (max-width: 900px) and (orientation: portrait) {
     .stage-wrap {
       flex: 0 0 auto;
-      justify-content: center;
-      width: min(52vw, calc(100dvh - 92px));
-      max-width: 52vw;
-      min-width: 0;
-      position: relative;
+      justify-content: flex-start;
+      width: 100%;
     }
     .canvas-box {
-      width: min(52vw, calc(100dvh - 110px));
-      margin: 0;
+      width: min(100%, 56dvh);
+    }
+  }
+
+  /* ---------- 手机横屏：画布占左侧 52vw ---------- */
+  @media (max-width: 900px) and (orientation: landscape) {
+    .stage-wrap {
+      justify-content: center;
+      gap: 4px;
+      width: 100%;
+    }
+    .canvas-box {
+      width: min(48vw, calc(100dvh - 130px));
     }
   }
 </style>

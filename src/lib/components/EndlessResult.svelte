@@ -34,7 +34,19 @@
 
 <div class="result">
   <div class="card">
-    <div class="glow"></div>
+    <!-- 座舱装饰：扫描线 + 四角包边 + 顶部铭牌 -->
+    <span class="g-scanlines card-scan" aria-hidden="true"></span>
+    <span class="g-corner tl" aria-hidden="true"></span>
+    <span class="g-corner tr" aria-hidden="true"></span>
+    <span class="g-corner bl" aria-hidden="true"></span>
+    <span class="g-corner br" aria-hidden="true"></span>
+    <div class="glow" aria-hidden="true"></div>
+    <div class="card-rail">
+      <span class="g-label">周 天 演 武</span>
+      <span class="rail-lv">
+        {engine.endlessSurvived ? '第 ' + engine.endlessWave + ' 宿 · 破劫' : '星轨力竭'}
+      </span>
+    </div>
     <div class="endless-seal" aria-hidden="true">{engine.endlessSurvived ? '破劫' : '力竭'}</div>
     <div class="card-body">
       {#if engine.endlessSurvived}
@@ -46,16 +58,16 @@
 
         <div class="stats-grid">
           <div class="stat-cell">
-            <span class="sk">本宿实得</span>
-            <span class="sv">{engine.score} <small>分</small></span>
+            <span class="sk g-label g-label--dim">本宿实得</span>
+            <span class="sv g-num">{engine.score} <small>分</small></span>
           </div>
           <div class="stat-cell">
-            <span class="sk">过宿嘉赏</span>
-            <span class="sv gold">+{engine.endlessWaveBonus}</span>
+            <span class="sk g-label g-label--dim">过宿嘉赏</span>
+            <span class="sv gold g-num">+{engine.endlessWaveBonus}</span>
           </div>
           <div class="stat-cell full-width">
-            <span class="sk">璇玑总分</span>
-            <span class="sv total-val"><b>{engine.endlessScore}</b></span>
+            <span class="sk g-label g-label--dim">璇玑总分</span>
+            <span class="sv total-val"><b class="g-num g-num--gold">{engine.endlessScore}</b></span>
           </div>
         </div>
 
@@ -69,12 +81,13 @@
           </div>
         {/if}
 
+        <span class="g-divider card-div" aria-hidden="true"></span>
         <div class="next-hint">
           <span class="nh-tag">{nextDiff}</span> 下一宿星晷更疾 · 汲纳度需 ≥35% 方可延生
         </div>
 
         <div class="actions">
-          <button type="button" class="primary go" onclick={goNext}>✦ 启赴下一宿 ✦</button>
+          <button type="button" class="go" onclick={goNext}>✦ 启赴下一宿 ✦</button>
           <button type="button" class="ghost-btn" onclick={quit}>
             载录 {engine.endlessScore} 分回阁
           </button>
@@ -88,12 +101,12 @@
 
         <div class="stats-grid">
           <div class="stat-cell">
-            <span class="sk">止步宿位</span>
-            <span class="sv">第 <b>{engine.endlessWave}</b> 宿</span>
+            <span class="sk g-label g-label--dim">止步宿位</span>
+            <span class="sv">第 <b class="g-num g-num--gold">{engine.endlessWave}</b> 宿</span>
           </div>
           <div class="stat-cell">
-            <span class="sk">璇玑总分</span>
-            <span class="sv gold"><b>{engine.endlessScore}</b></span>
+            <span class="sk g-label g-label--dim">璇玑总分</span>
+            <span class="sv gold"><b class="g-num g-num--gold">{engine.endlessScore}</b></span>
           </div>
         </div>
 
@@ -109,7 +122,7 @@
         {/if}
 
         <div class="actions">
-          <button type="button" class="primary go" onclick={retry}>↻ 重启周天璇玑</button>
+          <button type="button" class="go" onclick={retry}>↻ 重启周天璇玑</button>
           <button type="button" class="ghost-btn" onclick={quit}>返回星图星宿</button>
         </div>
       {/if}
@@ -126,8 +139,8 @@
     align-items: center;
     padding: 16px;
     background:
-      radial-gradient(circle at 50% 45%, rgba(13, 20, 32, 0.85), rgba(5, 7, 13, 0.96)),
-      rgba(5, 7, 13, 0.88);
+      radial-gradient(circle at 50% 45%, rgba(11, 17, 28, 0.86), rgba(3, 5, 11, 0.96)),
+      rgba(3, 5, 11, 0.9);
     backdrop-filter: blur(8px);
     border-radius: var(--chamfer-lg);
     animation: fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -142,28 +155,36 @@
     }
   }
 
+  /* 演武结算：金属装甲板 + 四角包边 */
   .card {
     position: relative;
-    width: min(100%, 360px);
+    width: min(100%, 366px);
     max-height: 100%;
-    overflow: hidden;
-    background: linear-gradient(170deg, rgba(17, 24, 39, 0.98), rgba(9, 13, 22, 0.99));
-    border: 1px solid rgba(245, 197, 66, 0.35);
-    clip-path: polygon(
-      0 12px,
-      12px 0,
-      calc(100% - 12px) 0,
-      100% 12px,
-      100% calc(100% - 12px),
-      calc(100% - 12px) 100%,
-      12px 100%,
-      0 calc(100% - 12px)
-    );
+    overflow: visible;
+    background: linear-gradient(180deg, var(--metal-2) 0%, var(--metal) 45%, #070c16 100%);
+    border: 1px solid var(--edge-soft);
+    border-radius: 8px;
     box-shadow:
-      0 24px 60px rgba(0, 0, 0, 0.75),
-      0 0 40px rgba(245, 197, 66, 0.08) inset;
+      var(--sh-game-lg),
+      var(--bevel-top),
+      inset 0 0 60px rgba(245, 184, 65, 0.06);
     animation: card-in 0.42s cubic-bezier(0.34, 1.4, 0.64, 1);
     text-align: center;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: -1px -1px auto;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--edge-hot) 14%,
+      var(--edge-hot) 86%,
+      transparent
+    );
+    opacity: 0.8;
+    pointer-events: none;
   }
   @keyframes card-in {
     from {
@@ -176,6 +197,37 @@
     }
   }
 
+  .card-scan {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0.65;
+  }
+
+  /* 顶部铭牌 */
+  .card-rail {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 14px 8px;
+    border-bottom: 1px solid var(--edge-soft);
+    background: linear-gradient(180deg, rgba(245, 184, 65, 0.1), rgba(245, 184, 65, 0.015));
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+    border-radius: 8px 8px 0 0;
+    position: relative;
+    z-index: 1;
+  }
+  .rail-lv {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
   .glow {
     position: absolute;
     top: -60px;
@@ -183,14 +235,15 @@
     transform: translateX(-50%);
     width: 220px;
     height: 140px;
-    background: radial-gradient(circle, rgba(245, 197, 66, 0.25), transparent 70%);
+    background: radial-gradient(circle, rgba(245, 184, 65, 0.25), transparent 70%);
     pointer-events: none;
   }
 
+  /* 落款朱印：竖排两字（下移，避开右上角包边） */
   .endless-seal {
     position: absolute;
-    top: 12px;
-    right: 14px;
+    top: 46px;
+    right: 12px;
     width: 28px;
     height: 48px;
     display: flex;
@@ -215,7 +268,12 @@
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    padding: 22px 20px;
+    padding: 18px 20px 20px;
+  }
+
+  .card-div {
+    width: 100%;
+    margin: 2px 0;
   }
 
   .wave-ico {
@@ -270,27 +328,30 @@
   .stat-cell {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 8px 10px;
-    background: rgba(255, 255, 255, 0.025);
-    border: 1px solid rgba(245, 197, 66, 0.15);
+    gap: 3px;
+    padding: 9px 10px;
+    background: linear-gradient(180deg, rgba(3, 5, 10, 0.88), rgba(8, 12, 22, 0.72));
+    border: 1px solid var(--edge-faint);
     border-radius: var(--r-sm);
+    box-shadow: var(--bevel-inset);
   }
   .stat-cell.full-width {
     grid-column: span 2;
-    background: rgba(245, 197, 66, 0.04);
-    border-color: rgba(245, 197, 66, 0.3);
+    background: linear-gradient(180deg, rgba(245, 184, 65, 0.12), rgba(245, 184, 65, 0.03));
+    border-color: rgba(245, 184, 65, 0.34);
   }
   .sk {
     font-size: var(--fs-xs);
     color: var(--muted);
     letter-spacing: 1px;
+    text-align: left;
   }
   .sv {
-    font-size: var(--fs-md);
+    font-size: 17px;
     font-weight: 700;
     color: var(--text);
     font-variant-numeric: tabular-nums;
+    text-align: left;
   }
   .sv.gold {
     color: var(--gold-bright);
@@ -299,14 +360,13 @@
     font-size: var(--fs-xs);
     font-weight: 400;
     color: var(--muted-2);
+    text-shadow: none;
   }
   .total-val {
     font-size: var(--fs-xl);
   }
   .total-val b {
-    color: var(--gold-bright);
-    font-size: 1.2em;
-    text-shadow: 0 0 16px rgba(245, 197, 66, 0.35);
+    font-size: 30px;
   }
 
   .next-hint {
@@ -348,35 +408,81 @@
   .actions {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 9px;
     width: 100%;
     margin-top: 4px;
   }
+  /* 主行动：金色厚键（与 .g-btn--primary .g-btn--lg 同规格） */
   .go {
+    appearance: none;
     width: 100%;
-    padding: 10px 0;
-    font-size: var(--fs-md);
-    letter-spacing: 2px;
+    min-height: 52px;
+    padding: 0 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: var(--fs-lg);
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #1a1002;
+    border: 1px solid #ffe7a3;
+    background: var(--face-gold);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+    box-shadow:
+      var(--bevel-top),
+      inset 0 -3px 0 rgba(140, 80, 0, 0.55),
+      0 4px 0 #7a4d05,
+      0 10px 26px rgba(245, 184, 65, 0.35);
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform 0.09s ease,
+      background 0.12s ease,
+      box-shadow 0.12s ease;
   }
+  .go:hover {
+    background: var(--face-gold-hover);
+  }
+  .go:active {
+    transform: translateY(3px);
+    box-shadow:
+      var(--bevel-top),
+      inset 0 2px 8px rgba(0, 0, 0, 0.5);
+  }
+  /* 次行动：金属面 */
   .ghost-btn {
+    appearance: none;
     width: 100%;
-    padding: 8px 0;
-    border-radius: var(--r-sm);
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--muted);
     font: inherit;
     font-size: var(--fs-xs);
-    color: var(--muted);
-    background: transparent;
-    border: 1px solid rgba(245, 197, 66, 0.2);
-    cursor: pointer;
-    transition: all 0.15s ease;
+    font-weight: 700;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    border: 1px solid var(--edge-soft);
+    background: var(--face-metal);
+    box-shadow:
+      var(--bevel-top),
+      0 3px 0 rgba(0, 0, 0, 0.5);
+    transition:
+      transform 0.09s ease,
+      color 0.12s ease,
+      border-color 0.12s ease,
+      background 0.12s ease;
   }
   .ghost-btn:hover {
-    color: var(--text);
-    border-color: rgba(245, 197, 66, 0.5);
-    background: rgba(245, 197, 66, 0.05);
+    color: var(--gold-bright);
+    border-color: var(--edge);
+    background: var(--face-metal-hover);
+  }
+  .ghost-btn:active {
+    transform: translateY(2px);
   }
 
-  @media (max-width: 900px) and (max-height: 700px) {
+  /* 矮视口与手机竖屏：结算卡整屏显示（座舱壳下画布高度不够放完整卡） */
+  @media (max-width: 900px) and (max-height: 700px), (max-width: 640px) {
     .result {
       position: fixed;
       inset: 0;
