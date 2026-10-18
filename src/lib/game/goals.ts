@@ -23,7 +23,7 @@ export type GoalId = 'stars' | 'perfect' | 'exact' | 'expert';
 export interface LevelGoal {
   id: GoalId;
   icon: string;
-  /** 印章单字：达成后盖朱砂印（篆刻样式，见 GoalPanel） */
+  /** 印章单字：达成后盖朱砂印（篆刻样式，画布 HUD 与结算卡用） */
   seal: string;
   name: string;
   /** 未达成时做什么 */

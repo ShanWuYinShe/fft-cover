@@ -385,8 +385,8 @@ pnpm preview        # 预览构建产物
                        save（存档读写 + readJson/writeJson 安全读写 + 续玩域键的存取）/ share（邀请码与分享链接）/ shapes（内置曲线的轮廓点串，图鉴与战利品墙共用）
                        engine.svelte.ts（runes 状态引擎）
       lib/components/  Stage（canvas 渲染循环）、ArmPanel / ArmRow / ArmEditor、
-                       LevelPicker（章节化关卡表）、ScorePanel、ResultOverlay、FinaleOverlay（结局）、
-                       TitleScreen、AchievementsModal、ComposerModal、ChapterIntroOverlay、GoalPanel、SettingsModal
+                       LevelPicker（章节化关卡表）、ResultOverlay、FinaleOverlay（结局）、
+                       TitleScreen、AchievementsModal、ComposerModal、ChapterIntroOverlay、SettingsModal
       lib/components/game/  GameShell（全屏座舱 grid：顶栏/舞台/机坞/指令栏）、GameArena（缎带+画布+浮层）、
                        TopBar、PlayControls（底部指令栏）、MobileNav（移动端底部大按键）、CanvasHUD、
                        LevelCrown（关卡缎带）、AmbientField / ScreenFrame（背景与包边装饰）、
