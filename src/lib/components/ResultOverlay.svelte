@@ -1,7 +1,6 @@
 <script lang="ts">
   import Icon from './Icon.svelte';
   import { onMount } from 'svelte';
-  import { uiToggle } from '../game/audio';
   import MoreMenu from './MoreMenu.svelte';
   import { engine } from '../game/engine.svelte';
   import { goalProgress, levelGoals } from '../game/goals';
@@ -50,7 +49,7 @@
 
   /** 执行"下一枚印"的动作并落到可继续操作的状态 */
   function doNextAction(): void {
-    uiToggle(engine.soundOn);
+    // 按键的笃声由全局点击监听负责，这里只保留触感
     haptic(12, engine.soundOn);
     switch (nextSeal?.id) {
       case 'expert':

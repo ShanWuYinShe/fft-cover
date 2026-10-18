@@ -1,5 +1,13 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { currentVolume, getVolume, initVolumeFromStorage, setVolume } from './audio';
+import {
+  currentVolume,
+  getVolume,
+  initVolumeFromStorage,
+  setVolume,
+  uiClick,
+  uiChime,
+  woodfishSound,
+} from './audio';
 import { VOLUME_KEY } from './constants';
 
 /** 内存 Storage（Node 环境没有 localStorage） */
@@ -70,5 +78,21 @@ describe('音量三态持久化', () => {
   it('没存过时初始化到满音量', () => {
     expect(initVolumeFromStorage()).toBe(1);
     expect(currentVolume()).toBe(1);
+  });
+});
+
+describe('UI 器物音在音频不可用时不抛错', () => {
+  // Node 测试环境没有 window/AudioContext，getAudioContext 必须静默返回 null——
+  // 音频不可用绝不能影响游戏逻辑（uiChime 还要保证不开定时器就直接返回）
+  it('按键笃声 / 面板编钟 / 连击木鱼在无音频环境里调用安全', () => {
+    expect(() => uiClick(true)).not.toThrow();
+    expect(() => uiChime(true)).not.toThrow();
+    expect(() => woodfishSound(true)).not.toThrow();
+  });
+
+  it('音效关闭（on=false）时直接早退', () => {
+    expect(() => uiClick(false)).not.toThrow();
+    expect(() => uiChime(false)).not.toThrow();
+    expect(() => woodfishSound(false)).not.toThrow();
   });
 });

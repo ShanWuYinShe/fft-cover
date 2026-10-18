@@ -12,7 +12,7 @@
   import { LEVEL_DEFS } from './lib/game/levels';
   import { chapterProgress } from './lib/game/campaign';
   import { engine } from './lib/game/engine.svelte';
-  import { achvSound } from './lib/game/audio';
+  import { achvSound, uiChime } from './lib/game/audio';
   import { haptic } from './lib/game/haptics';
   import { musicLevelArrival } from './lib/game/music';
   import { readArmsFromHash, readRandomFromHash, readDailyFromHash } from './lib/game/share';
@@ -88,6 +88,19 @@
     haptic([14, 40, 14], engine.soundOn);
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => engine.clearToast(), 3000);
+  });
+
+  /**
+   * 功能弹层（成就/设置/星图/暂停）展开时的一声编钟——只认 false→true 沿，
+   * 弹层之间切换（一个关一个开）不会双响。演出层（标题/章节入场/通关/教程/结算）
+   * 不在清单里：它们有自己的音效编排，磬声只给「进入一个功能面板」的瞬间。
+   */
+  let prevPanelUp = false;
+  $effect(() => {
+    const up =
+      uiState.showAchv || uiState.showSettings || uiState.starMapOpen || engine.phase === 'paused';
+    if (up && !prevPanelUp) uiChime(engine.soundOn);
+    prevPanelUp = up;
   });
 
   /** 从图鉴/成就跳转直接进关 */

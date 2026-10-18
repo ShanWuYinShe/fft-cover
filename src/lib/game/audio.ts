@@ -145,10 +145,11 @@ export function pluck(freq: number, on: boolean, dur = 0.55, gain = 0.13): void 
 }
 
 /**
- * 木鱼声（中国打击乐）：短促的"笃"——快速下落的音高 + 极短衰减。
- * 用于连击里程碑（每满 5 连）这样的轻量点缀，不盖过收集音。
+ * 木鱼「笃」的共享画法：短促正弦、音高瞬间下落——中国打击乐的核心质感。
+ * 连击里程碑（woodfishSound，880→620）亮而重；UI 按键（uiClick，600→450）
+ * 低而轻，同族不混淆。
  */
-export function woodfishSound(on: boolean): void {
+function knock(fStart: number, fEnd: number, dur: number, gain: number, on: boolean): void {
   if (!on) return;
   try {
     const ac = getAudioContext();
@@ -156,19 +157,27 @@ export function woodfishSound(on: boolean): void {
     const t0 = ac.currentTime;
     const o = ac.createOscillator();
     o.type = 'sine';
-    // 木腔的"笃"：音高瞬间下落（880 → 620），比固定音高更像敲木头
-    o.frequency.setValueAtTime(880, t0);
-    o.frequency.exponentialRampToValueAtTime(620, t0 + 0.045);
+    // 木腔的"笃"：音高瞬间下落，比固定音高更像敲木头
+    o.frequency.setValueAtTime(fStart, t0);
+    o.frequency.exponentialRampToValueAtTime(fEnd, t0 + dur * 0.65);
     const g = ac.createGain();
-    g.gain.setValueAtTime(0.09 * vol(), t0);
-    g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.07);
+    g.gain.setValueAtTime(gain * vol(), t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
     o.connect(g);
     g.connect(ac.destination);
     o.start(t0);
-    o.stop(t0 + 0.09);
+    o.stop(t0 + dur + 0.02);
   } catch {
     /* 音频不可用则忽略 */
   }
+}
+
+/**
+ * 木鱼声（中国打击乐）：短促的"笃"——快速下落的音高 + 极短衰减。
+ * 用于连击里程碑（每满 5 连）这样的轻量点缀，不盖过收集音。
+ */
+export function woodfishSound(on: boolean): void {
+  knock(880, 620, 0.07, 0.09, on);
 }
 
 /**
@@ -253,20 +262,56 @@ export function sealSound(on: boolean): void {
   setTimeout(() => beep(784, 0.26, 'triangle', 0.05, true), 40);
 }
 
-/* ---------- UI 音效（业界标准：交互反馈音，音量远低于游戏音） ---------- */
+/* ---------- UI 音效（器物化：交互反馈用木鱼轻叩与编钟，音量远低于游戏音） ---------- */
 
-/** UI 按钮点击：短促轻音 */
+/**
+ * UI 按键：一声低而轻的木鱼「笃」（600 → 450 Hz，60 ms）。
+ * 所有按钮经全局点击监听（audioController）统一触发，音色即器物质感。
+ */
 export function uiClick(on = true): void {
-  beep(660, 0.05, 'triangle', 0.05, on);
+  knock(600, 450, 0.06, 0.05, on);
 }
 
-/** UI 切换（方向/toggle/快进）：双音下行 */
-export function uiToggle(on = true): void {
-  beep(520, 0.05, 'triangle', 0.05, on);
-  setTimeout(() => beep(390, 0.06, 'triangle', 0.045, on), 45);
-}
-
-/** UI 返回/取消：单音更低 */
-export function uiBack(on = true): void {
-  beep(330, 0.07, 'triangle', 0.05, on);
+/**
+ * UI 面板展开：一声编钟「磬」。分音比与配乐的 BELL_PARTIALS 同配方
+ * （×2 八度、×2.76 近似小十度），高次压得极轻且短促，不扎耳；
+ * 基频 523.25（C5，宫音区）。比按键音晚 70 ms 起振，形成「笃 → 磬」的应答感。
+ * 用于功能弹层（成就/设置/星图/合成器/暂停/更多菜单）展开的一瞬；
+ * 关闭不加音——关闭键自带的笃声已覆盖。
+ */
+export function uiChime(on = true): void {
+  if (!on) return;
+  try {
+    const ac = getAudioContext();
+    if (!ac) return;
+    // [倍率, 相对增益, 衰减秒]——倍率与增益同 music.ts 的 BELL_PARTIALS
+    const partials: Array<[number, number, number]> = [
+      [1, 1, 0.5],
+      [2, 0.22, 0.32],
+      [2.76, 0.08, 0.18],
+    ];
+    setTimeout(() => {
+      try {
+        const t0 = ac.currentTime;
+        for (const [mult, pg, dur] of partials) {
+          const o = ac.createOscillator();
+          o.type = 'sine';
+          o.frequency.value = 523.25 * mult;
+          const g = ac.createGain();
+          const peak = Math.max(0.0002, 0.045 * pg * vol());
+          g.gain.setValueAtTime(0.0001, t0);
+          g.gain.linearRampToValueAtTime(peak, t0 + 0.012);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+          o.connect(g);
+          g.connect(ac.destination);
+          o.start(t0);
+          o.stop(t0 + dur + 0.05);
+        }
+      } catch {
+        /* 音频不可用则忽略 */
+      }
+    }, 70);
+  } catch {
+    /* 音频不可用则忽略 */
+  }
 }

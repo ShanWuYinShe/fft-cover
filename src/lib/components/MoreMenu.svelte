@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { engine } from '../game/engine.svelte';
-  import { uiToggle } from '../game/audio';
+  import { uiChime } from '../game/audio';
   import Icon from './Icon.svelte';
 
   export interface MenuItem {
@@ -33,8 +33,11 @@
 
   function toggle(): void {
     open = !open;
-    if (open) up = direction === 'up';
-    uiToggle(engine.soundOn);
+    if (open) {
+      up = direction === 'up';
+      // 展开一声编钟（触发键本身的笃声由全局点击监听负责）；收起不加音
+      uiChime(engine.soundOn);
+    }
   }
 
   function run(it: MenuItem): void {

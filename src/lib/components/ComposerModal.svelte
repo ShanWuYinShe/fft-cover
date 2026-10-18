@@ -3,11 +3,19 @@
   import Modal from './base/Modal.svelte';
   import Button from './base/Button.svelte';
   import { engine } from '../game/engine.svelte';
+  import { uiChime } from '../game/audio';
+  import { untrack } from 'svelte';
   import { encodeCoeffs, type HarmonicCoeff } from '../game/levels';
   import { CIRCLED, DRAFT_KEY } from '../game/constants';
   import { topHarmonics } from '../game/math';
 
   let { onclose }: { onclose: () => void } = $props();
+
+  // 合成器展开的一声编钟——App 的弹层监听不覆盖这个本地开关，挂载即展开。
+  // untrack：只认「挂载」这一次，不跟随 soundOn 变化重放
+  $effect(() => {
+    untrack(() => uiChime(engine.soundOn));
+  });
 
   /**
    * 20 行槽位：0~9 = ⟳ 正转（k = +1..+10），10~19 = ⟲ 反转（k = −1..−10）。
