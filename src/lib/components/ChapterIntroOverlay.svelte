@@ -33,18 +33,19 @@
   <!-- 入境卡：一块安静的面板（章节印 + 标题 + 一句导语 + 说明 + 主操作） -->
   <div class="card-wrap">
     <div class="card">
-      <span class="eyebrow">— 入境 —</span>
-      <h2>{chapter.name}</h2>
-      <p class="tag">{chapter.tagline}</p>
-      <p class="intro">{@html chapter.intro}</p>
-      <div class="meta">
+      <!-- 逐行 80ms 错峰淡入（位移 ≤8px，只动 transform/opacity） -->
+      <span class="eyebrow row-in" style="animation-delay: 0ms">— 入境 —</span>
+      <h2 class="row-in" style="animation-delay: 80ms">{chapter.name}</h2>
+      <p class="tag row-in" style="animation-delay: 160ms">{chapter.tagline}</p>
+      <p class="intro row-in" style="animation-delay: 240ms">{@html chapter.intro}</p>
+      <div class="meta row-in" style="animation-delay: 320ms">
         <span class="k" title="本章调性：进章即转调">♪ {keyName}</span>
         <span class="dot">·</span>
         <span>{chapter.levels.length} 关</span>
         <span class="dot">·</span>
         <span>★ {chapter.stars}/{chapter.maxStars}</span>
       </div>
-      <div class="foot">
+      <div class="foot row-in" style="animation-delay: 400ms">
         <button type="button" class="primary" onclick={onclose}>开 始 这 一 章</button>
       </div>
     </div>
@@ -106,11 +107,26 @@
   @keyframes ci-pop {
     from {
       opacity: 0;
-      transform: translateY(14px) scale(0.96);
+      transform: translateY(8px) scale(0.98);
     }
     to {
       opacity: 1;
       transform: translateY(0) scale(1);
+    }
+  }
+
+  /* 逐行淡入：只动 transform + opacity（行内 80ms 错峰） */
+  .row-in {
+    animation: ci-row 0.32s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+  @keyframes ci-row {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 
@@ -220,6 +236,18 @@
   }
   button.primary:active {
     transform: translateY(2px);
+  }
+
+  /* 减弱动态效果：位移动画关闭（颜色/透明度保留） */
+  @media (prefers-reduced-motion: reduce) {
+    .card,
+    .row-in {
+      animation: none;
+    }
+  }
+  :global(.reduce-motion) .card,
+  :global(.reduce-motion) .row-in {
+    animation: none;
   }
 
   /* 矮屏：收紧留白 */

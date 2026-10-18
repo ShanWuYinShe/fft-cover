@@ -49,6 +49,42 @@
   function onKey(e: KeyboardEvent): void {
     if (e.key === 'Escape') engine.dismissFinale();
   }
+
+  const reduceMotion = $derived(!!engine.flags.reduceMotion);
+
+  /** 战绩数字：0 → 终值 count-up（600ms easeOut，结束帧取终值保证与引擎一致） */
+  const statTargets = $derived([
+    totalStars,
+    cleared,
+    perfectCount,
+    exactCount,
+    expertCount,
+    seals.done,
+    seals.chapters,
+  ]);
+  let shown = $state<number[]>([0, 0, 0, 0, 0, 0, 0]);
+  $effect(() => {
+    const targets = statTargets;
+    if (reduceMotion) {
+      shown = targets.slice();
+      return;
+    }
+    let raf = 0;
+    const t0 = performance.now();
+    const dur = 600;
+    const tick = (now: number): void => {
+      const p = Math.min((now - t0) / dur, 1);
+      if (p >= 1) {
+        shown = targets.slice();
+        return;
+      }
+      const e = 1 - Math.pow(1 - p, 3);
+      shown = targets.map((t) => Math.round(t * e));
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  });
 </script>
 
 <svelte:window onkeydown={onKey} />
@@ -82,31 +118,27 @@
       <!-- 战绩：一行行文字读数（不做卡片阵列） -->
       <div class="stats">
         <div class="cell">
-          <b class="g-num g-num--gold">{totalStars}<i>/{maxStars}</i></b><span>总星数</span>
+          <b class="g-num g-num--gold">{shown[0]}<i>/{maxStars}</i></b><span>总星数</span>
         </div>
         <div class="cell">
-          <b class="g-num g-num--gold">{cleared}<i>/{LEVEL_DEFS.length}</i></b><span>已通关</span>
+          <b class="g-num g-num--gold">{shown[1]}<i>/{LEVEL_DEFS.length}</i></b><span>已通关</span>
         </div>
         <div class="cell">
-          <b class="g-num g-num--gold">{perfectCount}<i>/{LEVEL_DEFS.length}</i></b><span
-            >完美全清</span
+          <b class="g-num g-num--gold">{shown[2]}<i>/{LEVEL_DEFS.length}</i></b><span>完美全清</span
           >
         </div>
         <div class="cell">
-          <b class="g-num g-num--gold">{exactCount}<i>/{LEVEL_DEFS.length}</i></b><span>精确解</span
+          <b class="g-num g-num--gold">{shown[3]}<i>/{LEVEL_DEFS.length}</i></b><span>精确解</span>
+        </div>
+        <div class="cell">
+          <b class="g-num g-num--gold">{shown[4]}<i>/{LEVEL_DEFS.length}</i></b><span>专家全清</span
           >
         </div>
         <div class="cell">
-          <b class="g-num g-num--gold">{expertCount}<i>/{LEVEL_DEFS.length}</i></b><span
-            >专家全清</span
-          >
+          <b class="g-num g-num--gold">{shown[5]}<i>/{seals.total}</i></b><span>本关目标</span>
         </div>
         <div class="cell">
-          <b class="g-num g-num--gold">{seals.done}<i>/{seals.total}</i></b><span>本关目标</span>
-        </div>
-        <div class="cell">
-          <b class="g-num g-num--gold">{seals.chapters}<i>/{seals.chaptersTotal}</i></b><span
-            >章节印</span
+          <b class="g-num g-num--gold">{shown[6]}<i>/{seals.chaptersTotal}</i></b><span>章节印</span
           >
         </div>
       </div>
@@ -213,7 +245,7 @@
   @keyframes fin-pop {
     from {
       opacity: 0;
-      transform: translateY(14px) scale(0.96);
+      transform: translateY(8px) scale(0.98);
     }
     to {
       opacity: 1;
@@ -263,7 +295,7 @@
   @keyframes seal-stamp {
     from {
       opacity: 0;
-      transform: rotate(-16deg) scale(1.5);
+      transform: rotate(-8deg) scale(1.3);
     }
     to {
       opacity: 1;
@@ -279,11 +311,11 @@
   }
   @keyframes fin-burst {
     0% {
-      transform: scale(0.4) rotate(-14deg);
+      transform: scale(0.6) rotate(-8deg);
       opacity: 0;
     }
     60% {
-      transform: scale(1.12) rotate(3deg);
+      transform: scale(1.06) rotate(2deg);
       opacity: 1;
     }
     100% {
@@ -386,7 +418,7 @@
   @keyframes wall-in {
     from {
       opacity: 0;
-      transform: translateY(8px) scale(0.8);
+      transform: translateY(8px) scale(0.94);
     }
     to {
       opacity: 1;
@@ -534,6 +566,22 @@
   /* 精通结局：标题更亮，不加额外装饰 */
   .mastered h2 {
     color: var(--gold-bright);
+  }
+
+  /* 减弱动态效果：位移/缩放动画关闭（颜色/透明度保留） */
+  @media (prefers-reduced-motion: reduce) {
+    .card,
+    .seal,
+    .burst,
+    .wall-item {
+      animation: none;
+    }
+  }
+  :global(.reduce-motion) .card,
+  :global(.reduce-motion) .seal,
+  :global(.reduce-motion) .burst,
+  :global(.reduce-motion) .wall-item {
+    animation: none;
   }
 
   /* 矮屏：收紧密度 */

@@ -135,6 +135,22 @@
     line-height: 1;
     color: var(--text);
     font-variant-numeric: tabular-nums;
+    display: inline-block;
+    animation: collect-pop 0.26s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  /* 每次收集数字弹一下（key 块重建时重播），让「收到东西了」有手感 */
+  @keyframes collect-pop {
+    0% {
+      transform: scale(1.32);
+      color: #ffe7a3;
+    }
+    100% {
+      transform: scale(1);
+      color: var(--text);
+    }
+  }
+  :global(.reduce-motion) .collect-value b {
+    animation: none;
   }
   .collect-total {
     font-style: normal;

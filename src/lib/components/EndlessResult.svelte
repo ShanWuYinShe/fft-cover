@@ -30,6 +30,51 @@
   /** 挑战结束时是否刷新了历史最佳——用引擎结算时记下的标志，
       不在组件里用 best <= score 反推（打平会误报，边界 bug） */
   const newBest = $derived(engine.endlessNewBest);
+
+  const reduceMotion = $derived(!!engine.flags.reduceMotion);
+
+  /**
+   * 数字 count-up：0 → 终值（easeOut）。结束帧直接取终值，保证显示值与引擎一致；
+   * reduce-motion 下不做插值。
+   */
+  function countUp(target: number, dur: number, set: (v: number) => void): () => void {
+    if (reduceMotion || target <= 0) {
+      set(target);
+      return () => {};
+    }
+    let raf = 0;
+    const t0 = performance.now();
+    const tick = (now: number): void => {
+      const p = Math.min((now - t0) / dur, 1);
+      set(p >= 1 ? target : Math.round(target * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }
+
+  /** 大数字：总分与宿位都做 count-up（宿位快一些，像计数器跳到位） */
+  let shownScore = $state(0);
+  let shownWave = $state(0);
+  $effect(() => {
+    const stopA = countUp(engine.endlessScore, 600, (v) => (shownScore = v));
+    const stopB = countUp(engine.endlessWave, 420, (v) => (shownWave = v));
+    return () => {
+      stopA();
+      stopB();
+    };
+  });
+
+  /** 结论印章：本局最值得盖的那一个（新绝顶 > 破劫 > 力竭） */
+  const stamp = $derived(
+    engine.endlessSurvived
+      ? engine.endlessNewBest
+        ? '新绝顶'
+        : '破劫'
+      : newBest
+        ? '新绝顶'
+        : '力竭',
+  );
 </script>
 
 <div class="result">
@@ -43,11 +88,11 @@
     <div class="card-body">
       {#if engine.endlessSurvived}
         <div class="wave-ico"><Icon name="infinity" size={26} /></div>
-        <h2 class="line">第 {engine.endlessWave} 宿破劫通达</h2>
+        <h2 class="line">第 {shownWave} 宿破劫通达</h2>
 
         <!-- 大数字：璇玑总分 -->
         <div class="score-big">
-          <b class="g-num g-num--gold">{engine.endlessScore}</b>
+          <b class="g-num g-num--gold">{shownScore}</b>
           <span class="score-cap">总分</span>
         </div>
 
@@ -59,6 +104,7 @@
             破劫通达 · 继续挑战下一宿
           {/if}
         </p>
+        <span class="stamp" aria-hidden="true">{stamp}</span>
         <p class="detail">
           <span>本宿实得 <b>{engine.score}</b> 分</span>
           <span class="sep">·</span>
@@ -83,7 +129,7 @@
         <h2 class="line">周天星轨力竭</h2>
 
         <div class="score-big">
-          <b class="g-num g-num--gold">{engine.endlessScore}</b>
+          <b class="g-num g-num--gold">{shownScore}</b>
           <span class="score-cap">总分</span>
         </div>
 
@@ -96,6 +142,7 @@
             止步第 {engine.endlessWave} 宿
           {/if}
         </p>
+        <span class="stamp" aria-hidden="true">{stamp}</span>
         <p class="detail">
           {#if engine.endlessBest.wave > 0}
             <span>历代最佳 第 {engine.endlessBest.wave} 宿 · {engine.endlessBest.score} 分</span>
@@ -156,11 +203,38 @@
   @keyframes card-in {
     from {
       opacity: 0;
-      transform: translateY(12px) scale(0.96);
+      transform: translateY(8px) scale(0.98);
     }
     to {
       opacity: 1;
       transform: translateY(0) scale(1);
+    }
+  }
+
+  /* 结论印章：斜盖入 -8° → -6°，1.3 → 1.0（220ms，等大数字走完再盖） */
+  .stamp {
+    align-self: center;
+    padding: 3px 12px;
+    border: 1px solid rgba(217, 43, 43, 0.7);
+    border-radius: 4px;
+    color: #f0a6a6;
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    font-size: var(--fs-md);
+    font-weight: 700;
+    letter-spacing: 3px;
+    white-space: nowrap;
+    /* 基准态就是盖好后的角度：动画结束后自然停在 -6° */
+    transform: rotate(-6deg);
+    animation: stamp-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) 0.42s backwards;
+  }
+  @keyframes stamp-in {
+    from {
+      opacity: 0;
+      transform: rotate(-8deg) scale(1.3);
+    }
+    to {
+      opacity: 1;
+      transform: rotate(-6deg) scale(1);
     }
   }
 
@@ -360,5 +434,17 @@
     .score-big b {
       font-size: 34px;
     }
+  }
+
+  /* 减弱动态效果：位移动画关闭（颜色/透明度保留） */
+  @media (prefers-reduced-motion: reduce) {
+    .card,
+    .stamp {
+      animation: none;
+    }
+  }
+  :global(.reduce-motion) .card,
+  :global(.reduce-motion) .stamp {
+    animation: none;
   }
 </style>

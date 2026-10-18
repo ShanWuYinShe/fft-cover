@@ -5,6 +5,7 @@
   import ExtraSection from './starmap/ExtraSection.svelte';
   import { engine } from '../game/engine.svelte';
   import { LEVEL_DEFS } from '../game/levels';
+  import { uiState } from '../stores/uiState.svelte';
 
   let { onselect }: { onselect?: () => void } = $props();
 
@@ -25,7 +26,7 @@
   );
 </script>
 
-<div class="level-picker">
+<div class="level-picker" class:open={uiState.starMapOpen}>
   <!-- 星图头：金属铭牌 + 成就勋章 -->
   <div class="picker-header">
     <h2 class="picker-title font-celestial">周天星图</h2>
@@ -102,6 +103,36 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+  }
+
+  /* 抽屉打开时内容 60ms 错峰淡入（位移 ≤8px；最多 5 个元素） */
+  .level-picker.open > * {
+    animation: lp-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+  .level-picker.open > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .level-picker.open > *:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  .level-picker.open > *:nth-child(3) {
+    animation-delay: 120ms;
+  }
+  .level-picker.open > *:nth-child(4) {
+    animation-delay: 180ms;
+  }
+  .level-picker.open > *:nth-child(n + 5) {
+    animation-delay: 240ms;
+  }
+  @keyframes lp-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* 星图头：一行标题 + 勋章，下面一条分隔线（无底座） */
@@ -249,5 +280,15 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+  }
+
+  /* 减弱动态效果：位移动画关闭 */
+  @media (prefers-reduced-motion: reduce) {
+    .level-picker.open > * {
+      animation: none;
+    }
+  }
+  :global(.reduce-motion) .level-picker.open > * {
+    animation: none;
   }
 </style>

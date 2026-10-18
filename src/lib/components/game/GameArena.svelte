@@ -1,5 +1,6 @@
 <script lang="ts">
   import Stage from '../Stage.svelte';
+  import StageIntro from './StageIntro.svelte';
   import LevelCrown from './LevelCrown.svelte';
   import CanvasHUD from './CanvasHUD.svelte';
   import PauseOverlay from './PauseOverlay.svelte';
@@ -42,6 +43,9 @@
         <ResultOverlay />
       {/if}
     {/if}
+
+    <!-- 关卡入场卡（1.4s 自动淡出） -->
+    <StageIntro />
 
     <!-- 目标引导与提示 -->
     <GuideOverlay />

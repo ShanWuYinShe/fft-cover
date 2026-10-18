@@ -72,13 +72,14 @@
     border: 1px solid var(--edge-soft);
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    animation: pwa-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    /* 与提示条同一套滑入节奏：-12px → 0，240ms */
+    animation: pwa-in 240ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
 
   @keyframes pwa-in {
     from {
       opacity: 0;
-      transform: translateY(-6px);
+      transform: translateY(-12px);
     }
     to {
       opacity: 1;

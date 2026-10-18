@@ -17,10 +17,43 @@
     onclose?: () => void;
     children?: Snippet;
   } = $props();
+
+  let itemEl: HTMLDivElement | undefined = $state();
+  /** 退场中：先播反向动画，动画结束再通知父组件移除 */
+  let closing = $state(false);
+  let notified = false;
+
+  /** 是否处于「减弱动态效果」：是则跳过退场动画直接移除 */
+  function prefersReducedMotion(): boolean {
+    const byClass = document.documentElement.classList.contains('reduce-motion');
+    const byMedia =
+      typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return byClass || byMedia;
+  }
+
+  /** 关闭：退场动画比进场快 30%（240ms → 168ms），结束后再回调移除 */
+  function requestClose(): void {
+    if (notified) return;
+    if (prefersReducedMotion()) {
+      notified = true;
+      onclose?.();
+      return;
+    }
+    closing = true;
+    const finish = (): void => {
+      if (notified) return;
+      notified = true;
+      onclose?.();
+    };
+    itemEl?.addEventListener('animationend', finish, { once: true });
+    // 兜底：动画被打断/跳过时也要移除，避免卡在退场态
+    setTimeout(finish, 260);
+  }
 </script>
 
-<!-- 降噪版提示条：一层描边 + 一个图标 + 文字（去掉状态灯与外发光） -->
-<div class="toast-item toast-{variant}" role="status">
+<!-- 降噪版提示条：一层描边 + 一个图标 + 文字（去掉状态灯与外发光）
+     动效：滑入 -12px→0（240ms）+ 图标弹一下，退场反向且快 30% -->
+<div class="toast-item toast-{variant}" class:closing bind:this={itemEl} role="status">
   {#if icon}
     <span class="toast-icon" aria-hidden="true">
       <Icon name={icon} size={15} />
@@ -34,7 +67,7 @@
     {/if}
   </span>
   {#if showClose && onclose}
-    <button type="button" class="toast-close" onclick={onclose} aria-label="关闭提示">
+    <button type="button" class="toast-close" onclick={requestClose} aria-label="关闭提示">
       <Icon name="close" size={14} />
     </button>
   {/if}
@@ -57,17 +90,54 @@
     border: 1px solid var(--edge-soft);
     color: var(--text);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    animation: toast-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    /* backwards：只在动画期间生效，结束后不留 transform */
+    animation: toast-in 240ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
 
   @keyframes toast-in {
     from {
       opacity: 0;
-      transform: translateY(-6px);
+      transform: translateY(-12px);
     }
     to {
       opacity: 1;
       transform: none;
+    }
+  }
+
+  /* 退场：反向滑出，时长是进场的 70% */
+  .toast-item.closing {
+    animation: toast-out 168ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
+  }
+
+  @keyframes toast-out {
+    from {
+      opacity: 1;
+      transform: none;
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-12px);
+    }
+  }
+
+  /* 图标弹一下：1 → 1.15 → 1（进场后 120ms 起） */
+  .toast-icon {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    animation: toast-icon-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1) 120ms backwards;
+  }
+
+  @keyframes toast-icon-pop {
+    0% {
+      transform: scale(1);
+    }
+    40% {
+      transform: scale(1.15);
+    }
+    100% {
+      transform: scale(1);
     }
   }
 
@@ -85,12 +155,6 @@
   .toast-success {
     border-color: rgba(16, 185, 129, 0.45);
     color: #a7f3d0;
-  }
-
-  .toast-icon {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
   }
 
   .toast-content {
@@ -117,7 +181,8 @@
     cursor: pointer;
     transition:
       color 0.12s ease,
-      border-color 0.12s ease;
+      border-color 0.12s ease,
+      transform 90ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .toast-close::after {
@@ -131,18 +196,41 @@
     border-color: var(--edge-soft);
   }
 
+  .toast-close:active {
+    transform: scale(0.97);
+  }
+
   .toast-close:focus-visible {
     outline: 2px solid var(--edge-hot);
     outline-offset: 2px;
   }
 
+  /* ---------- 减弱动态效果：只留瞬时状态变化 ---------- */
   @media (prefers-reduced-motion: reduce) {
-    .toast-item {
+    .toast-item,
+    .toast-icon {
       animation: none;
+    }
+
+    .toast-close {
+      transition: none;
+    }
+
+    .toast-close:active {
+      transform: none;
     }
   }
 
-  :global(.reduce-motion) .toast-item {
+  :global(.reduce-motion) .toast-item,
+  :global(.reduce-motion) .toast-icon {
     animation: none;
+  }
+
+  :global(.reduce-motion) .toast-close {
+    transition: none;
+  }
+
+  :global(.reduce-motion) .toast-close:active {
+    transform: none;
   }
 </style>

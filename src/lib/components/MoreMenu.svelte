@@ -138,7 +138,7 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.07),
       0 2px 0 rgba(0, 0, 0, 0.5);
     transition:
-      transform 0.09s ease,
+      transform 90ms cubic-bezier(0.16, 1, 0.3, 1),
       box-shadow 0.12s ease,
       background 0.12s ease,
       border-color 0.12s ease,
@@ -152,8 +152,9 @@
     color: var(--gold-bright);
   }
 
+  /* 按下回弹：下沉 1px + scale 0.97 */
   .mm-btn:active {
-    transform: translateY(2px);
+    transform: translateY(1px) scale(0.97);
   }
 
   /* 展开态：描边亮一档即可，不加外发光 */
@@ -204,7 +205,7 @@
     border: 1px solid var(--edge-soft);
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    animation: mm-in 0.16s ease-out;
+    animation: mm-in 180ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
     max-height: calc(100dvh - 40px);
     overflow-y: auto;
   }
@@ -215,11 +216,11 @@
   @keyframes mm-in {
     from {
       opacity: 0;
-      transform: translateY(-4px);
+      transform: translateY(-6px);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: none;
     }
   }
 
@@ -245,6 +246,38 @@
     transition:
       background 0.12s ease,
       color 0.12s ease;
+    /* 菜单项逐条落位：40ms 错峰 */
+    animation: mm-item-in 200ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+
+  .mm-pop .mm-item:nth-child(1) {
+    animation-delay: 30ms;
+  }
+  .mm-pop .mm-item:nth-child(2) {
+    animation-delay: 70ms;
+  }
+  .mm-pop .mm-item:nth-child(3) {
+    animation-delay: 110ms;
+  }
+  .mm-pop .mm-item:nth-child(4) {
+    animation-delay: 150ms;
+  }
+  .mm-pop .mm-item:nth-child(5) {
+    animation-delay: 190ms;
+  }
+  .mm-pop .mm-item:nth-child(n + 6) {
+    animation-delay: 230ms;
+  }
+
+  @keyframes mm-item-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 
   .mm-pop .mm-item:hover:not(:disabled) {
@@ -295,6 +328,10 @@
       animation: none;
       transition: none;
     }
+
+    .mm-btn:active {
+      transform: none;
+    }
   }
 
   :global(.reduce-motion) .mm-pop,
@@ -303,5 +340,9 @@
   :global(.reduce-motion) .mm-dots i {
     animation: none;
     transition: none;
+  }
+
+  :global(.reduce-motion) .mm-btn:active {
+    transform: none;
   }
 </style>

@@ -62,6 +62,8 @@
             : `点击启通指针 ${CIRCLED[i]}（${CELESTIAL_NAMES[i]}）`}
           onclick={() => pick(i)}
         >
+          <!-- 律柱通电：内部柱体自下而上填充（纯装饰层） -->
+          <span class="slot-fill" aria-hidden="true"></span>
           <span class="slot-no">{CIRCLED[i]}</span>
           <span class="g-lamp slot-lamp" aria-hidden="true"></span>
         </button>
@@ -91,6 +93,18 @@
     border: 1px solid var(--edge-faint);
     background: linear-gradient(180deg, rgba(12, 18, 30, 0.82), rgba(6, 10, 18, 0.9));
     box-shadow: var(--bevel-inset);
+    /* 区块首次出现：上移 6px 淡入；只在挂载时播一次，重复渲染不重播 */
+    animation: deck-in 300ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+  @keyframes deck-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 
   .deck-head {
@@ -121,6 +135,8 @@
     margin-top: 8px;
   }
   .slot {
+    position: relative;
+    overflow: hidden;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -133,16 +149,46 @@
     background: rgba(255, 255, 255, 0.04);
     color: var(--muted);
     cursor: pointer;
+    /* 松开走回弹缓动（按下时用 ease-out，方向感不同） */
     transition:
-      background 0.12s ease,
-      border-color 0.12s ease,
-      color 0.12s ease;
+      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 90ms ease,
+      background 120ms ease,
+      border-color 200ms ease,
+      color 120ms ease;
+  }
+  /* 用 :not(:disabled) 提高特异性，保证选中态的金光不会盖掉按压时的阴影收紧 */
+  .slot:active:not(:disabled) {
+    transform: scale(0.97);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+    transition-timing-function: ease-out;
   }
   .slot:hover {
     background: rgba(255, 255, 255, 0.07);
   }
   .slot.on {
     color: var(--text);
+    /* 外框亮起（只改颜色，不加发光） */
+    border-color: rgba(0, 245, 212, 0.38);
+  }
+  /* 柱体填充：开 240ms 自下而上，关 140ms 快速反向 */
+  .slot-fill {
+    position: absolute;
+    inset: 0;
+    transform: scaleY(0);
+    transform-origin: bottom center;
+    background: linear-gradient(180deg, rgba(0, 245, 212, 0.24), rgba(0, 245, 212, 0.06));
+    transition: transform 140ms ease-out;
+    pointer-events: none;
+  }
+  .slot.on .slot-fill {
+    transform: scaleY(1);
+    transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .slot-no,
+  .slot-lamp {
+    position: relative;
+    z-index: 1;
   }
   .slot.active {
     border-color: var(--gold-bright);
@@ -166,12 +212,33 @@
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .slot.guide {
+    .slot.guide,
+    .deck {
       animation: none;
     }
+    .slot,
+    .slot-fill {
+      transition: none;
+    }
+    .slot:active:not(:disabled) {
+      transform: none;
+      box-shadow: none;
+    }
+    .slot.on .slot-fill {
+      transform: scaleY(1);
+    }
   }
-  :global(.reduce-motion) .slot.guide {
+  :global(.reduce-motion) .slot.guide,
+  :global(.reduce-motion) .deck {
     animation: none;
+  }
+  :global(.reduce-motion) .slot,
+  :global(.reduce-motion) .slot-fill {
+    transition: none;
+  }
+  :global(.reduce-motion) .slot:active:not(:disabled) {
+    transform: none;
+    box-shadow: none;
   }
 
   .slot-no {

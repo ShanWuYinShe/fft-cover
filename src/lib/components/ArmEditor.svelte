@@ -15,6 +15,29 @@
   /** 高级调谐展开态：只有展开时才挂载内容，折叠时 DOM 里不存在多余控件 */
   let advOpen = $state(false);
 
+  /**
+   * 倍率跨档反馈：只有整数档真的变了才播一次（同档内不重复、加载不触发）。
+   * 写入与音效仍走原来的 setFreqMag，行为不变。
+   */
+  function setFreqStep(v: number): void {
+    const changed = v !== absFreq;
+    setFreqMag(v);
+    if (changed) bumpOnce('f');
+  }
+
+  /** 滑杆滑到端点时的「顿」感：只弹一次、不循环 */
+  let bump = $state<'r' | 'p' | 'f' | null>(null);
+  let bumpTimer: ReturnType<typeof setTimeout> | undefined;
+  function bumpOnce(which: 'r' | 'p' | 'f'): void {
+    bump = null;
+    clearTimeout(bumpTimer);
+    // 下一帧再置位：连续两次到端点也能各播一次
+    requestAnimationFrame(() => {
+      bump = which;
+      bumpTimer = setTimeout(() => (bump = null), 220);
+    });
+  }
+
   /** 内联编辑状态（点击数值进入，Enter/blur 确认，Esc 取消） */
   let editing: 'r' | 'p' | null = $state(null);
   let draft = $state('');
@@ -194,17 +217,26 @@
         {/if}
       </span>
     </div>
-    <input
-      type="range"
-      class="c-range"
-      min="0"
-      max={R_MAX}
-      step="1"
-      value={arm.r}
-      style={`--fill: ${(arm.r / R_MAX) * 100}%`}
-      aria-label="半径（像素）"
-      oninput={(e) => setR(+e.currentTarget.value)}
-    />
+    <span class="range-wrap">
+      <span class="range-track" aria-hidden="true">
+        <span class="range-fill" style={`transform: scaleX(${arm.r / R_MAX})`}></span>
+      </span>
+      <input
+        type="range"
+        class="c-range"
+        class:bump={bump === 'r'}
+        min="0"
+        max={R_MAX}
+        step="1"
+        value={arm.r}
+        aria-label="半径（像素）"
+        oninput={(e) => {
+          const v = +e.currentTarget.value;
+          setR(v);
+          if (v <= 0 || v >= R_MAX) bumpOnce('r');
+        }}
+      />
+    </span>
   </div>
 
   <hr class="g-divider" />
@@ -240,17 +272,26 @@
         {/if}
       </span>
     </div>
-    <input
-      type="range"
-      class="c-range"
-      min="0"
-      max="359"
-      step="1"
-      value={deg}
-      style={`--fill: ${(deg / 359) * 100}%`}
-      aria-label="相位（角度）"
-      oninput={(e) => setPhaseDeg(+e.currentTarget.value)}
-    />
+    <span class="range-wrap">
+      <span class="range-track" aria-hidden="true">
+        <span class="range-fill" style={`transform: scaleX(${deg / 359})`}></span>
+      </span>
+      <input
+        type="range"
+        class="c-range"
+        class:bump={bump === 'p'}
+        min="0"
+        max="359"
+        step="1"
+        value={deg}
+        aria-label="相位（角度）"
+        oninput={(e) => {
+          const v = +e.currentTarget.value;
+          setPhaseDeg(v);
+          if (v <= 0 || v >= 359) bumpOnce('p');
+        }}
+      />
+    </span>
   </div>
 
   <hr class="g-divider" />
@@ -260,22 +301,27 @@
     <div class="param-head">
       <span class="param-name">倍率</span>
       <span class="param-value">
-        <b class="g-num val-num freq-num" class:ccw={isCCW}>{absFreq}</b>
+        <b class="g-num val-num freq-num" class:ccw={isCCW} class:flash={bump === 'f'}>{absFreq}</b>
         <i class="val-unit">×</i>
       </span>
     </div>
     <div class="freq-row">
-      <input
-        type="range"
-        class="c-range"
-        min="1"
-        max="10"
-        step="1"
-        value={absFreq}
-        style={`--fill: ${((absFreq - 1) / 9) * 100}%`}
-        aria-label="谐波倍率"
-        oninput={(e) => setFreqMag(+e.currentTarget.value)}
-      />
+      <span class="range-wrap">
+        <span class="range-track" aria-hidden="true">
+          <span class="range-fill" style={`transform: scaleX(${(absFreq - 1) / 9})`}></span>
+        </span>
+        <input
+          type="range"
+          class="c-range"
+          class:bump={bump === 'f'}
+          min="1"
+          max="10"
+          step="1"
+          value={absFreq}
+          aria-label="谐波倍率"
+          oninput={(e) => setFreqStep(+e.currentTarget.value)}
+        />
+      </span>
       <button
         type="button"
         class="dir-btn"
@@ -284,7 +330,9 @@
         title="点击切换旋转方向"
         onclick={toggleDir}
       >
-        <Icon name={isCCW ? 'undo' : 'refresh'} size={14} />
+        <span class="dir-ico" aria-hidden="true">
+          <Icon name={isCCW ? 'undo' : 'refresh'} size={14} />
+        </span>
         {isCCW ? '逆时针' : '顺时针'}
       </button>
     </div>
@@ -456,7 +504,7 @@
                 class:active
                 class:ccw={active && isCCW}
                 title={`切至 ${f}× 谐波`}
-                onclick={() => setFreqMag(f)}
+                onclick={() => setFreqStep(f)}
               >
                 {f}×
               </button>
@@ -559,6 +607,35 @@
     min-width: 0;
   }
 
+  /* 区块首次出现：上移 6px 淡入（300ms，逐块 60ms 错峰）；
+     只在挂载时播一次，参数变化导致的重复渲染不会重播 */
+  .tune > .param,
+  .tune > .adv {
+    animation: block-in 300ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+  .tune > .param:nth-of-type(1) {
+    animation-delay: 60ms;
+  }
+  .tune > .param:nth-of-type(2) {
+    animation-delay: 120ms;
+  }
+  .tune > .param:nth-of-type(3) {
+    animation-delay: 180ms;
+  }
+  .tune > .adv {
+    animation-delay: 240ms;
+  }
+  @keyframes block-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   /* ---------- 核心参数行 ---------- */
   .param {
     display: flex;
@@ -596,7 +673,13 @@
     background: transparent;
     border: 1px solid transparent;
     cursor: text;
-    transition: border-color 0.12s ease;
+    transition:
+      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      border-color 120ms ease;
+  }
+  .val-btn:active {
+    transform: scale(0.97);
+    transition-timing-function: ease-out;
   }
   .val-btn:hover {
     border-color: var(--edge-soft);
@@ -610,6 +693,17 @@
   }
   .param-value .val-num.ccw {
     color: var(--purple);
+  }
+  /* 跨档瞬间：读数轻弹一下 + 闪金（one-shot，160ms；未跨档不播） */
+  .freq-num.flash {
+    animation: readout-pop 160ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes readout-pop {
+    45% {
+      transform: scale(1.08);
+      color: var(--gold-bright);
+      filter: brightness(1.25);
+    }
   }
   .val-unit {
     font-style: normal;
@@ -643,7 +737,7 @@
     gap: 10px;
     min-width: 0;
   }
-  .freq-row .c-range {
+  .freq-row .range-wrap {
     flex: 1 1 auto;
     min-width: 0;
   }
@@ -667,24 +761,66 @@
     cursor: pointer;
     box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
     transition:
-      transform 0.09s ease,
-      border-color 0.12s ease,
-      color 0.12s ease;
+      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 90ms ease,
+      border-color 120ms ease,
+      color 120ms ease;
   }
   .dir-btn:active {
-    transform: translateY(2px);
-    box-shadow: none;
+    transform: scale(0.97);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+    transition-timing-function: ease-out;
+  }
+  /* 顺/逆切换：图标 120ms 旋转，颜色跟随过渡 */
+  .dir-ico {
+    display: inline-flex;
+    transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1);
   }
   .dir-btn.ccw {
     color: var(--purple);
   }
+  .dir-btn.ccw .dir-ico {
+    transform: rotate(180deg);
+  }
 
-  /* ---------- 核心滑杆：凹槽轨道 + 金色滑块（WebKit / Firefox 两套） ---------- */
+  /* ---------- 核心滑杆：凹槽 + 可过渡填充 + 金色滑块（WebKit / Firefox 两套） ---------- */
+  .range-wrap {
+    position: relative;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: 40px;
+  }
+  .range-track {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 8px;
+    transform: translateY(-50%);
+    border-radius: 4px;
+    border: 1px solid var(--edge-faint);
+    background: rgba(255, 255, 255, 0.07);
+    overflow: hidden;
+    pointer-events: none;
+  }
+  /* 填充用 transform 驱动：90ms 平滑跟随（不碰布局属性） */
+  .range-fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform-origin: left center;
+    background: rgba(245, 184, 65, 0.5);
+    transition: transform 90ms linear;
+  }
+
   .c-range {
+    position: absolute;
+    inset: 0;
     appearance: none;
     -webkit-appearance: none;
     width: 100%;
-    height: 40px;
+    height: 100%;
     margin: 0;
     padding: 0;
     background: transparent;
@@ -693,13 +829,8 @@
   }
   .c-range::-webkit-slider-runnable-track {
     height: 8px;
-    border-radius: 4px;
-    border: 1px solid var(--edge-faint);
-    background: linear-gradient(
-      90deg,
-      rgba(245, 184, 65, 0.5) 0 var(--fill, 0%),
-      rgba(255, 255, 255, 0.07) var(--fill, 0%) 100%
-    );
+    background: transparent;
+    border: none;
   }
   .c-range::-webkit-slider-thumb {
     appearance: none;
@@ -714,22 +845,32 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.6),
       0 2px 0 rgba(0, 0, 0, 0.5);
     cursor: grab;
+    transition: transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  /* 按住滑块：放大 + 阴影收紧（红线内 1.08） */
+  .c-range:active::-webkit-slider-thumb {
+    transform: scale(1.08);
+    box-shadow:
+      inset 0 2px 6px rgba(0, 0, 0, 0.45),
+      0 1px 0 rgba(0, 0, 0, 0.5);
   }
   .c-range:focus-visible::-webkit-slider-thumb {
     box-shadow:
       0 0 0 2px var(--cyan),
       0 2px 0 rgba(0, 0, 0, 0.5);
   }
+  /* 到端点：一次轻微「顿」感，不循环 */
+  .c-range.bump::-webkit-slider-thumb {
+    animation: thumb-bump 200ms ease-out;
+  }
   .c-range::-moz-range-track {
     height: 8px;
-    border-radius: 4px;
-    border: 1px solid var(--edge-faint);
-    background: rgba(255, 255, 255, 0.07);
+    background: transparent;
+    border: none;
   }
   .c-range::-moz-range-progress {
     height: 8px;
-    border-radius: 4px;
-    background: rgba(245, 184, 65, 0.5);
+    background: transparent;
   }
   .c-range::-moz-range-thumb {
     width: 22px;
@@ -741,11 +882,32 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.6),
       0 2px 0 rgba(0, 0, 0, 0.5);
     cursor: grab;
+    transition: transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .c-range:active::-moz-range-thumb {
+    transform: scale(1.08);
+    box-shadow:
+      inset 0 2px 6px rgba(0, 0, 0, 0.45),
+      0 1px 0 rgba(0, 0, 0, 0.5);
   }
   .c-range:focus-visible::-moz-range-thumb {
     box-shadow:
       0 0 0 2px var(--cyan),
       0 2px 0 rgba(0, 0, 0, 0.5);
+  }
+  .c-range.bump::-moz-range-thumb {
+    animation: thumb-bump 200ms ease-out;
+  }
+  @keyframes thumb-bump {
+    0% {
+      transform: scale(1);
+    }
+    45% {
+      transform: scale(1.06);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 
   /* 引导态专属描边：静态一层、不改布局、不加发光 */
@@ -938,14 +1100,20 @@
     font-weight: 700;
     cursor: pointer;
     box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+    transition:
+      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 90ms ease,
+      color 120ms ease,
+      border-color 120ms ease;
   }
   .snap-key:hover {
     color: var(--gold-bright);
     border-color: var(--edge);
   }
   .snap-key:active {
-    transform: translateY(2px);
-    box-shadow: none;
+    transform: scale(0.97);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+    transition-timing-function: ease-out;
   }
   .step-row {
     display: flex;
@@ -967,11 +1135,14 @@
     cursor: pointer;
     box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
     touch-action: manipulation;
-    transition: transform 0.09s ease;
+    transition:
+      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 90ms ease;
   }
   .mini-key:active {
-    transform: translateY(2px);
-    box-shadow: none;
+    transform: scale(0.97);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+    transition-timing-function: ease-out;
   }
 
   /* 刻度尺 */
@@ -1037,6 +1208,16 @@
     font-weight: 700;
     cursor: pointer;
     box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+    transition:
+      transform 120ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      background 120ms ease,
+      color 120ms ease,
+      border-color 120ms ease;
+  }
+  /* :not(:disabled) 提高特异性：选中档位的金色硬阴影不会盖掉按压收紧 */
+  .gear-key:active:not(:disabled) {
+    transform: scale(0.97);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
   }
   .gear-key:hover {
     color: var(--text);
@@ -1047,6 +1228,19 @@
     border-color: #ffe7a3;
     color: #1a1002;
     box-shadow: 0 2px 0 #7a4d05;
+    /* 选中的档位键弹入一次（切档时才播） */
+    animation: gear-pop 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes gear-pop {
+    0% {
+      transform: scale(0.92);
+    }
+    60% {
+      transform: scale(1.04);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
   .gear-key.active.ccw {
     background: linear-gradient(180deg, #c4b5fd 0%, #a78bfa 50%, #6d4fc4 100%);
@@ -1077,17 +1271,19 @@
     cursor: pointer;
     box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
     transition:
-      transform 0.09s ease,
-      color 0.12s ease,
-      border-color 0.12s ease;
+      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 90ms ease,
+      color 120ms ease,
+      border-color 120ms ease;
   }
   .tool-key:hover:not(:disabled) {
     color: var(--gold-bright);
     border-color: var(--edge);
   }
   .tool-key:active:not(:disabled) {
-    transform: translateY(2px);
-    box-shadow: none;
+    transform: scale(0.97);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+    transition-timing-function: ease-out;
   }
   .tool-key:disabled {
     opacity: 0.45;
@@ -1100,5 +1296,73 @@
   .tool-key.active {
     color: var(--cyan);
     border-color: var(--cyan-line);
+  }
+
+  /* ---------- reduce-motion：位移/缩放/循环动画全关（颜色与瞬时状态保留） ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .tune > .param,
+    .tune > .adv,
+    .param.guide,
+    .dir-btn.guide,
+    .gear-key.active,
+    .freq-num.flash,
+    .c-range.bump::-webkit-slider-thumb,
+    .c-range.bump::-moz-range-thumb {
+      animation: none;
+    }
+    .val-btn,
+    .dir-btn,
+    .dir-ico,
+    .mini-key,
+    .snap-key,
+    .gear-key,
+    .tool-key,
+    .range-fill,
+    .c-range::-webkit-slider-thumb,
+    .c-range::-moz-range-thumb {
+      transition: none;
+    }
+    .val-btn:active,
+    .dir-btn:active,
+    .mini-key:active,
+    .snap-key:active,
+    .gear-key:active:not(:disabled),
+    .tool-key:active:not(:disabled),
+    .c-range:active::-webkit-slider-thumb,
+    .c-range:active::-moz-range-thumb {
+      transform: none;
+    }
+  }
+  :global(.reduce-motion) .tune > .param,
+  :global(.reduce-motion) .tune > .adv,
+  :global(.reduce-motion) .param.guide,
+  :global(.reduce-motion) .dir-btn.guide,
+  :global(.reduce-motion) .gear-key.active,
+  :global(.reduce-motion) .freq-num.flash,
+  :global(.reduce-motion) .c-range.bump::-webkit-slider-thumb,
+  :global(.reduce-motion) .c-range.bump::-moz-range-thumb {
+    animation: none;
+  }
+  :global(.reduce-motion) .val-btn,
+  :global(.reduce-motion) .dir-btn,
+  :global(.reduce-motion) .dir-ico,
+  :global(.reduce-motion) .mini-key,
+  :global(.reduce-motion) .snap-key,
+  :global(.reduce-motion) .gear-key,
+  :global(.reduce-motion) .tool-key,
+  :global(.reduce-motion) .range-fill,
+  :global(.reduce-motion) .c-range::-webkit-slider-thumb,
+  :global(.reduce-motion) .c-range::-moz-range-thumb {
+    transition: none;
+  }
+  :global(.reduce-motion) .val-btn:active,
+  :global(.reduce-motion) .dir-btn:active,
+  :global(.reduce-motion) .mini-key:active,
+  :global(.reduce-motion) .snap-key:active,
+  :global(.reduce-motion) .gear-key:active:not(:disabled),
+  :global(.reduce-motion) .tool-key:active:not(:disabled),
+  :global(.reduce-motion) .c-range:active::-webkit-slider-thumb,
+  :global(.reduce-motion) .c-range:active::-moz-range-thumb {
+    transform: none;
   }
 </style>

@@ -5,6 +5,7 @@
   import { chapterProgress, isLevelLocked } from '../../game/campaign';
   import { keyForChapter } from '../../game/harmony';
   import type { ChapterSealState } from '../../game/goals';
+  import { uiState } from '../../stores/uiState.svelte';
 
   let { onselect }: { onselect?: () => void } = $props();
 
@@ -24,16 +25,57 @@
   const canNext = $derived(!!nextChapter?.unlocked);
   const viewLastLevel = $derived(view ? view.levels[view.levels.length - 1] : null);
 
-  // 切到关卡时视图跟随
+  /**
+   * 解锁演出：新解锁的关卡节点弹一下（1.0→1.06→1.0，260ms）。
+   * 抽屉关着时解锁的关先记账，等下次打开抽屉再补演；打开时当前关也弹一下。
+   * 只在最前面 4 个上表演，避免一次弹一堆（红线：同时动画 ≤8 个元素）。
+   */
+  let popIds = $state<string[]>([]);
+  const unlockedIds = $derived(LEVEL_DEFS.filter((d) => !isLocked(d.id)).map((d) => d.id));
+  const knownUnlocked = new Set<string>();
+  const queuedUnlocked = new Set<string>();
+  let primed = false;
   $effect(() => {
-    const id = engine.level?.id;
-    if (!id) return;
+    const open = uiState.starMapOpen;
+    const ids = unlockedIds;
+    if (!primed) {
+      // 首次（应用启动）只记账，不为历史通关补放动画
+      primed = true;
+      ids.forEach((id) => knownUnlocked.add(id));
+    } else {
+      for (const id of ids) {
+        if (knownUnlocked.has(id)) continue;
+        knownUnlocked.add(id);
+        if (!open) queuedUnlocked.add(id);
+      }
+    }
+    if (!open) return;
+    const cur = engine.level?.id;
+    const list = [...new Set([...(cur ? [cur] : []), ...queuedUnlocked])].slice(0, 4);
+    queuedUnlocked.clear();
+    if (list.length === 0) return;
+    popIds = list;
+    const t = setTimeout(() => (popIds = []), 320);
+    return () => clearTimeout(t);
+  });
+
+  /**
+   * 视图跟随：**只在引擎切换关卡时**跳到该关所在章。
+   * 原实现在 effect 里读了 viewIdx，等于把「翻章」也变成依赖——
+   * 点「下一章」翻过去会被立刻拉回当前关所在章（实测：按钮像坏的）。
+   * 这里改成只在关卡 id 变化时同步一次。
+   */
+  let followedLevelId = '';
+  $effect(() => {
+    const id = engine.level?.id ?? '';
+    if (!id || id === followedLevelId) return;
+    followedLevelId = id;
     const idx = chapters.findIndex((c) => c.levels.some((l) => l.id === id));
-    if (idx >= 0 && idx !== viewIdx) viewIdx = idx;
+    if (idx >= 0) viewIdx = idx;
   });
 </script>
 
-<div class="campaign-map">
+<div class="campaign-map" class:open={uiState.starMapOpen}>
   <!-- 章节导航栏 -->
   <div class="ch-nav">
     <button
@@ -108,6 +150,7 @@
             type="button"
             class="node"
             class:active={engine.level?.id === def.id}
+            class:pop={popIds.includes(def.id)}
             class:locked
             class:done={st === 3}
             class:perfect={!!engine.perfectLevels[def.id]}
@@ -183,6 +226,20 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+  }
+  /* 抽屉打开时整块淡入（与 LevelPicker 的 60ms 错峰对齐：它是第 2 个子块） */
+  .campaign-map.open {
+    animation: cm-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) 60ms backwards;
+  }
+  @keyframes cm-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* 章节导航：一行标题 + 左右翻页键，无底座 */
@@ -365,6 +422,7 @@
   /* 关卡行：一行一段，靠分隔线分组（无卡片、无描边、无发光） */
   .node {
     appearance: none;
+    position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -385,7 +443,44 @@
   /* 当前关：金色左轨 + 淡金底（发光只给这一个选中态） */
   .node.active {
     background: rgba(245, 184, 65, 0.08);
-    box-shadow: inset 3px 0 0 var(--gold);
+  }
+  .node.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--gold);
+  }
+  /* 抽屉打开时左轨滑入（180ms） */
+  .campaign-map.open .node.active::before {
+    animation: rail-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+  @keyframes rail-in {
+    from {
+      opacity: 0;
+      transform: translateX(-3px) scaleY(0.35);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scaleY(1);
+    }
+  }
+  /* 新解锁的关卡弹一下：1.0 → 1.06 → 1.0（260ms） */
+  .node.pop {
+    animation: node-pop 0.26s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes node-pop {
+    0% {
+      transform: scale(1);
+    }
+    45% {
+      transform: scale(1.06);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
   .node.active .nm {
     color: var(--gold-bright);
@@ -509,5 +604,19 @@
     font-style: normal;
     font-size: 12px;
     color: var(--muted);
+  }
+
+  /* 减弱动态效果：位移/缩放动画关闭 */
+  @media (prefers-reduced-motion: reduce) {
+    .campaign-map.open,
+    .node.pop,
+    .campaign-map.open .node.active::before {
+      animation: none;
+    }
+  }
+  :global(.reduce-motion) .campaign-map.open,
+  :global(.reduce-motion) .node.pop,
+  :global(.reduce-motion) .campaign-map.open .node.active::before {
+    animation: none;
   }
 </style>

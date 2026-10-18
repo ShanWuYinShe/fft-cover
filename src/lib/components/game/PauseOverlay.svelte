@@ -34,25 +34,43 @@
       .join('　');
   });
 
+  const reduceMotion = $derived(!!engine.flags.reduceMotion);
+
+  /** 退场：先播 140ms 缩小淡出（比进场 220ms 快 30%），再执行动作 */
+  let closing = $state(false);
+  function leave(fn: () => void): void {
+    if (closing) return;
+    if (reduceMotion) {
+      fn();
+      return;
+    }
+    closing = true;
+    setTimeout(fn, 140);
+  }
+
   function resume(): void {
-    engine.toggleRun();
+    leave(() => engine.toggleRun());
   }
 
   function backToEdit(): void {
-    engine.fastForward = false;
-    engine.resetRun();
+    leave(() => {
+      engine.fastForward = false;
+      engine.resetRun();
+    });
   }
 
   function restart(): void {
-    engine.fastForward = false;
-    engine.resetRun();
-    engine.startRun();
+    leave(() => {
+      engine.fastForward = false;
+      engine.resetRun();
+      engine.startRun();
+    });
   }
 </script>
 
 <!-- 暂停菜单：一块安静的面板盖住画布；画布很矮时外层滚动，三个按钮都能点到 -->
 <div class="pause-menu" role="dialog" aria-modal="true">
-  <div class="pm-panel">
+  <div class="pm-panel" class:closing>
     <h3 class="font-celestial">已暂停</h3>
     <p class="pm-sub">先看清现在的进度，再决定继续还是重来</p>
 
@@ -65,13 +83,14 @@
       </p>
     {/if}
 
-    <button type="button" class="pm-btn primary" onclick={resume}>
+    <!-- 三个动作 50ms 错峰进入 -->
+    <button type="button" class="pm-btn primary" style="animation-delay: 40ms" onclick={resume}>
       <Icon name="play" size={14} /> 继 续 旋 转
     </button>
-    <button type="button" class="pm-btn" onclick={backToEdit}>
+    <button type="button" class="pm-btn" style="animation-delay: 90ms" onclick={backToEdit}>
       <Icon name="sliders" size={14} /> 回 到 调 参
     </button>
-    <button type="button" class="pm-btn" onclick={restart}>
+    <button type="button" class="pm-btn" style="animation-delay: 140ms" onclick={restart}>
       <Icon name="refresh" size={14} /> 重 新 开 始
     </button>
   </div>
@@ -110,6 +129,33 @@
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     text-align: center;
+    /* 进场：0.97 缩放 + 淡入 220ms */
+    animation: pm-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+  @keyframes pm-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  /* 退场：比进场快 30%（140ms），先缩再走 */
+  .pm-panel.closing {
+    animation: pm-out 0.14s cubic-bezier(0.4, 0, 1, 1) forwards;
+    pointer-events: none;
+  }
+  @keyframes pm-out {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.97);
+    }
   }
 
   .pm-panel h3 {
@@ -165,10 +211,22 @@
     letter-spacing: 2px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    /* 按钮错峰进入（内联 animation-delay 40/90/140ms） */
+    animation: pm-btn-in 0.26s cubic-bezier(0.16, 1, 0.3, 1) backwards;
     transition:
       color 0.12s ease,
       border-color 0.12s ease,
       background 0.12s ease;
+  }
+  @keyframes pm-btn-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   .pm-btn:hover {
     color: var(--gold-bright);
@@ -200,9 +258,19 @@
     transform: translateY(2px);
   }
 
+  /* 减弱动态效果：位移/缩放动画全部关闭（颜色/透明度保留） */
   @media (prefers-reduced-motion: reduce) {
+    .pm-panel,
+    .pm-panel.closing,
     .pm-btn {
+      animation: none;
       transition: none;
     }
+  }
+  :global(.reduce-motion) .pm-panel,
+  :global(.reduce-motion) .pm-panel.closing,
+  :global(.reduce-motion) .pm-btn {
+    animation: none;
+    transition: none;
   }
 </style>

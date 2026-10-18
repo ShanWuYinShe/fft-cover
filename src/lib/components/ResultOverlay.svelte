@@ -285,24 +285,45 @@
   const st = $derived(starsFor(n ? got / n : 0));
   const fit = $derived(engine.level ? fitScore(engine.level.spectrum, engine.arms) : 0);
 
-  /** 得分计数动画：结算时从 0 递增到最终得分（游戏化反馈） */
+  const reduceMotion = $derived(!!engine.flags.reduceMotion);
+
+  /**
+   * 得分计数动画：0 → 最终得分（600ms easeOut）。
+   * 结束帧直接取终值（不做四舍五入插值），保证动画结束后显示值与引擎完全一致；
+   * reduce-motion 下不插值，直接显示终值。
+   */
   let shownScore = $state(0);
   $effect(() => {
     const target = engine.score;
-    if (!target || engine.lastRunSandbox) {
+    if (!target || engine.lastRunSandbox || reduceMotion) {
       shownScore = target;
       return;
     }
     let raf = 0;
     const t0 = performance.now();
-    const dur = 620;
+    const dur = 600;
     const tick = (now: number): void => {
       const p = Math.min((now - t0) / dur, 1);
-      shownScore = Math.round(target * (1 - Math.pow(1 - p, 3)));
+      shownScore = p >= 1 ? target : Math.round(target * (1 - Math.pow(1 - p, 3)));
       if (p < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
+  });
+
+  /**
+   * 结算印章：本局最值得盖的那一个（掌握类优先，其次纪录类）。
+   * 只是呈现——判定仍来自引擎既有标志位。
+   */
+  const stamp = $derived.by(() => {
+    const runCleared = engine.runCleared;
+    if (runCleared && engine.isPerfect) return '完美全清';
+    if (runCleared && engine.isExpertClear) return '专家全清';
+    if (runCleared && engine.isExact) return '精确解';
+    if (engine.newRecord) return '新纪录';
+    if (engine.newClearRecord) return '最快全清';
+    if (engine.streakJustBumped > 1) return '连胜 ' + engine.streakJustBumped + ' 天';
+    return '';
   });
 
   /* ---------- 一句话结论与主行动 ---------- */
@@ -374,7 +395,13 @@
         <!-- 大数字一：星级 -->
         <div class="stars" aria-label="{st} 星">
           {#each [0, 1, 2] as i (i)}
-            <span class="star" class:on={i < st} style="animation-delay: {0.15 + i * 0.13}s">
+            <!-- 只有已达成的星逐颗弹入（120ms 一颗）；未达成的星是静态空槽 -->
+            <span
+              class="star"
+              class:on={i < st}
+              class:pop={i < st}
+              style={i < st ? 'animation-delay: ' + i * 120 + 'ms' : undefined}
+            >
               {i < st ? '★' : '☆'}
             </span>
           {/each}
@@ -386,6 +413,10 @@
         </div>
         <!-- 一句话结论：这一局是什么水平 -->
         <p class="verdict">{verdict}</p>
+        <!-- 结算印章：斜盖入（内容与结论行重复，故对读屏隐藏） -->
+        {#if stamp}
+          <span class="stamp" aria-hidden="true">{stamp}</span>
+        {/if}
         <!-- 一行明细：收集 / 全清 / 上届对比 / 距最佳 -->
         <p class="detail">
           <span>收集 <b>{got}</b>/{n}</span>
@@ -505,7 +536,7 @@
   @keyframes card-in {
     from {
       opacity: 0;
-      transform: translateY(12px) scale(0.96);
+      transform: translateY(8px) scale(0.98);
     }
     to {
       opacity: 1;
@@ -555,23 +586,54 @@
   }
   .stars .star {
     color: rgba(160, 172, 200, 0.3);
-    animation: star-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
   }
   .stars .star.on {
     color: var(--gold);
     text-shadow: 0 0 18px rgba(245, 184, 65, 0.55);
   }
+  /* 已达成的星逐颗弹入：0.4 → 1.12 → 1.0（每颗 120ms，见内联 delay） */
+  .stars .star.pop {
+    animation: star-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  }
   @keyframes star-pop {
     from {
-      transform: scale(0.3);
+      transform: scale(0.4);
       opacity: 0;
     }
     60% {
-      transform: scale(1.15);
+      transform: scale(1.12);
     }
     to {
       transform: scale(1);
       opacity: 1;
+    }
+  }
+
+  /* 结算印章：斜盖入 -8° → -6°，1.3 → 1.0（220ms，等星级弹完再盖） */
+  .stamp {
+    align-self: center;
+    margin-top: 2px;
+    padding: 3px 12px;
+    border: 1px solid rgba(217, 43, 43, 0.7);
+    border-radius: 4px;
+    color: #f0a6a6;
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    font-size: var(--fs-md);
+    font-weight: 700;
+    letter-spacing: 3px;
+    white-space: nowrap;
+    /* 基准态就是盖好后的角度：动画结束后自然停在 -6° */
+    transform: rotate(-6deg);
+    animation: stamp-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s backwards;
+  }
+  @keyframes stamp-in {
+    from {
+      opacity: 0;
+      transform: rotate(-8deg) scale(1.3);
+    }
+    to {
+      opacity: 1;
+      transform: rotate(-6deg) scale(1);
     }
   }
 
@@ -767,5 +829,19 @@
     .btns {
       padding: 10px 14px 12px;
     }
+  }
+
+  /* 减弱动态效果：位移动画全部关闭（颜色/透明度变化保留） */
+  @media (prefers-reduced-motion: reduce) {
+    .card,
+    .stars .star.pop,
+    .stamp {
+      animation: none;
+    }
+  }
+  :global(.reduce-motion) .card,
+  :global(.reduce-motion) .stars .star.pop,
+  :global(.reduce-motion) .stamp {
+    animation: none;
   }
 </style>

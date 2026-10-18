@@ -54,13 +54,14 @@
     border: 1px solid var(--edge-soft);
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.45);
-    animation: tut-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    /* 入场：0.96 → 1 缩放 + 淡入（320ms），结束后不留 transform */
+    animation: tut-pop 320ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
 
   @keyframes tut-pop {
     from {
       opacity: 0;
-      transform: translateY(8px);
+      transform: scale(0.96);
     }
     to {
       opacity: 1;
@@ -87,8 +88,33 @@
     list-style: decimal;
   }
 
+  /* 三步逐条淡入：60ms 错峰 */
   .tut-list li {
     margin-bottom: 6px;
+    animation: tut-step-in 240ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+
+  .tut-list li:nth-child(1) {
+    animation-delay: 140ms;
+  }
+
+  .tut-list li:nth-child(2) {
+    animation-delay: 200ms;
+  }
+
+  .tut-list li:nth-child(3) {
+    animation-delay: 260ms;
+  }
+
+  @keyframes tut-step-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 
   .tut-list li:last-child {
@@ -108,6 +134,8 @@
     margin-top: 4px;
     font-size: var(--fs-lg);
     letter-spacing: 4px;
+    /* 主按钮最后落位 */
+    animation: tut-step-in 240ms cubic-bezier(0.16, 1, 0.3, 1) 340ms backwards;
   }
 
   @media (max-width: 640px) {
@@ -125,15 +153,20 @@
     }
   }
 
+  /* 减弱动态效果：位移/缩放全关，元素直接落在最终态 */
   @media (prefers-reduced-motion: reduce) {
     .tutorial-backdrop,
-    .tut-box {
+    .tut-box,
+    .tut-list li,
+    .tut-box .tut-start-btn {
       animation: none;
     }
   }
 
   :global(.reduce-motion) .tut-box,
-  :global(.reduce-motion) .tutorial-backdrop {
+  :global(.reduce-motion) .tutorial-backdrop,
+  :global(.reduce-motion) .tut-list li,
+  :global(.reduce-motion) .tut-box .tut-start-btn {
     animation: none;
   }
 </style>

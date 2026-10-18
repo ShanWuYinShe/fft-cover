@@ -449,6 +449,70 @@
   /** 已播过升星音的档位（编辑态归零） */
   let lastStarTier = 0;
 
+  /* ============================================================
+   * 第三轮「游戏味」：星盘 / 星尘 / 拖尾 / 收集爆发 / 起跑脉冲 / 连击印章
+   * 性能红线：不用 shadowBlur；路径与渐变能缓存就缓存；粒子总数 ≤ 60。
+   * ============================================================ */
+  /** 上一帧相位：捕捉「编辑 → 运行」的起跑瞬间 */
+  let prevPhase = engine.phase;
+  /** 起跑脉冲起点（0 = 未触发） */
+  let launchAt = 0;
+  /** 连击里程碑（每 5 连一次）：触发时间与档位 */
+  let milestoneAt = 0;
+  let milestoneN = 0;
+  let lastMilestone = 0;
+  /** 上一帧连击值：用于检测连击中断、重置里程碑档位 */
+  let lastCombo = 0;
+  /** 尖端拖尾：最近 16 帧的位置（逻辑坐标） */
+  const TRAIL_N = 22;
+  const tipTrail: { x: number; y: number }[] = [];
+
+  /** 星盘刻度环（构建一次复用，绕原点） */
+  let tickPath: Path2D | null = null;
+  function tickRing(): Path2D {
+    if (tickPath) return tickPath;
+    const p = new Path2D();
+    const R = SIZE / 2 - 10;
+    const N = 72;
+    for (let i = 0; i < N; i++) {
+      const a = (i / N) * Math.PI * 2;
+      const long = i % 6 === 0;
+      const r0 = R - (long ? 10 : 5);
+      p.moveTo(Math.cos(a) * r0, Math.sin(a) * r0);
+      p.lineTo(Math.cos(a) * R, Math.sin(a) * R);
+    }
+    tickPath = p;
+    return p;
+  }
+
+  /** 星盘内圈柔光渐变（缓存） */
+  let arenaGlow: CanvasGradient | null = null;
+
+  /** 星尘：固定分布的漂浮微粒（用黄金角排布，避免每帧随机） */
+  const dust = Array.from({ length: 36 }, (_, i) => {
+    const a = i * 2.399963;
+    const rr = 24 + ((i * 41) % 258);
+    return {
+      x: SIZE / 2 + Math.cos(a) * rr,
+      y: SIZE / 2 + Math.sin(a) * rr,
+      ph: (i % 9) * 0.7,
+      amp: 6 + (i % 6) * 3,
+      sp: 1500 + (i % 5) * 260,
+      r: 1.6 + (i % 3) * 0.8,
+    };
+  });
+
+  /** 是否减弱动态效果（星盘/星尘/扫掠在 reduce-motion 下保持静止） */
+  const motionOff = (): boolean => !!engine.flags.reduceMotion;
+
+  /** 指针链能量渐变：根金 → 梢青 */
+  function linkColor(t: number, alpha = 1): string {
+    const r = Math.round(251 + (79 - 251) * t);
+    const g = Math.round(191 + (209 - 191) * t);
+    const b = Math.round(36 + (197 - 36) * t);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+  }
+
   /** 回纹边框路径（构建一次复用）：中国器物上的连续"回"字纹 */
   let huiPath: Path2D | null = null;
   function huiBorder(): Path2D {
@@ -489,9 +553,97 @@
 
     ctx.clearRect(0, 0, SIZE, SIZE);
 
+    // 相位切换：捕捉起跑瞬间 / 归位里程碑
+    if (engine.phase !== prevPhase) {
+      if (prevPhase === 'edit' && engine.phase === 'running') launchAt = now;
+      if (engine.phase === 'edit') {
+        lastMilestone = 0;
+        tipTrail.length = 0;
+        milestoneAt = 0;
+      }
+      prevPhase = engine.phase;
+    }
+    // 连击里程碑：每满 5 连一次印章 + 四边脉冲
+    // 连击断了（combo 归零）要把档位归零，否则下一轮 5 连不会再触发
+    if (engine.combo < lastCombo) lastMilestone = 0;
+    lastCombo = engine.combo;
+    if (engine.phase === 'running' && engine.combo > 0) {
+      const m = Math.floor((engine.combo + 1) / 5);
+      if (m > lastMilestone) {
+        lastMilestone = m;
+        milestoneAt = now;
+        milestoneN = engine.combo + 1;
+      }
+    }
+
+    // —— 星盘：外环 + 缓慢旋转的刻度环 + 内圈柔光（让世界有边界、有生命）——
+    const cx0 = SIZE / 2;
+    const cy0 = SIZE / 2;
+    const arenaR = SIZE / 2 - 10;
+    if (!arenaGlow) {
+      const g = ctx.createRadialGradient(0, 0, arenaR * 0.35, 0, 0, arenaR);
+      g.addColorStop(0, 'rgba(0,0,0,0)');
+      g.addColorStop(0.78, 'rgba(0,245,212,0.03)');
+      g.addColorStop(1, 'rgba(251,191,36,0.065)');
+      arenaGlow = g;
+    }
+    const still = motionOff();
+    const tickTurn = still ? 0 : now / 9000;
+    ctx.save();
+    ctx.translate(cx0, cy0);
+    // 柔光呼吸：整个星盘的亮度缓慢起伏（世界活着的底色）
+    ctx.globalAlpha = still ? 0.8 : 0.62 + 0.3 * Math.sin(now / 1500);
+    ctx.fillStyle = arenaGlow;
+    ctx.beginPath();
+    ctx.arc(0, 0, arenaR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.rotate(tickTurn);
+    ctx.strokeStyle = 'rgba(251,191,36,.20)';
+    ctx.lineWidth = lineW(1.2);
+    ctx.stroke(tickRing());
+    // 雷达扫掠：一道拖着尾光的弧线绕盘转动（世界「在工作」的感觉）
+    if (!still) {
+      const sweep = tickTurn * 2.2;
+      for (let i = 0; i < 14; i++) {
+        const a1 = sweep - i * 0.035;
+        ctx.strokeStyle = 'rgba(0,245,212,' + (0.3 * (1 - i / 14)).toFixed(3) + ')';
+        ctx.lineWidth = lineW(3 - i * 0.16);
+        ctx.beginPath();
+        ctx.arc(0, 0, arenaR - 16, a1 - 0.035, a1);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+    // 外环亮度呼吸：盘沿一圈明暗流动，静止时是一条恒亮细环
+    ctx.strokeStyle =
+      'rgba(251,191,36,' +
+      (still ? 0.24 : (0.2 + 0.16 * Math.sin(now / 1200 + 0.6)).toFixed(3)) +
+      ')';
+    ctx.lineWidth = lineW(1.6);
+    ctx.beginPath();
+    ctx.arc(cx0, cy0, arenaR, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 星尘：24 颗缓慢漂浮的微粒（静息态也有「世界在呼吸」的动感）
+    for (let d = 0; d < dust.length; d++) {
+      const du = dust[d];
+      const drift = still ? 0 : 1;
+      const a2 = still ? 0.16 : 0.14 + 0.11 * Math.sin(now / du.sp + du.ph);
+      ctx.fillStyle = 'rgba(200,225,255,' + a2.toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.arc(
+        du.x + Math.sin(now / (du.sp * 1.3) + du.ph) * du.amp * drift,
+        du.y + Math.cos(now / (du.sp * 1.7) + du.ph) * du.amp * drift,
+        lineW(du.r),
+        0,
+        Math.PI * 2,
+      );
+      ctx.fill();
+    }
+
     // 回纹边框：极淡的中国纹样，铺在内容之下（不随缩放平移，只作画框）
-    // 0.13 → 0.08（Gemini 评审）：装饰退为氛围，不与目标曲线争夺注意力
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.08)';
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.05)';
     ctx.lineWidth = lineW(1);
     ctx.stroke(huiBorder());
 
@@ -501,6 +653,17 @@
 
     ctx.save();
     applyView();
+    // 起跑脉冲：世界在 0.26 秒里从 1.06 收回到 1.0（有「出发」的力度）
+    if (launchAt > 0) {
+      const lp = (now - launchAt) / 260;
+      if (lp >= 1) launchAt = 0;
+      else {
+        const sc = 1 + 0.06 * (1 - lp) * (1 - lp);
+        ctx.translate(SIZE / 2, SIZE / 2);
+        ctx.scale(sc, sc);
+        ctx.translate(-SIZE / 2, -SIZE / 2);
+      }
+    }
 
     // 网格底纹：按当前可见范围绘制（随缩放自适应），每 160px 一条亮线
     const half = SIZE / 2 / zoom;
@@ -663,7 +826,31 @@
     for (let i = 0; i < pts.length; i++) {
       const p = pts[i];
       if (engine.collected.has(i)) {
-        const age = (now - (engine.collectAnim.get(i) ?? 0)) / 400;
+        const at = engine.collectAnim.get(i) ?? 0;
+        const age = (now - at) / 450;
+        if (age < 1 && age >= 0) {
+          // 扩散环：命中点向外推出一圈金环
+          ctx.strokeStyle = 'rgba(251,191,36,' + ((1 - age) * 0.85).toFixed(3) + ')';
+          ctx.lineWidth = lineW(2.4 * (1 - age) + 0.6);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, (6 + age * 24) * kd, 0, Math.PI * 2);
+          ctx.stroke();
+          // 火花：方向按点索引固定（避免每帧随机造成抖动）
+          for (let sp = 0; sp < 6; sp++) {
+            const sa = i * 1.7 + (sp * Math.PI * 2) / 6;
+            const sd = (5 + age * 22) * kd;
+            ctx.fillStyle = 'rgba(255,214,102,' + ((1 - age) * 0.9).toFixed(3) + ')';
+            ctx.beginPath();
+            ctx.arc(
+              p.x + Math.cos(sa) * sd,
+              p.y + Math.sin(sa) * sd,
+              Math.max(0.4, 2.3 * (1 - age) * kd),
+              0,
+              Math.PI * 2,
+            );
+            ctx.fill();
+          }
+        }
         const burst = age < 1 ? (1 - age) * 10 : 0;
         glowDot(
           p.x,
@@ -713,11 +900,28 @@
         ctx.fill();
         ctx.lineWidth = Math.max(1 / zoom, 1.2 * (SIZE / shownW()));
       } else {
-        ctx.fillStyle = 'rgba(220,228,255,.8)';
+        // 未收集目标：呼吸的宝石（深底 + 亮边 + 高光），一眼看出「这是要收的东西」
+        const breathe = motionOff() ? 1 : 1 + 0.2 * Math.sin(now / 560 + i * 0.7);
+        const rr = 3.6 * kd * breathe;
+        ctx.fillStyle = 'rgba(190,215,255,.09)';
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 3.5 * kd, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, rr * 3.1, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(220,228,255,.3)';
+        ctx.fillStyle = 'rgba(22,32,56,.95)';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, rr, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(214,228,255,.85)';
+        ctx.lineWidth = lineW(1.4);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, rr, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,.7)';
+        ctx.beginPath();
+        ctx.arc(p.x - rr * 0.3, p.y - rr * 0.34, Math.max(0.5, rr * 0.28), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(190,215,255,.14)';
+        ctx.lineWidth = lineW(1);
         ctx.beginPath();
         ctx.arc(p.x, p.y, engine.level.tol, 0, Math.PI * 2);
         ctx.stroke();
@@ -781,22 +985,55 @@
     // 指针链
     const tt = engine.phase === 'edit' ? 0 : engine.t;
     const joints = chainAt(engine.arms, tt);
+
+    // 尖端拖尾：运行/暂停时记录最近 16 帧，画成一条渐隐的能量尾迹
+    if (engine.phase !== 'edit') {
+      const tj = joints[joints.length - 1];
+      tipTrail.push({ x: tj.x, y: tj.y });
+      if (tipTrail.length > TRAIL_N) tipTrail.shift();
+      ctx.lineCap = 'round';
+      for (let i = 1; i < tipTrail.length; i++) {
+        const a = i / tipTrail.length;
+        ctx.strokeStyle = linkColor(0.65 + a * 0.35, 0.04 + a * 0.3);
+        ctx.lineWidth = lineW(1 + a * 5);
+        ctx.beginPath();
+        ctx.moveTo(tipTrail[i - 1].x, tipTrail[i - 1].y);
+        ctx.lineTo(tipTrail[i].x, tipTrail[i].y);
+        ctx.stroke();
+      }
+    }
+
+    // 能量火花：3 颗沿连杆流动的光点（运行态），让「力在传」看得见
+    if (engine.phase !== 'edit' && !motionOff() && joints.length > 1) {
+      for (let k = 0; k < 3; k++) {
+        const phase = ((now / 900 + k / 3) % 1) * (joints.length - 1);
+        const si = Math.min(joints.length - 2, Math.floor(phase));
+        const f = phase - si;
+        const ax = joints[si].x + (joints[si + 1].x - joints[si].x) * f;
+        const ay = joints[si].y + (joints[si + 1].y - joints[si].y) * f;
+        glowDot(ax, ay, 1.8 * kd, '#eafffb', 'rgba(0,245,212,.55)', 7 * kd);
+      }
+    }
+
     let enabledIdx = 0;
+    const segs = Math.max(1, joints.length - 1);
     for (let i = 1; i < joints.length; i++) {
       while (!engine.arms[enabledIdx].on) enabledIdx++;
       const idx = enabledIdx++;
       const a = engine.arms[idx];
       const hot = dragIdx === idx || now < engine.flashTil[idx];
       const c = joints[i - 1];
-      ctx.strokeStyle = 'rgba(255,255,255,.14)';
+      const ratio = (i - 1) / segs;
+      ctx.strokeStyle = 'rgba(255,255,255,.13)';
       ctx.lineWidth = lineW(1);
-      ctx.fillStyle = 'rgba(255,255,255,.025)';
+      ctx.fillStyle = 'rgba(255,255,255,.022)';
       ctx.beginPath();
       ctx.arc(c.x, c.y, a.r, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
-      ctx.strokeStyle = hot ? 'rgba(251,191,36,.95)' : 'rgba(230,233,242,.55)';
-      ctx.lineWidth = hot ? lineW(3) : lineW(2);
+      // 连杆：根金梢青的能量渐变，比纯白细线更有「在传力」的感觉
+      ctx.strokeStyle = hot ? 'rgba(251,191,36,.95)' : linkColor(ratio, 0.8);
+      ctx.lineWidth = hot ? lineW(3.4) : lineW(2.6);
       ctx.beginPath();
       ctx.moveTo(c.x, c.y);
       ctx.lineTo(joints[i].x, joints[i].y);
@@ -804,16 +1041,20 @@
       glowDot(
         c.x,
         c.y,
-        3,
-        hot ? '#fbbf24' : '#a78bfa',
-        hot ? 'rgba(251,191,36,.9)' : 'rgba(167,139,250,.8)',
-        hot ? 12 : 6,
+        3.2,
+        hot ? '#fbbf24' : linkColor(ratio, 1),
+        hot ? 'rgba(251,191,36,.9)' : linkColor(ratio, 0.7),
+        hot ? 12 : 7,
       );
     }
 
-    // 尖端
+    // 尖端：彗星头（外晕 + 亮核）
     const tip = joints[joints.length - 1];
-    glowDot(tip.x, tip.y, 5, '#4fd1c5', 'rgba(79,209,197,.9)', 16);
+    ctx.fillStyle = 'rgba(79,209,197,.14)';
+    ctx.beginPath();
+    ctx.arc(tip.x, tip.y, lineW(16), 0, Math.PI * 2);
+    ctx.fill();
+    glowDot(tip.x, tip.y, 5.2, '#eafffb', 'rgba(79,209,197,.95)', 20);
 
     // 全清冲击波：收集全部点时金色圆环自中心扩散
     if (engine.fullClearAt > 0) {
@@ -830,6 +1071,51 @@
 
     // —— 以下为屏幕空间元素（不随缩放变换）——
     ctx.restore();
+
+    // 起跑演出：中心扩散环 + 一个短促的「起」字（0.7 秒，不阻塞操作）
+    if (launchAt > 0) {
+      const rp = (now - launchAt) / 520;
+      if (rp < 1) {
+        ctx.strokeStyle = 'rgba(0,245,212,' + ((1 - rp) * 0.7).toFixed(3) + ')';
+        ctx.lineWidth = lineW(7 * (1 - rp) + 1);
+        ctx.beginPath();
+        ctx.arc(SIZE / 2, SIZE / 2, (20 + rp * 250) * canvasK(), 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      const tp = (now - launchAt) / 700;
+      if (tp < 1) {
+        ctx.save();
+        ctx.globalAlpha = (1 - tp) * 0.95;
+        ctx.fillStyle = 'rgba(255,214,102,1)';
+        ctx.font = canvasFont(56, true);
+        ctx.textAlign = 'center';
+        ctx.fillText('起', SIZE / 2, SIZE / 2 + 20 * canvasK());
+        ctx.restore();
+      }
+    }
+
+    // 连击里程碑（每 5 连）：四边金色脉冲 + 斜盖的 ×N 印章
+    if (milestoneAt > 0) {
+      const mp = (now - milestoneAt) / 560;
+      if (mp >= 1) milestoneAt = 0;
+      else {
+        const w = lineW(12 * (1 - mp) + 1);
+        ctx.strokeStyle = 'rgba(255,209,102,' + ((1 - mp) * 0.5).toFixed(3) + ')';
+        ctx.lineWidth = w;
+        ctx.strokeRect(w / 2, w / 2, SIZE - w, SIZE - w);
+        const pop = mp < 0.35 ? 1.35 - mp * 1.0 : 1;
+        ctx.save();
+        ctx.translate(SIZE - 78 * canvasK(), 78 * canvasK());
+        ctx.rotate(-0.14);
+        ctx.scale(pop, pop);
+        ctx.globalAlpha = (1 - mp) * 0.95;
+        ctx.font = canvasFont(24, true);
+        ctx.fillStyle = 'rgba(251,191,36,1)';
+        ctx.textAlign = 'center';
+        ctx.fillText('×' + milestoneN, 0, 8 * canvasK());
+        ctx.restore();
+      }
+    }
 
     // 拖拽实时数值提示（跟随关节的逻辑位置 → 换算到屏幕空间）
     if (dragInfo && dragIdx >= 0 && engine.phase === 'edit') {

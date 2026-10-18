@@ -51,8 +51,9 @@
   }
 </script>
 
-<!-- 游戏主菜单（降噪版）：背景只留一层浑天环，前景只有主按钮发光
-     结构：品牌区 → 菜单 → 三步上手 → 战绩 → 页脚 -->
+<!-- 游戏主菜单（降噪版 + 入场编排）：背景只留一层浑天环，前景只有主按钮呼吸光
+     入场：logo 1.15→1 收缩 → 菜单四项逐条上移 8px 淡入（60ms 错峰）→ 三步上手 → 页脚
+     动效只走 transform / opacity，振幅 ≤8px、缩放 ≤1.15（仅 logo 一次性入场） -->
 <div class="title-screen">
   <!-- 背景演出：单层缓慢旋转的浑天环（无星点/扫描线/暗角堆料） -->
   <div class="ts-sky" aria-hidden="true">
@@ -223,6 +224,71 @@
     align-items: center;
     gap: 8px;
     text-align: center;
+    /* 入场：logo 1.15 → 1 收缩 */
+    animation: ts-logo-in 500ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+
+  @keyframes ts-logo-in {
+    from {
+      opacity: 0;
+      transform: scale(1.15);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .ts-menu .ts-item {
+    animation: ts-item-in 300ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+
+  /* 菜单四项逐条上移淡入：60ms 错峰 */
+  .ts-menu .ts-item:nth-child(1) {
+    animation-delay: 120ms;
+  }
+  .ts-menu .ts-item:nth-child(2) {
+    animation-delay: 180ms;
+  }
+  .ts-menu .ts-item:nth-child(3) {
+    animation-delay: 240ms;
+  }
+  .ts-menu .ts-item:nth-child(4) {
+    animation-delay: 300ms;
+  }
+
+  @keyframes ts-item-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .ts-steps {
+    animation: ts-late-in 320ms cubic-bezier(0.16, 1, 0.3, 1) 400ms backwards;
+  }
+
+  .ts-record {
+    animation: ts-late-in 320ms cubic-bezier(0.16, 1, 0.3, 1) 460ms backwards;
+  }
+
+  .ts-foot {
+    animation: ts-late-in 320ms cubic-bezier(0.16, 1, 0.3, 1) 520ms backwards;
+  }
+
+  @keyframes ts-late-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 
   .ts-eyebrow {
@@ -284,6 +350,7 @@
   }
 
   .ts-menu .ts-item {
+    position: relative;
     width: 100%;
     min-height: 50px;
     justify-content: flex-start;
@@ -296,6 +363,12 @@
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.07),
       0 2px 0 rgba(0, 0, 0, 0.5);
+    transition:
+      transform 90ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 120ms ease,
+      background 120ms ease,
+      color 120ms ease,
+      box-shadow 120ms ease;
   }
 
   /* 主按钮：整页唯一的金光（一级元素） */
@@ -310,23 +383,59 @@
       0 6px 16px rgba(245, 184, 65, 0.32);
   }
 
+  /* 唯一呼吸光：用伪元素的 opacity 呼吸（合成层友好，不重绘阴影） */
+  .ts-menu .ts-item--main::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 16px rgba(245, 184, 65, 0.5);
+    opacity: 0.4;
+    pointer-events: none;
+    animation: ts-breathe 2.8s ease-in-out infinite;
+  }
+
+  @keyframes ts-breathe {
+    0%,
+    100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.85;
+    }
+  }
+
+  /* 悬停：描边变亮 + 图标/文字右移 2px（其余菜单项保持安静，无外发光） */
   .ts-menu .ts-item:hover:not(.ts-item--main) {
+    background: var(--face-metal-hover);
+    border-color: var(--edge);
+    color: var(--gold-bright);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.07),
       0 2px 0 rgba(0, 0, 0, 0.5);
   }
 
-  .ts-menu .ts-item--main:hover {
+  .ts-glyph,
+  .ts-label {
+    transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .ts-item:hover .ts-glyph,
+  .ts-item:hover .ts-label {
+    transform: translateX(2px);
+  }
+
+  /* 按下：轻微下沉 + 回弹缩放（90ms） */
+  .ts-menu .ts-item:active:not(:disabled) {
+    transform: translateY(1px) scale(0.985);
+  }
+
+  .ts-menu .ts-item.ts-item--main:hover {
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.4),
       inset 0 -3px 0 rgba(140, 80, 0, 0.45),
       0 3px 0 #7a4d05,
       0 8px 20px rgba(245, 184, 65, 0.42);
-  }
-
-  .ts-menu .ts-item:active:not(:disabled) {
-    transform: translateY(2px);
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
   }
 
   /* 左侧图标：直接显示，不再套一格描边方槽 */
@@ -357,7 +466,7 @@
     align-items: center;
     color: var(--muted);
     opacity: 0.8;
-    transition: transform 0.12s ease;
+    transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .ts-item:hover .ts-arrow {
@@ -369,9 +478,11 @@
     opacity: 0.9;
   }
 
+  /* 键盘焦点：金色描边（选中态） */
   .ts-item:focus-visible {
     outline: 2px solid var(--edge-hot);
     outline-offset: 3px;
+    border-color: var(--edge-hot);
   }
 
   /* ---------- 三步上手：一行一步，不带盒子 ---------- */
@@ -533,16 +644,52 @@
     }
   }
 
-  /* 尊重「减弱动态效果」 */
+  /* ---------- 减弱动态效果：位移/缩放/循环动画全关（元素回落到最终态） ---------- */
   @media (prefers-reduced-motion: reduce) {
     .title-screen,
-    .ts-ring {
+    .ts-ring,
+    .ts-brand,
+    .ts-menu .ts-item,
+    .ts-steps,
+    .ts-record,
+    .ts-foot,
+    .ts-menu .ts-item--main::after {
       animation: none;
+    }
+
+    .ts-menu .ts-item,
+    .ts-glyph,
+    .ts-label,
+    .ts-arrow {
+      transition: none;
+    }
+
+    .ts-menu .ts-item:active:not(:disabled) {
+      transform: none;
+    }
+
+    .ts-item:hover .ts-glyph,
+    .ts-item:hover .ts-label,
+    .ts-item:hover .ts-arrow {
+      transform: none;
     }
   }
 
   :global(.reduce-motion) .ts-ring,
-  :global(.reduce-motion) .title-screen {
+  :global(.reduce-motion) .title-screen,
+  :global(.reduce-motion) .ts-brand,
+  :global(.reduce-motion) .ts-menu .ts-item,
+  :global(.reduce-motion) .ts-steps,
+  :global(.reduce-motion) .ts-record,
+  :global(.reduce-motion) .ts-foot,
+  :global(.reduce-motion) .ts-menu .ts-item--main::after {
     animation: none;
+  }
+
+  :global(.reduce-motion) .ts-menu .ts-item,
+  :global(.reduce-motion) .ts-glyph,
+  :global(.reduce-motion) .ts-label,
+  :global(.reduce-motion) .ts-arrow {
+    transition: none;
   }
 </style>

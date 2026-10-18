@@ -99,10 +99,12 @@
     outline-offset: 2px;
   }
 
-  /* 按下：整键下沉 2px，换成内凹阴影 */
+  /* 按下：下沉 1px + 回弹缩放 0.97，阴影收紧（90ms，无外发光） */
   .btn:active:not(:disabled) {
-    transform: translateY(2px);
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+    transform: translateY(1px) scale(0.97);
+    box-shadow:
+      inset 0 2px 6px rgba(0, 0, 0, 0.6),
+      0 1px 0 rgba(0, 0, 0, 0.45);
   }
 
   .btn:disabled {
@@ -231,13 +233,22 @@
     justify-content: center;
   }
 
+  /* 减弱动态效果：只保留颜色/阴影的瞬时变化，不做位移与缩放 */
   @media (prefers-reduced-motion: reduce) {
     .btn {
       transition: none;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: none;
     }
   }
 
   :global(.reduce-motion) .btn {
     transition: none;
+  }
+
+  :global(.reduce-motion) .btn:active:not(:disabled) {
+    transform: none;
   }
 </style>

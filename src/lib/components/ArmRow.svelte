@@ -102,20 +102,25 @@
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--edge-faint);
-    transition: transform 0.09s ease;
+    transition:
+      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      border-color 200ms ease;
   }
   .power-btn:active:not(:disabled) .power-rock {
-    transform: translateY(2px);
+    transform: scale(0.94);
+    transition-timing-function: ease-out;
   }
   .power-lamp {
     width: 8px;
     height: 8px;
     background: #1b2334;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
+    transition: background 240ms ease;
   }
   .arm-slot.on .power-lamp {
     background: var(--cyan);
     box-shadow: none;
+    transition-duration: 140ms;
   }
 
   /* 读数 */
@@ -131,6 +136,11 @@
     font-variant-numeric: tabular-nums;
     font-family: inherit;
     text-align: left;
+    transition: transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .slot-body:active:not(:disabled) {
+    transform: scale(0.97);
+    transition-timing-function: ease-out;
   }
   .slot-body:disabled {
     cursor: not-allowed;
@@ -180,5 +190,25 @@
     font-weight: 700;
     color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* reduce-motion：位移/缩放全关 */
+  @media (prefers-reduced-motion: reduce) {
+    .power-rock,
+    .slot-body {
+      transition: none;
+    }
+    .power-btn:active:not(:disabled) .power-rock,
+    .slot-body:active:not(:disabled) {
+      transform: none;
+    }
+  }
+  :global(.reduce-motion) .power-rock,
+  :global(.reduce-motion) .slot-body {
+    transition: none;
+  }
+  :global(.reduce-motion) .power-btn:active:not(:disabled) .power-rock,
+  :global(.reduce-motion) .slot-body:active:not(:disabled) {
+    transform: none;
   }
 </style>

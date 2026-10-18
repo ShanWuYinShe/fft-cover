@@ -2,10 +2,12 @@
   /**
    * 浑天星穹背景：座舱背后的一层环境演出。
    * 纯 CSS 装饰（旋转浑天环 + 星点 + 暗角），不参与交互、不抢帧。
+   * 运行态（.live）时环转得更快、暗角更收，让整屏「进入状态」。
    */
+  import { engine } from '../../game/engine.svelte';
 </script>
 
-<div class="ambient" aria-hidden="true">
+<div class="ambient" class:live={engine.phase === 'running'} aria-hidden="true">
   <div class="halo halo-top"></div>
   <div class="halo halo-bottom"></div>
   <div class="ring ring-a"></div>
@@ -58,6 +60,12 @@
     margin: -540px 0 0 -540px;
     border: 1px dashed rgba(245, 184, 65, 0.075);
     animation: hud-spin 300s linear infinite;
+    transition: border-color 0.4s ease;
+  }
+  /* 运行态：环加速、描边提亮（世界「开机」了） */
+  .ambient.live .ring-a {
+    border-color: rgba(0, 245, 212, 0.16);
+    animation-duration: 90s;
   }
   @keyframes hud-spin {
     from {
@@ -97,5 +105,9 @@
     .ring {
       animation: none;
     }
+  }
+  /* 应用内设置里的「减弱动态效果」也会加这个类 */
+  :global(.reduce-motion) .ring {
+    animation: none;
   }
 </style>
