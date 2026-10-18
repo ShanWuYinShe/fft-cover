@@ -137,6 +137,13 @@ workspace 内起一个专属 headless Chrome，用 CDP HTTP + 内置 WebSocket �
 
 收集（音阶+飘字）/ 连击每 5（木鱼）/ 星级跨档（starSound+haptic）/ 印章（sealSound+haptic）/ 章节印（chapterSeal+haptic）/ 成就（achvSound+toast+haptic）/ 通关（perfectArpeggio 或 finishChord+震屏）/ 无尽过波（achvSound+haptic）/ 读屏播报（aria-live，优先级链：结算 > 成就 > 过波 > 星级；600ms 防抖；**过波分支需 endlessSurvived 门控**——续玩恢复的存量波次不播）
 
+## UI 器物音（2026-10-19 落地，动 UI 音效前先读）
+
+- **UI 音已从 triangle 电子味换成器物音色**：所有按钮 = 木鱼「笃」（`uiClick` → 共享画法 `knock()`：正弦 600→450 Hz 下落、60ms，全局点击监听统一触发，音色改动只动 audio.ts 一处）；功能弹层展开 = 编钟「磬」（`uiChime`：分音比复用 music.ts 的 BELL_PARTIALS ×2/×2.76、基频 523.25、晚 70ms 起振成「笃→磬」应答）。**关闭弹层不加音**（关闭键自带笃声）。
+- **磬的接线点**：App.svelte 一处 `$effect` 监听 showAchv/showSettings/starMapOpen/`engine.phase==='paused'` 的 **false→true 沿**（弹层互切不双响）；ComposerModal 在自身 `$effect` 里 `untrack` 只认挂载一次；MoreMenu 展开分支触发。**演出层（标题/章节入场/通关/结算/教程）不加磬**——它们有自己的音效编排。
+- **坑**：`$effect` 里读 `engine.soundOn` 会让音效随开关切换重放——「仅挂载时一次」的语义要用 `untrack` 包住；700 Hz 实际发声上限只约束**环境音总线**（NOTE_MAX_HZ），UI/游戏音效的既有上限是 1046.5 Hz（starSound），磬的 ×2.76 泛音 1444 Hz 靠「极轻（0.08×0.045）+ 短促（≤0.5s）」不扎耳。
+- 里程碑音效函数（collectSound/pluck、woodfishSound、starSound、sealSound、chapterSealSound、achvSound、perfectArpeggio、finishChord）本轮未动，别顺手改参数。
+
 ## e2e 冒烟要点
 
 详见 `scripts/e2e-smoke.md`。关键：必须跑 dev server（动态 import 源码在 preview 不可用）；seg1 结果落 `sessionStorage['__e2eSeg1']`；每次运行用全新会话（长会话劣化）；「🎨 创作」在更多玩法折叠条内。agent-browser 通用坑见用户级 browser-automation-safety skill。
