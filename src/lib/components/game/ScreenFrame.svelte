@@ -11,6 +11,11 @@
   <span class="frame-corner tr"></span>
   <span class="frame-corner bl"></span>
   <span class="frame-corner br"></span>
+  <!-- 云纹角标：四角各一枚（器物感的来源之一） -->
+  <span class="frame-cloud tl"></span>
+  <span class="frame-cloud tr"></span>
+  <span class="frame-cloud bl"></span>
+  <span class="frame-cloud br"></span>
 </div>
 
 <style>
@@ -27,8 +32,57 @@
     position: absolute;
     inset: 0;
     box-shadow:
-      inset 0 0 0 1px rgba(245, 184, 65, 0.1),
+      inset 0 0 0 1px var(--edge-bronze),
+      inset 0 0 0 2px rgba(0, 0, 0, 0.55),
       inset 0 0 80px rgba(0, 0, 0, 0.6);
+  }
+
+  /* 云纹角标：一枚回卷的云头（两块圆角弧拼出） */
+  .frame-cloud {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    opacity: 0.75;
+  }
+  .frame-cloud::before,
+  .frame-cloud::after {
+    content: '';
+    position: absolute;
+    border: 1.5px solid var(--edge-bronze-hot);
+    border-color: var(--edge-bronze-hot) transparent transparent var(--edge-bronze-hot);
+    border-radius: 50% 0 0 0;
+  }
+  .frame-cloud::before {
+    inset: 0;
+    width: 13px;
+    height: 13px;
+  }
+  .frame-cloud::after {
+    inset: 5px 0 0 5px;
+    width: 9px;
+    height: 9px;
+    border-width: 1px;
+    opacity: 0.7;
+  }
+  .frame-cloud.tl {
+    top: 7px;
+    left: 7px;
+    transform: rotate(-45deg);
+  }
+  .frame-cloud.tr {
+    top: 7px;
+    right: 7px;
+    transform: rotate(45deg) scaleX(-1);
+  }
+  .frame-cloud.bl {
+    bottom: 7px;
+    left: 7px;
+    transform: rotate(-135deg);
+  }
+  .frame-cloud.br {
+    bottom: 7px;
+    right: 7px;
+    transform: rotate(135deg) scaleX(-1);
   }
 
   /* 四角青铜包边 */

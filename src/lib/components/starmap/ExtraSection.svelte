@@ -95,7 +95,7 @@
   <!-- 无尽挑战入口 -->
   <button
     type="button"
-    class="endless-trigger-btn"
+    class="endless-trigger-btn g-btn"
     class:active={engine.endless}
     title="无尽挑战：每波收集 ≥35% 进下一波，难度逐波爬升"
     onclick={() => {
@@ -119,7 +119,7 @@
         {#each DIFFS as d (d.id)}
           <button
             type="button"
-            class="diff-chip"
+            class="diff-chip g-btn"
             class:active={engine.difficulty === d.id}
             aria-pressed={engine.difficulty === d.id}
             onclick={() => engine.setDifficulty(d.id)}
@@ -133,7 +133,7 @@
     <div class="gen-actions">
       <button
         type="button"
-        class="action-btn"
+        class="action-btn g-btn"
         title="按当前难度生成随机关卡"
         onclick={() => {
           engine.loadRandom();
@@ -144,7 +144,7 @@
       </button>
       <button
         type="button"
-        class="action-btn"
+        class="action-btn g-btn"
         title="用谐波合成器创作自己的关卡"
         onclick={() => (showComposer = true)}
       >
@@ -159,7 +159,12 @@
       <div class="invite-header">
         <span class="invite-code font-tabular">邀请码 <b>{inviteCode}</b></span>
         <div class="invite-btns">
-          <button type="button" class="mini-btn" title="复制邀请码" onclick={copySeed}>
+          <button
+            type="button"
+            class="mini-btn g-btn g-btn--icon"
+            title="复制邀请码"
+            onclick={copySeed}
+          >
             <Icon name="link" size={11} /> 复制
           </button>
           <button type="button" class="mini-btn" title="分享链接" onclick={shareLevel}>
@@ -198,7 +203,6 @@
 
   /* 无尽入口：一行（左标题 / 右战绩），无卡片 */
   .endless-trigger-btn {
-    appearance: none;
     width: 100%;
     min-height: 38px;
     display: flex;
@@ -210,10 +214,8 @@
     cursor: pointer;
     color: var(--text);
     font-size: var(--ctl-font-sm);
-    background: none;
-    border: none;
     border-bottom: 1px solid var(--edge-faint);
-    transition: color 0.12s ease;
+    /* 形与四态交给公共件 .g-btn / .g-btn--icon：本地只保留布局与字号 */
   }
   .endless-trigger-btn:hover,
   .endless-trigger-btn.active {
@@ -263,21 +265,13 @@
     flex: none;
   }
   .diff-chip {
-    appearance: none;
     min-height: var(--ctl-md);
     padding: 0 10px;
     cursor: pointer;
-    color: var(--muted);
     font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-faint);
-    background: transparent;
-    transition:
-      color 0.12s ease,
-      border-color 0.12s ease,
-      background 0.12s ease;
+    /* 形与四态交给公共件 .g-btn / .g-btn--icon：本地只保留布局与字号 */
   }
   .diff-chip:hover {
     color: var(--text);
@@ -297,7 +291,6 @@
   }
   .action-btn {
     flex: 1;
-    appearance: none;
     min-height: var(--ctl-md);
     padding: 0 8px;
     cursor: pointer;
@@ -309,13 +302,7 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-faint);
-    background: transparent;
-    transition:
-      color 0.12s ease,
-      border-color 0.12s ease,
-      background 0.12s ease;
+    /* 形与四态交给公共件 .g-btn / .g-btn--icon：本地只保留布局与字号 */
   }
   .action-btn:hover {
     border-color: var(--edge);
@@ -376,25 +363,17 @@
   /* 载入 / 复制 / 分享：安静小键 */
   .load-btn,
   .mini-btn {
-    appearance: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 4px;
     cursor: pointer;
-    color: var(--muted);
     font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
     padding: 0 10px;
     height: var(--ctl-md);
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-faint);
-    background: transparent;
-    transition:
-      color 0.12s ease,
-      border-color 0.12s ease,
-      background 0.12s ease;
+    /* 形与四态交给公共件 .g-btn / .g-btn--icon：本地只保留布局与字号 */
   }
   .load-btn:hover,
   .mini-btn:hover {

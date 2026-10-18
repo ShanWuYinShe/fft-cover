@@ -98,13 +98,13 @@
 >
   <!-- 完结演出：一块平板 + 落款朱印；内层滚动，主操作常驻 -->
   <div class="card-wrap">
-    <div class="card">
+    <div class="card g-rivets">
       <div class="card-rail">
         <span class="g-label">周天完结</span>
         <span class="rail-lv">{mastered ? '三星精通' : '首次通关'}</span>
       </div>
       <!-- 落款朱印：书画收尾的那一方印 -->
-      <div class="seal" aria-hidden="true">{mastered ? '大成' : '通关'}</div>
+      <div class="seal g-seal" aria-hidden="true">{mastered ? '大成' : '通关'}</div>
       <div class="burst"><Icon name={mastered ? 'crown' : 'flag'} size={28} /></div>
       <h2>{mastered ? '谐波大师' : '通关！'}</h2>
       <p class="sub">
@@ -184,7 +184,11 @@
       </p>
 
       <div class="foot">
-        <button type="button" class="primary" onclick={() => engine.dismissFinale()}>
+        <button
+          type="button"
+          class="primary g-btn g-btn--primary g-btn--lg"
+          onclick={() => engine.dismissFinale()}
+        >
           继续挑战
         </button>
       </div>
@@ -535,26 +539,15 @@
   }
 
   button.primary {
-    appearance: none;
     width: 100%;
     min-height: var(--ctl-lg);
     padding: 0 20px;
-    border-radius: var(--ctl-radius-lg);
     cursor: pointer;
     font-size: var(--ctl-font);
     font-weight: 700;
     letter-spacing: 2px;
-    color: #1a1002;
-    border: 1px solid #ffe7a3;
-    background: var(--face-gold);
-    box-shadow:
-      var(--bevel-top),
-      inset 0 -2px 0 rgba(140, 80, 0, 0.55),
-      0 2px 0 #7a4d05;
     -webkit-tap-highlight-color: transparent;
-    transition:
-      transform 0.09s ease,
-      background 0.12s ease;
+    /* 形与四态交给公共件 .g-btn--primary（牌匾）：本地只保留布局与字号 */
   }
   button.primary:hover {
     background: var(--face-gold-hover);

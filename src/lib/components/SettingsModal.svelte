@@ -152,15 +152,31 @@
     row-gap: 8px;
   }
 
+  /* 行标题：左侧 3px 铭牌块 */
   .setting-k {
     flex: 1 1 auto;
     min-width: 0;
+    padding-left: 8px;
     white-space: nowrap;
+    position: relative;
+  }
+  .setting-k::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 3px;
+    height: 12px;
+    margin-top: -6px;
+    border-radius: 1px;
+    background: linear-gradient(180deg, var(--gold-bright), var(--bronze) 70%, var(--bronze-deep));
   }
 
-  /* 开关：一行细描边的小键，只用「亮灯 + 金色文字」表示开 */
+  /* 铜制拨钮：切角铜边 + 内层金属面，开 = 金面 + 右端宝石灯 */
   .toggle-btn {
     appearance: none;
+    position: relative;
+    isolation: isolate;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -168,53 +184,77 @@
     flex: none;
     min-width: 68px;
     min-height: var(--ctl-md);
-    padding: 0 10px;
+    padding: 0 18px 0 10px;
     cursor: pointer;
     color: var(--muted);
     font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-faint);
-    background: transparent;
+    border: none;
+    border-radius: 0;
+    clip-path: var(--chamfer-sm);
+    background: var(--edge-bronze);
     -webkit-tap-highlight-color: transparent;
-    transition:
-      color 0.12s ease,
-      border-color 0.12s ease,
-      background 0.12s ease;
+    transition: color 0.12s ease;
+  }
+  .toggle-btn::before {
+    content: '';
+    position: absolute;
+    inset: 1px 1px 2px;
+    z-index: -1;
+    clip-path: var(--chamfer-sm);
+    background: var(--face-plate);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transition: background 0.12s ease;
   }
   .toggle-btn:hover {
     color: var(--text);
-    border-color: var(--edge);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--edge-bronze-hot);
   }
+  .toggle-btn:hover::before {
+    background: var(--face-plate-hot);
+  }
+  /* 开：金箔面 + 宝石灯（全屏唯一的发光只给选中态） */
   .toggle-btn.on {
-    color: var(--gold-bright);
-    border-color: var(--edge);
-    background: rgba(245, 184, 65, 0.08);
+    color: #2a1700;
     font-weight: 700;
+    background: var(--edge-bronze-hot);
+  }
+  .toggle-btn.on::before {
+    background: var(--face-gold-plate, linear-gradient(180deg, #ffe7a3, #d69214));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
 
-  /* 指示灯：开=亮金，关=暗灯 */
+  /* 指示灯 = 右端宝石（关：暗灯；开：亮宝石） */
   .lamp {
-    width: 8px;
-    height: 8px;
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    margin-top: -3.5px;
     border-radius: 50%;
     flex: none;
-    background: rgba(148, 163, 184, 0.3);
+    background: rgba(148, 163, 184, 0.28);
     box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.7);
   }
   .toggle-btn.on .lamp {
-    background: var(--gold-bright);
-    box-shadow: 0 0 6px rgba(245, 184, 65, 0.8);
+    background: radial-gradient(circle at 35% 30%, #fffdf2 0%, #ffd166 45%, #8a5a04 100%);
+    box-shadow: 0 0 7px rgba(255, 209, 102, 0.85);
   }
 
-  /* 音量三格电平条 */
+  /* 音量：凹槽（内阴影 + 铜线）+ 刻度线 + 三格电平 */
   .bars {
     display: inline-flex;
     align-items: flex-end;
     gap: 2px;
     height: 12px;
+    padding: 0 3px;
+    border-radius: 2px;
+    background:
+      repeating-linear-gradient(90deg, rgba(201, 162, 74, 0.22) 0 1px, transparent 1px 4px),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(255, 255, 255, 0.04));
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.7);
   }
   .bars .bar {
     width: 3px;
@@ -234,40 +274,44 @@
     background: var(--gold-bright);
   }
 
-  /* 难度三选一：并排的三个安静小键，选中的描金 */
+  /* 分段器 = 标签页：未选中哑光金属，选中 = 面提亮 + 底部金滑块 */
   .chips {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     flex: none;
+    padding: 2px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(255, 255, 255, 0.03));
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.65);
   }
   .chip {
     appearance: none;
     min-width: 52px;
-    min-height: var(--ctl-md);
+    min-height: calc(var(--ctl-md) - 6px);
     padding: 0 10px;
     cursor: pointer;
     color: var(--muted);
     font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-faint);
-    background: transparent;
+    border: none;
+    border-radius: 3px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
+    box-shadow: inset 0 -2px 0 transparent;
     transition:
       color 0.12s ease,
-      border-color 0.12s ease,
-      background 0.12s ease;
+      background 0.12s ease,
+      box-shadow 0.12s ease;
   }
   .chip:hover {
     color: var(--text);
-    border-color: var(--edge);
-    background: rgba(255, 255, 255, 0.05);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.01));
   }
   .chip.on {
     color: var(--gold-bright);
-    border-color: var(--gold);
-    background: rgba(245, 184, 65, 0.1);
     font-weight: 700;
+    background: linear-gradient(180deg, rgba(245, 184, 65, 0.2), rgba(245, 184, 65, 0.04));
+    box-shadow: inset 0 -2px 0 var(--gold);
   }
 
   /* 说明文字：与设置行用一条线隔开，不再包一层凹槽 */

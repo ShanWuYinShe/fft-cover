@@ -40,14 +40,14 @@
 
 <div class="modal-backdrop" onclick={onBackdropClick} role="presentation">
   <!-- 弹窗 = 一块安静的面板：只有标题区 + 内容 + 页脚三段落，四角包边只此一处 -->
-  <div class="modal modal-shell modal-{size}" role="dialog" aria-modal="true">
+  <div class="modal modal-shell g-rivets modal-{size}" role="dialog" aria-modal="true">
     <span class="g-corner tl" aria-hidden="true"></span>
     <span class="g-corner tr" aria-hidden="true"></span>
     <span class="g-corner bl" aria-hidden="true"></span>
     <span class="g-corner br" aria-hidden="true"></span>
 
     {#if title || showClose}
-      <header class="modal-header">
+      <header class="modal-header g-pattern-bar">
         <div class="modal-title-wrap">
           {#if icon}
             <Icon name={icon} size={18} />
@@ -64,7 +64,7 @@
         {#if showClose && onclose}
           <button
             type="button"
-            class="modal-close"
+            class="modal-close g-btn g-btn--icon"
             onclick={onclose}
             aria-label="关闭窗口"
             title="关闭窗口"
@@ -107,11 +107,13 @@
 
   .modal-shell {
     position: relative;
-    /* 一块平板：单色金属面 + 1px 暗金描边，不做渐变堆料与外发光 */
-    background: var(--metal);
-    border: 1px solid var(--edge-soft);
+    /* 器物面板：青铜边（1px）+ 内侧 1px 暗线 + 铆钉（.g-rivets::after） */
+    background: var(--face-plate);
+    border: 1px solid var(--edge-bronze);
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    box-shadow:
+      inset 0 0 0 1px var(--edge-inner),
+      0 4px 8px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     /* 矮屏（手机横屏 844×390 等）：整体不超视口，内部滚动 */
@@ -134,17 +136,36 @@
     height: calc(100dvh - 24px);
   }
 
-  /* 标题区：一条底线分隔，不再铺底色 */
+  /* 标题条：回纹发丝底 + 左侧 3px 金牌块 + 底线 */
   .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: 12px var(--space-4) 10px;
-    border-bottom: 1px solid var(--edge-faint);
+    padding: 12px var(--space-4) 10px 16px;
+    border-bottom: 1px solid var(--edge-bronze);
+    background-color: rgba(0, 0, 0, 0.18);
     flex-shrink: 0;
     position: relative;
     z-index: 1;
+  }
+
+  /* 回纹发丝：叠一层暗罩，把纹样压到「发丝」级（契约 ≤.18 alpha） */
+  .modal-header.g-pattern-bar {
+    background-image:
+      linear-gradient(rgba(9, 14, 26, 0.62), rgba(9, 14, 26, 0.62)), var(--pattern-hui);
+  }
+  /* 左侧金牌块（铭牌） */
+  .modal-header::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    border-radius: 1px;
+    background: linear-gradient(180deg, var(--gold-bright), var(--bronze) 70%, var(--bronze-deep));
+    box-shadow: 0 0 6px rgba(245, 184, 65, 0.35);
   }
 
   .modal-title-wrap {
@@ -174,27 +195,13 @@
     color: var(--muted);
   }
 
-  /* 关闭键：桌面 30×30（触屏 42，走 --ctl-md），静息无描边、悬停才显形 */
+  /* 关闭键：socket 键帽（.g-btn--icon 负责形与四态），这里只保证尺寸对齐 */
   .modal-close {
-    appearance: none;
     flex: none;
-    width: var(--ctl-md);
-    height: var(--ctl-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--muted);
-    border-radius: var(--ctl-radius);
-    border: 1px solid transparent;
-    background: transparent;
-    transition:
-      color 0.12s ease,
-      background 0.12s ease;
+    color: var(--gold);
   }
   .modal-close:hover {
     color: var(--gold-bright);
-    background: rgba(255, 255, 255, 0.06);
   }
 
   .modal-body {

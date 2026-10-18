@@ -356,7 +356,7 @@
     {/if}
     <div class="list" class:hide={tab !== 'achv'}>
       {#each achvGroups as g (g.id)}
-        <div class="ag-head">
+        <div class="ag-head g-pattern-bar">
           <b>{g.name}</b>
           <span class="ag-count">{g.got}/{g.total}</span>
           <span class="ag-bar"><i style="width: {g.total ? (g.got / g.total) * 100 : 0}%"></i></span
@@ -539,18 +539,23 @@
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
+  /* 进度：凹槽（内阴影 + 铜线）+ 金箔填充 */
   .prog-bar {
     flex: 1;
-    height: 4px;
-    border-radius: 2px;
-    background: rgba(255, 255, 255, 0.09);
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.75), rgba(255, 255, 255, 0.05));
+    box-shadow:
+      inset 0 2px 3px rgba(0, 0, 0, 0.75),
+      0 0 0 1px rgba(201, 162, 74, 0.28);
     overflow: hidden;
   }
   .prog-bar i {
     display: block;
     height: 100%;
-    border-radius: 2px;
-    background: linear-gradient(90deg, var(--cyan), var(--gold));
+    border-radius: 3px;
+    background: linear-gradient(180deg, #ffe9a8, var(--gold) 55%, #c98a10);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
   }
 
   .list {
@@ -560,13 +565,34 @@
     text-align: left;
   }
   /* 成就分组标题：区块名 + 计数 + 细进度线（无底座） */
+  /* 分区铭牌：左侧 3px 金牌块 + 回纹发丝底 */
   .ag-head {
     display: flex;
     align-items: center;
     gap: 8px;
     margin: 16px 0 2px;
+    padding: 4px 0 4px 10px;
     font-size: 12px;
     color: var(--muted);
+    border-bottom: 1px solid var(--edge-bronze);
+    background-color: rgba(0, 0, 0, 0.14);
+    position: relative;
+  }
+
+  /* 回纹发丝：叠一层暗罩，把纹样压到「发丝」级（契约 ≤.18 alpha） */
+  .ag-head.g-pattern-bar {
+    background-image:
+      linear-gradient(rgba(9, 14, 26, 0.62), rgba(9, 14, 26, 0.62)), var(--pattern-hui);
+  }
+  .ag-head::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 3px;
+    bottom: 3px;
+    width: 3px;
+    border-radius: 1px;
+    background: linear-gradient(180deg, var(--gold-bright), var(--bronze) 70%, var(--bronze-deep));
   }
   .ag-head:first-child {
     margin-top: 2px;
@@ -604,21 +630,51 @@
   .item:last-child {
     border-bottom: none;
   }
-  /* 未解锁降级只动装饰与标题，描述保持 --muted 实色。
-     整卡 opacity 会把 12px 描述压到 2.38:1（实测远低于 AA 4.5:1）。 */
+  /* 左侧奖章槽：方形 socket（内凹 + 铜边） */
+  .icon {
+    flex: none;
+    width: calc(var(--ctl-md) - 4px);
+    height: calc(var(--ctl-md) - 4px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    position: relative;
+    color: var(--muted);
+    background: linear-gradient(180deg, #070c17, #101a2c);
+    box-shadow:
+      inset 0 2px 4px rgba(0, 0, 0, 0.8),
+      0 0 0 1px rgba(201, 162, 74, 0.3);
+  }
+  /* 未解锁：暗槽 + 标题降级（描述保持 --muted 实色，保证 AA） */
   .item:not(.got) .icon {
-    opacity: 0.45;
+    opacity: 0.7;
   }
   .item:not(.got) .nm {
     color: var(--muted);
     font-weight: 500;
   }
-  /* 已解锁：只用颜色区分（金色标题 + 金色奖杯），不加边框与光晕 */
+  /* 已解锁：金面 + 右上角宝石灯 */
+  .item.got .icon {
+    color: #2a1700;
+    background: var(--face-gold-plate, linear-gradient(180deg, #ffe7a3, #d69214));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 0 0 1px var(--edge-bronze-hot);
+  }
+  .item.got .icon::after {
+    content: '';
+    position: absolute;
+    right: -2px;
+    top: -2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fffdf2 0%, #ffd166 45%, #8a5a04 100%);
+    box-shadow: 0 0 6px rgba(255, 209, 102, 0.9);
+  }
   .item.got .nm {
     color: var(--gold-bright);
-  }
-  .icon {
-    font-size: 20px;
   }
   .nm {
     font-size: 14px;
@@ -640,6 +696,7 @@
     margin-bottom: 4px;
     border-bottom: 1px solid var(--edge-faint);
   }
+  /* 标签页：未选中哑光金属，选中 = 面提亮 + 底部金滑块 */
   .tabs button {
     flex: 1 1 0;
     min-width: 0;
@@ -654,22 +711,26 @@
     white-space: nowrap;
     cursor: pointer;
     color: var(--muted);
-    background: none;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0));
     border: none;
-    /* 选中态用一条金色下划线表达，不做整块金色按钮 */
-    border-bottom: 2px solid transparent;
+    /* 底部 3px 滑块：未选中透明，选中金箔 */
+    border-bottom: 3px solid transparent;
     margin-bottom: -1px;
     -webkit-tap-highlight-color: transparent;
     transition:
       color 0.12s ease,
-      border-color 0.12s ease;
+      border-color 0.12s ease,
+      background 0.12s ease;
   }
   .tabs button:hover {
     color: var(--text);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01));
   }
   .tabs button.on {
     color: var(--gold-bright);
     border-bottom-color: var(--gold);
+    background: linear-gradient(180deg, rgba(245, 184, 65, 0.14), rgba(245, 184, 65, 0.02));
+    box-shadow: 0 2px 8px rgba(245, 184, 65, 0.25);
   }
   .list.hide {
     display: none;

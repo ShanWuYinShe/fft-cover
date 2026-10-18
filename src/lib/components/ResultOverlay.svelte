@@ -381,7 +381,7 @@
 </script>
 
 <div class="result">
-  <div class="card">
+  <div class="card g-rivets">
     <div class="card-rail">
       <span class="g-label">结算</span>
       <span class="rail-lv">{engine.level?.name ?? '自由观测'}</span>
@@ -415,7 +415,7 @@
         <p class="verdict">{verdict}</p>
         <!-- 结算印章：斜盖入（内容与结论行重复，故对读屏隐藏） -->
         {#if stamp}
-          <span class="stamp" aria-hidden="true">{stamp}</span>
+          <span class="stamp g-seal" aria-hidden="true">{stamp}</span>
         {/if}
         <!-- 一行明细：收集 / 全清 / 上届对比 / 距最佳 -->
         <p class="detail">
@@ -527,9 +527,12 @@
     /* 放行溢出：结算卡的「⋯」菜单向下展开时不能被裁 */
     overflow: visible;
     border-radius: 10px;
-    background: var(--metal);
-    border: 1px solid var(--edge-soft);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    /* 器物面板：青铜边 + 内侧 1px 暗线 + 铆钉（.g-rivets::after） */
+    background: var(--face-plate);
+    border: 1px solid var(--edge-bronze);
+    box-shadow:
+      inset 0 0 0 1px var(--edge-inner),
+      0 4px 8px rgba(0, 0, 0, 0.5);
     animation: card-in 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
     text-align: center;
   }
@@ -577,6 +580,18 @@
   }
 
   /* 大数字一：星级（逐颗弹出） */
+  /* 顶部金箔发丝线（器物面板的高光边；铆钉占的是 ::after） */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold) 20%, var(--gold) 80%, transparent);
+    opacity: 0.55;
+    pointer-events: none;
+    z-index: 2;
+  }
+
   .stars {
     display: flex;
     gap: 8px;
@@ -584,12 +599,29 @@
     line-height: 1;
     letter-spacing: 0;
   }
+  /* 星位：每颗星坐在一个方形宝石座里（未达成 = 暗槽） */
   .stars .star {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.15em;
+    height: 1.15em;
+    border-radius: 6px;
     color: rgba(160, 172, 200, 0.3);
+    background: linear-gradient(180deg, #070c17, #101a2c);
+    box-shadow:
+      inset 0 2px 5px rgba(0, 0, 0, 0.85),
+      0 0 0 1px rgba(201, 162, 74, 0.25);
   }
+  /* 已达成：金座 + 宝石（唯一的发光在这里） */
   .stars .star.on {
-    color: var(--gold);
-    text-shadow: 0 0 18px rgba(245, 184, 65, 0.55);
+    color: #3a2400;
+    background: var(--face-gold-plate, linear-gradient(180deg, #ffe7a3, #d69214));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 0 0 1px var(--edge-bronze-hot),
+      0 0 12px rgba(245, 184, 65, 0.45);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
   }
   /* 已达成的星逐颗弹入：0.4 → 1.12 → 1.0（每颗 120ms，见内联 delay） */
   .stars .star.pop {
@@ -610,16 +642,14 @@
   }
 
   /* 结算印章：斜盖入 -8° → -6°，1.3 → 1.0（220ms，等星级弹完再盖） */
-  .stamp {
+  /* 朱印（.g-seal 给形与色），这里只保留本卡的落款角度与盖章动画。
+     选择器带 .card-body 提高优先级，压过公共件的 rotate(-2deg)。 */
+  .card-body .stamp {
     align-self: center;
     margin-top: 2px;
     padding: 3px 12px;
-    border: 1px solid rgba(217, 43, 43, 0.7);
-    border-radius: 4px;
-    color: #f0a6a6;
     font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
     font-size: var(--fs-md);
-    font-weight: 700;
     letter-spacing: 3px;
     white-space: nowrap;
     /* 基准态就是盖好后的角度：动画结束后自然停在 -6° */

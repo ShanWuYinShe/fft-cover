@@ -14,7 +14,12 @@
   } = $props();
 </script>
 
-<span class="badge badge-{variant} badge-{size}" class:chamfer>
+<span
+  class="badge badge-{variant} badge-{size}"
+  class:chamfer
+  class:g-chip={variant !== 'cinnabar'}
+  class:g-seal={variant === 'cinnabar'}
+>
   {#if children}
     {@render children()}
   {/if}
@@ -22,9 +27,10 @@
 
 <style>
   /* ============================================================
-   * 金属芯片：不做半透明圆角胶囊（那是最刺眼的「网页标签」），
-   * 改成有厚度的小铁片——深金属渐变 + 发丝描边 + 上高光。
-   * 颜色只改文字/描边/微光，芯片本体始终是机箱金属。
+   * 第五轮：徽章 = 器物。
+   * - 普通徽章 → 玉牌（.g-chip：青碧面 + 内凹 + 4px 圆角）
+   * - 危险/锁定 → 朱印（.g-seal：朱砂面 + 亮边 + -2° 旋转）
+   * 组件只补尺寸档位与各变体的字色，形态交给公共件。
    * ============================================================ */
   .badge {
     display: inline-flex;
@@ -36,13 +42,6 @@
     line-height: 1;
     letter-spacing: 0.5px;
     white-space: nowrap;
-    border-radius: var(--ctl-radius);
-    background: linear-gradient(180deg, #18243c 0%, #0d1524 60%, #080e19 100%);
-    border: 1px solid var(--edge-soft);
-    color: var(--muted);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      0 1px 0 rgba(0, 0, 0, 0.5);
   }
 
   .badge.chamfer {
@@ -55,13 +54,34 @@
     min-height: var(--ctl-xs);
     /* 铭牌标签字号下限 11px（第二轮字号收敛规则） */
     font-size: 11px;
-    padding: 2px 7px;
+    padding: 1px 6px;
   }
 
   .badge-md {
     min-height: var(--ctl-sm);
     font-size: var(--ctl-font-sm);
-    padding: 3px 9px;
+    padding: 2px 8px;
+  }
+
+  /* 玉牌上的变体只改字色/描边色，面仍是青碧（玉牌语义） */
+  .badge-gold {
+    color: var(--gold-bright);
+    border-color: rgba(245, 184, 65, 0.42);
+  }
+
+  .badge-purple {
+    color: var(--purple);
+    border-color: rgba(167, 139, 250, 0.45);
+  }
+
+  .badge-muted {
+    color: var(--muted);
+    border-color: var(--line-quiet);
+  }
+
+  /* 朱印：字色/字距随印面 */
+  .badge-cinnabar {
+    letter-spacing: 1.5px;
   }
 
   .badge-gold {

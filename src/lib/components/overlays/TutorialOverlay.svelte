@@ -13,7 +13,7 @@
      tutorial-backdrop 为原有样式钩子，一并保留。
      降噪版：一张平静的三步卡，只有一个金色主按钮，无包边/扫描线 -->
 <div class="tutorial tutorial-backdrop" role="dialog" aria-modal="true" aria-labelledby="tut-title">
-  <div class="tut-box">
+  <div class="tut-box g-chamfer g-rivets">
     <h2 id="tut-title">怎么玩？</h2>
 
     <ol class="tut-list">
@@ -50,10 +50,7 @@
     max-width: 400px;
     box-sizing: border-box;
     padding: 18px 20px 16px;
-    background: #0c1424;
-    border: 1px solid var(--edge-soft);
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.45);
+    /* 切角铜边 + 面来自 .g-chamfer，四角铆钉来自 .g-rivets */
     /* 入场：0.96 → 1 缩放 + 淡入（320ms），结束后不留 transform */
     animation: tut-pop 320ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }

@@ -36,6 +36,7 @@
       title="回到主菜单"
       onclick={() => (uiState.showTitle = true)}
     >
+      <span class="brand-ring" aria-hidden="true"><Icon name="ring" size={15} /></span>
       <span class="title-brand font-celestial">浑 天 璇 玑</span>
       <span class="brand-seal">傅立叶</span>
     </button>
@@ -77,8 +78,26 @@
     width: 100%;
     padding: 0 14px 0 12px;
     box-sizing: border-box;
-    background: linear-gradient(180deg, rgba(13, 20, 34, 0.96) 0%, rgba(7, 11, 20, 0.98) 100%);
-    border-bottom: 1px solid var(--edge-soft);
+    /* 顶栏 = 器物上沿：青铜底边 + 回纹发丝 + 中央一道金箔高光 */
+    background-color: rgba(9, 14, 25, 0.96);
+    background-image: var(--pattern-hui-soft);
+    background-repeat: repeat-x;
+    background-position: 0 center;
+    border-bottom: 1px solid var(--edge-bronze);
+    box-shadow:
+      inset 0 -1px 0 rgba(0, 0, 0, 0.7),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  .game-hud-bar::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -1px;
+    width: 34%;
+    height: 1px;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, transparent, var(--edge-bronze-hot), transparent);
+    pointer-events: none;
   }
 
   .hud-left {
@@ -95,10 +114,14 @@
     align-items: center;
     gap: 6px;
     height: var(--ctl-md);
-    padding: 0 10px;
-    border-radius: var(--ctl-radius);
-    background: rgba(19, 28, 46, 0.75);
-    border: 1px solid var(--edge-soft);
+    padding: 0 10px 0 8px;
+    border-radius: 0;
+    clip-path: var(--chamfer-sm);
+    background: var(--face-plate);
+    border: none;
+    box-shadow:
+      inset 0 0 0 1px var(--edge-bronze),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
     color: var(--text);
     font-size: var(--ctl-font);
     font-weight: 600;
@@ -114,6 +137,10 @@
   }
   .hud-quiet-btn:active {
     transform: translateY(1px);
+  }
+  .hud-quiet-btn:hover {
+    background: var(--face-plate-hot);
+    color: var(--gold-bright);
   }
   .hud-quiet-btn.icon-only {
     width: var(--ctl-md);
@@ -134,6 +161,7 @@
 
   .hud-stars {
     font-size: var(--ctl-font-sm);
+    color: #9df0d8;
     font-weight: 700;
     color: var(--gold-bright);
     background: rgba(245, 184, 65, 0.1);
@@ -147,6 +175,15 @@
   }
 
   /* ---------- 中央品牌：只是回家的入口，不再发光 ---------- */
+  .brand-ring {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    color: var(--bronze-bright);
+  }
+
   .hud-center-brand {
     display: flex;
     align-items: center;

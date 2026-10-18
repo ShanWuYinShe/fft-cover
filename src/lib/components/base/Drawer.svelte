@@ -35,7 +35,7 @@
 {/if}
 
 <aside
-  class="drawer-panel drawer-{side}"
+  class="drawer-panel g-rivets drawer-{side}"
   class:open
   style="--drawer-width: {width}"
   aria-hidden={!open}
@@ -46,7 +46,7 @@
   {/if}
 
   {#if title || showClose}
-    <div class="drawer-header">
+    <div class="drawer-header g-pattern-bar">
       {#if title}
         <h2 class="drawer-title font-celestial">
           {#if typeof title === 'function'}
@@ -57,7 +57,13 @@
         </h2>
       {/if}
       {#if showClose && onclose}
-        <button type="button" class="drawer-close" title="收起" aria-label="收起" onclick={onclose}>
+        <button
+          type="button"
+          class="drawer-close g-btn g-btn--icon"
+          title="收起"
+          aria-label="收起"
+          onclick={onclose}
+        >
           <Icon name="close" size={15} />
         </button>
       {/if}
@@ -85,14 +91,16 @@
     padding: 0;
   }
 
-  /* 侧舱：单色金属面 + 1px 描边，去掉扫描线与外发光 */
+  /* 侧舱 = 器物面板：青铜边 + 内侧暗线 + 四角铆钉 */
   .drawer-panel {
     position: fixed;
     z-index: 60;
     display: flex;
     flex-direction: column;
-    background: var(--metal);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    background: var(--face-plate);
+    box-shadow:
+      inset 0 0 0 1px var(--edge-inner),
+      0 4px 8px rgba(0, 0, 0, 0.5);
     transition:
       transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
       visibility 0.32s;
@@ -108,7 +116,7 @@
     bottom: 0;
     left: 0;
     width: var(--drawer-width);
-    border-right: 1px solid var(--edge-soft);
+    border-right: 1px solid var(--edge-bronze);
     transform: translateX(-105%);
   }
   .drawer-left.open {
@@ -122,7 +130,7 @@
     bottom: 0;
     right: 0;
     width: var(--drawer-width);
-    border-left: 1px solid var(--edge-soft);
+    border-left: 1px solid var(--edge-bronze);
     transform: translateX(105%);
   }
   .drawer-right.open {
@@ -154,17 +162,35 @@
     background: var(--metal-3);
   }
 
-  /* 抽屉标题：一条底线分隔 */
+  /* 抽屉标题条：回纹发丝 + 左侧金牌块 + 铜线分隔 */
   .drawer-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: 12px var(--space-3) 10px;
-    border-bottom: 1px solid var(--edge-faint);
+    padding: 12px var(--space-3) 10px 16px;
+    border-bottom: 1px solid var(--edge-bronze);
+    background-color: rgba(0, 0, 0, 0.18);
     flex-shrink: 0;
     position: relative;
     z-index: 1;
+  }
+
+  /* 回纹发丝：叠一层暗罩，把纹样压到「发丝」级（契约 ≤.18 alpha） */
+  .drawer-header.g-pattern-bar {
+    background-image:
+      linear-gradient(rgba(9, 14, 26, 0.62), rgba(9, 14, 26, 0.62)), var(--pattern-hui);
+  }
+  .drawer-header::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    border-radius: 1px;
+    background: linear-gradient(180deg, var(--gold-bright), var(--bronze) 70%, var(--bronze-deep));
+    box-shadow: 0 0 6px rgba(245, 184, 65, 0.35);
   }
 
   .drawer-title {
@@ -176,27 +202,13 @@
     line-height: 1.3;
   }
 
-  /* 收起键：桌面 30×30（触屏 42），静息无描边，悬停显形 */
+  /* 收起键：socket 键帽（形与四态走 .g-btn--icon） */
   .drawer-close {
-    appearance: none;
     flex: none;
-    width: var(--ctl-md);
-    height: var(--ctl-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--muted);
-    border-radius: var(--ctl-radius);
-    border: 1px solid transparent;
-    background: transparent;
-    transition:
-      color 0.12s ease,
-      background 0.12s ease;
+    color: var(--gold);
   }
   .drawer-close:hover {
     color: var(--gold-bright);
-    background: rgba(255, 255, 255, 0.06);
   }
 
   .drawer-content {

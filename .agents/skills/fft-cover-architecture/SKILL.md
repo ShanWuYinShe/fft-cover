@@ -39,6 +39,26 @@ description: 傅立叶指针（fft_cover）项目架构事实：全屏座舱 UI 
   节流到 ~1fps，测出来全是假的。
 - **画布性能红线不变**：禁用 `shadowBlur`；辉光走 `glowDot` + `glowCache`；文字宽度走 `measureW`；
   粒子/星尘总数 ≤60、每帧新增绘制控制在几十次量级（本轮星盘 + 星尘 + 拖尾 + 火花实测仍 61fps）。
+- **器物化界面语言（第五轮）**：主题不能只活在文案里。公共件在 `game-ui.css`：
+  `.g-btn` 铜板键 / `.g-btn--primary` 牌匾（金箔 + 右端宝石灯，全屏唯一会呼吸的发光）/ `.g-btn--icon`
+  socket 键帽 / `.g-chamfer` 切角板 / `.g-rivets` 四角铆钉（伪元素背景图，零 DOM）/ `.g-pattern-bar`
+  回纹发丝带（内置暗罩，有效 alpha ≈.10）/ `.g-socket` / `.g-chip` 玉牌 / `.g-seal` 朱印。
+  令牌在 `tokens.css`：`--edge-bronze(-hot)`、`--bronze*`、`--face-plate(-hot)`、`--face-gold-plate`、
+  `--face-jade`、`--face-seal`、`--rivet`、`--pattern-hui(-soft)`。纹样只出现在这五处：屏幕四角云纹、
+  面板标题条回纹、四角铆钉、玉牌、朱印——**不要铺满**。
+  **切角写法**：本体 = 铜边色，`::before { inset:1px; z-index:-1; clip-path: 同一切角 }` = 金属面。
+  两个坑（都实测踩过）：
+  ① `clip-path` 会切掉 `outline` → 焦点态必须改成「铜边变金 + 面提亮」，别再自绘 outline；
+  ② `clip-path` 会切掉**内部滚动条** → 整窗/带内滚的面板不要加 clip-path，切角只用于小件。
+  另外：**组件作用域样式会盖掉全局 `.g-btn`**，迁移按钮时必须同时删掉本地的
+  `border/background/box-shadow/color`，否则看不出牌匾/键帽形态（D 线踩过）。
+- **改 CSS 块要用编译产物回查**：用脚本（python 替换）改 `<style>` 块时，「模板改了、样式没改」不会报错
+  （B 线踩过：`<span>` 进了模板、规则没进 style，肉眼直到传 hint 才暴露）。改完必须
+  `grep` 编译后的 CSS（或 `pnpm build` 后在 dist 里回查）确认规则真的存在。
+- **器物化探针**：`.workwork/ui-redesign/theme.mjs` 统计每屏的切角/铆钉/朱印/回纹/云纹/青铜边数量；
+  glow 只统计**非黑色且有模糊**的阴影（黑色投影不算发光）。改前 main 全为 0，改后 18–35/屏。
+- **CDP 同 origin 的 localStorage 会串档**：跑完无尽/结算截图后再截另一档，应用会按存档恢复上一局，
+  出来的图不是你要的界面。截对照图前先 `localStorage.clear()`，或用 `http://[::1]:5200/` 隔离 origin。
 - **控件尺寸只看指针类型（第四轮）**：`tokens.css` 的 `--ctl-xs/sm/md/lg/menu`（22/26/30/40/46 桌面；
   `@media (pointer: coarse)` 下 32/40/42/46/52）+ `--ctl-font(-sm)`、`--ctl-radius`、`--ctl-icon`。
   **不要写死 px**；触屏命中区必须 ≥40（视觉不够就用 `::after { inset }` 外扩，range 这类替换元素

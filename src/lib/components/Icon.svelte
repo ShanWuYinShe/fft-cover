@@ -32,6 +32,12 @@
       '<rect x="3" y="4" width="18" height="16" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
     bulb: '<line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14z"/>',
     dice: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1" fill="currentColor"/>',
+    cloud:
+      '<path d="M7 17h9.5a3.5 3.5 0 0 0 .4-6.98A5.2 5.2 0 0 0 7.2 8.6 3.7 3.7 0 0 0 7 17z"/><path d="M14.5 13.5a2 2 0 1 1 2-2"/>',
+    seal: '<rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+    ring: '<ellipse cx="12" cy="12" rx="9" ry="4.2"/><ellipse cx="12" cy="12" rx="9" ry="4.2" transform="rotate(62 12 12)"/><circle cx="12" cy="12" r="1.8"/>',
+    wave: '<path d="M2 12c2.5 0 2.5-5.5 5-5.5S9.5 17 12 17s2.5-5.5 5-5.5 2.5 5.5 5 5.5"/>',
+    fluted: '<path d="M6 3v18M12 3v18M18 3v18"/><path d="M3 8h18M3 16h18" opacity=".5"/>',
     gem: '<path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/>',
     lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
     palette:

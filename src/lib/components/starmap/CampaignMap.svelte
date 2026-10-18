@@ -80,7 +80,7 @@
   <div class="ch-nav">
     <button
       type="button"
-      class="nav-btn"
+      class="nav-btn g-btn g-btn--icon"
       disabled={!canPrev}
       title="上一章"
       aria-label="上一章"
@@ -107,7 +107,7 @@
     </div>
     <button
       type="button"
-      class="nav-btn"
+      class="nav-btn g-btn g-btn--icon"
       disabled={!canNext}
       title={canNext ? '下一章' : '通关本章后解锁'}
       aria-label="下一章"
@@ -243,32 +243,38 @@
   }
 
   /* 章节导航：一行标题 + 左右翻页键，无底座 */
+  /* 章节条 = 卷轴段：左右切角 + 上下铜线 */
   .ch-nav {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 0 0 6px;
-    border-bottom: 1px solid var(--edge-faint);
+    padding: 4px 6px;
+    clip-path: var(--chamfer-sm);
+    background:
+      linear-gradient(180deg, rgba(201, 162, 74, 0.16), rgba(0, 0, 0, 0)) padding-box,
+      linear-gradient(180deg, #1a2440, #101828);
+    box-shadow: inset 0 1px 0 rgba(201, 162, 74, 0.35);
+  }
+  .ch-nav::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--edge-bronze), transparent);
+    pointer-events: none;
   }
 
   /* 章节翻页键：桌面 30（触屏 42），安静的行内键 */
+  /* 翻页键：形与四态交给公共件 .g-btn--icon（键帽） */
   .nav-btn {
-    appearance: none;
     flex: none;
     width: var(--ctl-md);
     height: var(--ctl-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
     font-size: var(--ctl-font-sm);
-    color: var(--muted);
-    border-radius: var(--ctl-radius);
-    border: 1px solid transparent;
-    background: transparent;
-    transition:
-      color 0.12s ease,
-      background 0.12s ease;
+    color: var(--gold);
   }
   .nav-btn:hover:not(:disabled) {
     color: var(--gold-bright);
@@ -328,6 +334,7 @@
     gap: 2px;
     margin: 2px 0 4px;
   }
+  /* 圆点翻页 = 键帽槽（可视点很小，槽给足热区） */
   .dot {
     appearance: none;
     position: relative;
@@ -337,8 +344,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
-    background: transparent;
+    border-radius: 6px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0));
     border: 1px solid transparent;
     cursor: pointer;
     transition:
@@ -497,8 +504,10 @@
     color: var(--muted);
   }
 
+  /* 星位：小圆槽（未达成为暗槽，达成后嵌金宝石） */
   .node .idx {
     flex: 0 0 auto;
+    position: relative;
     width: 24px;
     height: 24px;
     display: inline-flex;
@@ -509,18 +518,28 @@
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--muted);
-    border: 1px solid var(--edge-faint);
+    background: radial-gradient(circle at 50% 35%, #1a2440, #070c17 70%);
+    box-shadow:
+      inset 0 1px 3px rgba(0, 0, 0, 0.8),
+      0 0 0 1px rgba(201, 162, 74, 0.3);
   }
   /* 三星 / 完美：序号点亮成金色，一眼看出已通关 */
+  /* 达成：圆槽里嵌一颗金宝石 */
   .node.done .idx {
-    color: var(--gold-bright);
-    border-color: var(--edge);
-    background: rgba(245, 184, 65, 0.12);
+    color: #2a1700;
+    background: var(--face-gold-plate, linear-gradient(180deg, #ffe7a3, #d69214));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 0 0 1px var(--edge-bronze-hot),
+      0 0 10px rgba(245, 184, 65, 0.35);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
   }
+  /* 完美全清：宝石加冕（金环更亮） */
   .node.done.perfect .idx {
-    color: #1a1002;
-    background: var(--face-gold);
-    border-color: #ffe7a3;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      0 0 0 1px #ffe7a3,
+      0 0 12px rgba(255, 209, 102, 0.55);
   }
 
   .node-body {
@@ -566,7 +585,7 @@
   /* 下一章：一行提示（解锁时可点，未解锁是安静说明） */
   .teaser {
     margin-top: 4px;
-    padding: 8px 2px;
+    padding: 8px 8px;
     min-height: 38px;
     box-sizing: border-box;
     display: flex;
@@ -574,7 +593,9 @@
     gap: 10px;
     text-align: left;
     width: 100%;
-    border-top: 1px solid var(--edge-faint);
+    clip-path: var(--chamfer-sm);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.12));
+    box-shadow: inset 0 1px 0 rgba(201, 162, 74, 0.28);
   }
   .teaser.open {
     appearance: none;

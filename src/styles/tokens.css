@@ -204,6 +204,38 @@
   --face-cyan: linear-gradient(180deg, #7ff5e5 0%, #00d9bc 45%, #028f7d 100%);
 
   /* ============================================================
+   * 器物令牌（第五轮：青铜边 / 版面 / 纹样）
+   * 界面语言参照中国传统器物：青铜描边、金箔牌匾、玉牌、朱砂印。
+   * ============================================================ */
+  --bronze: #8a6a3a;
+  --bronze-bright: #c9a24a;
+  --bronze-deep: #46331b;
+  --edge-bronze: rgba(201, 162, 74, 0.55);
+  --edge-bronze-hot: rgba(255, 214, 130, 0.92);
+  --edge-inner: rgba(0, 0, 0, 0.75);
+  --pattern-line: rgba(245, 184, 65, 0.26);
+
+  /* 切角尺寸（配合 tokens 里的 --chamfer-* 多边形使用） */
+  --cut-sm: 4px;
+  --cut-md: 6px;
+  --cut-lg: 9px;
+
+  /* 面：金属板 / 悬停 / 金箔 / 玉牌 / 朱砂 */
+  --face-plate: linear-gradient(180deg, #22304d 0%, #141d31 52%, #0b1220 100%);
+  --face-plate-hot: linear-gradient(180deg, #2d3f63 0%, #1b2743 52%, #101a2c 100%);
+  --face-gold-plate: linear-gradient(180deg, #fff3cf 0%, #f8c65a 40%, #cf8f0c 100%);
+  --face-jade: linear-gradient(180deg, #0f3f38 0%, #0a2a26 58%, #051917 100%);
+  --face-seal: linear-gradient(180deg, #e04a3a 0%, #c62a22 55%, #8d1611 100%);
+
+  /* 铆钉：一颗 4px 的金属半球（用 background-image 铺四个角，不增 DOM） */
+  --rivet: radial-gradient(circle at 35% 30%, #f2e4b6 0%, #a8873f 46%, #3c2f14 100%);
+
+  /* 回纹发丝：1 个 12px 的回字单元平铺（内联 SVG，无外链）
+     -hui 用于标题条；-hui-soft 用于通长的顶栏/指令栏（避免满屏噪点） */
+  --pattern-hui: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M2.5 2.5h7v7h-4v-3h2' fill='none' stroke='%23f5b841' stroke-opacity='.26' stroke-width='1'/%3E%3C/svg%3E");
+  --pattern-hui-soft: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M2.5 2.5h7v7h-4v-3h2' fill='none' stroke='%23f5b841' stroke-opacity='.12' stroke-width='1'/%3E%3C/svg%3E");
+
+  /* ============================================================
    * 控件尺寸令牌（第四轮：桌面紧凑 / 触屏舒适）
    * 默认值 = 桌面（鼠标）；@media (pointer: coarse) 下整体放大到触屏尺寸。
    * 规则：组件里不许写死 px，一律走这些令牌。

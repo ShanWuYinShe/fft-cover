@@ -78,7 +78,7 @@
 </script>
 
 <div class="result">
-  <div class="card">
+  <div class="card g-rivets">
     <div class="card-rail">
       <span class="g-label">无尽演武</span>
       <span class="rail-lv">
@@ -119,8 +119,10 @@
         </p>
 
         <div class="actions">
-          <button type="button" class="go" onclick={goNext}>启赴下一宿</button>
-          <button type="button" class="ghost-btn" onclick={quit}>
+          <button type="button" class="go g-btn g-btn--primary g-btn--lg" onclick={goNext}
+            >启赴下一宿</button
+          >
+          <button type="button" class="ghost-btn g-btn" onclick={quit}>
             带着 {engine.endlessScore} 分返回星图
           </button>
         </div>
@@ -156,8 +158,10 @@
         </p>
 
         <div class="actions">
-          <button type="button" class="go" onclick={retry}>重启周天璇玑</button>
-          <button type="button" class="ghost-btn" onclick={quit}>返回星图</button>
+          <button type="button" class="go g-btn g-btn--primary g-btn--lg" onclick={retry}
+            >重启周天璇玑</button
+          >
+          <button type="button" class="ghost-btn g-btn" onclick={quit}>返回星图</button>
         </div>
       {/if}
     </div>
@@ -360,26 +364,15 @@
   }
   /* 主操作：金色厚键 */
   .go {
-    appearance: none;
     width: 100%;
     min-height: var(--ctl-lg);
     padding: 0 18px;
-    border-radius: var(--ctl-radius-lg);
     cursor: pointer;
     font-size: var(--ctl-font);
     font-weight: 700;
     letter-spacing: 2px;
-    color: #1a1002;
-    border: 1px solid #ffe7a3;
-    background: var(--face-gold);
-    box-shadow:
-      var(--bevel-top),
-      inset 0 -3px 0 rgba(140, 80, 0, 0.55),
-      0 3px 0 #7a4d05;
     -webkit-tap-highlight-color: transparent;
-    transition:
-      transform 0.09s ease,
-      background 0.12s ease;
+    /* 形与四态交给公共件 .g-btn--primary（牌匾）：本地只保留布局与字号 */
   }
   .go:hover {
     background: var(--face-gold-hover);
@@ -388,24 +381,14 @@
     transform: translateY(2px);
   }
   /* 次操作：安静的一行描边 */
+  /* 次键：形与四态交给公共件 .g-btn（铜板键），本地只保留布局与字号 */
   .ghost-btn {
-    appearance: none;
     width: 100%;
     min-height: var(--ctl-md);
     padding: 0 14px;
-    border-radius: var(--ctl-radius);
-    cursor: pointer;
-    color: var(--muted);
-    font: inherit;
     font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
-    border: 1px solid var(--edge-faint);
-    background: transparent;
-    transition:
-      color 0.12s ease,
-      border-color 0.12s ease,
-      background 0.12s ease;
   }
   .ghost-btn:hover {
     color: var(--text);

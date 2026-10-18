@@ -77,36 +77,67 @@
   }
 
   /* 4 隅古青铜角花 */
+  /* 舞台四角：青铜角花 + 内侧云头钩（器物边框语言） */
   .stage-bracket {
     position: absolute;
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     pointer-events: none;
     z-index: 4;
+  }
+  .stage-bracket::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid var(--bronze-bright);
+    border-color: var(--bronze-bright) transparent transparent var(--bronze-bright);
+    border-radius: 50% 0 0 0;
+    opacity: 0.85;
   }
   .stage-bracket.tl {
     top: -3px;
     left: -3px;
-    border-top: 2px solid var(--gold-bright);
-    border-left: 2px solid var(--gold-bright);
+    border-top: 2px solid var(--edge-bronze-hot);
+    border-left: 2px solid var(--edge-bronze-hot);
+  }
+  .stage-bracket.tl::after {
+    top: 3px;
+    left: 3px;
+    transform: rotate(-45deg);
   }
   .stage-bracket.tr {
     top: -3px;
     right: -3px;
-    border-top: 2px solid var(--gold-bright);
-    border-right: 2px solid var(--gold-bright);
+    border-top: 2px solid var(--edge-bronze-hot);
+    border-right: 2px solid var(--edge-bronze-hot);
+  }
+  .stage-bracket.tr::after {
+    top: 3px;
+    right: 3px;
+    transform: rotate(45deg) scaleX(-1);
   }
   .stage-bracket.bl {
     bottom: -3px;
     left: -3px;
-    border-bottom: 2px solid var(--gold-bright);
-    border-left: 2px solid var(--gold-bright);
+    border-bottom: 2px solid var(--edge-bronze-hot);
+    border-left: 2px solid var(--edge-bronze-hot);
+  }
+  .stage-bracket.bl::after {
+    bottom: 3px;
+    left: 3px;
+    transform: rotate(-135deg);
   }
   .stage-bracket.br {
     bottom: -3px;
     right: -3px;
-    border-bottom: 2px solid var(--gold-bright);
-    border-right: 2px solid var(--gold-bright);
+    border-bottom: 2px solid var(--edge-bronze-hot);
+    border-right: 2px solid var(--edge-bronze-hot);
+  }
+  .stage-bracket.br::after {
+    bottom: 3px;
+    right: 3px;
+    transform: rotate(135deg) scaleX(-1);
   }
 
   /* ---------- 手机竖屏：画布按视口高与宽取小，机坞面板留在下方 ---------- */

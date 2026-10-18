@@ -8,6 +8,8 @@
     label: string;
     /** 可选线性图标名(见 Icon.svelte);label 里的彩色 emoji 一律改走这里 */
     icon?: string;
+    /** 可选快捷键提示（键帽列表右端的小键），如 '空格' 'S' 'R' */
+    hint?: string;
     title?: string;
     disabled?: boolean;
     onclick: () => void;
@@ -80,7 +82,7 @@
 <div class="mm" bind:this={root}>
   <button
     type="button"
-    class="mm-btn"
+    class="mm-btn g-btn g-btn--icon"
     aria-label="更多操作"
     aria-haspopup="menu"
     aria-expanded={open}
@@ -96,7 +98,7 @@
     {/if}
   </button>
   {#if open}
-    <div class="mm-pop" class:up bind:this={popEl} role="menu">
+    <div class="mm-pop g-chamfer g-rivets" class:up bind:this={popEl} role="menu">
       {#each items as it (it.label)}
         <button
           type="button"
@@ -106,7 +108,9 @@
           title={it.title}
           onclick={() => run(it)}
         >
-          {#if it.icon}<span class="mi"><Icon name={it.icon} size={15} /></span>{/if}{it.label}
+          {#if it.icon}<span class="mi g-socket"><Icon name={it.icon} size={14} /></span>{/if}
+          <span class="mm-label">{it.label}</span>
+          {#if it.hint}<span class="mm-hint" aria-hidden="true">{it.hint}</span>{/if}
         </button>
       {/each}
     </div>
@@ -119,55 +123,20 @@
     display: inline-flex;
   }
 
-  /* 触发键：安静的金属方键（≥40px 热区） */
+  /* 触发键：键帽（外形/四态来自公共件 .g-btn--icon），这里只补「展开态」 */
   .mm-btn {
-    appearance: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     box-sizing: border-box;
-    /* 桌面 30 / 触屏 42 */
-    min-width: var(--ctl-md);
-    min-height: var(--ctl-md);
-    padding: 0 6px;
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-soft);
-    background: #111a2c;
     color: var(--muted);
-    cursor: pointer;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.07),
-      0 2px 0 rgba(0, 0, 0, 0.5);
-    transition:
-      transform 90ms cubic-bezier(0.16, 1, 0.3, 1),
-      box-shadow 0.12s ease,
-      background 0.12s ease,
-      border-color 0.12s ease,
-      color 0.12s ease;
-    -webkit-tap-highlight-color: transparent;
   }
 
-  .mm-btn:hover {
-    background: #16223a;
-    border-color: var(--edge);
-    color: var(--gold-bright);
-  }
-
-  /* 按下回弹：下沉 1px + scale 0.97 */
-  .mm-btn:active {
-    transform: translateY(1px) scale(0.97);
-  }
-
-  /* 展开态：描边亮一档即可，不加外发光 */
+  /* 展开态 = 键槽点亮（铜边变金 + 面提亮），与公共件选中语义一致 */
   .mm-btn[aria-expanded='true'] {
-    border-color: var(--edge);
+    background: var(--edge-bronze-hot);
     color: var(--gold-bright);
-    background: #16223a;
   }
 
-  .mm-btn:focus-visible {
-    outline: 2px solid var(--edge-hot);
-    outline-offset: 3px;
+  .mm-btn[aria-expanded='true']::before {
+    background: var(--face-plate-hot);
   }
 
   /* 三点省略号：用三根金属条画，不用 Unicode 字符 */
@@ -201,11 +170,7 @@
     display: flex;
     flex-direction: column;
     gap: 1px;
-    padding: 4px;
-    background: #0d1626;
-    border: 1px solid var(--edge-soft);
-    border-radius: var(--ctl-radius);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    padding: 5px;
     animation: mm-in 180ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
     max-height: calc(100dvh - 40px);
     overflow-y: auto;
@@ -225,7 +190,7 @@
     }
   }
 
-  /* 菜单项：一行一枚安静的键，图标 + 文字，尺寸统一 44px */
+  /* 键帽行：左 socket 图标槽 + 中部标签 + 右端快捷键键帽 */
   .mm-pop .mm-item {
     display: flex;
     align-items: center;
@@ -233,9 +198,9 @@
     width: 100%;
     /* 桌面 34 / 触屏 44（触屏仍满足 ≥40 命中区） */
     min-height: 34px;
-    padding: 4px 10px;
+    padding: 3px 8px;
     text-align: left;
-    border-radius: var(--ctl-radius);
+    border-radius: 3px;
     border: 1px solid transparent;
     background: transparent;
     color: var(--text);
@@ -292,8 +257,7 @@
     outline-offset: -2px;
   }
 
-  /* 图标只做形状，不再套一格描边方槽 */
-  /* 图标尺寸随控件收（令牌驱动，触屏自动放大） */
+  /* 图标尺寸随控件收（令牌驱动，触屏自动放大）；图标嵌在 .g-socket 键槽里 */
   .mm-pop .mi :global(svg) {
     width: var(--ctl-icon-sm);
     height: var(--ctl-icon-sm);
@@ -307,6 +271,33 @@
     width: 20px;
     color: var(--muted);
     transition: color 0.12s ease;
+  }
+
+  /* 标签占满中段：没有 hint 时右侧只是按键自己的空白，不会留占位元素 */
+  .mm-pop .mm-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 快捷键键帽：仅当调用方传 hint 时才渲染（{#if it.hint}） */
+  .mm-pop .mm-hint {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #0a1120, #060b14);
+    box-shadow:
+      inset 0 1px 3px rgba(0, 0, 0, 0.8),
+      0 0 0 1px rgba(201, 162, 74, 0.32);
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.5px;
   }
 
   .mm-pop .mm-item:hover:not(:disabled) .mi {

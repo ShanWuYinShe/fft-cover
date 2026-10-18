@@ -45,7 +45,7 @@
   <!-- 右侧机坞：指针调参台 -->
   <aside class="gs-dock" aria-label="指针调参台">
     <div class="dock-head">
-      <h2 class="dock-title">指针调参台</h2>
+      <h2 class="dock-title font-celestial">指针调参台</h2>
       <span class="dock-count font-tabular" title="本关启用的指针数 / 上限">
         指针 {onArmCount}/{armLimit}
       </span>
@@ -132,18 +132,35 @@
     display: flex;
     flex-direction: column;
     background: linear-gradient(180deg, rgba(12, 18, 32, 0.96) 0%, rgba(6, 10, 19, 0.99) 100%);
-    border-left: 1px solid var(--edge-soft);
+    border-left: 1px solid var(--edge-bronze);
+    box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.6);
   }
 
   .dock-head {
+    position: relative;
     flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
     padding: 8px 12px;
-    background: transparent;
-    border-bottom: 1px solid var(--edge-faint);
+    /* 标题条：回纹发丝带 + 左侧金色铭牌块（器物语言） */
+    background-color: rgba(9, 14, 25, 0.9);
+    background-image: var(--pattern-hui);
+    background-repeat: repeat-x;
+    background-position: 0 center;
+    border-bottom: 1px solid var(--edge-bronze);
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.7);
+  }
+  .dock-head::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 3px;
+    height: 60%;
+    transform: translateY(-50%);
+    background: linear-gradient(180deg, var(--gold-bright), var(--bronze));
   }
 
   .dock-title {
@@ -242,7 +259,7 @@
     }
 
     .gs-cmd {
-      border-top: 1px solid var(--edge-soft);
+      border-top: 1px solid var(--edge-bronze);
       background: linear-gradient(180deg, rgba(10, 15, 27, 0.92), rgba(5, 8, 15, 0.98));
     }
 

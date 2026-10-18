@@ -49,6 +49,8 @@
   const deg = $derived(Math.round((arm.phase * 180) / Math.PI));
   const isCCW = $derived(arm.freq < 0);
   const absFreq = $derived(Math.abs(arm.freq || 1));
+  /** 档位矩阵是 5×2：当前选中档位所在的那一行（用于回纹装饰） */
+  const activeRow = $derived(Math.ceil(absFreq / 5));
 
   function setR(val: number): void {
     const clamped = Math.max(0, Math.min(R_MAX, Math.round(val)));
@@ -207,7 +209,7 @@
         {:else}
           <button
             type="button"
-            class="val-btn"
+            class="val-btn g-chip"
             title="点击输入精确半径"
             onclick={() => beginEdit('r')}
           >
@@ -262,7 +264,7 @@
         {:else}
           <button
             type="button"
-            class="val-btn"
+            class="val-btn g-chip"
             title="点击输入精确角度"
             onclick={() => beginEdit('p')}
           >
@@ -300,7 +302,7 @@
   <div class="param">
     <div class="param-head">
       <span class="param-name">倍率</span>
-      <span class="param-value">
+      <span class="param-value param-value--plaque">
         <b class="g-num val-num freq-num" class:ccw={isCCW} class:flash={bump === 'f'}>{absFreq}</b>
         <i class="val-unit">×</i>
       </span>
@@ -324,14 +326,14 @@
       </span>
       <button
         type="button"
-        class="dir-btn"
+        class="dir-btn g-btn"
         class:ccw={isCCW}
         class:guide={guideDir}
         title="点击切换旋转方向"
         onclick={toggleDir}
       >
-        <span class="dir-ico" aria-hidden="true">
-          <Icon name={isCCW ? 'undo' : 'refresh'} size={14} />
+        <span class="dir-ico g-socket" aria-hidden="true">
+          <Icon name={isCCW ? 'undo' : 'refresh'} size={13} />
         </span>
         {isCCW ? '逆时针' : '顺时针'}
       </button>
@@ -413,17 +415,23 @@
 
             <div class="compass-side">
               <div class="snap-grid">
-                <button type="button" class="snap-key" onclick={() => setPhaseDeg(0)}>0°</button>
-                <button type="button" class="snap-key" onclick={() => setPhaseDeg(90)}>90°</button>
-                <button type="button" class="snap-key" onclick={() => setPhaseDeg(180)}>180°</button
+                <button type="button" class="snap-key g-btn" onclick={() => setPhaseDeg(0)}
+                  >0°</button
                 >
-                <button type="button" class="snap-key" onclick={() => setPhaseDeg(270)}>270°</button
+                <button type="button" class="snap-key g-btn" onclick={() => setPhaseDeg(90)}
+                  >90°</button
+                >
+                <button type="button" class="snap-key g-btn" onclick={() => setPhaseDeg(180)}
+                  >180°</button
+                >
+                <button type="button" class="snap-key g-btn" onclick={() => setPhaseDeg(270)}
+                  >270°</button
                 >
               </div>
               <div class="step-row">
                 <button
                   type="button"
-                  class="mini-key"
+                  class="mini-key g-btn"
                   title="相位 −1°（长按连发）"
                   aria-label="相位减一度"
                   onpointerdown={pMinus.onDown}
@@ -435,7 +443,7 @@
                 </button>
                 <button
                   type="button"
-                  class="mini-key"
+                  class="mini-key g-btn"
                   title="相位 +1°（长按连发）"
                   aria-label="相位加一度"
                   onpointerdown={pPlus.onDown}
@@ -458,7 +466,7 @@
           <div class="ruler-row">
             <button
               type="button"
-              class="mini-key"
+              class="mini-key g-btn"
               title="半径 −1（长按连发）"
               aria-label="半径减一"
               onpointerdown={rMinus.onDown}
@@ -474,7 +482,7 @@
             </div>
             <button
               type="button"
-              class="mini-key"
+              class="mini-key g-btn"
               title="半径 +1（长按连发）"
               aria-label="半径加一"
               onpointerdown={rPlus.onDown}
@@ -500,9 +508,10 @@
               {@const active = absFreq === f}
               <button
                 type="button"
-                class="gear-key"
+                class="gear-key g-btn"
                 class:active
                 class:ccw={active && isCCW}
+                class:row-lit={Math.ceil(f / 5) === activeRow}
                 title={`切至 ${f}× 谐波`}
                 onclick={() => setFreqStep(f)}
               >
@@ -520,70 +529,70 @@
           <div class="tool-row">
             <button
               type="button"
-              class="tool-key"
+              class="tool-key g-btn"
               disabled={engine.armUndoCount === 0}
               title="撤销上一次调参（Ctrl+Z）"
               onclick={() => engine.undoArms()}
             >
-              <Icon name="undo" size={14} />
+              <span class="g-socket" aria-hidden="true"><Icon name="undo" size={13} /></span>
               撤销
             </button>
             <button
               type="button"
-              class="tool-key"
+              class="tool-key g-btn"
               title="复位这根指针"
               onclick={() => engine.resetArm(index)}
             >
-              <Icon name="refresh" size={14} />
+              <span class="g-socket" aria-hidden="true"><Icon name="refresh" size={13} /></span>
               复位
             </button>
             <button
               type="button"
-              class="tool-key"
+              class="tool-key g-btn"
               title="随机扰动全部指针"
               onclick={() => {
                 engine.randomizeArms();
                 beep(440, 0.04, 'triangle', 0.08, engine.soundOn);
               }}
             >
-              <Icon name="dice" size={14} />
+              <span class="g-socket" aria-hidden="true"><Icon name="dice" size={13} /></span>
               随机
             </button>
             {#if engine.hasSavedArms()}
               <button
                 type="button"
-                class="tool-key tool-key--gold"
+                class="tool-key g-btn tool-key--gold"
                 title="载入历史最佳解"
                 onclick={() => {
                   engine.loadSavedArms();
                   beep(523, 0.08, 'sine', 0.1, engine.soundOn);
                 }}
               >
-                <Icon name="award" size={14} />
+                <span class="g-socket" aria-hidden="true"><Icon name="award" size={13} /></span>
                 最佳
               </button>
             {/if}
             {#if engine.expertUnlocked}
               <button
                 type="button"
-                class="tool-key"
+                class="tool-key g-btn"
                 class:active={engine.expertMode}
                 title="专家模式"
                 onclick={() => engine.toggleExpert()}
               >
-                <Icon name="gem" size={14} />
+                <span class="g-socket" aria-hidden="true"><Icon name="gem" size={13} /></span>
                 专家
               </button>
             {/if}
             {#if engine.spectrumUnlocked}
               <button
                 type="button"
-                class="tool-key"
+                class="tool-key g-btn"
                 class:active={engine.spectrumCompare}
                 title="频谱对比"
                 onclick={() => engine.toggleSpectrumCompare()}
               >
-                <Icon name="zoom" size={14} />
+                <span class="g-socket" aria-hidden="true"><Icon name="zoom" size={13} /></span>
                 频谱
               </button>
             {/if}
@@ -663,6 +672,7 @@
     gap: 2px;
     flex: 0 0 auto;
   }
+  /* 读数键 = 玉牌（公共 .g-chip：内凹玉面 + 青铜描边 + 青碧字） */
   .val-btn {
     display: inline-flex;
     align-items: baseline;
@@ -670,27 +680,26 @@
     gap: 2px;
     min-height: var(--ctl-md);
     padding: 0 10px;
-    border-radius: var(--ctl-radius);
-    background: transparent;
-    border: 1px solid transparent;
+    border-radius: 4px;
     font-size: var(--ctl-font-sm);
     cursor: text;
     transition:
       transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
-      border-color 120ms ease;
+      border-color 120ms ease,
+      background 120ms ease;
   }
   .val-btn:active {
     transform: scale(0.97);
     transition-timing-function: ease-out;
   }
   .val-btn:hover {
-    border-color: var(--edge-soft);
+    border-color: var(--edge-bronze-hot);
   }
   .param-value .val-num {
     font-size: 16px;
     line-height: 1.1;
     font-family: 'JetBrains Mono', monospace;
-    color: var(--gold-bright);
+    color: #b9f7e8;
     text-shadow: none;
   }
   .param-value .val-num.ccw {
@@ -710,7 +719,19 @@
   .val-unit {
     font-style: normal;
     font-size: var(--ctl-font-sm);
-    color: var(--muted);
+    color: rgba(157, 240, 216, 0.62);
+  }
+  /* 只读读数（倍率）也用玉牌承载，保证三行读数同一种器物语言 */
+  .param-value--plaque {
+    min-height: var(--ctl-md);
+    padding: 0 10px;
+    align-items: center;
+    border-radius: 4px;
+    background: var(--face-jade);
+    border: 1px solid rgba(16, 185, 129, 0.42);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.5);
   }
   .num-input {
     width: 64px;
@@ -744,7 +765,7 @@
     min-width: 0;
   }
 
-  /* 方向切换：一枚安静的物理键 */
+  /* 方向切换 = 铜板键（公共 .g-btn：切角铜边 + 内金属面） */
   .dir-btn {
     display: inline-flex;
     align-items: center;
@@ -752,26 +773,15 @@
     flex: 0 0 auto;
     min-height: var(--ctl-md);
     padding: 0 10px;
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-soft);
-    background: linear-gradient(180deg, #1a2438 0%, #0d1424 100%);
     color: var(--cyan);
     font-size: var(--ctl-font-sm);
     font-weight: 700;
     letter-spacing: 0.5px;
     white-space: nowrap;
-    cursor: pointer;
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
     transition:
-      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
-      box-shadow 90ms ease,
-      border-color 120ms ease,
-      color 120ms ease;
-  }
-  .dir-btn:active {
-    transform: scale(0.97);
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
-    transition-timing-function: ease-out;
+      color 120ms ease,
+      filter 120ms ease,
+      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   /* 顺/逆切换：图标 120ms 旋转，颜色跟随过渡 */
   .dir-ico {
@@ -785,7 +795,7 @@
     transform: rotate(180deg);
   }
 
-  /* ---------- 核心滑杆：凹槽 + 可过渡填充 + 金色滑块（WebKit / Firefox 两套） ---------- */
+  /* ---------- 核心滑杆 = 玉尺：青铜凹槽 + 两端铜钉 + 金箔填充 + 玉石立方滑块 ---------- */
   .range-wrap {
     position: relative;
     display: block;
@@ -793,26 +803,55 @@
     min-width: 0;
     height: 26px;
   }
+  /* 两端铜钉（压在填充与输入层之上，仅装饰） */
+  .range-wrap::before,
+  .range-wrap::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    z-index: 3;
+    width: 4px;
+    height: 4px;
+    margin-top: -2px;
+    border-radius: 50%;
+    background: var(--rivet);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+  }
+  .range-wrap::before {
+    left: 1px;
+  }
+  .range-wrap::after {
+    right: 1px;
+  }
+  /* 玉尺凹槽：内凹阴影 + 1px 青铜边 */
   .range-track {
     position: absolute;
     top: 50%;
     left: 0;
     right: 0;
+    z-index: 0;
     height: 6px;
     transform: translateY(-50%);
-    border-radius: 4px;
-    border: 1px solid var(--edge-faint);
-    background: rgba(255, 255, 255, 0.07);
+    border-radius: 2px;
+    border: 1px solid var(--edge-bronze);
+    background: linear-gradient(180deg, #04070c 0%, #0a1018 100%);
+    box-shadow:
+      inset 0 2px 5px rgba(0, 0, 0, 0.85),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.05);
     overflow: hidden;
     pointer-events: none;
   }
-  /* 填充用 transform 驱动：90ms 平滑跟随（不碰布局属性） */
+  /* 金箔填充条：transform 驱动，90ms 平滑跟随（不碰布局属性） */
   .range-fill {
     display: block;
     width: 100%;
     height: 100%;
     transform-origin: left center;
-    background: rgba(245, 184, 65, 0.5);
+    background: linear-gradient(90deg, rgba(255, 231, 163, 0.72) 0%, rgba(214, 146, 20, 0.88) 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.45),
+      inset 0 -1px 0 rgba(120, 70, 0, 0.5);
     transition: transform 90ms linear;
   }
 
@@ -840,26 +879,35 @@
     width: 14px;
     height: 14px;
     margin-top: -4px;
-    border-radius: var(--ctl-radius);
-    border: 1px solid #ffe7a3;
-    background: linear-gradient(180deg, #ffe7a3 0%, #f7c250 50%, #d69214 100%);
+    border-radius: 2px;
+    /* 切角 2px 的玉石立方（不用圆形） */
+    clip-path: polygon(
+      2px 0,
+      calc(100% - 2px) 0,
+      100% 2px,
+      100% calc(100% - 2px),
+      calc(100% - 2px) 100%,
+      2px 100%,
+      0 calc(100% - 2px),
+      0 2px
+    );
+    border: 1px solid var(--edge-bronze-hot);
+    background: linear-gradient(180deg, #c8fff0 0%, #3fd9bd 45%, #0c7d6a 100%);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.6),
-      0 2px 0 rgba(0, 0, 0, 0.5);
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      inset 0 -1px 0 rgba(0, 60, 50, 0.55);
     cursor: grab;
     transition: transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  /* 按住滑块：放大 + 阴影收紧（红线内 1.08） */
+  /* 按住滑块：放大（红线内 1.08） */
   .c-range:active::-webkit-slider-thumb {
     transform: scale(1.08);
-    box-shadow:
-      inset 0 2px 6px rgba(0, 0, 0, 0.45),
-      0 1px 0 rgba(0, 0, 0, 0.5);
+    background: linear-gradient(180deg, #fff8e1 0%, #f7c250 45%, #c8870c 100%);
   }
+  /* 焦点：切角会切掉外描边，改成「铜边变金 + 玉面提亮」 */
   .c-range:focus-visible::-webkit-slider-thumb {
-    box-shadow:
-      0 0 0 2px var(--cyan),
-      0 2px 0 rgba(0, 0, 0, 0.5);
+    border-color: var(--gold-bright);
+    background: linear-gradient(180deg, #e9fff9 0%, #7cf0d8 45%, #14a58c 100%);
   }
   /* 到端点：一次轻微「顿」感，不循环 */
   .c-range.bump::-webkit-slider-thumb {
@@ -877,25 +925,32 @@
   .c-range::-moz-range-thumb {
     width: 14px;
     height: 14px;
-    border-radius: var(--ctl-radius);
-    border: 1px solid #ffe7a3;
-    background: linear-gradient(180deg, #ffe7a3 0%, #f7c250 50%, #d69214 100%);
+    border-radius: 2px;
+    clip-path: polygon(
+      2px 0,
+      calc(100% - 2px) 0,
+      100% 2px,
+      100% calc(100% - 2px),
+      calc(100% - 2px) 100%,
+      2px 100%,
+      0 calc(100% - 2px),
+      0 2px
+    );
+    border: 1px solid var(--edge-bronze-hot);
+    background: linear-gradient(180deg, #c8fff0 0%, #3fd9bd 45%, #0c7d6a 100%);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.6),
-      0 2px 0 rgba(0, 0, 0, 0.5);
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      inset 0 -1px 0 rgba(0, 60, 50, 0.55);
     cursor: grab;
     transition: transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .c-range:active::-moz-range-thumb {
     transform: scale(1.08);
-    box-shadow:
-      inset 0 2px 6px rgba(0, 0, 0, 0.45),
-      0 1px 0 rgba(0, 0, 0, 0.5);
+    background: linear-gradient(180deg, #fff8e1 0%, #f7c250 45%, #c8870c 100%);
   }
   .c-range:focus-visible::-moz-range-thumb {
-    box-shadow:
-      0 0 0 2px var(--cyan),
-      0 2px 0 rgba(0, 0, 0, 0.5);
+    border-color: var(--gold-bright);
+    background: linear-gradient(180deg, #e9fff9 0%, #7cf0d8 45%, #14a58c 100%);
   }
   .c-range.bump::-moz-range-thumb {
     animation: thumb-bump 200ms ease-out;
@@ -912,9 +967,8 @@
     }
   }
 
-  /* 引导态专属描边：静态一层、不改布局、不加发光 */
-  .param.guide,
-  .dir-btn.guide {
+  /* 引导态专属描边：半径行是普通盒子，用 outline（不会被裁切） */
+  .param.guide {
     outline: 2px solid var(--gold-bright);
     outline-offset: 3px;
     border-radius: 10px;
@@ -929,15 +983,34 @@
       outline-color: rgba(245, 184, 65, 0.35);
     }
   }
+  /* 方向键是切角键帽，outline 会被 clip-path 切掉 → 改成沿切角形状的金色描边光晕 */
+  .dir-btn.guide {
+    animation: key-guide-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes key-guide-pulse {
+    0%,
+    100% {
+      filter: drop-shadow(0 0 2px var(--gold-bright)) drop-shadow(0 0 1px var(--gold-bright));
+    }
+    50% {
+      filter: drop-shadow(0 0 2px rgba(245, 184, 65, 0.3));
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     .param.guide,
     .dir-btn.guide {
       animation: none;
     }
+    .dir-btn.guide {
+      filter: drop-shadow(0 0 1px var(--gold-bright));
+    }
   }
   :global(.reduce-motion) .param.guide,
   :global(.reduce-motion) .dir-btn.guide {
     animation: none;
+  }
+  :global(.reduce-motion) .dir-btn.guide {
+    filter: drop-shadow(0 0 1px var(--gold-bright));
   }
 
   /* 触屏：读数热区抬到 ≥44 */
@@ -977,6 +1050,18 @@
     }
   }
 
+  /* 触屏：键帽按下保留缩放回弹（桌面按第五轮规范改为「下沉 1px + 内阴影」） */
+  @media (pointer: coarse) {
+    .snap-key:active,
+    .mini-key:active,
+    .gear-key:active,
+    .tool-key:active,
+    .dir-btn:active {
+      transform: scale(0.97);
+      transition-timing-function: ease-out;
+    }
+  }
+
   /* ---------- 高级调谐（默认折叠） ---------- */
   .adv {
     min-width: 0;
@@ -999,6 +1084,20 @@
   }
   .adv-summary::-webkit-details-marker {
     display: none;
+  }
+  /* 段头铭牌：标题文字前挂 3px 金铭牌块（不改 DOM） */
+  .adv-summary > span:first-child {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .adv-summary > span:first-child::before {
+    content: '';
+    flex: none;
+    width: 3px;
+    height: 12px;
+    background: var(--face-gold-plate);
+    clip-path: var(--chamfer-sm);
   }
   .adv-summary:hover {
     color: var(--gold-bright);
@@ -1118,33 +1217,14 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
   }
+  /* 卡准键 = 键帽（公共 .g-btn 提供切角铜边 + 内凹面，这里只留排版） */
   .snap-key {
     min-height: var(--ctl-md);
     padding: 0;
     text-align: center;
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-soft);
-    background: linear-gradient(180deg, #1a2438 0%, #0d1424 100%);
-    color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
     font-size: var(--ctl-font-sm);
     font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
-    transition:
-      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
-      box-shadow 90ms ease,
-      color 120ms ease,
-      border-color 120ms ease;
-  }
-  .snap-key:hover {
-    color: var(--gold-bright);
-    border-color: var(--edge);
-  }
-  .snap-key:active {
-    transform: scale(0.97);
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
-    transition-timing-function: ease-out;
   }
   .step-row {
     display: flex;
@@ -1153,27 +1233,15 @@
   .step-row .mini-key {
     flex: 1 1 0;
   }
+  /* 步进键 = 键帽 */
   .mini-key {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     min-width: var(--ctl-md);
     min-height: var(--ctl-md);
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-soft);
-    background: linear-gradient(180deg, #1a2438 0%, #0d1424 100%);
-    color: var(--text);
-    cursor: pointer;
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+    padding: 0;
     touch-action: manipulation;
-    transition:
-      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
-      box-shadow 90ms ease;
-  }
-  .mini-key:active {
-    transform: scale(0.97);
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
-    transition-timing-function: ease-out;
   }
 
   /* 刻度尺 */
@@ -1227,42 +1295,54 @@
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 6px;
   }
+  /* 档位键 = 键帽；选中 = 金面 + 极小回纹 + 内嵌宝石灯 */
   .gear-key {
     min-height: var(--ctl-md);
     padding: 0;
     text-align: center;
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-soft);
-    background: linear-gradient(180deg, #1a2438 0%, #0d1424 100%);
-    color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
     font-size: var(--ctl-font-sm);
     font-weight: 700;
     letter-spacing: 0.5px;
-    cursor: pointer;
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
-    transition:
-      transform 120ms cubic-bezier(0.34, 1.56, 0.64, 1),
-      background 120ms ease,
-      color 120ms ease,
-      border-color 120ms ease;
   }
-  /* :not(:disabled) 提高特异性：选中档位的金色硬阴影不会盖掉按压收紧 */
-  .gear-key:active:not(:disabled) {
-    transform: scale(0.97);
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+  /* 选中档位所在行：键面加极小回纹（其余行保持素面） */
+  .gear-key.row-lit:not(.active)::before {
+    background:
+      var(--pattern-hui) 0 0 / 10px 10px repeat,
+      var(--face-plate);
   }
-  .gear-key:hover {
-    color: var(--text);
-    border-color: var(--edge);
+  .gear-key.row-lit:not(.active):hover:not(:disabled)::before {
+    background:
+      var(--pattern-hui) 0 0 / 10px 10px repeat,
+      var(--face-plate-hot);
   }
   .gear-key.active {
-    background: var(--face-gold);
-    border-color: #ffe7a3;
+    background: var(--bronze-bright);
     color: #1a1002;
-    box-shadow: 0 2px 0 #7a4d05;
     /* 选中的档位键弹入一次（切档时才播） */
     animation: gear-pop 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .gear-key.active::before {
+    background:
+      var(--pattern-hui) 0 0 / 10px 10px repeat,
+      var(--face-gold-plate);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+  }
+  /* 宝石灯：内嵌在键帽右上角 */
+  .gear-key.active::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fffbe8 0%, #ffd166 55%, #a86b00 100%);
+    box-shadow: 0 0 4px 1px rgba(255, 214, 130, 0.8);
+    pointer-events: none;
+  }
+  .gear-key.active:hover:not(:disabled) {
+    color: #1a1002;
   }
   @keyframes gear-pop {
     0% {
@@ -1276,8 +1356,19 @@
     }
   }
   .gear-key.active.ccw {
-    background: linear-gradient(180deg, #c4b5fd 0%, #a78bfa 50%, #6d4fc4 100%);
-    border-color: #ddd6fe;
+    background: #b39ddb;
+    color: #160c2e;
+  }
+  .gear-key.active.ccw::before {
+    background:
+      var(--pattern-hui) 0 0 / 10px 10px repeat,
+      linear-gradient(180deg, #c4b5fd 0%, #a78bfa 50%, #6d4fc4 100%);
+  }
+  .gear-key.active.ccw::after {
+    background: radial-gradient(circle at 35% 30%, #f3ebff 0%, #c4b5fd 55%, #4c2f8f 100%);
+    box-shadow: 0 0 4px 1px rgba(196, 181, 253, 0.8);
+  }
+  .gear-key.active.ccw:hover:not(:disabled) {
     color: #160c2e;
   }
 
@@ -1287,48 +1378,69 @@
     flex-wrap: wrap;
     gap: 6px;
   }
+  /* 工具键 = 键帽；选中（专家/频谱）= 青碧面 + 内嵌宝石灯 */
   .tool-key {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     min-height: var(--ctl-md);
     padding: 0 10px;
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-soft);
-    background: linear-gradient(180deg, #1a2438 0%, #0d1424 100%);
-    color: var(--muted);
     font-size: var(--ctl-font-sm);
     font-weight: 700;
     letter-spacing: 0.5px;
     white-space: nowrap;
-    cursor: pointer;
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
-    transition:
-      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
-      box-shadow 90ms ease,
-      color 120ms ease,
-      border-color 120ms ease;
-  }
-  .tool-key:hover:not(:disabled) {
-    color: var(--gold-bright);
-    border-color: var(--edge);
-  }
-  .tool-key:active:not(:disabled) {
-    transform: scale(0.97);
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
-    transition-timing-function: ease-out;
-  }
-  .tool-key:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
   }
   .tool-key--gold {
     color: var(--gold-bright);
-    border-color: var(--edge);
   }
   .tool-key.active {
-    color: var(--cyan);
-    border-color: var(--cyan-line);
+    background: rgba(0, 245, 212, 0.55);
+    color: #041512;
+  }
+  .tool-key.active::before {
+    background: linear-gradient(180deg, #49e6cf 0%, #12b39c 55%, #067a68 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+  .tool-key.active::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #dffff7 0%, #00f5d4 60%, #065f52 100%);
+    box-shadow: 0 0 3px 1px rgba(0, 245, 212, 0.75);
+    pointer-events: none;
+  }
+  .tool-key.active:hover:not(:disabled) {
+    color: #041512;
+  }
+  /* 选中键在 hover / focus 下保持「金面 / 青碧面」，不被 .g-btn 的提亮面盖掉 */
+  .gear-key.active:hover:not(:disabled)::before,
+  .gear-key.active:focus-visible::before {
+    background:
+      var(--pattern-hui) 0 0 / 10px 10px repeat,
+      var(--face-gold-plate);
+  }
+  .gear-key.active:focus-visible {
+    color: #1a1002;
+  }
+  .gear-key.active.ccw:hover:not(:disabled)::before,
+  .gear-key.active.ccw:focus-visible::before {
+    background:
+      var(--pattern-hui) 0 0 / 10px 10px repeat,
+      linear-gradient(180deg, #c4b5fd 0%, #a78bfa 50%, #6d4fc4 100%);
+  }
+  .gear-key.active.ccw:focus-visible {
+    color: #160c2e;
+  }
+  .tool-key.active:hover:not(:disabled)::before,
+  .tool-key.active:focus-visible::before {
+    background: linear-gradient(180deg, #49e6cf 0%, #12b39c 55%, #067a68 100%);
+  }
+  .tool-key.active:focus-visible {
+    color: #041512;
   }
 
   /* ---------- reduce-motion：位移/缩放/循环动画全关（颜色与瞬时状态保留） ---------- */

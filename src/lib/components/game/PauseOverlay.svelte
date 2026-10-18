@@ -70,7 +70,7 @@
 
 <!-- 暂停菜单：一块安静的面板盖住画布；画布很矮时外层滚动，三个按钮都能点到 -->
 <div class="pause-menu" role="dialog" aria-modal="true">
-  <div class="pm-panel" class:closing>
+  <div class="pm-panel g-rivets" class:closing>
     <h3 class="font-celestial">已暂停</h3>
     <p class="pm-sub">先看清现在的进度，再决定继续还是重来</p>
 
@@ -84,13 +84,18 @@
     {/if}
 
     <!-- 三个动作 50ms 错峰进入 -->
-    <button type="button" class="pm-btn primary" style="animation-delay: 40ms" onclick={resume}>
+    <button
+      type="button"
+      class="pm-btn primary g-btn g-btn--primary g-btn--lg"
+      style="animation-delay: 40ms"
+      onclick={resume}
+    >
       <Icon name="play" size={14} /> 继 续 旋 转
     </button>
-    <button type="button" class="pm-btn" style="animation-delay: 90ms" onclick={backToEdit}>
+    <button type="button" class="pm-btn g-btn" style="animation-delay: 90ms" onclick={backToEdit}>
       <Icon name="sliders" size={14} /> 回 到 调 参
     </button>
-    <button type="button" class="pm-btn" style="animation-delay: 140ms" onclick={restart}>
+    <button type="button" class="pm-btn g-btn" style="animation-delay: 140ms" onclick={restart}>
       <Icon name="refresh" size={14} /> 重 新 开 始
     </button>
   </div>
@@ -124,8 +129,10 @@
     align-items: center;
     gap: 8px;
     padding: 16px;
-    background: var(--metal);
-    border: 1px solid var(--edge-soft);
+    /* 器物面板：青铜边 + 内侧暗线（铆钉由 .g-rivets 提供，见模板） */
+    background: var(--face-plate);
+    border: 1px solid var(--edge-bronze);
+    box-shadow: inset 0 0 0 1px var(--edge-inner);
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     text-align: center;
@@ -158,6 +165,19 @@
     }
   }
 
+  /* 朱印标题：题头左侧一方小印（装饰，无文案） */
+  .pm-panel h3::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 8px;
+    vertical-align: 1px;
+    border-radius: 2px;
+    background: var(--face-seal);
+    box-shadow: inset 0 0 0 1px rgba(255, 235, 220, 0.45);
+    transform: rotate(-8deg);
+  }
   .pm-panel h3 {
     margin: 0;
     font-size: 20px;
@@ -191,32 +211,18 @@
   }
 
   /* 三个动作：主操作金色，其余金属面 */
+  /* 按钮：形与四态交给公共件 .g-btn / .g-btn--primary，本地只保留布局、字号与入场编排 */
   .pm-btn {
     position: relative;
-    appearance: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
     width: 100%;
     min-height: var(--ctl-md);
     margin-top: 4px;
     padding: 0 14px;
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-faint);
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--text);
     font-size: var(--ctl-font-sm);
     font-weight: 600;
     letter-spacing: 1px;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
     /* 按钮错峰进入（内联 animation-delay 40/90/140ms） */
     animation: pm-btn-in 0.26s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-    transition:
-      color 0.12s ease,
-      border-color 0.12s ease,
-      background 0.12s ease;
   }
   @keyframes pm-btn-in {
     from {

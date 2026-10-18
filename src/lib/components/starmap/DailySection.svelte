@@ -41,7 +41,12 @@
         <Icon name="calendar" size={13} /> 每日一练
       </span>
       {#if isDaily}
-        <button type="button" class="mini-btn" title="分享今日挑战链接" onclick={shareDaily}>
+        <button
+          type="button"
+          class="mini-btn g-btn g-btn--icon"
+          title="分享今日挑战链接"
+          onclick={shareDaily}
+        >
           {#if dailyShared}<Icon name="check" size={11} /> 已复制{:else}<Icon
               name="share"
               size={11}
@@ -54,7 +59,7 @@
       {#each DIFFS as d (d.id)}
         <button
           type="button"
-          class="diff-btn"
+          class="diff-btn g-btn"
           class:active={isDaily && dailyDiff === d.id}
           aria-pressed={isDaily && dailyDiff === d.id}
           onclick={() => {
@@ -73,7 +78,7 @@
   <div class="weekly-card">
     <button
       type="button"
-      class="weekly-btn"
+      class="weekly-btn g-btn"
       class:active={engine.level?.id.startsWith('weekly-')}
       onclick={() => {
         engine.loadWeekly();
@@ -151,21 +156,13 @@
   /* 难度键：安静描边；当前档描金 */
   .diff-btn {
     flex: 1;
-    appearance: none;
     min-height: var(--ctl-md);
     padding: 0 8px;
     cursor: pointer;
-    color: var(--muted);
     font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-faint);
-    background: transparent;
-    transition:
-      color 0.12s ease,
-      border-color 0.12s ease,
-      background 0.12s ease;
+    /* 形与四态交给公共件 .g-btn / .g-btn--icon：本地只保留布局与字号 */
   }
   .diff-btn:hover {
     color: var(--text);
@@ -183,7 +180,6 @@
     width: 100%;
   }
   .weekly-btn {
-    appearance: none;
     width: 100%;
     min-height: 38px;
     display: flex;
@@ -195,10 +191,8 @@
     cursor: pointer;
     color: var(--text);
     font-size: var(--ctl-font-sm);
-    background: none;
-    border: none;
     border-bottom: 1px solid var(--edge-faint);
-    transition: color 0.12s ease;
+    /* 形与四态交给公共件 .g-btn / .g-btn--icon：本地只保留布局与字号 */
   }
   .weekly-btn:hover {
     color: var(--gold-bright);
@@ -227,6 +221,7 @@
     padding: 8px 0;
     border-bottom: 1px solid var(--edge-faint);
   }
+  /* 每日格 = 星位小槽（内凹 + 铜线） */
   .dcell {
     flex: 1;
     height: 26px;
@@ -234,8 +229,10 @@
     align-items: center;
     justify-content: center;
     border-radius: 4px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid transparent;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.6), rgba(255, 255, 255, 0.03));
+    box-shadow:
+      inset 0 1px 3px rgba(0, 0, 0, 0.7),
+      0 0 0 1px rgba(201, 162, 74, 0.22);
     font-size: 12px;
     color: var(--muted);
   }
@@ -280,7 +277,6 @@
 
   /* 分享键：安静小键 */
   .mini-btn {
-    appearance: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -288,17 +284,10 @@
     min-height: var(--ctl-md);
     padding: 0 10px;
     cursor: pointer;
-    color: var(--muted);
     font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-faint);
-    background: transparent;
-    transition:
-      color 0.12s ease,
-      border-color 0.12s ease,
-      background 0.12s ease;
+    /* 形与四态交给公共件 .g-btn / .g-btn--icon：本地只保留布局与字号 */
   }
   .mini-btn:hover {
     color: var(--gold-bright);

@@ -112,6 +112,11 @@
     flex-direction: column;
     align-items: flex-end;
     gap: 0;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.55),
+      0 6px 18px rgba(0, 0, 0, 0.5);
     min-width: 108px;
     padding: 6px 12px 9px;
     border-radius: 10px;
@@ -212,7 +217,7 @@
     border-radius: var(--ctl-radius);
     background: rgba(9, 14, 24, 0.82);
     border: 1px solid var(--edge-soft);
-    color: var(--muted);
+    color: #9df0d8;
     font-size: var(--ctl-font-sm);
     transition:
       border-color 0.12s ease,
@@ -233,7 +238,9 @@
     justify-content: center;
     width: var(--ctl-sm);
     height: var(--ctl-sm);
-    border-radius: var(--ctl-radius);
+    border-radius: 0;
+    clip-path: var(--chamfer-sm);
+    box-shadow: inset 0 0 0 1px var(--edge-bronze);
     background: rgba(9, 14, 24, 0.82);
     border: 1px solid var(--edge-soft);
     color: var(--muted);

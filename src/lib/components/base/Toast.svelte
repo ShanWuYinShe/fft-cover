@@ -53,9 +53,9 @@
 
 <!-- 降噪版提示条：一层描边 + 一个图标 + 文字（去掉状态灯与外发光）
      动效：滑入 -12px→0（240ms）+ 图标弹一下，退场反向且快 30% -->
-<div class="toast-item toast-{variant}" class:closing bind:this={itemEl} role="status">
+<div class="toast-item g-chamfer toast-{variant}" class:closing bind:this={itemEl} role="status">
   {#if icon}
-    <span class="toast-icon" aria-hidden="true">
+    <span class="toast-icon g-socket" aria-hidden="true">
       <Icon name={icon} size={15} />
     </span>
   {/if}
@@ -83,14 +83,11 @@
     /* 桌面 30 / 触屏 42 */
     min-height: var(--ctl-md);
     padding: 5px 12px;
-    border-radius: var(--ctl-radius);
     font-size: var(--ctl-font-sm);
     font-weight: 600;
     letter-spacing: 0.5px;
-    background: #0d1626;
-    border: 1px solid var(--edge-soft);
     color: var(--text);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    /* 切角铜边 + 面来自 .g-chamfer；这里只给变体染边色 */
     /* backwards：只在动画期间生效，结束后不留 transform */
     animation: toast-in 240ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
@@ -147,19 +144,19 @@
     }
   }
 
-  /* 变体只改描边与文字颜色，不加光晕 */
+  /* 变体只改铜边色与文字颜色，不加光晕 */
   .toast-gold {
-    border-color: rgba(245, 184, 65, 0.45);
+    background: var(--edge-bronze-hot);
     color: var(--gold-bright);
   }
 
   .toast-info {
-    border-color: rgba(0, 245, 212, 0.4);
+    background: #2f8f7e;
     color: var(--cyan);
   }
 
   .toast-success {
-    border-color: rgba(16, 185, 129, 0.45);
+    background: #2f8f7e;
     color: #a7f3d0;
   }
 

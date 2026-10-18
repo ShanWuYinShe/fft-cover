@@ -117,10 +117,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle, #101626 40%, #060911 100%);
-    border: 1.5px solid rgba(245, 184, 65, 0.25);
+    background: radial-gradient(circle at 50% 35%, #1a2440 0%, #070c16 70%);
+    border: 1.5px solid var(--edge-bronze);
     box-shadow:
-      inset 0 2px 6px rgba(0, 0, 0, 0.8),
+      inset 0 2px 6px rgba(0, 0, 0, 0.85),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.07),
       0 2px 6px rgba(0, 0, 0, 0.4);
     position: relative;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);

@@ -23,7 +23,7 @@
   {/if}
 
   {#if uiState.updateReady && engine.phase !== 'running'}
-    <div class="pwa-update-card">
+    <div class="pwa-update-card g-chamfer">
       <span class="pwa-text">新版本已就绪</span>
       <div class="pwa-actions">
         <button type="button" class="g-btn g-btn--cyan pwa-btn" onclick={applyPwaUpdate}>
@@ -68,10 +68,7 @@
     gap: 10px;
     max-width: min(92vw, 460px);
     padding: 5px 10px;
-    background: #0d1626;
-    border: 1px solid var(--edge-soft);
-    border-radius: var(--ctl-radius);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    /* 切角铜边 + 面来自 .g-chamfer */
     /* 与提示条同一套滑入节奏：-12px → 0，240ms */
     animation: pwa-in 240ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }

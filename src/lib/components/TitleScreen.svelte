@@ -61,12 +61,15 @@
   </div>
 
   <div class="ts-scroll">
-    <div class="ts-console">
+    <div class="ts-console g-chamfer g-rivets">
+      <!-- 回纹发丝标题条（纯装饰，左侧小方块铭牌用 ::before 画） -->
+      <span class="ts-bar g-pattern-bar" aria-hidden="true"></span>
+
       <!-- 品牌区 -->
       <header class="ts-brand">
         <span class="ts-eyebrow">浑天璇玑 · 傅立叶级数</span>
         <h1 class="ts-name">
-          傅立叶指针<span class="ts-seal" title="朱印：旋">旋</span>
+          傅立叶指针<span class="g-seal ts-seal" title="朱印：旋">旋</span>
         </h1>
         <p class="ts-sub">转动连杆拟合日月星轨，聆听谐波共鸣之律</p>
       </header>
@@ -74,25 +77,25 @@
       <!-- 主菜单：第一项是唯一的金色主按钮，其余安静 -->
       <nav class="ts-menu" aria-label="主菜单">
         <button type="button" class="g-btn g-btn--primary ts-item ts-item--main" onclick={start}>
-          <span class="ts-glyph"><Icon name="play" size={16} /></span>
+          <span class="ts-glyph g-socket"><Icon name="play" size={16} /></span>
           <span class="ts-label">进入游戏</span>
           <span class="ts-arrow" aria-hidden="true"><Icon name="chevron-right" size={16} /></span>
         </button>
 
         <button type="button" class="g-btn ts-item" onclick={openStarMap}>
-          <span class="ts-glyph"><Icon name="map" size={16} /></span>
+          <span class="ts-glyph g-socket"><Icon name="map" size={16} /></span>
           <span class="ts-label">周天星图 · 关卡选择</span>
           <span class="ts-arrow" aria-hidden="true"><Icon name="chevron-right" size={16} /></span>
         </button>
 
         <button type="button" class="g-btn ts-item" onclick={openAchv}>
-          <span class="ts-glyph"><Icon name="trophy" size={16} /></span>
+          <span class="ts-glyph g-socket"><Icon name="trophy" size={16} /></span>
           <span class="ts-label">成就与图鉴</span>
           <span class="ts-arrow" aria-hidden="true"><Icon name="chevron-right" size={16} /></span>
         </button>
 
         <button type="button" class="g-btn ts-item" onclick={openSettings}>
-          <span class="ts-glyph"><Icon name="gear" size={16} /></span>
+          <span class="ts-glyph g-socket"><Icon name="gear" size={16} /></span>
           <span class="ts-label">浑天典仪 · 设置</span>
           <span class="ts-arrow" aria-hidden="true"><Icon name="chevron-right" size={16} /></span>
         </button>
@@ -205,16 +208,43 @@
   }
 
   /* ---------- 面板：只有一层描边，安静的重心 ---------- */
+  /* 器物面板：切角铜边由 .g-chamfer 画（本体=铜边、::before=金属面），
+     这里只管布局与内容安全边距 */
   .ts-console {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 16px;
     width: min(500px, 100%);
-    padding: 22px 24px 18px;
-    background: linear-gradient(180deg, #0c1424 0%, #070c16 100%);
-    border: 1px solid var(--edge-soft);
-    border-radius: 14px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.45);
+    padding: 16px 22px 18px;
+  }
+
+  /* 四角铆钉：位置内移到切角之内（切角 8px，铆钉点中心落在 9px 处） */
+  .ts-console.g-rivets::after {
+    background-position:
+      9px 9px,
+      calc(100% - 9px) 9px,
+      9px calc(100% - 9px),
+      calc(100% - 9px) calc(100% - 9px);
+  }
+
+  /* 回纹发丝标题条：左侧一枚小方块铭牌 */
+  .ts-bar {
+    position: relative;
+    display: block;
+    height: 12px;
+    margin-bottom: 2px;
+    opacity: 0.9;
+  }
+
+  .ts-bar::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 3px;
+    width: 6px;
+    height: 6px;
+    background: var(--bronze-bright);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
   }
 
   /* ---------- 品牌区 ---------- */
@@ -315,31 +345,45 @@
     color: transparent;
   }
 
-  /* 朱印：标题旁的方形印章（篆刻样式） */
+  /* 朱印：真印面（.g-seal 给朱砂面 + 1px 亮边 + -2° 旋转），这里只把它压成方印 */
   .ts-name .ts-seal {
     flex: 0 0 auto;
-    width: 30px;
-    height: 30px;
-    line-height: 28px;
-    text-align: center;
+    width: var(--ctl-xs);
+    height: var(--ctl-xs);
+    min-height: 0;
+    padding: 0;
+    justify-content: center;
     font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: 16px;
-    font-weight: 700;
+    font-size: calc(var(--ctl-font-sm) + 1px);
     letter-spacing: 0;
-    background: linear-gradient(160deg, #d92b2b, #991b1b);
-    -webkit-background-clip: initial;
-    background-clip: initial;
-    color: #ffffff;
-    border-radius: 4px;
-    border: 1px solid rgba(255, 200, 190, 0.4);
-    box-shadow: inset 0 0 0 1px #991b1b;
+    line-height: 1;
   }
 
+  /* 副标题铭牌：两侧云翼短线（clip-path 三角翼，无新增 DOM/文案） */
   .ts-sub {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     margin: 0;
-    font-size: var(--fs-md);
+    font-size: var(--ctl-font-sm);
     color: var(--muted);
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+    white-space: nowrap;
+  }
+
+  .ts-sub::before,
+  .ts-sub::after {
+    content: '';
+    flex: 0 0 auto;
+    width: 26px;
+    height: 5px;
+    background: linear-gradient(90deg, transparent, var(--bronze-bright));
+    clip-path: polygon(0 50%, 100% 0, 100% 100%);
+  }
+
+  .ts-sub::after {
+    transform: scaleX(-1);
   }
 
   /* ---------- 菜单：不再套凹槽盒子，靠间距分组 ---------- */
@@ -359,61 +403,31 @@
     padding: 0 14px;
     font-size: var(--ctl-font);
     letter-spacing: 1px;
-    border-radius: var(--ctl-radius);
-    /* 降噪：只留上高光 + 硬投影，去掉外发光 */
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.07),
-      0 2px 0 rgba(0, 0, 0, 0.5);
-    transition:
-      transform 90ms cubic-bezier(0.16, 1, 0.3, 1),
-      border-color 120ms ease,
-      background 120ms ease,
-      color 120ms ease,
-      box-shadow 120ms ease;
+    /* 面/边/四态全部交给公共件 .g-btn（铜板键），这里只管排版与悬停位移 */
+    transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* 主按钮：整页唯一的金光（一级元素） */
+  /* 主按钮：牌匾（金箔面 + 右端宝石灯，全页唯一金光）——外观全部来自公共件 */
   .ts-menu .ts-item--main {
     min-height: var(--ctl-menu);
     font-size: calc(var(--ctl-font) + 2px);
     letter-spacing: 1.5px;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.35),
-      inset 0 -2px 0 rgba(140, 80, 0, 0.45),
-      0 2px 0 #7a4d05,
-      0 6px 16px rgba(245, 184, 65, 0.3);
   }
 
-  /* 唯一呼吸光：用伪元素的 opacity 呼吸（合成层友好，不重绘阴影） */
+  /* 牌匾右端宝石灯（公共件 .g-btn--primary::after）做唯一呼吸：只加 opacity 动画，
+     不改它的位置/颜色，避免盖掉公共件 */
   .ts-menu .ts-item--main::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    box-shadow: 0 0 16px rgba(245, 184, 65, 0.5);
-    opacity: 0.4;
-    pointer-events: none;
     animation: ts-breathe 2.8s ease-in-out infinite;
   }
 
   @keyframes ts-breathe {
     0%,
     100% {
-      opacity: 0.3;
+      opacity: 0.5;
     }
     50% {
-      opacity: 0.85;
+      opacity: 1;
     }
-  }
-
-  /* 悬停：描边变亮 + 图标/文字右移 2px（其余菜单项保持安静，无外发光） */
-  .ts-menu .ts-item:hover:not(.ts-item--main) {
-    background: var(--face-metal-hover);
-    border-color: var(--edge);
-    color: var(--gold-bright);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.07),
-      0 2px 0 rgba(0, 0, 0, 0.5);
   }
 
   .ts-glyph,
@@ -423,34 +437,19 @@
 
   .ts-item:hover .ts-glyph,
   .ts-item:hover .ts-label {
-    transform: translateX(2px);
+    transform: translateX(1px);
   }
 
-  /* 按下：轻微下沉 + 回弹缩放（90ms） */
-  .ts-menu .ts-item:active:not(:disabled) {
-    transform: translateY(1px) scale(0.985);
+  /* 按下：桌面用公共件的「面下沉 1px」，触屏额外给整块缩放反馈 */
+  @media (pointer: coarse) {
+    .ts-menu .ts-item:active:not(:disabled) {
+      transform: scale(0.985);
+    }
   }
 
-  .ts-menu .ts-item.ts-item--main:hover {
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      inset 0 -2px 0 rgba(140, 80, 0, 0.4),
-      0 2px 0 #7a4d05,
-      0 8px 20px rgba(245, 184, 65, 0.4);
-  }
-
-  /* 左侧图标：直接显示，不再套一格描边方槽 */
+  /* 左侧图标：嵌在 .g-socket 键槽里（尺寸/内凹/描边都来自公共件） */
   .ts-glyph {
     flex: 0 0 auto;
-    display: grid;
-    place-items: center;
-    width: var(--ctl-xs);
-    height: var(--ctl-xs);
-    color: var(--gold);
-  }
-
-  .ts-item--main .ts-glyph {
-    color: #4a2c02;
   }
 
   .ts-label {
@@ -479,12 +478,7 @@
     opacity: 0.9;
   }
 
-  /* 键盘焦点：金色描边（选中态） */
-  .ts-item:focus-visible {
-    outline: 2px solid var(--edge-hot);
-    outline-offset: 3px;
-    border-color: var(--edge-hot);
-  }
+  /* 键盘焦点：不用 outline（会被 clip-path 切掉），走公共件的铜边变金 + 面提亮 */
 
   /* ---------- 三步上手：一行一步，不带盒子 ---------- */
   .ts-steps {
@@ -573,8 +567,7 @@
 
     .ts-console {
       gap: 14px;
-      padding: 16px 16px 14px;
-      border-radius: 12px;
+      padding: 14px 16px 14px;
     }
 
     .ts-eyebrow {

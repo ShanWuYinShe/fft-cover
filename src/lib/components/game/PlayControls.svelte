@@ -173,8 +173,13 @@
     width: 100%;
     padding: 0 14px;
     box-sizing: border-box;
-    background: linear-gradient(180deg, rgba(12, 18, 31, 0.97) 0%, rgba(6, 9, 16, 0.99) 100%);
-    border-top: 1px solid var(--edge-soft);
+    /* 指令栏 = 器物下沿：青铜上边 + 回纹发丝 */
+    background-color: rgba(9, 13, 23, 0.98);
+    background-image: var(--pattern-hui-soft);
+    background-repeat: repeat-x;
+    background-position: 0 center;
+    border-top: 1px solid var(--edge-bronze);
+    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.6);
     z-index: 20;
   }
 
@@ -207,9 +212,13 @@
     gap: 8px;
     height: var(--ctl-lg);
     min-width: 168px;
-    padding: 0 20px;
-    border-radius: var(--ctl-radius-lg);
-    border: 1px solid #ffe7a3;
+    padding: 0 22px;
+    border-radius: 0;
+    border: none;
+    clip-path: var(--chamfer-md);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 214, 130, 0.9),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
     background: var(--face-gold);
     color: #1a1002;
     font-size: calc(var(--ctl-font) + 2px);
@@ -325,7 +334,10 @@
     min-width: 20px;
     height: 18px;
     padding: 0 4px;
-    border-radius: 4px;
+    border-radius: 3px;
+    border: 1px solid var(--edge-bronze);
+    background: linear-gradient(180deg, #101a2c, #070c17);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     background: rgba(30, 42, 66, 0.7);
     border: 1px solid var(--edge-faint);
     color: var(--muted);

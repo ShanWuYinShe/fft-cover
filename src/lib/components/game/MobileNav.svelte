@@ -65,25 +65,30 @@
     }
 
     .tab-btn {
-      flex: 1 1 0;
-      display: flex;
+      position: relative;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
+      gap: 6px;
+      flex: 1 1 0;
+      min-width: 0;
       min-height: 40px;
-      border-radius: var(--ctl-radius);
-      background: var(--face-metal);
-      border: 1px solid var(--edge-soft);
+      padding: 0 8px;
+      /* 斜边标签页：左右各切 7px */
+      clip-path: polygon(7px 0, calc(100% - 7px) 0, 100% 100%, 0 100%);
+      background: linear-gradient(180deg, #131d31, #0a1120);
+      box-shadow: inset 0 0 0 1px var(--edge-bronze);
       color: var(--muted);
       font-size: var(--ctl-font-sm);
       font-weight: 700;
       letter-spacing: 1px;
-      white-space: nowrap;
-      box-shadow:
-        var(--bevel-top),
-        var(--bevel-bottom),
-        0 2px 0 rgba(0, 0, 0, 0.5);
-      transition: all 0.12s ease;
+      cursor: pointer;
+    }
+    .tab-btn:hover {
+      color: var(--text);
+    }
+    .tab-btn:active {
+      background: linear-gradient(180deg, #0b1220, #16213a);
     }
 
     .tab-btn:active {
@@ -102,16 +107,16 @@
       opacity: 0.6;
     }
 
+    /* 选中：金箔标签页（全屏唯一的金色面） */
     .tab-btn.on {
-      background: var(--face-gold);
-      border-color: #ffe7a3;
-      color: #1a1002;
-      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+      background: var(--face-gold-plate);
+      color: #241300;
+      text-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.5),
+        0 -1px 0 rgba(120, 70, 0, 0.35);
       box-shadow:
-        var(--bevel-top),
-        inset 0 -3px 0 rgba(140, 80, 0, 0.5),
-        0 2px 0 #7a4d05,
-        0 0 18px rgba(245, 184, 65, 0.35);
+        inset 0 0 0 1px #ffe7a3,
+        inset 0 -2px 0 rgba(140, 80, 0, 0.45);
     }
 
     .tab-btn.on .tab-caret {

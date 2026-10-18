@@ -32,9 +32,9 @@
 >
   <!-- 入境卡：一块安静的面板（章节印 + 标题 + 一句导语 + 说明 + 主操作） -->
   <div class="card-wrap">
-    <div class="card">
+    <div class="card g-rivets">
       <!-- 逐行 80ms 错峰淡入（位移 ≤8px，只动 transform/opacity） -->
-      <span class="eyebrow row-in" style="animation-delay: 0ms">— 入境 —</span>
+      <span class="eyebrow g-seal row-in" style="animation-delay: 0ms">入境</span>
       <h2 class="row-in" style="animation-delay: 80ms">{chapter.name}</h2>
       <p class="tag row-in" style="animation-delay: 160ms">{chapter.tagline}</p>
       <p class="intro row-in" style="animation-delay: 240ms">{@html chapter.intro}</p>
@@ -46,7 +46,9 @@
         <span>★ {chapter.stars}/{chapter.maxStars}</span>
       </div>
       <div class="foot row-in" style="animation-delay: 400ms">
-        <button type="button" class="primary" onclick={onclose}>开 始 这 一 章</button>
+        <button type="button" class="primary g-btn g-btn--primary g-btn--lg" onclick={onclose}>
+          开 始 这 一 章
+        </button>
       </div>
     </div>
   </div>
@@ -210,26 +212,15 @@
 
   /* 主操作：金色厚键 */
   button.primary {
-    appearance: none;
     width: 100%;
     min-height: var(--ctl-lg);
     padding: 0 20px;
-    border-radius: var(--ctl-radius-lg);
     cursor: pointer;
     font-size: var(--ctl-font);
     font-weight: 700;
     letter-spacing: 2px;
-    color: #1a1002;
-    border: 1px solid #ffe7a3;
-    background: var(--face-gold);
-    box-shadow:
-      var(--bevel-top),
-      inset 0 -3px 0 rgba(140, 80, 0, 0.55),
-      0 3px 0 #7a4d05;
     -webkit-tap-highlight-color: transparent;
-    transition:
-      transform 0.09s ease,
-      background 0.12s ease;
+    /* 形与四态交给公共件 .g-btn--primary（牌匾）：本地只保留布局与字号 */
   }
   button.primary:hover {
     background: var(--face-gold-hover);
