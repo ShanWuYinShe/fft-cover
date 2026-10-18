@@ -104,20 +104,15 @@
     gap: var(--space-3);
   }
 
-  /* 星图头：一条嵌进面板的铭牌带 */
+  /* 星图头：一行标题 + 勋章，下面一条分隔线（无底座） */
   .picker-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
     flex-wrap: wrap;
-    padding: 9px 11px;
-    border-radius: 10px;
-    border: 1px solid var(--edge-soft);
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.11), rgba(245, 184, 65, 0.02));
-    box-shadow:
-      var(--bevel-top),
-      0 2px 0 rgba(0, 0, 0, 0.45);
+    padding: 0 0 10px;
+    border-bottom: 1px solid var(--edge-faint);
   }
   .picker-title {
     margin: 0;
@@ -133,49 +128,35 @@
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
   }
-  /* 勋章：金属小芯片 */
+  /* 勋章：一行小字标记（不做芯片） */
   .h-badge {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 8px;
-    border-radius: 999px;
     color: var(--muted);
     white-space: nowrap;
-    background: linear-gradient(180deg, var(--metal-2), var(--metal-deep));
-    border: 1px solid var(--edge-soft);
-    box-shadow: var(--bevel-top);
+    font-size: 12px;
   }
   .h-badge--lit {
     color: var(--gold-bright);
-    border-color: rgba(245, 184, 65, 0.55);
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.26), rgba(245, 184, 65, 0.07));
-    box-shadow:
-      var(--bevel-top),
-      0 0 12px rgba(245, 184, 65, 0.28);
   }
 
-  /* 无尽状态：金色警示凹槽 */
+  /* 无尽状态：紧凑三行读数（无底座） */
   .endless-banner {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    padding: 9px 12px;
-    border-radius: 10px;
-    border: 1px solid rgba(245, 184, 65, 0.4);
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.13), rgba(245, 184, 65, 0.03));
-    box-shadow:
-      var(--bevel-inset),
-      0 0 16px rgba(245, 184, 65, 0.12);
+    gap: 4px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--edge-faint);
   }
   .eb-row {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 8px;
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--text);
   }
   .eb-k {
@@ -201,13 +182,9 @@
     color: var(--cyan);
   }
 
-  /* 折叠区：机箱插槽样式（铭牌头 + 内凹内容） */
+  /* 折叠区：一行小标题 + 分隔线（无边框盒子） */
   .level-hint-drawer {
-    border: 1px solid rgba(0, 245, 212, 0.3);
-    background: linear-gradient(180deg, rgba(0, 245, 212, 0.06), rgba(0, 245, 212, 0.015));
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: var(--bevel-top);
+    border-bottom: 1px solid var(--edge-faint);
   }
   .lhd-summary {
     display: flex;
@@ -216,9 +193,9 @@
     gap: 8px;
     /* 摘要也是可点热区：给足 44px */
     min-height: 44px;
-    padding: 0 12px;
+    padding: 0 2px;
     cursor: pointer;
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--cyan);
     user-select: none;
   }
@@ -233,22 +210,17 @@
     letter-spacing: 2px;
   }
   .lhd-body {
-    padding: 2px 12px 11px;
-    border-top: 1px solid rgba(0, 245, 212, 0.16);
+    padding: 2px 0 12px;
   }
   .lhd-text {
-    margin: 8px 0 0;
-    font-size: var(--fs-xs);
+    margin: 6px 0 0;
+    font-size: var(--fs-sm);
     line-height: 1.7;
     color: var(--text);
   }
 
   .more-modes-drawer {
-    border: 1px solid var(--edge-soft);
-    background: linear-gradient(180deg, var(--metal-2) 0%, var(--metal) 60%, #070c16 100%);
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: var(--bevel-top);
+    border-bottom: 1px solid var(--edge-faint);
   }
   .mm-summary {
     display: flex;
@@ -256,9 +228,9 @@
     justify-content: space-between;
     gap: 8px;
     min-height: 44px;
-    padding: 0 12px;
+    padding: 0 2px;
     cursor: pointer;
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--gold-bright);
     user-select: none;
   }
@@ -273,10 +245,9 @@
     letter-spacing: 2px;
   }
   .mm-body {
-    padding: 0 10px 10px;
+    padding: 2px 0 10px;
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-    border-top: 1px solid var(--edge-faint);
   }
 </style>

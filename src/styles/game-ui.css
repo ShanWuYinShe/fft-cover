@@ -82,7 +82,9 @@
   pointer-events: none;
 }
 
-/* ---------- 游戏按钮：厚、立体、可按 ---------- */
+/* ---------- 游戏按钮：厚、立体、可按 ----------
+ * 降噪约定（第二轮）：外发光只给「主操作」与「选中/激活态」；
+ * 普通按键的 hover 只用面/描边变化，不再加光晕。 */
 .g-btn {
   appearance: none;
   position: relative;
@@ -125,8 +127,7 @@
     var(--bevel-top),
     var(--bevel-bottom),
     0 4px 0 rgba(0, 0, 0, 0.55),
-    0 10px 26px rgba(0, 0, 0, 0.55),
-    0 0 20px rgba(245, 184, 65, 0.22);
+    0 10px 22px rgba(0, 0, 0, 0.5);
 }
 .g-btn:active:not(:disabled) {
   transform: translateY(3px);

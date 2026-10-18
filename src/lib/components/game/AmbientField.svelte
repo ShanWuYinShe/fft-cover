@@ -9,8 +9,6 @@
   <div class="halo halo-top"></div>
   <div class="halo halo-bottom"></div>
   <div class="ring ring-a"></div>
-  <div class="ring ring-b"></div>
-  <div class="ring ring-c"></div>
   <div class="stars"></div>
   <div class="vignette"></div>
 </div>
@@ -61,22 +59,6 @@
     border: 1px dashed rgba(245, 184, 65, 0.075);
     animation: hud-spin 300s linear infinite;
   }
-  .ring-b {
-    width: 760px;
-    height: 760px;
-    margin: -380px 0 0 -380px;
-    border: 1px solid rgba(0, 245, 212, 0.05);
-    animation: hud-spin 220s linear infinite reverse;
-  }
-  .ring-c {
-    width: 1360px;
-    height: 1360px;
-    margin: -680px 0 0 -680px;
-    border-top: 1px solid rgba(245, 184, 65, 0.05);
-    border-right: 1px solid transparent;
-    animation: hud-spin 420s linear infinite;
-  }
-
   @keyframes hud-spin {
     from {
       transform: rotate(0deg);

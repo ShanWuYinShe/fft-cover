@@ -39,9 +39,8 @@
 <svelte:window onkeydown={onKeydown} />
 
 <div class="modal-backdrop" onclick={onBackdropClick} role="presentation">
-  <!-- 座舱弹窗：金属面板 + 四角青铜包边 + 扫描线；滚动交给 .modal-body -->
+  <!-- 弹窗 = 一块安静的面板：只有标题区 + 内容 + 页脚三段落，四角包边只此一处 -->
   <div class="modal modal-shell modal-{size}" role="dialog" aria-modal="true">
-    <span class="g-scanlines modal-scan" aria-hidden="true"></span>
     <span class="g-corner tl" aria-hidden="true"></span>
     <span class="g-corner tr" aria-hidden="true"></span>
     <span class="g-corner bl" aria-hidden="true"></span>
@@ -51,9 +50,7 @@
       <header class="modal-header">
         <div class="modal-title-wrap">
           {#if icon}
-            <span class="modal-icon">
-              <Icon name={icon} size={18} />
-            </span>
+            <Icon name={icon} size={18} />
           {/if}
           <div class="modal-text">
             {#if title}
@@ -96,12 +93,10 @@
   .modal-backdrop {
     position: fixed;
     inset: 0;
-    /* 座舱遮罩：中心压暗 + 金色氛围，把注意力锁在弹窗上 */
-    background:
-      radial-gradient(circle at 50% 42%, rgba(245, 184, 65, 0.07), transparent 58%),
-      rgba(3, 5, 11, 0.82);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    /* 全屏压暗即足够把注意力锁在弹窗上，不再加金色氛围光 */
+    background: rgba(3, 5, 11, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 100;
     display: flex;
     align-items: center;
@@ -112,45 +107,17 @@
 
   .modal-shell {
     position: relative;
-    /* 装甲板：深蓝黑金属面 + 顶部亮金发丝线 */
-    background: linear-gradient(180deg, var(--metal-2) 0%, var(--metal) 42%, #070c16 100%);
+    /* 一块平板：单色金属面 + 1px 暗金描边，不做渐变堆料与外发光 */
+    background: var(--metal);
     border: 1px solid var(--edge-soft);
-    border-radius: var(--radius-md);
-    box-shadow:
-      var(--sh-game-lg),
-      var(--bevel-top),
-      inset 0 0 40px rgba(0, 0, 0, 0.55);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     /* 矮屏（手机横屏 844×390 等）：整体不超视口，内部滚动 */
     max-height: calc(100dvh - 24px);
     width: 100%;
     animation: modal-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  /* 顶部亮金发丝线：装甲板的高光边 */
-  .modal-shell::before {
-    content: '';
-    position: absolute;
-    inset: -1px -1px auto;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--edge-hot) 16%,
-      var(--edge-hot) 84%,
-      transparent
-    );
-    opacity: 0.75;
-    pointer-events: none;
-  }
-
-  .modal-scan {
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    opacity: 0.7;
   }
 
   .modal-sm {
@@ -167,16 +134,14 @@
     height: calc(100dvh - 24px);
   }
 
+  /* 标题区：一条底线分隔，不再铺底色 */
   .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: 12px var(--space-5) 10px;
-    /* 铭牌区：比面板略亮一条，底部金色发丝分隔 */
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.09), rgba(245, 184, 65, 0.015));
-    border-bottom: 1px solid var(--edge-soft);
-    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+    padding: 14px var(--space-5) 12px;
+    border-bottom: 1px solid var(--edge-faint);
     flex-shrink: 0;
     position: relative;
     z-index: 1;
@@ -185,24 +150,9 @@
   .modal-title-wrap {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    gap: 10px;
     min-width: 0;
-  }
-
-  .modal-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    flex: none;
     color: var(--gold-bright);
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.2), rgba(245, 184, 65, 0.05));
-    border: 1px solid var(--edge);
-    border-radius: 7px;
-    box-shadow:
-      var(--bevel-top),
-      0 0 12px rgba(245, 184, 65, 0.18);
   }
 
   .modal-text {
@@ -213,20 +163,18 @@
     margin: 0;
     font-size: var(--fs-lg);
     color: var(--gold-bright);
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     line-height: 1.25;
-    text-shadow: 0 0 16px rgba(245, 184, 65, 0.35);
   }
 
-  /* 副标题当铭牌读：小号、拉开字距 */
+  /* 副标题：小铭牌（≥12px），安静地做补充说明 */
   .modal-subtitle {
-    margin: 2px 0 0;
-    font-size: var(--fs-xs);
-    font-weight: 600;
-    letter-spacing: 2px;
+    margin: 3px 0 0;
+    font-size: var(--fs-sm);
     color: var(--muted);
   }
 
+  /* 关闭键：44×44 热区，静息无描边、悬停才显形 */
   .modal-close {
     appearance: none;
     flex: none;
@@ -236,28 +184,17 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: var(--fs-md);
     color: var(--muted);
-    border-radius: 10px;
-    border: 1px solid var(--edge-soft);
-    background: var(--face-metal);
-    box-shadow:
-      var(--bevel-top),
-      0 3px 0 rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
     transition:
-      transform 0.09s ease,
       color 0.12s ease,
-      border-color 0.12s ease,
       background 0.12s ease;
   }
   .modal-close:hover {
     color: var(--gold-bright);
-    border-color: var(--edge);
-    background: var(--face-metal-hover);
-  }
-  .modal-close:active {
-    transform: translateY(2px);
-    box-shadow: var(--bevel-top);
+    background: rgba(255, 255, 255, 0.06);
   }
 
   .modal-body {
@@ -268,7 +205,7 @@
     overscroll-behavior: contain;
     padding: var(--space-4) var(--space-5);
     scrollbar-width: thin;
-    scrollbar-color: rgba(245, 184, 65, 0.35) transparent;
+    scrollbar-color: rgba(245, 184, 65, 0.3) transparent;
   }
 
   .modal-footer {
@@ -276,10 +213,8 @@
     align-items: center;
     justify-content: flex-end;
     gap: var(--space-3);
-    padding: 10px var(--space-5);
-    border-top: 1px solid var(--edge-soft);
-    background: linear-gradient(180deg, rgba(5, 8, 15, 0.92), rgba(3, 5, 10, 0.98));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    padding: 12px var(--space-5) 14px;
+    border-top: 1px solid var(--edge-faint);
     flex-shrink: 0;
     flex-wrap: wrap;
   }
@@ -297,7 +232,7 @@
       max-height: calc(100dvh - 12px);
     }
     .modal-header {
-      padding: 8px var(--space-4);
+      padding: 9px var(--space-4);
     }
     .modal-body {
       padding: 10px var(--space-4);

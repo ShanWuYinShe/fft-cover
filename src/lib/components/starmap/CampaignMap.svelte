@@ -185,20 +185,16 @@
     gap: var(--space-2);
   }
 
+  /* 章节导航：一行标题 + 左右翻页键，无底座 */
   .ch-nav {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 7px 9px;
-    clip-path: var(--chamfer-sm);
-    border: 1px solid var(--edge-soft);
-    background: linear-gradient(180deg, var(--metal-3) 0%, var(--metal) 55%, #070c16 100%);
-    box-shadow:
-      var(--bevel-top),
-      0 3px 0 rgba(0, 0, 0, 0.55);
+    padding: 0 0 8px;
+    border-bottom: 1px solid var(--edge-faint);
   }
 
-  /* 章节翻页键：方形金属键，热区 44 */
+  /* 章节翻页键：安静的行内键（热区 44） */
   .nav-btn {
     appearance: none;
     flex: none;
@@ -210,26 +206,16 @@
     cursor: pointer;
     font-size: var(--fs-sm);
     color: var(--muted);
-    border-radius: 9px;
-    border: 1px solid var(--edge-soft);
-    background: var(--face-metal);
-    box-shadow:
-      var(--bevel-top),
-      0 3px 0 rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
     transition:
-      transform 0.09s ease,
       color 0.12s ease,
-      border-color 0.12s ease,
       background 0.12s ease;
   }
   .nav-btn:hover:not(:disabled) {
-    border-color: var(--edge);
     color: var(--gold-bright);
-    background: var(--face-metal-hover);
-  }
-  .nav-btn:active:not(:disabled) {
-    transform: translateY(2px);
-    box-shadow: var(--bevel-top);
+    background: rgba(255, 255, 255, 0.06);
   }
   .nav-btn:disabled {
     opacity: 0.35;
@@ -271,7 +257,7 @@
   }
 
   .ch-summary {
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--muted);
     letter-spacing: 0.5px;
   }
@@ -319,9 +305,6 @@
     background: rgba(245, 184, 65, 0.08);
     border-color: var(--edge-soft);
   }
-  .dot.on {
-    border-color: var(--edge-soft);
-  }
   .dot.on::before {
     width: 24px;
     border-radius: 4px;
@@ -343,7 +326,7 @@
 
   .ch-tag {
     margin: 0 0 8px;
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--muted-2);
     line-height: 1.5;
   }
@@ -379,6 +362,7 @@
   }
 
   /* 星图航段：每一关是一段带倒角的金属板 */
+  /* 关卡行：一行一段，靠分隔线分组（无卡片、无描边、无发光） */
   .node {
     appearance: none;
     display: flex;
@@ -386,55 +370,36 @@
     gap: 10px;
     width: 100%;
     min-height: 52px;
-    padding: 7px 10px 7px 8px;
+    padding: 9px 6px;
     box-sizing: border-box;
     text-align: left;
-    clip-path: var(--chamfer-sm);
-    background: linear-gradient(180deg, var(--metal-3) 0%, var(--metal) 60%, #070c16 100%);
-    border: 1px solid var(--edge-soft);
-    box-shadow:
-      var(--bevel-top),
-      0 3px 0 rgba(0, 0, 0, 0.5);
+    border: none;
+    border-bottom: 1px solid var(--edge-faint);
+    background: none;
     cursor: pointer;
-    transition:
-      background 0.15s ease,
-      border-color 0.15s ease,
-      transform 0.09s ease,
-      box-shadow 0.15s ease;
+    transition: background 0.15s ease;
   }
   .node:hover:not(:disabled) {
-    background: var(--face-metal-hover);
-    border-color: var(--edge);
-    transform: translateY(-1px);
-    box-shadow:
-      var(--bevel-top),
-      0 5px 0 rgba(0, 0, 0, 0.5),
-      0 0 18px rgba(245, 184, 65, 0.2);
+    background: rgba(255, 255, 255, 0.05);
   }
-  .node:active:not(:disabled) {
-    transform: translateY(2px);
-    box-shadow: var(--bevel-top);
-  }
-  /* 选中航段：金色包边 + 发光（不再是青色细描边） */
+  /* 当前关：金色左轨 + 淡金底（发光只给这一个选中态） */
   .node.active {
-    border-color: var(--gold-bright);
-    background: linear-gradient(
-      180deg,
-      rgba(245, 184, 65, 0.2),
-      rgba(245, 184, 65, 0.04) 60%,
-      #0a1120
-    );
-    box-shadow:
-      var(--bevel-top),
-      0 0 0 1px rgba(245, 184, 65, 0.45),
-      0 0 22px rgba(245, 184, 65, 0.35);
+    background: rgba(245, 184, 65, 0.08);
+    box-shadow: inset 3px 0 0 var(--gold);
   }
-  /* 锁定航段：暗金属，不可点 */
+  .node.active .nm {
+    color: var(--gold-bright);
+  }
+  /* 锁定关：文字保持 --muted 可读，只是不再高亮 */
   .node:disabled {
-    opacity: 0.55;
-    filter: grayscale(0.5);
     cursor: not-allowed;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+  .node:disabled .nm {
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .node:disabled .st {
+    color: var(--muted);
   }
 
   .node .idx {
@@ -446,28 +411,21 @@
     justify-content: center;
     border-radius: 50%;
     font-size: var(--fs-sm);
-    font-weight: 800;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--muted);
-    background: linear-gradient(180deg, rgba(6, 9, 16, 0.9), rgba(12, 18, 30, 0.9));
-    border: 1px solid var(--edge-soft);
-    box-shadow: var(--bevel-inset);
+    border: 1px solid var(--edge-faint);
   }
+  /* 三星 / 完美：序号点亮成金色，一眼看出已通关 */
   .node.done .idx {
-    background: linear-gradient(180deg, #f5c05a, #b45309);
-    border-color: #ffd166;
-    color: #1a1002;
-    box-shadow:
-      var(--bevel-top),
-      0 0 12px rgba(245, 184, 65, 0.5);
+    color: var(--gold-bright);
+    border-color: var(--edge);
+    background: rgba(245, 184, 65, 0.12);
   }
   .node.done.perfect .idx {
-    background: var(--face-gold);
-    border-color: #ffe699;
     color: #1a1002;
-    box-shadow:
-      var(--bevel-top),
-      0 0 16px rgba(245, 184, 65, 0.7);
+    background: var(--face-gold);
+    border-color: #ffe7a3;
   }
 
   .node-body {
@@ -492,14 +450,14 @@
   }
 
   .st {
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--gold);
     letter-spacing: 1px;
   }
 
   .stats {
-    font-size: 10px;
-    color: var(--muted-2);
+    font-size: 12px;
+    color: var(--muted);
   }
   .stats b {
     color: var(--gold);
@@ -508,46 +466,34 @@
     font-style: normal;
   }
 
+  /* 下一章：一行提示（解锁时可点，未解锁是安静说明） */
   .teaser {
-    margin-top: 10px;
-    padding: 9px 12px;
+    margin-top: 4px;
+    padding: 12px 2px;
     min-height: 48px;
     box-sizing: border-box;
-    border-radius: 9px;
     display: flex;
     align-items: center;
     gap: 10px;
     text-align: left;
     width: 100%;
+    border-top: 1px solid var(--edge-faint);
   }
   .teaser.open {
     appearance: none;
     cursor: pointer;
     color: var(--cyan);
-    background: linear-gradient(180deg, rgba(0, 245, 212, 0.12), rgba(0, 245, 212, 0.03));
-    border: 1px solid rgba(0, 245, 212, 0.35);
-    box-shadow:
-      var(--bevel-top),
-      0 3px 0 rgba(0, 0, 0, 0.5);
-    transition:
-      background 0.15s ease,
-      border-color 0.15s ease,
-      transform 0.09s ease;
+    background: none;
+    border: none;
+    transition: color 0.12s ease;
   }
   .teaser.open:hover {
-    background: linear-gradient(180deg, rgba(0, 245, 212, 0.2), rgba(0, 245, 212, 0.06));
-    border-color: var(--cyan);
-    box-shadow:
-      var(--bevel-top),
-      0 3px 0 rgba(0, 0, 0, 0.5),
-      0 0 18px rgba(0, 245, 212, 0.3);
-  }
-  .teaser.open:active {
-    transform: translateY(2px);
+    color: var(--gold-bright);
   }
   .teaser.locked {
-    background: linear-gradient(180deg, rgba(10, 14, 24, 0.9), rgba(5, 8, 15, 0.9));
-    border: 1px solid var(--edge-faint);
+    background: none;
+    border: none;
+    border-top: 1px solid var(--edge-faint);
     color: var(--muted);
   }
 
@@ -557,11 +503,11 @@
     gap: 2px;
   }
   .t-txt b {
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
   }
   .t-txt i {
     font-style: normal;
-    font-size: 10px;
-    color: var(--muted-2);
+    font-size: 12px;
+    color: var(--muted);
   }
 </style>

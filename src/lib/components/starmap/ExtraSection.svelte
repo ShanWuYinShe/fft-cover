@@ -196,50 +196,28 @@
     margin-top: var(--space-2);
   }
 
+  /* 无尽入口：一行（左标题 / 右战绩），无卡片 */
   .endless-trigger-btn {
     appearance: none;
     width: 100%;
-    min-height: 50px;
+    min-height: 48px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 9px 12px;
+    padding: 10px 0;
     box-sizing: border-box;
     cursor: pointer;
     color: var(--text);
-    font-size: var(--fs-xs);
-    border-radius: 9px;
-    background: linear-gradient(180deg, var(--metal-3) 0%, var(--metal) 60%, #070c16 100%);
-    border: 1px solid var(--edge);
-    box-shadow:
-      var(--bevel-top),
-      0 3px 0 rgba(0, 0, 0, 0.5);
-    transition:
-      transform 0.09s ease,
-      color 0.12s ease,
-      border-color 0.12s ease,
-      background 0.12s ease,
-      box-shadow 0.12s ease;
+    font-size: var(--fs-sm);
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--edge-faint);
+    transition: color 0.12s ease;
   }
-  .endless-trigger-btn:hover {
-    border-color: var(--gold-bright);
-    color: var(--gold-bright);
-    background: var(--face-metal-hover);
-    box-shadow:
-      var(--bevel-top),
-      0 3px 0 rgba(0, 0, 0, 0.5),
-      0 0 18px rgba(245, 184, 65, 0.3);
-  }
-  .endless-trigger-btn:active {
-    transform: translateY(2px);
-  }
+  .endless-trigger-btn:hover,
   .endless-trigger-btn.active {
-    border-color: var(--gold-bright);
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.24), rgba(245, 184, 65, 0.05));
-    box-shadow:
-      var(--bevel-top),
-      0 0 20px rgba(245, 184, 65, 0.35);
+    color: var(--gold-bright);
   }
   .et-left {
     display: flex;
@@ -251,20 +229,18 @@
     white-space: nowrap;
   }
   .et-right {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--muted);
     white-space: nowrap;
   }
 
+  /* 随机星轨：小标题 + 两个动作键（无卡片） */
   .gen-box {
-    background: linear-gradient(180deg, var(--metal-2) 0%, var(--metal) 60%, #070c16 100%);
-    border: 1px solid var(--edge-soft);
-    border-radius: 10px;
-    padding: var(--space-2) var(--space-3);
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    box-shadow: var(--bevel-top);
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--edge-faint);
   }
 
   .gen-header {
@@ -275,7 +251,7 @@
     flex-wrap: wrap;
   }
   .gen-label {
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--gold-bright);
     font-weight: 700;
     letter-spacing: 1.5px;
@@ -283,51 +259,36 @@
   }
   .diff-chips {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     flex: none;
-    padding: 3px;
-    background: linear-gradient(180deg, rgba(3, 5, 10, 0.9), rgba(8, 12, 22, 0.75));
-    border: 1px solid var(--edge-faint);
-    border-radius: 9px;
-    box-shadow: var(--bevel-inset);
   }
   .diff-chip {
     appearance: none;
-    min-height: 30px;
-    padding: 0 9px;
+    min-height: 36px;
+    padding: 0 10px;
     cursor: pointer;
     color: var(--muted);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+    font-size: 12px;
+    font-weight: 600;
     white-space: nowrap;
-    border-radius: 6px;
-    border: 1px solid var(--edge-soft);
-    background: var(--face-metal);
-    box-shadow: var(--bevel-top);
+    border-radius: 8px;
+    border: 1px solid var(--edge-faint);
+    background: transparent;
     transition:
-      transform 0.09s ease,
       color 0.12s ease,
       border-color 0.12s ease,
       background 0.12s ease;
   }
   .diff-chip:hover {
-    color: var(--gold-bright);
+    color: var(--text);
     border-color: var(--edge);
-    background: var(--face-metal-hover);
-  }
-  .diff-chip:active {
-    transform: translateY(2px);
+    background: rgba(255, 255, 255, 0.05);
   }
   .diff-chip.active {
-    color: #1a1002;
-    border-color: #ffe7a3;
-    background: var(--face-gold);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
-    box-shadow:
-      var(--bevel-top),
-      inset 0 -2px 0 rgba(140, 80, 0, 0.5),
-      0 2px 0 #7a4d05;
+    color: var(--gold-bright);
+    border-color: var(--gold);
+    background: rgba(245, 184, 65, 0.1);
+    font-weight: 700;
   }
 
   .gen-actions {
@@ -337,26 +298,21 @@
   .action-btn {
     flex: 1;
     appearance: none;
-    min-height: 42px;
+    min-height: 46px;
     padding: 0 8px;
     cursor: pointer;
     color: var(--text);
-    font-size: var(--fs-xs);
-    font-weight: 700;
-    letter-spacing: 1px;
+    font-size: var(--fs-sm);
+    font-weight: 600;
     white-space: nowrap;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 6px;
     border-radius: 8px;
-    border: 1px solid var(--edge-soft);
-    background: var(--face-metal);
-    box-shadow:
-      var(--bevel-top),
-      0 3px 0 rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--edge-faint);
+    background: transparent;
     transition:
-      transform 0.09s ease,
       color 0.12s ease,
       border-color 0.12s ease,
       background 0.12s ease;
@@ -364,21 +320,14 @@
   .action-btn:hover {
     border-color: var(--edge);
     color: var(--gold-bright);
-    background: var(--face-metal-hover);
-  }
-  .action-btn:active {
-    transform: translateY(2px);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   .seed-box {
-    background: linear-gradient(180deg, rgba(8, 12, 22, 0.92), rgba(4, 7, 13, 0.9));
-    border: 1px solid var(--edge-faint);
-    border-radius: 10px;
-    padding: var(--space-2) var(--space-3);
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    box-shadow: var(--bevel-inset);
+    gap: 10px;
+    padding: 12px 0 0;
   }
 
   .invite-header {
@@ -388,7 +337,7 @@
     gap: 8px;
   }
   .invite-code {
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--muted);
     white-space: nowrap;
   }
@@ -408,14 +357,13 @@
   .seed-input {
     flex: 1;
     min-width: 0;
-    background: var(--metal-deep);
+    background: rgba(0, 0, 0, 0.35);
     border: 1px solid var(--edge-faint);
     border-radius: 8px;
     padding: 0 10px;
-    height: 38px;
-    font-size: var(--fs-xs);
+    height: 40px;
+    font-size: var(--fs-sm);
     color: var(--text);
-    box-shadow: var(--bevel-inset);
   }
   .seed-input::placeholder {
     color: var(--muted-2);
@@ -423,12 +371,9 @@
   .seed-input:focus {
     border-color: var(--cyan);
     outline: none;
-    box-shadow:
-      var(--bevel-inset),
-      0 0 0 1px rgba(0, 245, 212, 0.35);
   }
 
-  /* 载入 / 复制 / 分享：金属小键 */
+  /* 载入 / 复制 / 分享：安静小键 */
   .load-btn,
   .mini-btn {
     appearance: none;
@@ -437,20 +382,16 @@
     justify-content: center;
     gap: 4px;
     cursor: pointer;
-    color: var(--text);
-    font-size: 10px;
-    font-weight: 700;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
     white-space: nowrap;
-    padding: 0 10px;
-    height: 38px;
+    padding: 0 12px;
+    height: 40px;
     border-radius: 8px;
-    border: 1px solid var(--edge-soft);
-    background: var(--face-metal);
-    box-shadow:
-      var(--bevel-top),
-      0 2px 0 rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--edge-faint);
+    background: transparent;
     transition:
-      transform 0.09s ease,
       color 0.12s ease,
       border-color 0.12s ease,
       background 0.12s ease;
@@ -459,11 +400,7 @@
   .mini-btn:hover {
     color: var(--gold-bright);
     border-color: var(--edge);
-    background: var(--face-metal-hover);
-  }
-  .load-btn:active,
-  .mini-btn:active {
-    transform: translateY(2px);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   /* 触屏：热区补到 44 */

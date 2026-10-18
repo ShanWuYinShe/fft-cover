@@ -18,7 +18,7 @@
   }
 </script>
 
-<!-- 指针插槽行：左边是通电翘板（状态灯），右边是读数插槽 -->
+<!-- 指针插槽行：左边通电开关（状态灯），右边读数（安静样式，不发光） -->
 <div class="arm-slot" class:on={arm.on} class:sel={selected && arm.on} class:locked={isLocked}>
   <button
     type="button"
@@ -47,7 +47,7 @@
     title={isLocked ? '槽位已锁定（达到关卡指针上限）' : '点击编辑这根指针参数'}
   >
     <span class="idx">{CIRCLED[index]}</span>
-    <span class="rv"><b class="g-num slot-num">{arm.on ? arm.r : isLocked ? '封' : '—'}</b></span>
+    <span class="rv"><b class="slot-num">{arm.on ? arm.r : isLocked ? '封' : '—'}</b></span>
     <span class="dir" class:ccw={arm.freq < 0}>{arm.freq < 0 ? '逆' : '顺'}</span>
     <span class="fv">{Math.abs(arm.freq)}×</span>
   </button>
@@ -55,38 +55,32 @@
 
 <style>
   /* ============================================================
-   * 指针插槽行 · 机箱插槽语言
-   * 左：通电翘板 + 状态灯；右：通道印 / 半径读数 / 方向 / 倍率
+   * 指针插槽行 · 安静版
+   * 只有选中态加金边；其余靠底色与留白区分
    * ============================================================ */
   .arm-slot {
     display: flex;
     align-items: stretch;
     min-width: 0;
-    border-radius: 9px;
-    overflow: hidden;
-    background: linear-gradient(180deg, rgba(7, 11, 20, 0.95), rgba(4, 7, 14, 0.92));
-    border: 1px solid var(--edge-faint);
-    box-shadow: var(--bevel-inset);
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.03);
     transition:
-      border-color 0.15s ease,
-      box-shadow 0.15s ease,
-      background 0.15s ease;
+      background 0.12s ease,
+      border-color 0.12s ease;
   }
   .arm-slot.on {
-    border-color: rgba(0, 245, 212, 0.28);
+    background: rgba(0, 245, 212, 0.05);
   }
   .arm-slot.sel {
-    border-color: var(--edge-hot);
-    background: linear-gradient(180deg, rgba(24, 20, 8, 0.72), rgba(6, 9, 16, 0.94));
-    box-shadow:
-      var(--bevel-inset),
-      0 0 14px rgba(245, 184, 65, 0.35);
+    border-color: var(--gold-bright);
+    background: rgba(245, 184, 65, 0.07);
   }
   .arm-slot.locked {
     opacity: 0.5;
   }
 
-  /* 通电翘板：物理小键，热区 ≥44 */
+  /* 通电开关：物理小键，热区 ≥44 */
   .power-btn {
     display: flex;
     align-items: center;
@@ -106,39 +100,25 @@
     width: 30px;
     height: 30px;
     border-radius: 8px;
-    background: linear-gradient(180deg, #1b2740 0%, #0b1220 100%);
-    border: 1px solid var(--edge-soft);
-    box-shadow:
-      var(--bevel-top),
-      0 2px 0 rgba(0, 0, 0, 0.5);
-    transition:
-      transform 0.09s ease,
-      border-color 0.15s ease,
-      box-shadow 0.15s ease;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--edge-faint);
+    transition: transform 0.09s ease;
   }
   .power-btn:active:not(:disabled) .power-rock {
     transform: translateY(2px);
-    box-shadow:
-      var(--bevel-top),
-      inset 0 2px 6px rgba(0, 0, 0, 0.65);
   }
   .power-lamp {
     width: 8px;
     height: 8px;
     background: #1b2334;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
   }
   .arm-slot.on .power-lamp {
     background: var(--cyan);
-    box-shadow:
-      0 0 9px rgba(0, 245, 212, 0.9),
-      inset 0 0 2px #fff;
-  }
-  .arm-slot.sel .power-rock {
-    border-color: var(--edge);
+    box-shadow: none;
   }
 
-  /* 读数插槽 */
+  /* 读数 */
   .slot-body {
     flex: 1 1 auto;
     display: flex;
@@ -161,7 +141,7 @@
     text-align: center;
     color: var(--gold-bright);
     font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1;
   }
   .rv {
@@ -171,24 +151,21 @@
   }
   .rv .slot-num {
     font-size: 16px;
+    font-weight: 700;
     font-family: 'JetBrains Mono', monospace;
     color: var(--text);
   }
   .arm-slot.on .slot-num {
     color: var(--gold-bright);
-    text-shadow: 0 0 12px rgba(245, 184, 65, 0.45);
   }
   .locked .rv .slot-num {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--muted-2);
-    letter-spacing: 1px;
+    font-size: 12px;
+    color: var(--muted);
     font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    text-shadow: none;
   }
   .dir {
     flex: 0 0 auto;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--cyan);
   }
@@ -199,22 +176,9 @@
     flex: 0 0 auto;
     width: 34px;
     text-align: right;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
-  }
-
-  @media (pointer: coarse), (max-width: 640px) {
-    .slot-body {
-      height: 48px;
-    }
-    .power-btn {
-      min-height: 48px;
-    }
-    .power-rock {
-      width: 34px;
-      height: 34px;
-    }
   }
 </style>

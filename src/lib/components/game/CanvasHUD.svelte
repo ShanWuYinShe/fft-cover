@@ -14,41 +14,11 @@
     const vs = engine.raceIsBest ? '最佳' : '上届';
     return d > 0 ? '👻 +' + d + ' 领先' + vs : d < 0 ? '👻 ' + d + ' 落后' + vs : '👻 持平';
   });
-
-  function onLevelClick(): void {
-    if (window.innerWidth <= 640) {
-      uiState.mobileTab = uiState.mobileTab === 'levels' ? 'arms' : 'levels';
-      uiState.panelExpanded = true;
-    } else {
-      uiState.toggleStarmap();
-    }
-  }
 </script>
 
-<!-- 画布内 HUD：贴角读数，不遮挡中央星域 -->
+<!-- 画布内 HUD：四角贴边读数，中间留给星域 -->
 <div class="hud">
   <div class="hud-tl">
-    <button type="button" class="hud-lvl-badge" title="切换关卡或打开星图" onclick={onLevelClick}>
-      <span class="lvl-ico">
-        {#if engine.endless}
-          <Icon name="infinity" size={14} />
-        {:else}
-          <Icon name="grid" size={14} />
-        {/if}
-      </span>
-      <span class="lvl-title">
-        {#if engine.endless}
-          第 {engine.endlessWave} 波 · 累计 {engine.endlessScore} 分
-        {:else}
-          {engine.level?.name ?? '自由'}{#if engine.sandbox}&nbsp;<Icon
-              name="flask"
-              size={12}
-            />{/if}
-        {/if}
-      </span>
-      <span class="lvl-caret">▾</span>
-    </button>
-
     {#if ghostLabel}
       <span
         class="ghost-chip font-tabular"
@@ -67,10 +37,10 @@
       style="--progress: {engine.total ? (engine.collectedCount / engine.total) * 100 : 0}%"
       title="本局已收集 / 目标总数"
     >
-      <span class="g-label collect-label">收集</span>
+      <span class="collect-label">收集</span>
       <span class="collect-value">
         {#key engine.collectedCount}
-          <b class="g-num hud-pulse font-tabular">{engine.collectedCount}</b>
+          <b class="hud-pulse font-tabular">{engine.collectedCount}</b>
         {/key}
         <i class="collect-total font-tabular">/{engine.total}</i>
       </span>
@@ -81,21 +51,20 @@
     </div>
 
     <div class="hud-tr-row">
-      {#if engine.level}
+      {#if engine.level && !engine.endless}
         <button
           type="button"
-          class="hud-seal font-celestial"
-          title={'本关朱印 ' + sealDone + '/4（星 满 准 专）——点开图鉴与成就'}
+          class="hud-goal"
+          title={'本关目标：星 · 满 · 准 · 专（已完成 ' + sealDone + '/4）——点开成就查看'}
           onclick={() => (uiState.showAchv = true)}
         >
-          <span class="seal-mark">印</span>
-          <b class="font-tabular">{sealDone}</b><i>/4</i>
+          本关目标 <b class="font-tabular">{sealDone}</b>/4
         </button>
       {/if}
 
       <button
         type="button"
-        class="hud-settings-btn mobile-only-btn"
+        class="hud-settings-btn"
         title="设置"
         aria-label="设置"
         onclick={() => (uiState.showSettings = true)}
@@ -129,47 +98,7 @@
     max-width: 60%;
   }
 
-  .hud-lvl-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    height: 34px;
-    padding: 0 12px;
-    border-radius: 9px;
-    background: linear-gradient(180deg, rgba(16, 24, 41, 0.94), rgba(6, 10, 19, 0.96));
-    border: 1px solid var(--edge-soft);
-    color: var(--gold-bright);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    box-shadow:
-      var(--bevel-top),
-      0 4px 14px rgba(0, 0, 0, 0.5);
-    transition: all 0.12s ease;
-  }
-  .hud-lvl-badge:hover {
-    border-color: var(--edge);
-    color: #fff;
-    box-shadow:
-      var(--bevel-top),
-      0 6px 18px rgba(245, 184, 65, 0.25);
-  }
-
-  .lvl-ico {
-    display: flex;
-    align-items: center;
-    color: var(--gold);
-  }
-  .lvl-title {
-    color: var(--text);
-    white-space: nowrap;
-  }
-  .lvl-caret {
-    font-size: 9px;
-    color: var(--gold);
-  }
-
-  /* ---------- 右上：大号收集读数 ---------- */
+  /* ---------- 右上：收集读数是这里唯一的大数字 ---------- */
   .hud-tr {
     display: flex;
     flex-direction: column;
@@ -182,21 +111,18 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 1px;
-    min-width: 116px;
+    gap: 0;
+    min-width: 108px;
     padding: 6px 12px 9px;
     border-radius: 10px;
-    background: linear-gradient(180deg, rgba(16, 24, 41, 0.94), rgba(6, 10, 19, 0.96));
+    background: rgba(9, 14, 24, 0.82);
     border: 1px solid var(--edge-soft);
-    box-shadow:
-      var(--bevel-top),
-      0 4px 14px rgba(0, 0, 0, 0.5);
     overflow: hidden;
   }
   .collect-label {
-    font-size: 10px;
-    letter-spacing: 4px;
-    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--muted);
   }
   .collect-value {
     display: inline-flex;
@@ -205,6 +131,10 @@
   }
   .collect-value b {
     font-size: 30px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
   }
   .collect-total {
     font-style: normal;
@@ -219,7 +149,6 @@
     height: 3px;
     width: var(--progress, 0%);
     background: linear-gradient(90deg, #10b981 0%, #00f5d4 50%, #f5b841 100%);
-    box-shadow: 0 0 8px rgba(0, 245, 212, 0.7);
     transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -229,9 +158,7 @@
     width: 2px;
     height: 8px;
     margin-left: -1px;
-    border-radius: 1px;
     background: var(--gold);
-    box-shadow: 0 0 6px rgba(245, 184, 65, 0.8);
   }
 
   .ghost-chip {
@@ -239,11 +166,10 @@
     align-items: center;
     padding: 3px 10px;
     border-radius: 999px;
-    background: rgba(8, 12, 22, 0.9);
+    background: rgba(8, 12, 22, 0.85);
     border: 1px solid var(--edge-soft);
     font-size: 12px;
     color: var(--gold);
-    letter-spacing: 0.5px;
   }
   .ghost-chip.ahead {
     border-color: rgba(0, 245, 212, 0.55);
@@ -260,130 +186,83 @@
     gap: 6px;
   }
 
-  .hud-seal {
+  /* 本关目标：小字读数，不抢收集数字 */
+  .hud-goal {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    height: 30px;
+    height: 32px;
     padding: 0 10px;
     border-radius: 9px;
-    border: 1px solid rgba(217, 43, 43, 0.55);
-    background: linear-gradient(180deg, rgba(120, 26, 26, 0.8), rgba(60, 12, 12, 0.88));
-    color: #ffd7d7;
+    background: rgba(9, 14, 24, 0.82);
+    border: 1px solid var(--edge-soft);
+    color: var(--muted);
     font-size: 12px;
-    letter-spacing: 1px;
-    box-shadow:
-      var(--bevel-top),
-      0 3px 10px rgba(0, 0, 0, 0.4);
-    transition: all 0.12s ease;
+    transition:
+      border-color 0.12s ease,
+      color 0.12s ease;
   }
-  .seal-mark {
-    font-size: 11px;
-    color: #ff8585;
+  .hud-goal b {
+    color: var(--gold-bright);
+    font-weight: 800;
   }
-  .hud-seal b {
-    font-size: 15px;
-    font-weight: 900;
-    color: #fff;
-  }
-  .hud-seal i {
-    font-style: normal;
-    font-size: 11px;
-    opacity: 0.65;
-  }
-  .hud-seal:hover {
-    color: #ffffff;
-    border-color: rgba(217, 43, 43, 0.85);
-    box-shadow:
-      var(--bevel-top),
-      0 0 14px rgba(217, 43, 43, 0.45);
+  .hud-goal:hover {
+    border-color: var(--edge);
+    color: var(--gold-bright);
   }
 
-  .mobile-only-btn {
-    display: none;
+  .hud-settings-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: rgba(9, 14, 24, 0.82);
+    border: 1px solid var(--edge-soft);
+    color: var(--muted);
+  }
+  .hud-settings-btn:hover {
+    border-color: var(--edge);
+    color: var(--gold-bright);
+  }
+
+  /* ---------- 触屏：所有可点件 ≥40px ---------- */
+  @media (pointer: coarse) {
+    .hud-goal {
+      height: 40px;
+    }
+    .hud-settings-btn {
+      width: 40px;
+      height: 40px;
+    }
   }
 
   @media (max-width: 640px) and (orientation: portrait) {
     .hud {
       padding: 6px 8px;
     }
-    /* 触屏下限 40px：画布内 HUD 的三枚可点件都要够高 */
-    .hud-lvl-badge {
-      height: 40px;
-      padding: 0 10px;
-      font-size: 11px;
-    }
-    .hud-lvl-badge .lvl-title {
-      font-size: 11px;
-    }
     .collect-readout {
-      min-width: 96px;
-      padding: 4px 9px 7px;
-    }
-    .collect-label {
-      font-size: 9px;
-      letter-spacing: 3px;
+      min-width: 92px;
+      padding: 4px 10px 8px;
     }
     .collect-value b {
-      font-size: 24px;
+      font-size: 26px;
     }
-    .collect-total {
-      font-size: 12px;
-    }
-    .mobile-only-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      background: rgba(8, 12, 22, 0.9);
-      border: 1px solid var(--edge-soft);
-      border-radius: 8px;
-      color: var(--muted);
-      box-shadow:
-        var(--bevel-top),
-        0 2px 6px rgba(0, 0, 0, 0.35);
-    }
-    .hud-seal {
-      height: 40px;
-      padding: 0 10px;
+    .hud-goal {
+      font-size: 11px;
+      padding: 0 8px;
     }
   }
 
+  /* 矮屏：收起次要读数，给画布让路 */
   @media (max-width: 640px) and (orientation: portrait) and (max-height: 700px) {
-    .hud-seal {
+    .hud-goal {
       display: none;
     }
   }
-
-  /* 触屏（含横屏手机）：画布内可点件一律 ≥40px 热区 */
-  @media (pointer: coarse) {
-    .hud-lvl-badge {
-      height: 40px;
-    }
-    .hud-seal {
-      height: 40px;
-      padding: 0 10px;
-    }
-    .mobile-only-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      background: rgba(8, 12, 22, 0.9);
-      border: 1px solid var(--edge-soft);
-      border-radius: 8px;
-      color: var(--muted);
-      box-shadow:
-        var(--bevel-top),
-        0 2px 6px rgba(0, 0, 0, 0.35);
-    }
-  }
-
-  /* 矮横屏：画布很小，收起朱印读数，给画布让路 */
   @media (orientation: landscape) and (max-height: 700px) {
-    .hud-seal {
+    .hud-goal {
       display: none;
     }
   }

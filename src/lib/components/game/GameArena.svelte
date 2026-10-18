@@ -83,30 +83,26 @@
   .stage-bracket.tl {
     top: -3px;
     left: -3px;
-    border-top: 3px solid var(--gold-bright);
-    border-left: 3px solid var(--gold-bright);
-    filter: drop-shadow(0 0 5px rgba(245, 184, 65, 0.5));
+    border-top: 2px solid var(--gold-bright);
+    border-left: 2px solid var(--gold-bright);
   }
   .stage-bracket.tr {
     top: -3px;
     right: -3px;
-    border-top: 3px solid var(--gold-bright);
-    border-right: 3px solid var(--gold-bright);
-    filter: drop-shadow(0 0 5px rgba(245, 184, 65, 0.5));
+    border-top: 2px solid var(--gold-bright);
+    border-right: 2px solid var(--gold-bright);
   }
   .stage-bracket.bl {
     bottom: -3px;
     left: -3px;
-    border-bottom: 3px solid var(--gold-bright);
-    border-left: 3px solid var(--gold-bright);
-    filter: drop-shadow(0 0 5px rgba(245, 184, 65, 0.5));
+    border-bottom: 2px solid var(--gold-bright);
+    border-left: 2px solid var(--gold-bright);
   }
   .stage-bracket.br {
     bottom: -3px;
     right: -3px;
-    border-bottom: 3px solid var(--gold-bright);
-    border-right: 3px solid var(--gold-bright);
-    filter: drop-shadow(0 0 5px rgba(245, 184, 65, 0.5));
+    border-bottom: 2px solid var(--gold-bright);
+    border-right: 2px solid var(--gold-bright);
   }
 
   /* ---------- 手机竖屏：画布按视口高与宽取小，机坞面板留在下方 ---------- */

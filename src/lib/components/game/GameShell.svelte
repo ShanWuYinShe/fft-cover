@@ -42,35 +42,13 @@
     <GameArena />
   </main>
 
-  <!-- 右侧璇玑中枢机坞 -->
-  <aside class="gs-dock" aria-label="璇玑中枢 · 指针控制台">
+  <!-- 右侧机坞：指针调参台 -->
+  <aside class="gs-dock" aria-label="指针调参台">
     <div class="dock-head">
-      <div class="dock-title-wrap">
-        <span class="dock-badge g-label">璇玑中枢</span>
-        <h2 class="dock-title font-celestial">十方星宿律柱</h2>
-      </div>
-      <div class="dock-capacity" title="本关最多启用 {armLimit} 根指针">
-        <span class="cap-pips" aria-hidden="true">
-          {#each Array(armLimit) as _, idx}
-            <span class="cap-pip" class:filled={idx < onArmCount}>◆</span>
-          {/each}
-        </span>
-        <span class="cap-num font-tabular">{onArmCount}/{armLimit}</span>
-      </div>
-
-      <!-- 移动端展开态：把面板收回去看画布 -->
-      {#if uiState.panelExpanded}
-        <button
-          type="button"
-          class="dock-collapse"
-          title="收起面板，回到画布"
-          aria-label="收起面板"
-          onclick={() => uiState.togglePanelExpanded()}
-        >
-          <span>收起</span>
-          <span class="collapse-ico">▴</span>
-        </button>
-      {/if}
+      <h2 class="dock-title">指针调参台</h2>
+      <span class="dock-count font-tabular" title="本关启用的指针数 / 上限">
+        指针 {onArmCount}/{armLimit}
+      </span>
     </div>
 
     <div class="dock-body">
@@ -78,19 +56,6 @@
         <p class="fitting-tip">自动拟合中——直接调整任意指针即可接管它；点击画布可打断</p>
       {/if}
       <ArmPanel />
-    </div>
-
-    <div class="dock-foot" aria-hidden="true">
-      <span
-        class="g-lamp {engine.phase === 'edit'
-          ? 'g-lamp--cyan'
-          : engine.phase === 'running'
-            ? 'g-lamp--red'
-            : ''}"
-      ></span>
-      <span class="foot-text">{engine.phase === 'running' ? '演算中' : '待机 · 可调参'}</span>
-      <span class="foot-line"></span>
-      <span class="foot-glyph font-celestial">璇玑</span>
     </div>
   </aside>
 
@@ -167,29 +132,7 @@
     display: flex;
     flex-direction: column;
     background: linear-gradient(180deg, rgba(12, 18, 32, 0.96) 0%, rgba(6, 10, 19, 0.99) 100%);
-    border-left: 1px solid var(--edge);
-    box-shadow:
-      inset 1px 0 0 rgba(255, 255, 255, 0.05),
-      -14px 0 34px rgba(0, 0, 0, 0.55);
-  }
-  /* 机坞左沿的金色发丝高光 */
-  .gs-dock::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 2px;
-    background: linear-gradient(
-      180deg,
-      transparent,
-      rgba(245, 184, 65, 0.55) 12%,
-      rgba(0, 245, 212, 0.35) 55%,
-      rgba(245, 184, 65, 0.5) 88%,
-      transparent
-    );
-    opacity: 0.7;
-    pointer-events: none;
+    border-left: 1px solid var(--edge-soft);
   }
 
   .dock-head {
@@ -198,68 +141,24 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    padding: 10px 14px;
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.09), rgba(245, 184, 65, 0.015));
-    border-bottom: 1px solid var(--edge-soft);
-    box-shadow: var(--bevel-top);
-  }
-
-  .dock-title-wrap {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-  }
-
-  .dock-badge {
-    background: rgba(245, 184, 65, 0.14);
-    border: 1px solid var(--edge-soft);
-    color: var(--gold-bright);
-    padding: 2px 6px;
-    border-radius: 4px;
-    letter-spacing: 1px;
-    flex: 0 0 auto;
+    padding: 12px 14px;
+    background: transparent;
+    border-bottom: 1px solid var(--edge-faint);
   }
 
   .dock-title {
     margin: 0;
-    font-size: 16px;
-    color: #fff;
-    letter-spacing: 2px;
+    font-size: 15px;
+    color: var(--text);
+    letter-spacing: 1px;
     font-weight: 700;
-    text-shadow: 0 0 14px rgba(245, 184, 65, 0.35);
     white-space: nowrap;
   }
 
-  .dock-capacity {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex: 0 0 auto;
-  }
-  .cap-pips {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-  }
-  .cap-pip {
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.16);
-    transition: all 0.2s ease;
-  }
-  .cap-pip.filled {
-    color: var(--cyan);
-    text-shadow: 0 0 8px var(--cyan);
-  }
-  .cap-num {
+  .dock-count {
     font-size: 12px;
-    color: var(--gold-bright);
-    font-weight: 700;
-  }
-
-  /* 移动端展开态的收起键（桌面不显示） */
-  .dock-collapse {
-    display: none;
+    color: var(--muted);
+    font-weight: 600;
   }
 
   .dock-body {
@@ -272,32 +171,6 @@
     scrollbar-width: thin;
     scrollbar-color: rgba(245, 184, 65, 0.35) transparent;
     -webkit-overflow-scrolling: touch;
-  }
-
-  .dock-foot {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 14px;
-    border-top: 1px solid var(--edge-faint);
-    background: rgba(4, 7, 13, 0.85);
-  }
-  .foot-text {
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-  .foot-line {
-    flex: 1 1 auto;
-    height: 1px;
-    background: linear-gradient(90deg, var(--edge-soft), transparent);
-  }
-  .foot-glyph {
-    font-size: 10px;
-    letter-spacing: 3px;
-    color: rgba(245, 184, 65, 0.45);
   }
 
   .fitting-tip {
@@ -332,10 +205,14 @@
     .gs-stage {
       padding: 6px 12px 0;
     }
+    /* 机坞按内容高度自适应：内容少就不留空场，多了才内部滚动 */
     .gs-dock {
+      max-height: 46dvh;
       border-left: none;
-      border-top: 1px solid var(--edge);
-      box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.5);
+      border-top: 1px solid var(--edge-soft);
+    }
+    .game-screen.panel-expanded .gs-dock {
+      max-height: 68dvh;
     }
     .gs-dock::before {
       display: none;
@@ -346,7 +223,7 @@
   @media (max-width: 640px) and (orientation: portrait) {
     .game-screen {
       grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: auto minmax(0, 1fr) auto auto;
+      grid-template-rows: minmax(0, 1fr) auto auto auto;
       grid-template-areas:
         'stage'
         'dock'
@@ -373,17 +250,16 @@
       background: linear-gradient(180deg, rgba(10, 15, 27, 0.92), rgba(5, 8, 15, 0.98));
     }
 
+    /* 机坞按内容高度自适应：内容少就不留空场，多了才内部滚动 */
     .gs-dock {
+      max-height: 46dvh;
       border-left: none;
-      border-top: 1px solid var(--edge);
-      box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.5);
+      border-top: 1px solid var(--edge-soft);
+    }
+    .game-screen.panel-expanded .gs-dock {
+      max-height: 68dvh;
     }
     .gs-dock::before {
-      display: none;
-    }
-
-    /* 展开态：机坞面板吃掉整个舞台，专心调参 */
-    .game-screen.panel-expanded .gs-stage {
       display: none;
     }
 
@@ -395,34 +271,6 @@
       letter-spacing: 1.5px;
     }
 
-    /* 展开态才需要「收起」键：否则没有回到画布的出口 */
-    .game-screen.panel-expanded .dock-capacity {
-      display: none;
-    }
-    .game-screen.panel-expanded .dock-collapse {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      height: 40px;
-      padding: 0 12px;
-      border-radius: 8px;
-      background: var(--face-metal);
-      border: 1px solid var(--edge);
-      color: var(--gold-bright);
-      font-size: 12px;
-      font-weight: 700;
-      white-space: nowrap;
-      box-shadow:
-        var(--bevel-top),
-        0 2px 0 rgba(0, 0, 0, 0.5);
-    }
-    .game-screen.panel-expanded .dock-collapse:active {
-      transform: translateY(2px);
-      box-shadow: var(--bevel-inset);
-    }
-    .collapse-ico {
-      font-size: 10px;
-    }
     .dock-body {
       padding: 8px 10px 12px;
     }
@@ -449,10 +297,6 @@
       width: min(94vw, 58dvh);
       margin-top: auto;
       margin-bottom: auto;
-    }
-
-    .dock-foot {
-      display: none;
     }
   }
 

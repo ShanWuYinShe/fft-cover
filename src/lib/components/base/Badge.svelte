@@ -52,7 +52,8 @@
 
   .badge-sm {
     min-height: 18px;
-    font-size: 10px;
+    /* 铭牌标签字号下限 11px（本轮字号收敛规则） */
+    font-size: 11px;
     padding: 3px 7px;
   }
 

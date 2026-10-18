@@ -50,26 +50,18 @@
   }
 </script>
 
-<!-- 暂停舱：整块盖住画布；画布很矮时外层滚动，保证三个按钮都能点到 -->
+<!-- 暂停菜单：一块安静的面板盖住画布；画布很矮时外层滚动，三个按钮都能点到 -->
 <div class="pause-menu" role="dialog" aria-modal="true">
   <div class="pm-panel">
-    <span class="g-scanlines pm-scan" aria-hidden="true"></span>
-    <span class="g-corner tl" aria-hidden="true"></span>
-    <span class="g-corner tr" aria-hidden="true"></span>
-    <span class="g-corner bl" aria-hidden="true"></span>
-    <span class="g-corner br" aria-hidden="true"></span>
-
-    <span class="pm-eyebrow g-label">观测暂止</span>
     <h3 class="font-celestial">已暂停</h3>
-    <p class="pm-sub">调整策略后继续，或者重新来过</p>
-    <span class="g-divider pm-div" aria-hidden="true"></span>
+    <p class="pm-sub">先看清现在的进度，再决定继续还是重来</p>
 
     {#if pauseProgress}
       <p class="pm-prog font-tabular">{pauseProgress}</p>
     {/if}
     {#if pauseGaps}
       <p class="pm-gaps" title="当前拟合最需要补/削的两个频率">
-        <Icon name="bulb" size={13} /> 最该调：{pauseGaps}
+        <Icon name="bulb" size={14} /> 最该调：{pauseGaps}
       </p>
     {/if}
 
@@ -92,9 +84,9 @@
     display: flex;
     padding: 12px;
     box-sizing: border-box;
-    background: rgba(5, 7, 14, 0.86);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    background: rgba(5, 7, 14, 0.84);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: var(--radius-lg);
     z-index: 12;
     animation: fade-in 0.25s ease-out;
@@ -103,7 +95,7 @@
     overscroll-behavior: contain;
   }
 
-  /* 座舱面板：居中，撑不满就滚动 */
+  /* 面板：一块平板 + 1px 描边，无包边、无扫描线、无外发光 */
   .pm-panel {
     position: relative;
     margin: auto;
@@ -111,100 +103,48 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 16px 18px 18px;
-    background: linear-gradient(180deg, var(--metal-2) 0%, var(--metal) 45%, #070c16 100%);
+    gap: 10px;
+    padding: 20px 18px;
+    background: var(--metal);
     border: 1px solid var(--edge-soft);
-    border-radius: var(--radius-md);
-    box-shadow: var(--sh-game-lg), var(--bevel-top);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     text-align: center;
-  }
-  .pm-panel::before {
-    content: '';
-    position: absolute;
-    inset: -1px -1px auto;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--edge-hot) 16%,
-      var(--edge-hot) 84%,
-      transparent
-    );
-    opacity: 0.75;
-    pointer-events: none;
-  }
-
-  .pm-scan {
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    opacity: 0.7;
-  }
-
-  .pm-eyebrow {
-    position: relative;
   }
 
   .pm-panel h3 {
-    position: relative;
     margin: 0;
-    font-size: 24px;
-    letter-spacing: 8px;
+    font-size: 22px;
+    letter-spacing: 5px;
     color: var(--text);
-    text-shadow: 0 0 18px rgba(245, 184, 65, 0.35);
-  }
-
-  .pm-div {
-    width: 100%;
-    margin: 2px 0 4px;
   }
 
   .pm-sub {
-    position: relative;
     margin: 0;
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--muted);
   }
 
-  /* 本局读数：小铭牌 + 等宽数字的凹槽条 */
+  /* 本局进度：一行等宽读数（不再是凹槽盒子） */
   .pm-prog {
-    position: relative;
-    margin: 0;
-    width: 100%;
-    padding: 7px 10px;
-    box-sizing: border-box;
-    border-radius: var(--r-sm);
-    background: linear-gradient(180deg, rgba(3, 8, 12, 0.9), rgba(6, 14, 16, 0.85));
-    border: 1px solid rgba(0, 245, 212, 0.32);
-    box-shadow: var(--bevel-inset);
+    margin: 2px 0 0;
     font-size: var(--fs-sm);
-    color: var(--cyan);
-    text-shadow: 0 0 12px rgba(0, 245, 212, 0.3);
+    color: var(--text);
   }
 
-  /* 最该调的频率：金色警示凹槽 */
+  /* 最该调的频率：一行金色提示 */
   .pm-gaps {
-    position: relative;
     margin: 0;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 7px 10px;
-    border-radius: var(--r-sm);
-    background: linear-gradient(180deg, rgba(24, 16, 3, 0.9), rgba(12, 8, 2, 0.88));
-    border: 1px solid rgba(245, 184, 65, 0.4);
-    box-shadow: var(--bevel-inset);
-    font-size: var(--fs-xs);
-    color: var(--gold-bright);
-    line-height: 1.6;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
+    font-size: var(--fs-sm);
+    color: var(--gold-bright);
+    line-height: 1.5;
   }
 
-  /* 暂停菜单按键：满宽厚键，主操作金色 */
+  /* 三个动作：主操作金色，其余金属面 */
   .pm-btn {
     position: relative;
     appearance: none;
@@ -214,54 +154,50 @@
     gap: 8px;
     width: 100%;
     min-height: 48px;
-    margin-top: 2px;
+    margin-top: 4px;
     padding: 0 16px;
     border-radius: 10px;
-    border: 1px solid var(--edge-soft);
-    background: var(--face-metal);
+    border: 1px solid var(--edge-faint);
+    background: rgba(255, 255, 255, 0.06);
     color: var(--text);
     font-size: var(--fs-sm);
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: 2px;
     cursor: pointer;
-    box-shadow:
-      var(--bevel-top),
-      0 4px 0 rgba(0, 0, 0, 0.55);
     -webkit-tap-highlight-color: transparent;
     transition:
-      transform 0.09s ease,
       color 0.12s ease,
       border-color 0.12s ease,
-      background 0.12s ease,
-      box-shadow 0.12s ease;
+      background 0.12s ease;
   }
   .pm-btn:hover {
     color: var(--gold-bright);
     border-color: var(--edge);
-    background: var(--face-metal-hover);
-  }
-  .pm-btn:active {
-    transform: translateY(3px);
-    box-shadow: var(--bevel-top);
+    background: rgba(255, 255, 255, 0.1);
   }
 
+  /* 主操作：金色实心（全屏唯一发光点之一） */
   .pm-btn.primary {
     min-height: 52px;
+    margin-top: 0;
+    margin-bottom: 4px;
     font-size: var(--fs-lg);
-    letter-spacing: 5px;
+    font-weight: 700;
+    letter-spacing: 4px;
     color: #1a1002;
     border-color: #ffe7a3;
     background: var(--face-gold);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
     box-shadow:
       var(--bevel-top),
       inset 0 -3px 0 rgba(140, 80, 0, 0.55),
-      0 4px 0 #7a4d05,
-      0 0 22px rgba(245, 184, 65, 0.35);
+      0 3px 0 #7a4d05;
   }
   .pm-btn.primary:hover {
     color: #120a00;
     background: var(--face-gold-hover);
+  }
+  .pm-btn:active {
+    transform: translateY(2px);
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -57,18 +57,9 @@
     gap: 12px;
     padding: 6px 16px;
     box-sizing: border-box;
-    background: linear-gradient(
-      90deg,
-      rgba(245, 184, 65, 0.03) 0%,
-      rgba(18, 27, 46, 0.96) 14%,
-      rgba(18, 27, 46, 0.96) 86%,
-      rgba(245, 184, 65, 0.03) 100%
-    );
-    border-top: 1px solid var(--edge-soft);
-    border-bottom: 1px solid var(--edge);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.06),
-      0 8px 22px rgba(0, 0, 0, 0.5);
+    background: transparent;
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid var(--edge-faint);
   }
 
   /* 两端的菱形收口 */
@@ -79,8 +70,7 @@
     height: 8px;
     transform: translateY(-50%) rotate(45deg);
     background: var(--metal-2);
-    border: 1px solid var(--edge);
-    box-shadow: 0 0 8px rgba(245, 184, 65, 0.35);
+    border: 1px solid var(--edge-soft);
   }
   .crown-cap.left {
     left: -4px;
@@ -108,9 +98,8 @@
     margin: 0;
     font-size: 20px;
     font-weight: 700;
-    color: #fff;
+    color: var(--text);
     letter-spacing: 2px;
-    text-shadow: 0 0 16px rgba(245, 184, 65, 0.4);
     white-space: nowrap;
   }
 
@@ -147,9 +136,6 @@
   .star-gem-socket.lit {
     border-color: #ffd700;
     background: radial-gradient(circle, #453008 0%, #1c1303 100%);
-    box-shadow:
-      0 0 14px rgba(245, 184, 65, 0.65),
-      inset 0 1px 2px rgba(255, 255, 255, 0.7);
   }
   .star-gem-socket.lit .gem-star {
     color: #ffd700;

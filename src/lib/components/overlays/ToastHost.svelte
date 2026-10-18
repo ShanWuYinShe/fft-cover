@@ -8,7 +8,7 @@
   }
 </script>
 
-<!-- 浮层通知托管：提示条与 PWA 更新卡都贴顶栏下沿，不遮挡主操作 -->
+<!-- 浮层通知托管：提示条与 PWA 更新卡都贴顶栏下沿，不遮挡主操作（降噪：卡片不再堆标签与包边） -->
 <div class="toast-host" aria-live="polite">
   {#if engine.toast && !uiState.showTitle}
     <Toast icon="trophy" variant="gold">
@@ -23,15 +23,7 @@
   {/if}
 
   {#if uiState.updateReady && engine.phase !== 'running'}
-    <div class="pwa-update-card g-corners">
-      <span class="g-corner tl" aria-hidden="true"></span>
-      <span class="g-corner tr" aria-hidden="true"></span>
-      <span class="g-corner bl" aria-hidden="true"></span>
-      <span class="g-corner br" aria-hidden="true"></span>
-      <span class="pwa-head">
-        <span class="g-lamp g-lamp--cyan" aria-hidden="true"></span>
-        <span class="g-label pwa-label">系统</span>
-      </span>
+    <div class="pwa-update-card">
       <span class="pwa-text">新版本已就绪</span>
       <div class="pwa-actions">
         <button type="button" class="g-btn g-btn--cyan pwa-btn" onclick={applyPwaUpdate}>
@@ -67,21 +59,19 @@
     pointer-events: auto;
   }
 
-  /* PWA 更新卡：座舱系统铭牌，而不是网页 toast */
+  /* PWA 更新卡：一行说明 + 两个按钮，不套铭牌/灯/包边 */
   .pwa-update-card {
     display: inline-flex;
     align-items: center;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
-    max-width: min(92vw, 480px);
+    gap: 12px;
+    max-width: min(92vw, 460px);
     padding: 8px 12px;
-    background: linear-gradient(180deg, #101a2c 0%, #070d18 100%);
+    background: #0d1626;
     border: 1px solid var(--edge-soft);
-    border-radius: 10px;
-    box-shadow:
-      var(--sh-game),
-      inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     animation: pwa-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -94,16 +84,6 @@
       opacity: 1;
       transform: none;
     }
-  }
-
-  .pwa-head {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-  }
-
-  .pwa-label {
-    color: var(--cyan);
   }
 
   .pwa-text {

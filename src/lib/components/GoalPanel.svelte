@@ -25,23 +25,21 @@
   );
 </script>
 
-<!-- 本关目标：装甲铭牌面板，四枚朱砂印嵌在凹槽插槽里 -->
-<section class="goal-panel g-plate g-plate--lit" aria-labelledby="goal-title">
+<!-- 本关目标：安静的分隔行列表（不套盒子、不发光） -->
+<section class="goal-panel" aria-labelledby="goal-title">
   <header class="goal-head">
-    <h2 id="goal-title" class="g-label goal-title">本关目标</h2>
+    <h2 id="goal-title" class="goal-title">本关目标</h2>
     <span class="goal-count" class:all={prog.done === prog.total}>
-      <b class="g-num goal-done">{prog.done}</b>
+      <b class="goal-done">{prog.done}</b>
       <span class="goal-sep">/</span>
       <span class="goal-total">{prog.total}</span>
     </span>
   </header>
 
-  <hr class="g-divider goal-divider" />
-
-  <!-- 达成即盖印：朱砂方印（篆刻样式），未达成是空印 -->
+  <!-- 达成即盖印：朱砂方印，未达成是空印 -->
   <ul class="goals">
     {#each rows as g (g.id)}
-      <li class="g-inset goal-row" class:done={g.done}>
+      <li class:done={g.done}>
         <span class="g-seal" aria-label={g.done ? g.name + ' 已达成' : g.name + ' 未达成'}
           >{g.seal}</span
         >
@@ -49,7 +47,6 @@
           <span class="g-name">{g.name}</span>
           <span class="g-tip">{g.tip}</span>
         </span>
-        <span class="g-lamp goal-lamp" aria-hidden="true"></span>
       </li>
     {/each}
   </ul>
@@ -61,26 +58,27 @@
 
 <style>
   /* ============================================================
-   * 本关目标 · 机箱面板
-   * 段头铭牌 + 大号达成读数 + 四枚朱砂印插槽
+   * 本关目标 · 无盒子版
+   * 标题 + 达成读数 + 分隔行；行与行之间只用发丝线
    * ============================================================ */
   .goal-panel {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 10px;
     min-width: 0;
+    padding: 4px 0;
   }
   .goal-head {
     display: flex;
-    align-items: flex-end;
+    align-items: baseline;
     justify-content: space-between;
     gap: 8px;
   }
   .goal-title {
     margin: 0;
-    font-size: 12px;
-    letter-spacing: 2px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--text);
     white-space: nowrap;
   }
   .goal-count {
@@ -91,44 +89,38 @@
   }
   .goal-count .goal-done {
     font-size: 20px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
     color: var(--gold-bright);
-    text-shadow: 0 0 14px rgba(245, 184, 65, 0.5);
   }
   .goal-sep {
-    font-size: 10px;
-    color: var(--muted-2);
+    font-size: 12px;
+    color: var(--muted);
   }
   .goal-total {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--muted);
     font-variant-numeric: tabular-nums;
   }
   .goal-count.all .goal-done {
     color: var(--gold-bright);
-    text-shadow: 0 0 20px rgba(255, 209, 102, 0.85);
-  }
-
-  .goal-divider {
-    margin: 0;
   }
 
   .goals {
     list-style: none;
-    margin: 0;
+    margin: 4px 0 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
   }
-  .goals .goal-row {
+  .goals li {
     display: flex;
     align-items: center;
-    gap: 9px;
-    padding: 7px 9px;
+    gap: 10px;
+    padding: 7px 0;
     min-width: 0;
-    transition:
-      border-color 0.15s ease,
-      box-shadow 0.15s ease;
+    border-bottom: 1px solid var(--edge-faint);
+  }
+  .goals li:last-child {
+    border-bottom: none;
   }
 
   /* 印章：楷体单字，未达成为空印（灰框），达成为朱砂实印 */
@@ -144,10 +136,9 @@
     font-size: 15px;
     font-weight: 700;
     line-height: 1;
-    color: var(--muted-2);
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: var(--bevel-inset);
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--edge-faint);
   }
   .g-body {
     flex: 1;
@@ -157,64 +148,38 @@
     gap: 1px;
   }
   .g-name {
-    font-size: var(--fs-sm);
-    font-weight: 700;
-    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
     letter-spacing: 0.5px;
     white-space: nowrap;
   }
   .g-tip {
-    font-size: var(--fs-xs);
-    color: var(--muted-2);
+    font-size: 12px;
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
     line-height: 1.4;
   }
-  .goal-lamp {
-    flex: 0 0 auto;
-    width: 7px;
-    height: 7px;
-    background: #1b2334;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9);
-  }
 
-  .goals .goal-row.done {
-    border-color: var(--cinnabar-line);
-    background: linear-gradient(180deg, rgba(192, 57, 43, 0.12), rgba(192, 57, 43, 0.03));
-    box-shadow:
-      var(--bevel-inset),
-      0 0 14px rgba(217, 43, 43, 0.18);
-  }
-  .goals .goal-row.done .g-seal {
+  .goals li.done .g-seal {
     color: #fdece7;
     background: linear-gradient(160deg, #d84b3c, #8e2a1f);
-    border-color: rgba(255, 255, 255, 0.25);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      0 2px 12px rgba(192, 57, 43, 0.45);
+    border-color: rgba(255, 255, 255, 0.2);
   }
-  .goals .goal-row.done .g-name {
+  .goals li.done .g-name {
     color: var(--text);
   }
-  .goals .goal-row.done .g-tip {
+  .goals li.done .g-tip {
     color: rgba(226, 143, 131, 0.9);
-  }
-  .goals .goal-row.done .goal-lamp {
-    background: var(--cinnabar);
-    box-shadow:
-      0 0 8px rgba(217, 43, 43, 0.9),
-      inset 0 0 2px #fff;
   }
 
   .all-done {
-    margin: 2px 0 0;
-    padding: 7px 10px;
-    border-radius: var(--r-sm);
-    background: rgba(192, 57, 43, 0.1);
-    border: 1px solid var(--cinnabar-line);
-    font-size: var(--fs-xs);
+    margin: 10px 0 0;
+    padding: 8px 0 0;
+    border-top: 1px solid var(--cinnabar-line);
+    font-size: 12px;
     color: #fca5a5;
-    line-height: 1.7;
+    line-height: 1.6;
     text-align: center;
-    box-shadow: var(--bevel-inset);
   }
 </style>

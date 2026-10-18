@@ -122,12 +122,10 @@
     margin-top: var(--space-2);
   }
 
+  /* 每日一练：小标题 + 一行难度键（无卡片） */
   .daily-card {
-    background: linear-gradient(180deg, var(--metal-2) 0%, var(--metal) 60%, #070c16 100%);
-    border: 1px solid var(--edge-soft);
-    border-radius: 10px;
-    padding: var(--space-2) var(--space-3);
-    box-shadow: var(--bevel-top);
+    padding: 10px 0;
+    border-bottom: 1px solid var(--edge-faint);
   }
 
   .dc-header {
@@ -140,55 +138,45 @@
   .dc-title {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
+    color: var(--text);
+    font-weight: 600;
+    letter-spacing: 1px;
   }
 
   .diff-btn-group {
     display: flex;
     gap: 6px;
   }
-  /* 难度键：金属面；当前档金色实心 */
+  /* 难度键：安静描边；当前档描金 */
   .diff-btn {
     flex: 1;
     appearance: none;
-    min-height: 40px;
+    min-height: 44px;
     padding: 0 8px;
     cursor: pointer;
     color: var(--muted);
-    font-size: var(--fs-xs);
-    font-weight: 700;
-    letter-spacing: 1px;
+    font-size: var(--fs-sm);
+    font-weight: 600;
     white-space: nowrap;
     border-radius: 8px;
-    border: 1px solid var(--edge-soft);
-    background: var(--face-metal);
-    box-shadow:
-      var(--bevel-top),
-      0 3px 0 rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--edge-faint);
+    background: transparent;
     transition:
-      transform 0.09s ease,
       color 0.12s ease,
       border-color 0.12s ease,
       background 0.12s ease;
   }
   .diff-btn:hover {
-    color: var(--gold-bright);
+    color: var(--text);
     border-color: var(--edge);
-    background: var(--face-metal-hover);
-  }
-  .diff-btn:active {
-    transform: translateY(2px);
+    background: rgba(255, 255, 255, 0.05);
   }
   .diff-btn.active {
-    color: #1a1002;
-    border-color: #ffe7a3;
-    background: var(--face-gold);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
-    box-shadow:
-      var(--bevel-top),
-      inset 0 -3px 0 rgba(140, 80, 0, 0.5),
-      0 3px 0 #7a4d05,
-      0 0 14px rgba(245, 184, 65, 0.4);
+    color: var(--gold-bright);
+    border-color: var(--gold);
+    background: rgba(245, 184, 65, 0.1);
+    font-weight: 700;
   }
 
   .weekly-card {
@@ -202,36 +190,21 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 8px 12px;
+    padding: 10px 0;
     box-sizing: border-box;
     cursor: pointer;
     color: var(--text);
-    font-size: var(--fs-xs);
-    border-radius: 9px;
-    background: linear-gradient(180deg, var(--metal-3) 0%, var(--metal) 60%, #070c16 100%);
-    border: 1px solid var(--edge-soft);
-    box-shadow:
-      var(--bevel-top),
-      0 3px 0 rgba(0, 0, 0, 0.5);
-    transition:
-      transform 0.09s ease,
-      color 0.12s ease,
-      border-color 0.12s ease,
-      background 0.12s ease;
+    font-size: var(--fs-sm);
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--edge-faint);
+    transition: color 0.12s ease;
   }
   .weekly-btn:hover {
-    border-color: var(--edge);
     color: var(--gold-bright);
-    background: var(--face-metal-hover);
-  }
-  .weekly-btn:active {
-    transform: translateY(2px);
   }
   .weekly-btn.active {
-    border-color: var(--cyan);
-    box-shadow:
-      var(--bevel-top),
-      0 0 16px rgba(0, 245, 212, 0.3);
+    color: var(--gold-bright);
   }
   .w-left {
     display: flex;
@@ -246,36 +219,28 @@
     white-space: nowrap;
   }
 
-  /* 打卡格：嵌进面板的小凹槽 */
+  /* 打卡格：一行 7 格（无外框） */
   .dweek {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 6px 10px;
-    background: linear-gradient(180deg, rgba(3, 5, 10, 0.9), rgba(8, 12, 22, 0.75));
-    border: 1px solid var(--edge-faint);
-    border-radius: 9px;
-    box-shadow: var(--bevel-inset);
+    gap: 5px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--edge-faint);
   }
   .dcell {
     flex: 1;
-    height: 26px;
+    height: 30px;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 3px;
+    border-radius: 4px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid transparent;
-    font-size: 9px;
-    color: var(--muted-2);
+    font-size: 12px;
+    color: var(--muted);
   }
   .dcell i {
     font-style: normal;
-    line-height: 1;
-  }
-  .dcell b {
-    font-size: 8px;
     line-height: 1;
   }
   .dcell.today {
@@ -292,7 +257,7 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 10px;
+    font-size: 12px;
     color: var(--muted);
     margin-left: 6px;
     white-space: nowrap;
@@ -306,28 +271,24 @@
     font-weight: 700;
   }
 
-  /* 分享键：金属小键 */
+  /* 分享键：安静小键 */
   .mini-btn {
     appearance: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 4px;
-    min-height: 30px;
-    padding: 0 8px;
+    min-height: 36px;
+    padding: 0 10px;
     cursor: pointer;
-    color: var(--text);
-    font-size: 10px;
-    font-weight: 700;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
     white-space: nowrap;
-    border-radius: 7px;
-    border: 1px solid var(--edge-soft);
-    background: var(--face-metal);
-    box-shadow:
-      var(--bevel-top),
-      0 2px 0 rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    border: 1px solid var(--edge-faint);
+    background: transparent;
     transition:
-      transform 0.09s ease,
       color 0.12s ease,
       border-color 0.12s ease,
       background 0.12s ease;
@@ -335,10 +296,7 @@
   .mini-btn:hover {
     color: var(--gold-bright);
     border-color: var(--edge);
-    background: var(--face-metal-hover);
-  }
-  .mini-btn:active {
-    transform: translateY(2px);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   /* 触屏：所有可点元素补到 44 热区 */

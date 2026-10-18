@@ -75,7 +75,8 @@
   });
 </script>
 
-<!-- 注意：.mm / .mm-btn / .mm-pop 三个类名是 ResultOverlay 的 :global() 钩子，不能改名 -->
+<!-- 注意：.mm / .mm-btn / .mm-pop 三个类名是 ResultOverlay 的 :global() 钩子，不能改名。
+     降噪版：无四角包边、无外发光；菜单项统一 44px、图标 + 文字两层结构。 -->
 <div class="mm" bind:this={root}>
   <button
     type="button"
@@ -95,11 +96,7 @@
     {/if}
   </button>
   {#if open}
-    <div class="mm-pop g-corners" class:up bind:this={popEl} role="menu">
-      <span class="g-corner tl" aria-hidden="true"></span>
-      <span class="g-corner tr" aria-hidden="true"></span>
-      <span class="g-corner bl" aria-hidden="true"></span>
-      <span class="g-corner br" aria-hidden="true"></span>
+    <div class="mm-pop" class:up bind:this={popEl} role="menu">
       {#each items as it (it.label)}
         <button
           type="button"
@@ -122,7 +119,7 @@
     display: inline-flex;
   }
 
-  /* 触发键：机箱上的一枚方形按键（与 .g-btn 同规格，≥40px 热区） */
+  /* 触发键：安静的金属方键（≥40px 热区） */
   .mm-btn {
     appearance: none;
     display: inline-flex;
@@ -133,15 +130,13 @@
     min-height: 44px;
     padding: 0 10px;
     border-radius: 10px;
-    border: 1px solid var(--edge);
-    background: var(--face-metal);
+    border: 1px solid var(--edge-soft);
+    background: #111a2c;
     color: var(--muted);
     cursor: pointer;
     box-shadow:
-      var(--bevel-top),
-      var(--bevel-bottom),
-      0 4px 0 rgba(0, 0, 0, 0.55),
-      0 8px 18px rgba(0, 0, 0, 0.45);
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      0 2px 0 rgba(0, 0, 0, 0.5);
     transition:
       transform 0.09s ease,
       box-shadow 0.12s ease,
@@ -152,34 +147,20 @@
   }
 
   .mm-btn:hover {
-    background: var(--face-metal-hover);
-    border-color: var(--edge-hot);
+    background: #16223a;
+    border-color: var(--edge);
     color: var(--gold-bright);
-    box-shadow:
-      var(--bevel-top),
-      var(--bevel-bottom),
-      0 4px 0 rgba(0, 0, 0, 0.55),
-      0 8px 22px rgba(0, 0, 0, 0.5),
-      0 0 20px rgba(245, 184, 65, 0.22);
   }
 
   .mm-btn:active {
-    transform: translateY(3px);
-    box-shadow:
-      var(--bevel-top),
-      inset 0 2px 8px rgba(0, 0, 0, 0.7),
-      0 1px 0 rgba(0, 0, 0, 0.5);
+    transform: translateY(2px);
   }
 
-  /* 展开态：按键点亮 */
+  /* 展开态：描边亮一档即可，不加外发光 */
   .mm-btn[aria-expanded='true'] {
-    border-color: var(--edge-hot);
+    border-color: var(--edge);
     color: var(--gold-bright);
-    box-shadow:
-      var(--bevel-top),
-      var(--bevel-bottom),
-      0 4px 0 rgba(0, 0, 0, 0.55),
-      var(--sh-glow-hot);
+    background: #16223a;
   }
 
   .mm-btn:focus-visible {
@@ -199,23 +180,15 @@
     width: 4px;
     height: 4px;
     border-radius: 1px;
+    background: var(--muted);
+    transition: background 0.15s ease;
+  }
+  .mm-btn:hover .mm-dots i,
+  .mm-btn[aria-expanded='true'] .mm-dots i {
     background: var(--gold-bright);
-    box-shadow: 0 0 6px rgba(245, 197, 66, 0.6);
-    transition:
-      transform 0.15s ease,
-      background 0.15s ease;
-  }
-  .mm-dots i:nth-child(2) {
-    background: var(--cyan);
-    box-shadow: 0 0 6px rgba(45, 212, 191, 0.6);
-  }
-  .mm-btn:hover .mm-dots i {
-    background: #ffffff;
-    box-shadow: 0 0 8px var(--gold-bright);
-    transform: scale(1.25);
   }
 
-  /* 弹出菜单：金属面板 + 四角包边 */
+  /* 弹出菜单：一层描边 + 安静的投影 */
   .mm-pop {
     position: absolute;
     top: calc(100% + 8px);
@@ -225,14 +198,12 @@
     max-width: min(300px, 86vw);
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    padding: 8px;
-    background: linear-gradient(180deg, #101a2c 0%, #070d18 100%);
-    border: 1px solid var(--edge);
+    gap: 2px;
+    padding: 6px;
+    background: #0d1626;
+    border: 1px solid var(--edge-soft);
     border-radius: 10px;
-    box-shadow:
-      var(--sh-game-lg),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     animation: mm-in 0.16s ease-out;
     max-height: calc(100dvh - 40px);
     overflow-y: auto;
@@ -252,9 +223,8 @@
     }
   }
 
-  /* 菜单项：一行一枚金属小键，左侧有金色选中条 */
+  /* 菜单项：一行一枚安静的键，图标 + 文字，尺寸统一 44px */
   .mm-pop .mm-item {
-    position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -264,7 +234,7 @@
     text-align: left;
     border-radius: 8px;
     border: 1px solid transparent;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.24));
+    background: transparent;
     color: var(--text);
     font: inherit;
     font-size: var(--fs-md);
@@ -274,31 +244,12 @@
     cursor: pointer;
     transition:
       background 0.12s ease,
-      border-color 0.12s ease,
       color 0.12s ease;
   }
 
-  .mm-pop .mm-item::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    width: 2px;
-    height: 0;
-    transform: translateY(-50%);
-    background: var(--gold-bright);
-    box-shadow: var(--sh-glow-hot);
-    transition: height 0.12s ease;
-  }
-
   .mm-pop .mm-item:hover:not(:disabled) {
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.16), rgba(245, 184, 65, 0.04));
-    border-color: var(--edge);
+    background: rgba(245, 184, 65, 0.1);
     color: var(--gold-bright);
-  }
-
-  .mm-pop .mm-item:hover:not(:disabled)::before {
-    height: 62%;
   }
 
   .mm-pop .mm-item:focus-visible {
@@ -306,32 +257,25 @@
     outline-offset: -2px;
   }
 
+  /* 图标只做形状，不再套一格描边方槽 */
   .mm-pop .mi {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    width: 24px;
-    height: 24px;
-    border-radius: 6px;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid var(--edge-faint);
+    width: 22px;
     color: var(--muted);
-    transition:
-      color 0.12s ease,
-      border-color 0.12s ease;
+    transition: color 0.12s ease;
   }
 
   .mm-pop .mm-item:hover:not(:disabled) .mi {
     color: var(--gold-bright);
-    border-color: var(--edge);
   }
 
   .mm-pop .mm-item:disabled {
     color: var(--muted);
-    opacity: 0.45;
+    opacity: 0.5;
     cursor: default;
-    background: rgba(0, 0, 0, 0.18);
   }
 
   /* 移动端不再缩成小胶囊：仍是 ≥40px 的机箱按键 */

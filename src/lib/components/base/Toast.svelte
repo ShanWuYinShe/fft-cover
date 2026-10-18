@@ -19,9 +19,8 @@
   } = $props();
 </script>
 
-<!-- 座舱铭牌式提示条：金属面 + 状态灯 + 金色发丝边（替代毛玻璃圆角胶囊） -->
+<!-- 降噪版提示条：一层描边 + 一个图标 + 文字（去掉状态灯与外发光） -->
 <div class="toast-item toast-{variant}" role="status">
-  <span class="toast-lamp g-lamp" aria-hidden="true"></span>
   {#if icon}
     <span class="toast-icon" aria-hidden="true">
       <Icon name={icon} size={15} />
@@ -48,18 +47,16 @@
     align-items: center;
     gap: 10px;
     box-sizing: border-box;
-    min-height: 44px;
+    min-height: 40px;
     padding: 8px 14px;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: var(--fs-sm);
     font-weight: 600;
     letter-spacing: 0.5px;
-    background: linear-gradient(180deg, #131d31 0%, #080e1a 100%);
-    border: 1px solid var(--edge);
+    background: #0d1626;
+    border: 1px solid var(--edge-soft);
     color: var(--text);
-    box-shadow:
-      var(--sh-game),
-      inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     animation: toast-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -74,50 +71,20 @@
     }
   }
 
+  /* 变体只改描边与文字颜色，不加光晕 */
   .toast-gold {
-    border-color: rgba(245, 184, 65, 0.5);
+    border-color: rgba(245, 184, 65, 0.45);
     color: var(--gold-bright);
-    box-shadow:
-      var(--sh-game),
-      inset 0 1px 0 rgba(255, 255, 255, 0.07),
-      0 0 18px rgba(245, 184, 65, 0.2);
   }
 
   .toast-info {
-    border-color: rgba(0, 245, 212, 0.45);
+    border-color: rgba(0, 245, 212, 0.4);
     color: var(--cyan);
-    box-shadow:
-      var(--sh-game),
-      inset 0 1px 0 rgba(255, 255, 255, 0.07),
-      0 0 18px rgba(0, 245, 212, 0.18);
   }
 
   .toast-success {
-    border-color: rgba(16, 185, 129, 0.5);
+    border-color: rgba(16, 185, 129, 0.45);
     color: #a7f3d0;
-    box-shadow:
-      var(--sh-game),
-      inset 0 1px 0 rgba(255, 255, 255, 0.07),
-      0 0 18px rgba(16, 185, 129, 0.18);
-  }
-
-  /* 状态灯随变体变色（基础态是金色 .g-lamp） */
-  .toast-info .toast-lamp {
-    background: var(--cyan);
-    box-shadow:
-      0 0 8px rgba(0, 245, 212, 0.9),
-      inset 0 0 2px #fff;
-  }
-
-  .toast-success .toast-lamp {
-    background: var(--jade);
-    box-shadow:
-      0 0 8px rgba(16, 185, 129, 0.9),
-      inset 0 0 2px #fff;
-  }
-
-  .toast-lamp {
-    flex: 0 0 auto;
   }
 
   .toast-icon {
@@ -145,13 +112,12 @@
     margin-left: 2px;
     border-radius: 7px;
     border: 1px solid transparent;
-    background: rgba(255, 255, 255, 0.04);
+    background: transparent;
     color: var(--muted);
     cursor: pointer;
     transition:
       color 0.12s ease,
-      border-color 0.12s ease,
-      background 0.12s ease;
+      border-color 0.12s ease;
   }
 
   .toast-close::after {
@@ -162,8 +128,7 @@
 
   .toast-close:hover {
     color: var(--gold-bright);
-    border-color: var(--edge);
-    background: rgba(245, 184, 65, 0.12);
+    border-color: var(--edge-soft);
   }
 
   .toast-close:focus-visible {

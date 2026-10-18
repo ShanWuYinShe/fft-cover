@@ -27,7 +27,7 @@
     onstart();
   }
 
-  /** 主命令：无进度时启天动轨，有进度时继续观测 */
+  /** 主命令：进入游戏（文案人话化，不再用「启天动轨」） */
   function start(): void {
     closeTitle();
   }
@@ -51,50 +51,30 @@
   }
 </script>
 
-<!-- 游戏主菜单：背景演出 + 座舱面板（品牌区 → 菜单 → 战绩 → 页脚） -->
+<!-- 游戏主菜单（降噪版）：背景只留一层浑天环，前景只有主按钮发光
+     结构：品牌区 → 菜单 → 三步上手 → 战绩 → 页脚 -->
 <div class="title-screen">
-  <!-- 背景演出：三层缓慢旋转的浑天环 + 星点 + 扫描线（纯 CSS，无外部资源） -->
+  <!-- 背景演出：单层缓慢旋转的浑天环（无星点/扫描线/暗角堆料） -->
   <div class="ts-sky" aria-hidden="true">
-    <span class="ts-ring ts-ring--ticks"></span>
-    <span class="ts-ring ts-ring--outer"></span>
-    <span class="ts-ring ts-ring--inner"></span>
-    <span class="ts-glow"></span>
-    <span class="ts-stars"></span>
-    <span class="ts-veil g-scanlines"></span>
-    <span class="ts-vignette"></span>
+    <span class="ts-ring"></span>
   </div>
 
   <div class="ts-scroll">
-    <div class="ts-console g-corners">
-      <span class="g-corner tl" aria-hidden="true"></span>
-      <span class="g-corner tr" aria-hidden="true"></span>
-      <span class="g-corner bl" aria-hidden="true"></span>
-      <span class="g-corner br" aria-hidden="true"></span>
-
-      <!-- 座舱状态条：装饰性铭牌，切分面板顶部（纯装饰，不进读屏） -->
-      <div class="ts-rail" aria-hidden="true">
-        <span class="ts-rail-left">
-          <span class="g-lamp g-lamp--cyan"></span>
-          <span class="g-label ts-rail-text">浑天座舱</span>
-        </span>
-        <span class="g-label g-label--dim ts-rail-text">就绪</span>
-      </div>
-
+    <div class="ts-console">
       <!-- 品牌区 -->
       <header class="ts-brand">
-        <span class="ts-eyebrow g-label">浑天璇玑 · 傅立叶级数</span>
+        <span class="ts-eyebrow">浑天璇玑 · 傅立叶级数</span>
         <h1 class="ts-name">
           傅立叶指针<span class="ts-seal" title="朱印：旋">旋</span>
         </h1>
         <p class="ts-sub">转动连杆拟合日月星轨，聆听谐波共鸣之律</p>
-        <span class="g-divider ts-rule"></span>
       </header>
 
-      <!-- 主菜单：四行整宽按键，主命令金色 -->
+      <!-- 主菜单：第一项是唯一的金色主按钮，其余安静 -->
       <nav class="ts-menu" aria-label="主菜单">
         <button type="button" class="g-btn g-btn--primary ts-item ts-item--main" onclick={start}>
           <span class="ts-glyph"><Icon name="play" size={18} /></span>
-          <span class="ts-label">{hasProgress ? '继续观测' : '启天动轨'}</span>
+          <span class="ts-label">进入游戏</span>
           <span class="ts-arrow" aria-hidden="true"><Icon name="chevron-right" size={16} /></span>
         </button>
 
@@ -117,65 +97,46 @@
         </button>
       </nav>
 
-      <!-- 机务提示：保留原有玩法引导文案，改成座舱提示条 -->
-      <p class="ts-hint">
-        <span class="ts-hint-icon"><Icon name="bulb" size={13} /></span>
-        以旋转指针首尾相连——在天穹画布上绘制谐和曲线，感应天地算法之美
-      </p>
+      <!-- 三步上手：一行一步，让第一次玩的人 3 秒看懂 -->
+      <section class="ts-steps" aria-labelledby="ts-steps-title">
+        <h2 class="ts-steps-title" id="ts-steps-title">三步上手</h2>
+        <ol class="ts-steps-list">
+          <li>调半径，让紫色轨迹贴上金色虚线</li>
+          <li>点「开始旋转」，指针扫过点就能收</li>
+          <li>收得越多，结算的星越多</li>
+        </ol>
+      </section>
 
-      <!-- 战绩：无进度时整行隐藏（沿用原有逻辑） -->
+      <!-- 战绩：无进度时整行隐藏（沿用原有逻辑），纯文字不套盒子 -->
       {#if hasProgress}
         <div class="ts-record" role="group" aria-label="战绩统计">
-          <div class="ts-chip">
-            <b class="g-num g-num--gold">{totalStars}</b>
-            <i class="g-label g-label--dim">/{LEVEL_DEFS.length * 3} 星</i>
-          </div>
-          <div class="ts-chip" title="四枚朱印：星 / 满 / 准 / 专">
-            <span class="ts-chip-icon"><Icon name="gem" size={13} /></span>
-            <b class="g-num g-num--gold">{seals.done}</b>
-            <i class="g-label g-label--dim">/{seals.total} 朱印</i>
-          </div>
+          <span class="ts-stat"><b>{totalStars}</b>/{LEVEL_DEFS.length * 3} 星</span>
+          <span class="ts-stat" title="四枚朱印：星 / 满 / 准 / 专">
+            <Icon name="gem" size={12} /><b>{seals.done}</b>/{seals.total} 朱印
+          </span>
           {#if seals.chapters > 0}
-            <div class="ts-chip" title="章节印：一章四印集齐">
-              <b class="g-num g-num--gold">{seals.chapters}</b>
-              <i class="g-label g-label--dim">/{seals.chaptersTotal} 章节大印</i>
-            </div>
+            <span class="ts-stat">{seals.chapters}/{seals.chaptersTotal} 章节大印</span>
           {/if}
           {#if perfectCount > 0}
-            <div class="ts-chip">
-              <span class="ts-chip-icon"><Icon name="crown" size={13} /></span>
-              <b class="g-num g-num--gold">{perfectCount}</b>
-              <i class="g-label g-label--dim">完美</i>
-            </div>
+            <span class="ts-stat"><Icon name="crown" size={12} /><b>{perfectCount}</b> 完美</span>
           {/if}
           {#if exactCount > 0}
-            <div class="ts-chip">
-              <span class="ts-chip-icon"><Icon name="target" size={13} /></span>
-              <b class="g-num g-num--gold">{exactCount}</b>
-              <i class="g-label g-label--dim">精确解</i>
-            </div>
+            <span class="ts-stat"><Icon name="target" size={12} /><b>{exactCount}</b> 精确解</span>
           {/if}
           {#if expertCount > 0}
-            <div class="ts-chip">
-              <span class="ts-chip-icon"><Icon name="flag" size={13} /></span>
-              <b class="g-num g-num--gold">{expertCount}</b>
-              <i class="g-label g-label--dim">专家</i>
-            </div>
+            <span class="ts-stat"><Icon name="flag" size={12} /><b>{expertCount}</b> 专家</span>
           {/if}
           {#if engine.dailyStreak.streak > 0}
-            <div class="ts-chip">
-              <span class="ts-chip-icon"><Icon name="flame" size={13} /></span>
-              <b class="g-num g-num--gold">{engine.dailyStreak.streak}</b>
-              <i class="g-label g-label--dim">连胜</i>
-            </div>
+            <span class="ts-stat">
+              <Icon name="flame" size={12} /><b>{engine.dailyStreak.streak}</b> 连胜
+            </span>
           {/if}
         </div>
       {/if}
 
       <!-- 页脚：版本号铭牌 -->
       <footer class="ts-foot">
-        <span class="g-lamp g-lamp--cyan"></span>
-        <span class="ts-ver">v{version} · 浑天璇玑 © 2026 傅立叶级数工坊</span>
+        <span class="ts-ver">v{version} · 浑天璇玑 © 2026</span>
       </footer>
     </div>
   </div>
@@ -189,7 +150,7 @@
     overflow-x: hidden;
     overflow-y: auto;
     background: #04060c;
-    animation: ts-in 0.45s ease-out;
+    animation: ts-in 0.35s ease-out;
     overscroll-behavior: contain;
   }
 
@@ -202,7 +163,7 @@
     }
   }
 
-  /* ---------- 背景演出层（固定，不随内容滚动） ---------- */
+  /* ---------- 背景：只留一层浑天环 ---------- */
   .ts-sky {
     position: fixed;
     inset: 0;
@@ -214,49 +175,12 @@
     position: absolute;
     left: 50%;
     top: 50%;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    will-change: transform;
-  }
-
-  /* 外环：刻度圈（mask 挖空中心，得到环形刻度带） */
-  .ts-ring--ticks {
-    width: min(152vmin, 1240px);
-    height: min(152vmin, 1240px);
-    background: repeating-conic-gradient(
-      from 0deg,
-      rgba(245, 184, 65, 0.34) 0deg 0.3deg,
-      transparent 0.3deg 3deg
-    );
-    -webkit-mask: radial-gradient(
-      circle,
-      transparent 65.4%,
-      #000 65.6%,
-      #000 66.4%,
-      transparent 66.6%
-    );
-    mask: radial-gradient(circle, transparent 65.4%, #000 65.6%, #000 66.4%, transparent 66.6%);
-    animation: ts-orbit 150s linear infinite;
-  }
-
-  /* 中环：暗金虚线圆 */
-  .ts-ring--outer {
     width: min(112vmin, 900px);
     height: min(112vmin, 900px);
-    border: 1px dashed rgba(245, 184, 65, 0.22);
-    box-shadow: 0 0 60px rgba(245, 184, 65, 0.06) inset;
-    animation: ts-orbit-rev 120s linear infinite;
-  }
-
-  /* 内环：青色能量圈 */
-  .ts-ring--inner {
-    width: min(74vmin, 600px);
-    height: min(74vmin, 600px);
-    border: 1px solid rgba(0, 245, 212, 0.14);
-    box-shadow:
-      0 0 80px rgba(0, 245, 212, 0.08),
-      0 0 40px rgba(245, 184, 65, 0.06) inset;
-    animation: ts-orbit 90s linear infinite;
+    border: 1px dashed rgba(245, 184, 65, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: ts-orbit 150s linear infinite;
   }
 
   @keyframes ts-orbit {
@@ -268,70 +192,7 @@
     }
   }
 
-  @keyframes ts-orbit-rev {
-    from {
-      transform: translate(-50%, -50%) rotate(360deg);
-    }
-    to {
-      transform: translate(-50%, -50%) rotate(0deg);
-    }
-  }
-
-  /* 中心金雾 */
-  .ts-glow {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: min(120vmin, 900px);
-    height: min(120vmin, 900px);
-    transform: translate(-50%, -50%);
-    background: radial-gradient(
-      circle,
-      rgba(245, 184, 65, 0.14) 0%,
-      rgba(245, 184, 65, 0.05) 38%,
-      transparent 68%
-    );
-  }
-
-  /* 星点：多层 radial-gradient 铺底，缓慢呼吸 */
-  .ts-stars {
-    position: absolute;
-    inset: 0;
-    background-image:
-      radial-gradient(1.4px 1.4px at 12% 22%, rgba(255, 255, 255, 0.7), transparent),
-      radial-gradient(1.2px 1.2px at 28% 68%, rgba(245, 184, 65, 0.6), transparent),
-      radial-gradient(1px 1px at 44% 14%, rgba(255, 255, 255, 0.5), transparent),
-      radial-gradient(1.6px 1.6px at 62% 78%, rgba(0, 245, 212, 0.5), transparent),
-      radial-gradient(1px 1px at 78% 34%, rgba(255, 255, 255, 0.55), transparent),
-      radial-gradient(1.3px 1.3px at 88% 62%, rgba(245, 184, 65, 0.5), transparent),
-      radial-gradient(1px 1px at 8% 84%, rgba(255, 255, 255, 0.4), transparent),
-      radial-gradient(1.2px 1.2px at 52% 46%, rgba(255, 255, 255, 0.35), transparent),
-      radial-gradient(1px 1px at 70% 8%, rgba(255, 255, 255, 0.45), transparent);
-    animation: ts-twinkle 7s ease-in-out infinite alternate;
-  }
-
-  @keyframes ts-twinkle {
-    from {
-      opacity: 0.45;
-    }
-    to {
-      opacity: 0.95;
-    }
-  }
-
-  .ts-veil {
-    position: absolute;
-    inset: 0;
-    opacity: 0.6;
-  }
-
-  .ts-vignette {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 50% 48%, transparent 38%, rgba(0, 0, 0, 0.72) 100%);
-  }
-
-  /* ---------- 可滚动居中容器（矮视口下不裁切内容） ---------- */
+  /* ---------- 居中容器（矮视口靠滚动兜底，不裁切） ---------- */
   .ts-scroll {
     position: relative;
     z-index: 1;
@@ -342,54 +203,17 @@
     padding: 24px 16px;
   }
 
-  /* ---------- 座舱面板 ---------- */
+  /* ---------- 面板：只有一层描边，安静的重心 ---------- */
   .ts-console {
-    position: relative;
-    width: min(520px, 100%);
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-    padding: 14px 24px 16px;
-    background: linear-gradient(180deg, rgba(11, 18, 32, 0.94) 0%, rgba(5, 8, 15, 0.97) 100%);
+    gap: 18px;
+    width: min(500px, 100%);
+    padding: 22px 24px 18px;
+    background: linear-gradient(180deg, #0c1424 0%, #070c16 100%);
     border: 1px solid var(--edge-soft);
-    border-radius: 16px;
-    box-shadow:
-      var(--sh-game-lg),
-      inset 0 1px 0 rgba(255, 255, 255, 0.07);
-    animation: ts-console-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  @keyframes ts-console-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px) scale(0.985);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  /* 顶部状态条 */
-  .ts-rail {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--edge-faint);
-  }
-
-  .ts-rail-left {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* 铭牌字距靠 letter-spacing，避免 DOM 里塞空格影响读屏 */
-  .ts-rail-text {
-    letter-spacing: 3px;
+    border-radius: 14px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.45);
   }
 
   /* ---------- 品牌区 ---------- */
@@ -403,8 +227,9 @@
 
   .ts-eyebrow {
     font-size: 11px;
-    letter-spacing: 5px;
-    text-shadow: 0 0 10px rgba(245, 184, 65, 0.35);
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--gold);
   }
 
   .ts-name {
@@ -413,7 +238,7 @@
     justify-content: center;
     gap: 10px;
     margin: 0;
-    font-size: clamp(32px, 8vw, 50px);
+    font-size: clamp(32px, 8vw, 48px);
     line-height: 1.15;
     letter-spacing: 8px;
     font-weight: 800;
@@ -422,7 +247,6 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    filter: drop-shadow(0 6px 26px rgba(245, 184, 65, 0.35));
   }
 
   /* 朱印：标题旁的方形印章（篆刻样式） */
@@ -442,82 +266,81 @@
     color: #ffffff;
     border-radius: 4px;
     border: 1px solid rgba(255, 200, 190, 0.4);
-    box-shadow:
-      inset 0 0 0 1px #991b1b,
-      0 3px 12px rgba(217, 43, 43, 0.45);
-    filter: none;
+    box-shadow: inset 0 0 0 1px #991b1b;
   }
 
   .ts-sub {
     margin: 0;
     font-size: var(--fs-md);
     color: var(--muted);
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
   }
 
-  .ts-rule {
-    width: 100%;
-    margin: 6px 0 0;
-  }
-
-  /* ---------- 菜单：机箱凹槽里的四枚厚按键 ---------- */
+  /* ---------- 菜单：不再套凹槽盒子，靠间距分组 ---------- */
   .ts-menu {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 10px;
-    border-radius: 12px;
-    background: linear-gradient(180deg, rgba(3, 5, 10, 0.9), rgba(8, 12, 22, 0.72));
-    border: 1px solid var(--edge-faint);
-    box-shadow: var(--bevel-inset);
   }
 
   .ts-menu .ts-item {
     width: 100%;
-    min-height: 54px;
+    min-height: 50px;
     justify-content: flex-start;
     gap: 12px;
     padding: 0 14px;
     font-size: 15px;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
+    border-radius: 10px;
+    /* 降噪：只留上高光 + 硬投影，去掉外发光 */
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      0 2px 0 rgba(0, 0, 0, 0.5);
   }
 
+  /* 主按钮：整页唯一的金光（一级元素） */
   .ts-menu .ts-item--main {
     min-height: 58px;
     font-size: 17px;
     letter-spacing: 4px;
-    animation: ts-main-pulse 2.8s ease-in-out infinite;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.35),
+      inset 0 -3px 0 rgba(140, 80, 0, 0.5),
+      0 3px 0 #7a4d05,
+      0 6px 16px rgba(245, 184, 65, 0.32);
   }
 
-  @keyframes ts-main-pulse {
-    0%,
-    100% {
-      filter: drop-shadow(0 0 0 rgba(245, 184, 65, 0));
-    }
-    50% {
-      filter: drop-shadow(0 0 14px rgba(245, 184, 65, 0.55));
-    }
+  .ts-menu .ts-item:hover:not(.ts-item--main) {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      0 2px 0 rgba(0, 0, 0, 0.5);
   }
 
-  /* 左侧图标格：嵌进按键的方槽 */
+  .ts-menu .ts-item--main:hover {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -3px 0 rgba(140, 80, 0, 0.45),
+      0 3px 0 #7a4d05,
+      0 8px 20px rgba(245, 184, 65, 0.42);
+  }
+
+  .ts-menu .ts-item:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+  }
+
+  /* 左侧图标：直接显示，不再套一格描边方槽 */
   .ts-glyph {
     flex: 0 0 auto;
     display: grid;
     place-items: center;
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
+    width: 26px;
+    height: 26px;
     color: var(--gold);
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(255, 255, 255, 0.03));
-    border: 1px solid var(--edge-faint);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
 
   .ts-item--main .ts-glyph {
     color: #4a2c02;
-    background: linear-gradient(180deg, rgba(60, 32, 0, 0.22), rgba(255, 255, 255, 0.22));
-    border-color: rgba(90, 50, 0, 0.45);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
   }
 
   .ts-label {
@@ -532,21 +355,18 @@
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
-    color: var(--gold-bright);
-    opacity: 0.7;
-    transition:
-      transform 0.12s ease,
-      opacity 0.12s ease;
+    color: var(--muted);
+    opacity: 0.8;
+    transition: transform 0.12s ease;
   }
 
   .ts-item:hover .ts-arrow {
-    opacity: 1;
-    transform: translateX(3px);
+    transform: translateX(2px);
   }
 
   .ts-item--main .ts-arrow {
     color: #4a2c02;
-    opacity: 0.85;
+    opacity: 0.9;
   }
 
   .ts-item:focus-visible {
@@ -554,62 +374,66 @@
     outline-offset: 3px;
   }
 
-  /* ---------- 机务提示条 ---------- */
-  .ts-hint {
+  /* ---------- 三步上手：一行一步，不带盒子 ---------- */
+  .ts-steps {
     display: flex;
-    align-items: flex-start;
-    gap: 8px;
+    flex-direction: column;
+    gap: 4px;
+    border-top: 1px solid var(--edge-faint);
+  }
+
+  .ts-steps-title {
+    margin: 12px 0 2px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--gold);
+  }
+
+  .ts-steps-list {
     margin: 0;
-    padding: 8px 10px;
-    font-size: var(--fs-sm);
-    line-height: 1.6;
-    color: rgba(226, 232, 240, 0.68);
-    letter-spacing: 0.5px;
-    border-radius: 8px;
-    background: rgba(0, 245, 212, 0.04);
-    border: 1px solid rgba(0, 245, 212, 0.12);
+    padding-left: 1.5em;
+    /* 三步上手是「怎么玩」的一级信息，用正文色而不是次要色 */
+    color: var(--text);
+    font-size: var(--fs-md);
+    line-height: 1.65;
+    list-style: decimal;
   }
 
-  .ts-hint-icon {
-    flex: 0 0 auto;
-    display: inline-flex;
-    margin-top: 2px;
-    color: var(--cyan);
+  .ts-steps-list li::marker {
+    color: var(--gold);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
   }
 
-  /* ---------- 战绩徽章行 ---------- */
+  /* ---------- 战绩：纯文字行，不套芯片盒子 ---------- */
   .ts-record {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     justify-content: center;
-    gap: 6px 8px;
+    gap: 4px 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--edge-faint);
+    font-size: var(--fs-sm);
+    color: var(--muted);
   }
 
-  .ts-chip {
+  .ts-stat {
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
     gap: 4px;
-    padding: 5px 10px;
-    border-radius: 8px;
-    background: linear-gradient(180deg, rgba(9, 14, 24, 0.95), rgba(4, 7, 13, 0.95));
-    border: 1px solid var(--edge-faint);
-    box-shadow:
-      var(--bevel-top),
-      0 2px 0 rgba(0, 0, 0, 0.5);
+    font-variant-numeric: tabular-nums;
   }
 
-  .ts-chip b {
-    font-size: 17px;
+  .ts-stat b {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--gold-bright);
   }
 
-  .ts-chip i {
-    font-size: 10px;
-    letter-spacing: 1px;
-  }
-
-  .ts-chip-icon {
-    display: inline-flex;
-    align-self: center;
+  /* 图标由 Icon 子组件渲染，需用 :global 才能染色 */
+  .ts-stat :global(svg) {
     color: var(--gold);
   }
 
@@ -618,7 +442,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
     padding-top: 10px;
     border-top: 1px solid var(--edge-faint);
   }
@@ -626,24 +449,24 @@
   .ts-ver {
     font-size: 11px;
     letter-spacing: 1px;
-    color: var(--muted-2);
+    color: var(--muted);
     white-space: nowrap;
   }
 
-  /* ---------- 移动端：收紧密度，保证四行菜单完整可见 ---------- */
+  /* ---------- 移动端：收紧密度，保证三步上手也完整可见 ---------- */
   @media (max-width: 640px) {
     .ts-scroll {
       padding: 16px 12px;
     }
 
     .ts-console {
-      padding: 12px 14px 14px;
-      gap: 12px;
-      border-radius: 14px;
+      gap: 14px;
+      padding: 16px 16px 14px;
+      border-radius: 12px;
     }
 
     .ts-eyebrow {
-      letter-spacing: 4px;
+      letter-spacing: 3px;
     }
 
     .ts-name {
@@ -666,38 +489,35 @@
 
     .ts-menu {
       gap: 6px;
-      padding: 8px;
     }
 
     .ts-menu .ts-item {
-      min-height: 50px;
+      min-height: 46px;
       font-size: 14px;
-      letter-spacing: 1.5px;
-      gap: 10px;
-      padding: 0 10px;
+      letter-spacing: 1px;
     }
 
     .ts-menu .ts-item--main {
-      min-height: 54px;
+      min-height: 52px;
       font-size: 16px;
       letter-spacing: 2px;
     }
 
-    .ts-glyph {
-      width: 30px;
-      height: 30px;
+    .ts-steps-list {
+      font-size: var(--fs-sm);
+      line-height: 1.6;
     }
 
-    .ts-chip b {
-      font-size: 15px;
+    .ts-record {
+      gap: 4px 10px;
     }
   }
 
-  /* 矮视口（横屏手机 / 小窗）：进一步压缩，靠滚动兜底 */
+  /* 矮视口（横屏手机 / 小窗）：压缩留白，靠滚动兜底 */
   @media (max-height: 700px) {
     .ts-console {
       gap: 10px;
-      padding-top: 10px;
+      padding-top: 14px;
     }
 
     .ts-sub {
@@ -705,33 +525,24 @@
     }
 
     .ts-menu .ts-item {
-      min-height: 46px;
+      min-height: 44px;
     }
 
     .ts-menu .ts-item--main {
-      min-height: 50px;
-    }
-
-    .ts-hint {
-      display: none;
+      min-height: 48px;
     }
   }
 
   /* 尊重「减弱动态效果」 */
   @media (prefers-reduced-motion: reduce) {
     .title-screen,
-    .ts-console,
-    .ts-ring,
-    .ts-stars,
-    .ts-menu .ts-item--main {
+    .ts-ring {
       animation: none;
     }
   }
 
   :global(.reduce-motion) .ts-ring,
-  :global(.reduce-motion) .ts-stars,
-  :global(.reduce-motion) .ts-console,
-  :global(.reduce-motion) .ts-item--main {
+  :global(.reduce-motion) .title-screen {
     animation: none;
   }
 </style>

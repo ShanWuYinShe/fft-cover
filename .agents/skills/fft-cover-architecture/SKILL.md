@@ -7,13 +7,25 @@ description: 傅立叶指针（fft_cover）项目架构事实：全屏座舱 UI 
 
 **全部为会话内实测验证的事实（2026-10-13，代码与单测为准）。** 改动相关区域前先读本节，避免重新踩坑。
 
-## 界面架构（浑天座舱 HUD，2026-10-18 落地）
+## 界面架构（浑天座舱 HUD，2026-10-18 落地；同日第二轮做减法）
 
+**信息三层（新控件先归层）**：一级 = 本关目标与下一步 / 画布 / 主操作 / 收集进度（可发光、大字）；
+二级 = 关卡入口 / 星级 / 本关目标 / 重置·更多·设置·成就 / 指针调参台（安静，无发光）；
+三级 = 相位罗盘、四象卡准、刻度尺、倍率矩阵、撤销重做（折进「高级调谐」，**折叠时不挂载**）。
+量化基线（`.workwork/ui-redesign/clutter.mjs`）：桌面游戏屏 65 按钮/22 盒子/43 发光/587 字 →
+**14 / 5 / 3 / 186**；成就弹窗盒子 47 → 6。
+
+- **`<details>` 折叠陷阱（实测）**：Chrome 下折叠态子元素仍有布局尺寸（`getBoundingClientRect` 非 0），
+  会漏进度量、Tab 顺序与读屏。正确做法 `bind:open` + `{#if}`，折叠时不挂载（C 线第二轮踩过）。
 - **整屏锁死**：`html/body/#app` 是 `height:100dvh + overflow:hidden`，页面不滚动；滚动只发生在
   `.gs-dock .dock-body`（右侧机坞 / 移动端机坞面板）与弹层内部。新弹层必须自带上限 + 内滚。
 - **GameShell 是 grid 四区**：`--hud-h`(56) 顶栏 / 舞台 / `--dock-w`(384) 机坞 / `--cmd-h`(78) 指令栏；
-  手机竖屏改成 `stage → dock → cmd → nav` 四行（`panel-expanded` 时机坞独占舞台、`panel-hidden`
-  （运行态）时机坞让位且画布吃掉高度）。竖屏平板 641–900 与横屏 ≤900 各有一套单独 grid。
+  手机竖屏改成 `stage → dock → cmd → nav` 四行，机坞**按内容自适应**（上限 46dvh，`panel-expanded` 68dvh），
+  `panel-hidden`（运行态）时机坞让位、画布吃掉剩余高度。竖屏平板 641–900 与横屏 ≤900 各有一套单独 grid。
+- **入口去重**（改动时守住）：朱印只在画布 HUD；章节星数只在顶栏「关卡」入口；成就/设置只在顶栏
+  （手机无顶栏时用画布 HUD 齿轮）+ 更多菜单；音量/音乐只在更多菜单；缩放只靠滚轮/双指 + 画布右下角
+  一个「复位视图」键。主操作文案是人话：**开始旋转 / 结束并结算**（引擎 `runLabel` 仍带 ▶/⏸ 字形，
+  渲染前要剥掉，否则和 SVG 图标出现两个三角）。
 - **公共件**在 `src/styles/game-ui.css`（`.g-btn` / `.g-plate` / `.g-inset` / `.g-label` / `.g-num` /
   `.g-divider` / `.g-corners` / `.g-lamp` / `.g-scanlines`），尺寸与金属质感令牌在 `tokens.css`
   （`--hud-h/--cmd-h/--dock-w/--tab-h`、`--metal-*`、`--face-*`、`--edge*`、`--bevel-*`）。
@@ -36,7 +48,8 @@ workspace 内起一个专属 headless Chrome，用 CDP HTTP + 内置 WebSocket �
   --user-data-dir="$PWD/.workwork/ui-redesign/chrome-profile" about:blank &
 ```
 
-- 脚本：`.workwork/ui-redesign/shot.mjs <scenario> <out.png> [宽] [高] [mobile]`（单场景截图）
+- 脚本：`.workwork/ui-redesign/shot.mjs <scenario> <out.png> [宽] [高] [mobile]`（单场景截图；
+  星图场景点的是顶栏 `.hud-quiet-btn`——入口改过名，旧类名 `.hud-starmap-btn` 已不存在）
   与 `verify.mjs`（17 个场景批量：截图 + 布局度量：不滚屏 / 无横向溢出 / 未声明背景的按钮 /
   <40px 触屏热区 / 画布尺寸），报告落 `verify-report.json`。
 - `PUT /json/new?<url>` 开自己的标签（用完 `/json/close/<id>`），不抢焦点、不写 home。

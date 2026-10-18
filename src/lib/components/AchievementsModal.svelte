@@ -402,7 +402,7 @@
     gap: 12px;
   }
   .hint {
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--muted);
     text-align: center;
     margin-bottom: 8px;
@@ -419,8 +419,8 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-bottom: 5px;
-    font-size: 11px;
+    margin-bottom: 6px;
+    font-size: 12px;
     color: var(--muted);
   }
   .dex-ch-head b {
@@ -455,28 +455,17 @@
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    padding: 6px 4px 7px;
-    border: 1px solid var(--edge-faint);
-    border-radius: 9px;
-    background: linear-gradient(180deg, rgba(14, 21, 36, 0.95), rgba(6, 10, 18, 0.95));
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.05),
-      0 2px 6px rgba(0, 0, 0, 0.4);
+    padding: 7px 4px;
+    border: none;
+    border-radius: 8px;
+    background: none;
     color: inherit;
     font: inherit;
     cursor: pointer;
-    transition:
-      border-color 0.15s,
-      transform 0.15s,
-      box-shadow 0.15s;
+    transition: background 0.15s ease;
   }
   .dex-item:not(:disabled):hover {
-    border-color: var(--edge);
-    transform: translateY(-1px);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.06),
-      0 4px 14px rgba(0, 0, 0, 0.5),
-      0 0 14px rgba(0, 245, 212, 0.2);
+    background: rgba(255, 255, 255, 0.05);
   }
   .dex-item:disabled {
     cursor: default;
@@ -505,29 +494,29 @@
     font-size: 180px;
   }
   .dex-nm {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text);
   }
   .dex-st {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--gold);
     letter-spacing: 1px;
-    min-height: 12px;
+    min-height: 14px;
   }
   .dex-seals {
     display: flex;
-    gap: 2px;
+    gap: 3px;
   }
   .dex-seals i {
-    width: 13px;
-    height: 13px;
+    width: 16px;
+    height: 16px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 3px;
     border: 1px solid var(--line-2);
     font-style: normal;
-    font-size: 9px;
+    font-size: 11px;
     line-height: 1;
     color: var(--muted);
   }
@@ -545,18 +534,16 @@
     margin-top: 5px;
   }
   .prog-txt {
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--gold);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
   .prog-bar {
     flex: 1;
-    height: 5px;
-    border-radius: 3px;
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid var(--edge-faint);
-    box-shadow: var(--bevel-inset);
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.09);
     overflow: hidden;
   }
   .prog-bar i {
@@ -564,32 +551,30 @@
     height: 100%;
     border-radius: 2px;
     background: linear-gradient(90deg, var(--cyan), var(--gold));
-    box-shadow: 0 0 8px rgba(245, 184, 65, 0.5);
   }
 
   .list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
     margin-bottom: 12px;
     text-align: left;
   }
-  /* 成就分组标题：组名 + 计数 + 凹槽进度条 */
+  /* 成就分组标题：区块名 + 计数 + 细进度线（无底座） */
   .ag-head {
     display: flex;
     align-items: center;
-    gap: 7px;
-    margin: 8px 0 1px;
-    font-size: 11px;
+    gap: 8px;
+    margin: 16px 0 2px;
+    font-size: 12px;
     color: var(--muted);
   }
   .ag-head:first-child {
-    margin-top: 0;
+    margin-top: 2px;
   }
   .ag-head b {
-    font-size: 12px;
-    letter-spacing: 2px;
-    color: var(--gold);
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: var(--text);
   }
   .ag-count {
     font-variant-numeric: tabular-nums;
@@ -597,32 +582,27 @@
   }
   .ag-bar {
     flex: 1;
-    height: 5px;
-    border-radius: 3px;
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid var(--edge-faint);
-    box-shadow: var(--bevel-inset);
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.09);
     overflow: hidden;
   }
   .ag-bar i {
     display: block;
     height: 100%;
     border-radius: 2px;
-    background: linear-gradient(90deg, rgba(0, 245, 212, 0.75), rgba(245, 184, 65, 0.9));
-    box-shadow: 0 0 10px rgba(245, 184, 65, 0.5);
+    background: linear-gradient(90deg, rgba(0, 245, 212, 0.7), rgba(245, 184, 65, 0.85));
   }
-  /* 成就条目：嵌进面板的凹槽；已解锁的描金并透出内光 */
+  /* 成就条目：安静的行，靠行内分隔线 + 留白分组（无卡片、无描边、无发光） */
   .item {
     display: flex;
     gap: 10px;
     align-items: center;
-    padding: 9px 11px;
-    border: 1px solid var(--edge-faint);
-    border-radius: 9px;
-    background: linear-gradient(180deg, rgba(10, 16, 28, 0.9), rgba(5, 8, 15, 0.85));
-    box-shadow:
-      var(--bevel-inset),
-      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    padding: 11px 2px;
+    border-bottom: 1px solid var(--edge-faint);
+  }
+  .item:last-child {
+    border-bottom: none;
   }
   /* 未解锁降级只动装饰与标题，描述保持 --muted 实色。
      整卡 opacity 会把 12px 描述压到 2.38:1（实测远低于 AA 4.5:1）。 */
@@ -633,12 +613,9 @@
     color: var(--muted);
     font-weight: 500;
   }
-  .item.got {
-    border-color: rgba(245, 184, 65, 0.5);
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.1), rgba(245, 184, 65, 0.02));
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.06),
-      0 0 14px rgba(245, 184, 65, 0.16);
+  /* 已解锁：只用颜色区分（金色标题 + 金色奖杯），不加边框与光晕 */
+  .item.got .nm {
+    color: var(--gold-bright);
   }
   .icon {
     font-size: 20px;
@@ -652,20 +629,16 @@
     color: var(--muted);
   }
   .hint {
-    font-size: 11.5px;
+    font-size: var(--fs-sm);
     color: var(--muted);
     margin-bottom: 12px;
   }
-  /* 分区切换：嵌进面板的凹槽 + 四枚金属芯片（选中金色实心） */
+  /* 分区切换：一行普通标签（下划线表示选中），不再套凹槽与满排金属芯片 */
   .tabs {
     display: flex;
-    gap: 5px;
-    margin-bottom: 12px;
-    padding: 5px;
-    background: linear-gradient(180deg, rgba(3, 5, 10, 0.92), rgba(8, 12, 22, 0.78));
-    border: 1px solid var(--edge-soft);
-    border-radius: 12px;
-    box-shadow: var(--bevel-inset);
+    gap: 2px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--edge-faint);
   }
   .tabs button {
     flex: 1 1 0;
@@ -673,69 +646,30 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    min-height: 40px;
-    padding: 0 8px;
+    min-height: 44px;
+    padding: 0 6px;
     font-size: var(--fs-sm);
-    font-weight: 700;
-    letter-spacing: 1.5px;
+    font-weight: 600;
+    letter-spacing: 1px;
     white-space: nowrap;
     cursor: pointer;
     color: var(--muted);
-    border-radius: 8px;
-    border: 1px solid var(--edge-soft);
-    background: var(--face-metal);
-    box-shadow:
-      var(--bevel-top),
-      0 3px 0 rgba(0, 0, 0, 0.5);
+    background: none;
+    border: none;
+    /* 选中态用一条金色下划线表达，不做整块金色按钮 */
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
     -webkit-tap-highlight-color: transparent;
     transition:
-      transform 0.09s ease,
       color 0.12s ease,
-      border-color 0.12s ease,
-      background 0.12s ease,
-      box-shadow 0.12s ease;
-  }
-  /* 选中芯片左侧的状态灯：亮起的金色指示灯 */
-  .tabs button::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: rgba(148, 163, 184, 0.35);
-    box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.6);
-    flex: none;
-    transition: background 0.12s ease;
+      border-color 0.12s ease;
   }
   .tabs button:hover {
-    color: var(--gold-bright);
-    border-color: var(--edge);
-    background: var(--face-metal-hover);
-  }
-  .tabs button:active {
-    transform: translateY(2px);
-    box-shadow: var(--bevel-top);
+    color: var(--text);
   }
   .tabs button.on {
-    color: #1a1002;
-    border-color: #ffe7a3;
-    background: var(--face-gold);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
-    box-shadow:
-      var(--bevel-top),
-      inset 0 -3px 0 rgba(140, 80, 0, 0.55),
-      0 3px 0 #7a4d05,
-      0 0 16px rgba(245, 184, 65, 0.4);
-  }
-  .tabs button.on::before {
-    background: #6b3d00;
-    box-shadow:
-      inset 0 0 3px rgba(255, 255, 255, 0.8),
-      0 0 6px rgba(120, 70, 0, 0.8);
-  }
-  .tabs button.on:hover {
-    color: #120a00;
-    background: var(--face-gold-hover);
+    color: var(--gold-bright);
+    border-bottom-color: var(--gold);
   }
   .list.hide {
     display: none;
@@ -743,7 +677,7 @@
   /* 精通标记（关卡行内小徽章） */
   .lvl-row .badge {
     font-style: normal;
-    font-size: 10px;
+    font-size: 12px;
     margin-left: 3px;
   }
   /* 统计区 */
@@ -754,27 +688,23 @@
     margin-bottom: 12px;
     text-align: left;
   }
-  /* 每日打卡墙：7 列（周一 → 周日）× 5 行，嵌进面板的凹槽 */
+  /* 每日打卡墙：7 列（周一 → 周日）× 5 行，直接排布，不套外框 */
   .cal {
-    padding: 9px 10px 10px;
-    border: 1px solid var(--edge-faint);
-    border-radius: 10px;
-    background: linear-gradient(180deg, rgba(8, 12, 22, 0.92), rgba(4, 7, 13, 0.9));
-    box-shadow: var(--bevel-inset);
+    padding: 0;
   }
   .cal-head {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 7px;
-    font-size: 11px;
+    margin-bottom: 10px;
+    font-size: 12px;
     color: var(--muted);
   }
   .cal-head b {
-    font-size: 12px;
-    letter-spacing: 2px;
-    color: var(--gold);
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: var(--text);
   }
   .cal-stat i {
     font-style: normal;
@@ -783,16 +713,10 @@
   }
   .cal-stat.goal {
     margin-left: auto;
-    padding: 2px 8px;
-    border-radius: 999px;
-    border: 1px solid rgba(251, 191, 36, 0.28);
-    background: rgba(251, 191, 36, 0.08);
     color: var(--muted);
   }
   .cal-stat.goal.done {
-    border-color: rgba(47, 158, 127, 0.5);
-    background: rgba(47, 158, 127, 0.12);
-    color: #7fe3c4;
+    color: var(--cyan);
   }
   .cal-grid {
     display: grid;
@@ -801,9 +725,9 @@
   }
   .cal-dow {
     text-align: center;
-    font-size: 9px;
+    font-size: 12px;
     color: var(--muted);
-    padding-bottom: 1px;
+    padding-bottom: 2px;
   }
   .cal-cell {
     aspect-ratio: 1;
@@ -813,7 +737,7 @@
     border-radius: 4px;
     border: 1px solid var(--line-2);
     background: rgba(255, 255, 255, 0.02);
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
   }
@@ -827,39 +751,33 @@
     box-shadow: 0 0 0 1px rgba(79, 209, 197, 0.4);
     color: var(--text);
   }
-  /* 未来日期只需"不可点/未到"的弱提示，不该淡到读不出数字
-     （0.35 → 实测 1.79:1）。0.6 配合 --muted 仍低于已过日期，层级不变。 */
+  /* 未来日期用更弱一档的实色文字（不再叠 opacity，保证仍能读清数字） */
   .cal-cell.future {
-    opacity: 0.6;
+    color: var(--muted-2);
   }
+  /* 统计数字：两列文本块 + 分隔线，不做卡片 */
   .stats .cards {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 7px;
+    gap: 0 24px;
   }
   .stats .card {
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    padding: 9px 11px;
-    border-radius: var(--r-md);
-    background: linear-gradient(180deg, rgba(14, 21, 36, 0.9), rgba(6, 10, 18, 0.9));
-    border: 1px solid var(--edge-faint);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.05),
-      0 2px 6px rgba(0, 0, 0, 0.35);
+    gap: 2px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--edge-faint);
   }
   .stats .card .k {
-    font-size: var(--fs-xs);
+    font-size: 12px;
     color: var(--muted);
-    letter-spacing: 1px;
   }
   .stats .card .v {
-    font-size: 22px;
+    font-size: 24px;
   }
   .stats .card .v i {
     font-style: normal;
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     font-weight: 400;
     color: var(--muted-2);
     text-shadow: none;
@@ -867,17 +785,15 @@
   .lvl-list {
     display: flex;
     flex-direction: column;
-    gap: 3px;
   }
+  /* 关卡行：纯文本行 + 分隔线 */
   .lvl-row {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 9px;
-    border-radius: var(--r-sm);
+    padding: 8px 0;
     font-size: var(--fs-sm);
-    background: linear-gradient(180deg, rgba(11, 17, 30, 0.85), rgba(5, 8, 15, 0.8));
-    border: 1px solid var(--edge-faint);
+    border-bottom: 1px solid var(--edge-faint);
   }
   /* 未玩过的关卡行：只压暗星级与火花图，文字（.nm/.meta/.best）保持实色。
      整行 opacity 会把 12px .meta 压到 2.03:1（实测）。 */
@@ -894,7 +810,7 @@
   }
   .lvl-row .st {
     color: var(--gold);
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     letter-spacing: 0.5px;
     width: 42px;
   }
@@ -906,13 +822,13 @@
     flex: 1;
   }
   .lvl-row .meta {
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--muted-2);
     width: 40px;
     text-align: right;
   }
   .lvl-row .best {
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--gold);
     width: 52px;
     text-align: right;
@@ -928,7 +844,7 @@
     text-align: left;
   }
   .save .desc {
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--muted);
     margin: 0;
     line-height: 1.6;
@@ -942,7 +858,7 @@
     border: 1px solid var(--edge-faint);
     border-radius: var(--r-sm);
     padding: 8px 10px;
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     outline: none;
     word-break: break-all;
@@ -963,27 +879,22 @@
   .save .row .mini {
     flex: 1;
   }
-  /* 存档区动作键：金属面 + 立体按压（原来没有背景，reset 后会变成裸文字） */
+  /* 存档区动作键：金属面（保持可点感，去掉立体堆料与外发光） */
   .mini {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
     font-size: var(--fs-sm);
-    font-weight: 700;
-    letter-spacing: 1px;
+    font-weight: 600;
     padding: 0 14px;
-    min-height: 40px;
-    border-radius: 9px;
+    min-height: 44px;
+    border-radius: 8px;
     color: var(--text);
-    background: var(--face-metal);
-    border: 1px solid var(--edge-soft);
-    box-shadow:
-      var(--bevel-top),
-      0 3px 0 rgba(0, 0, 0, 0.5);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--edge-faint);
     cursor: pointer;
     transition:
-      transform 0.09s ease,
       color 0.12s ease,
       border-color 0.12s ease,
       background 0.12s ease;
@@ -991,11 +902,7 @@
   .mini:hover:not(:disabled) {
     color: var(--gold-bright);
     border-color: var(--edge);
-    background: var(--face-metal-hover);
-  }
-  .mini:active:not(:disabled) {
-    transform: translateY(2px);
-    box-shadow: var(--bevel-top);
+    background: rgba(255, 255, 255, 0.1);
   }
   .mini:disabled {
     opacity: 0.42;
@@ -1003,31 +910,22 @@
   }
   /* 触屏：标签页与迷你按钮的热区补够 */
   @media (pointer: coarse), (max-width: 640px) {
-    /* 实测 390×844 下 Tab 只有 58×38，低于 44 下限 */
     .tabs button {
       min-height: 46px;
-      padding: 0 8px;
-    }
-    .mini {
-      min-height: 44px;
     }
   }
   .mini.danger {
     color: #f0a6a6;
-    border-color: rgba(217, 43, 43, 0.45);
-    background: linear-gradient(180deg, #3a1414, #200a0a);
+    border-color: rgba(217, 43, 43, 0.4);
+    background: rgba(217, 43, 43, 0.1);
   }
   .mini.danger:hover:not(:disabled) {
     color: #ffd9d9;
-    border-color: rgba(248, 113, 113, 0.8);
-    background: linear-gradient(180deg, #55201f, #2c0d0d);
-    box-shadow:
-      var(--bevel-top),
-      0 3px 0 rgba(0, 0, 0, 0.5),
-      0 0 16px rgba(217, 43, 43, 0.35);
+    border-color: rgba(248, 113, 113, 0.7);
+    background: rgba(217, 43, 43, 0.18);
   }
   .msg {
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--cyan);
     margin: 0;
   }

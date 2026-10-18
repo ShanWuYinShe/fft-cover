@@ -1067,18 +1067,16 @@
   }}
 ></canvas>
 
-<!-- 缩放控件（画布右下角） -->
-<div class="zoom-bar">
-  <button type="button" title="缩小" onclick={() => zoomBy(1 / 1.25)}>−</button>
-  <span class="zoom-val">{Math.round(zoom * 100)}%</span>
-  <button type="button" title="放大" onclick={() => zoomBy(1.25)}>+</button>
-  <button
-    type="button"
-    class="zoom-reset"
-    title="复位视图（双击画布同效；滚轮缩放，Shift/中键/右键拖动或双指平移）"
-    onclick={resetView}>⤢</button
-  >
-</div>
+<!-- 视图复位：缩放用滚轮/双指，这里只留一个「回到默认视角」的出口 -->
+<button
+  type="button"
+  class="view-reset"
+  title="复位视图（滚轮或双指缩放，Shift/中键/右键拖动或双指平移；双击画布同效）"
+  aria-label="复位视图"
+  onclick={resetView}
+>
+  ⤢
+</button>
 
 <style>
   canvas {
@@ -1095,70 +1093,41 @@
       0 0 30px rgba(245, 184, 65, 0.1);
   }
 
-  .zoom-bar {
+  .view-reset {
     position: absolute;
     right: 10px;
     bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 6px;
-    border-radius: 10px;
-    background: linear-gradient(180deg, rgba(16, 24, 41, 0.94), rgba(6, 10, 19, 0.96));
-    border: 1px solid var(--edge-soft);
-    box-shadow:
-      var(--bevel-top),
-      0 4px 16px rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(6px);
-    z-index: 5;
-  }
-  /* 缩放键：与座舱一致的小金属键（不再是裸按钮） */
-  .zoom-bar button {
     width: 30px;
     height: 30px;
-    min-height: 0;
-    padding: 0;
-    line-height: 1;
-    font-size: var(--fs-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 8px;
-    background: var(--face-metal);
-    border: 1px solid var(--edge-soft);
+    background: rgba(9, 14, 24, 0.72);
+    border: 1px solid var(--edge-faint);
     color: var(--muted);
-    box-shadow:
-      var(--bevel-top),
-      0 2px 0 rgba(0, 0, 0, 0.5);
-    transition: all 0.12s ease;
+    font-size: 13px;
+    opacity: 0.7;
+    z-index: 5;
+    transition:
+      opacity 0.12s ease,
+      color 0.12s ease,
+      border-color 0.12s ease;
   }
-  .zoom-bar button:hover:not(:disabled) {
-    background: var(--face-metal-hover);
-    border-color: var(--edge);
+  .view-reset:hover {
+    opacity: 1;
     color: var(--gold-bright);
-  }
-  .zoom-bar button:active:not(:disabled) {
-    transform: translateY(2px);
-    box-shadow: var(--bevel-inset);
-  }
-  .zoom-bar .zoom-reset {
-    font-size: var(--fs-sm);
-  }
-  .zoom-val {
-    min-width: 40px;
-    padding: 0 4px;
-    text-align: center;
-    font-size: var(--fs-xs);
-    color: var(--gold-bright);
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
+    border-color: var(--edge-soft);
   }
   @media (pointer: coarse), (max-width: 640px) {
-    .zoom-bar button {
+    .view-reset {
       width: 40px;
       height: 40px;
     }
   }
-  /* 移动端隐藏缩放控件：双指捏合/平移已足够，且避免遮挡画布底部的预览徽章 */
-  @media (max-width: 640px) {
-    .zoom-bar {
+  /* 手机竖屏：缩放/复位入口收进手势，键位隐藏 */
+  @media (max-width: 640px) and (orientation: portrait) {
+    .view-reset {
       display: none;
     }
   }

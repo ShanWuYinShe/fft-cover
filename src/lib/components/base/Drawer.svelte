@@ -85,29 +85,22 @@
     padding: 0;
   }
 
-  /* 机箱侧舱：金属面 + 边缘亮金导轨 */
+  /* 侧舱：单色金属面 + 1px 描边，去掉扫描线与外发光 */
   .drawer-panel {
     position: fixed;
     z-index: 60;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(170deg, var(--metal-2) 0%, var(--metal) 55%, #070c16 100%);
-    box-shadow: var(--sh-game-lg);
-    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    background: var(--metal);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    transition:
+      transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+      visibility 0.32s;
+    /* 收起时彻底不可见、不可聚焦（否则键盘仍能 Tab 进离屏抽屉） */
+    visibility: hidden;
   }
-  /* 面板内侧的扫描线与暗角：让抽屉像一块插进机箱的舱体 */
-  .drawer-panel::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image: repeating-linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.025) 0px,
-      rgba(255, 255, 255, 0.025) 1px,
-      transparent 1px,
-      transparent 3px
-    );
+  .drawer-panel.open {
+    visibility: visible;
   }
 
   .drawer-left {
@@ -115,25 +108,8 @@
     bottom: 0;
     left: 0;
     width: var(--drawer-width);
-    border-right: 1px solid var(--edge);
+    border-right: 1px solid var(--edge-soft);
     transform: translateX(-105%);
-  }
-  .drawer-left::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    width: 1px;
-    background: linear-gradient(
-      180deg,
-      transparent,
-      var(--edge-hot) 20%,
-      var(--edge-hot) 80%,
-      transparent
-    );
-    opacity: 0.55;
-    pointer-events: none;
   }
   .drawer-left.open {
     /* 打开态不保留 transform：否则会给抽屉内的 position:fixed 弹窗
@@ -146,25 +122,8 @@
     bottom: 0;
     right: 0;
     width: var(--drawer-width);
-    border-left: 1px solid var(--edge);
+    border-left: 1px solid var(--edge-soft);
     transform: translateX(105%);
-  }
-  .drawer-right::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 1px;
-    background: linear-gradient(
-      180deg,
-      transparent,
-      var(--edge-hot) 20%,
-      var(--edge-hot) 80%,
-      transparent
-    );
-    opacity: 0.55;
-    pointer-events: none;
   }
   .drawer-right.open {
     transform: none;
@@ -176,7 +135,7 @@
     bottom: 0;
     /* 矮屏也必须留出顶部余量，并保证内容区可滚 */
     max-height: min(85dvh, calc(100dvh - 24px));
-    border-top: 1px solid var(--edge);
+    border-top: 1px solid var(--edge-soft);
     border-radius: var(--radius-md) var(--radius-md) 0 0;
     transform: translateY(105%);
   }
@@ -184,7 +143,7 @@
     transform: none;
   }
 
-  /* 底部抽屉的金属把手 */
+  /* 底部抽屉的把手 */
   .drawer-grip {
     flex: none;
     align-self: center;
@@ -192,22 +151,17 @@
     height: 4px;
     margin: 7px 0 2px;
     border-radius: 2px;
-    background: linear-gradient(180deg, var(--metal-3), #080d18);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.14),
-      0 0 8px rgba(245, 184, 65, 0.15);
+    background: var(--metal-3);
   }
 
-  /* 抽屉铭牌：小号拉开字距 + 金色发丝下沿 */
+  /* 抽屉标题：一条底线分隔 */
   .drawer-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: 12px var(--space-4);
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.1), rgba(245, 184, 65, 0.015));
-    border-bottom: 1px solid var(--edge-soft);
-    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+    padding: 14px var(--space-4) 12px;
+    border-bottom: 1px solid var(--edge-faint);
     flex-shrink: 0;
     position: relative;
     z-index: 1;
@@ -222,6 +176,7 @@
     line-height: 1.3;
   }
 
+  /* 收起键：静息无描边，悬停显形（热区 44） */
   .drawer-close {
     appearance: none;
     flex: none;
@@ -231,28 +186,17 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: var(--fs-md);
     color: var(--muted);
-    border-radius: 10px;
-    border: 1px solid var(--edge-soft);
-    background: var(--face-metal);
-    box-shadow:
-      var(--bevel-top),
-      0 3px 0 rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
     transition:
-      transform 0.09s ease,
       color 0.12s ease,
-      border-color 0.12s ease,
       background 0.12s ease;
   }
   .drawer-close:hover {
     color: var(--gold-bright);
-    border-color: var(--edge);
-    background: var(--face-metal-hover);
-  }
-  .drawer-close:active {
-    transform: translateY(2px);
-    box-shadow: var(--bevel-top);
+    background: rgba(255, 255, 255, 0.06);
   }
 
   .drawer-content {

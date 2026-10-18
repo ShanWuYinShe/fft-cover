@@ -60,23 +60,16 @@
   aria-modal="true"
   aria-label={mastered ? '全部关卡三星达成' : '通关达成'}
 >
-  <!-- 完结演出：外框承载四角包边，内层卡片滚动 -->
+  <!-- 完结演出：一块平板 + 落款朱印；内层滚动，主操作常驻 -->
   <div class="card-wrap">
-    <span class="g-corner tl" aria-hidden="true"></span>
-    <span class="g-corner tr" aria-hidden="true"></span>
-    <span class="g-corner bl" aria-hidden="true"></span>
-    <span class="g-corner br" aria-hidden="true"></span>
     <div class="card">
-      <span class="g-scanlines card-scan" aria-hidden="true"></span>
-      <div class="glow" aria-hidden="true"></div>
-      <!-- 顶部铭牌 -->
       <div class="card-rail">
-        <span class="g-label">周 天 完 结</span>
+        <span class="g-label">周天完结</span>
         <span class="rail-lv">{mastered ? '三星精通' : '首次通关'}</span>
       </div>
       <!-- 落款朱印：书画收尾的那一方印 -->
       <div class="seal" aria-hidden="true">{mastered ? '大成' : '通关'}</div>
-      <div class="burst"><Icon name={mastered ? 'crown' : 'flag'} size={30} /></div>
+      <div class="burst"><Icon name={mastered ? 'crown' : 'flag'} size={28} /></div>
       <h2>{mastered ? '谐波大师' : '通关！'}</h2>
       <p class="sub">
         {#if mastered}
@@ -85,9 +78,9 @@
           {CHAPTERS.length} 个章节、{LEVEL_DEFS.length} 关全部走完——从一根指针画圆，到七根齐发的团花与古钟
         {/if}
       </p>
-      <span class="g-divider card-div" aria-hidden="true"></span>
 
-      <div class="grid">
+      <!-- 战绩：一行行文字读数（不做卡片阵列） -->
+      <div class="stats">
         <div class="cell">
           <b class="g-num g-num--gold">{totalStars}<i>/{maxStars}</i></b><span>总星数</span>
         </div>
@@ -96,23 +89,20 @@
         </div>
         <div class="cell">
           <b class="g-num g-num--gold">{perfectCount}<i>/{LEVEL_DEFS.length}</i></b><span
-            ><Icon name="crown" size={13} /> 完美全清</span
+            >完美全清</span
           >
         </div>
         <div class="cell">
-          <b class="g-num g-num--gold">{exactCount}<i>/{LEVEL_DEFS.length}</i></b><span
-            ><Icon name="target" size={13} /> 精确解</span
+          <b class="g-num g-num--gold">{exactCount}<i>/{LEVEL_DEFS.length}</i></b><span>精确解</span
           >
         </div>
         <div class="cell">
           <b class="g-num g-num--gold">{expertCount}<i>/{LEVEL_DEFS.length}</i></b><span
-            ><Icon name="gem" size={13} /> 专家全清</span
+            >专家全清</span
           >
         </div>
         <div class="cell">
-          <b class="g-num g-num--gold">{seals.done}<i>/{seals.total}</i></b><span
-            >朱印（星/满/准/专）</span
-          >
+          <b class="g-num g-num--gold">{seals.done}<i>/{seals.total}</i></b><span>本关目标</span>
         </div>
         <div class="cell">
           <b class="g-num g-num--gold">{seals.chapters}<i>/{seals.chaptersTotal}</i></b><span
@@ -157,13 +147,13 @@
           用谐波合成器创作关卡分享给朋友。
         {:else}
           每一关都还留着更高的目标：完美全清（100% 收集）· 精确解认证（参数与傅立叶分解一致）·
-          专家模式全清（不显示轮廓）——四枚朱印集齐后，章头还会盖上该章的章节印。
+          专家模式全清（不显示轮廓）——四枚目标集齐后，章头还会盖上该章的章节印。
         {/if}
       </p>
 
       <div class="foot">
         <button type="button" class="primary" onclick={() => engine.dismissFinale()}>
-          继 续 挑 战
+          继续挑战
         </button>
       </div>
     </div>
@@ -179,11 +169,9 @@
     align-items: center;
     justify-content: center;
     padding: 16px;
-    background:
-      radial-gradient(circle at 50% 40%, rgba(251, 191, 36, 0.13), transparent 60%),
-      rgba(5, 7, 14, 0.86);
+    background: rgba(4, 6, 12, 0.88);
     backdrop-filter: blur(5px);
-    animation: fin-fade 0.4s ease-out;
+    animation: fin-fade 0.35s ease-out;
   }
   @keyframes fin-fade {
     from {
@@ -194,10 +182,10 @@
     }
   }
 
-  /* 外框：承载四角包边，本身不滚动 */
+  /* 外框：限高，内层滚动 */
   .card-wrap {
     position: relative;
-    width: min(94vw, 430px);
+    width: min(94vw, 440px);
     max-height: calc(100dvh - 24px);
     display: flex;
   }
@@ -208,42 +196,24 @@
     max-height: 100%;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 0 24px 0;
+    padding: 0 24px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 12px;
     text-align: center;
-    background: linear-gradient(180deg, var(--metal-2) 0%, var(--metal) 45%, #070c16 100%);
+    background: var(--metal);
     border: 1px solid var(--edge-soft);
-    border-radius: var(--radius-md);
-    box-shadow:
-      var(--sh-game-lg),
-      var(--bevel-top),
-      inset 0 0 70px rgba(245, 184, 65, 0.07);
-    animation: fin-pop 0.5s cubic-bezier(0.34, 1.44, 0.64, 1);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    animation: fin-pop 0.45s cubic-bezier(0.34, 1.3, 0.64, 1);
     scrollbar-width: thin;
-    scrollbar-color: rgba(245, 184, 65, 0.35) transparent;
-  }
-  .card::before {
-    content: '';
-    position: absolute;
-    inset: -1px -1px auto;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--edge-hot) 14%,
-      var(--edge-hot) 86%,
-      transparent
-    );
-    opacity: 0.8;
-    pointer-events: none;
+    scrollbar-color: rgba(245, 184, 65, 0.3) transparent;
   }
   @keyframes fin-pop {
     from {
       opacity: 0;
-      transform: translateY(18px) scale(0.92);
+      transform: translateY(14px) scale(0.96);
     }
     to {
       opacity: 1;
@@ -251,15 +221,6 @@
     }
   }
 
-  .card-scan {
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    opacity: 0.65;
-  }
-
-  /* 顶部铭牌：通栏 */
   .card-rail {
     align-self: stretch;
     display: flex;
@@ -267,75 +228,42 @@
     justify-content: space-between;
     gap: 10px;
     margin: 0 -24px 2px;
-    padding: 10px 14px 9px;
-    border-bottom: 1px solid var(--edge-soft);
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.12), rgba(245, 184, 65, 0.02));
-    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.5);
-    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid var(--edge-faint);
+    border-radius: 10px 10px 0 0;
   }
   .rail-lv {
-    font-size: var(--fs-xs);
-    font-weight: 700;
+    font-size: var(--fs-sm);
+    font-weight: 600;
     color: var(--text);
-    letter-spacing: 1px;
     white-space: nowrap;
   }
 
-  .card-div {
-    width: 100%;
-    margin: 0;
-  }
-
-  /* 顶部光晕：通关是这一局的终点，值得一点排场 */
-  .glow {
-    position: absolute;
-    top: -70px;
-    width: 260px;
-    height: 180px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(251, 191, 36, 0.35), transparent 68%);
-    pointer-events: none;
-    animation: fin-glow 3.2s ease-in-out infinite;
-  }
-  @keyframes fin-glow {
-    0%,
-    100% {
-      opacity: 0.55;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 1;
-      transform: scale(1.12);
-    }
-  }
-
-  /* 落款朱印：竖排两字，微斜，盖上时有"啪"的一下（下移，避开右上角包边） */
+  /* 落款朱印：竖排两字（避开右上角） */
   .seal {
     position: absolute;
-    top: 48px;
+    top: 52px;
     right: 12px;
-    width: 44px;
-    height: 58px;
+    width: 40px;
+    height: 52px;
     display: flex;
     align-items: center;
     justify-content: center;
     writing-mode: vertical-rl;
     text-orientation: upright;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
     color: #fdece7;
     background: linear-gradient(160deg, #c0392b, #8e2a1f);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 6px;
-    box-shadow: 0 4px 16px rgba(192, 57, 43, 0.45);
-    animation: seal-stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.55s backwards;
+    border-radius: 5px;
+    animation: seal-stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s backwards;
   }
   @keyframes seal-stamp {
     from {
       opacity: 0;
-      transform: rotate(-16deg) scale(1.6);
+      transform: rotate(-16deg) scale(1.5);
     }
     to {
       opacity: 1;
@@ -344,18 +272,18 @@
   }
 
   .burst {
-    font-size: 44px;
+    margin-top: 22px;
+    color: var(--gold-bright);
     line-height: 1;
-    filter: drop-shadow(0 6px 20px rgba(251, 191, 36, 0.4));
-    animation: fin-burst 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: fin-burst 0.6s cubic-bezier(0.34, 1.5, 0.64, 1);
   }
   @keyframes fin-burst {
     0% {
-      transform: scale(0.3) rotate(-18deg);
+      transform: scale(0.4) rotate(-14deg);
       opacity: 0;
     }
     60% {
-      transform: scale(1.16) rotate(4deg);
+      transform: scale(1.12) rotate(3deg);
       opacity: 1;
     }
     100% {
@@ -366,12 +294,9 @@
   h2 {
     margin: 0;
     font-size: 26px;
-    letter-spacing: 6px;
+    letter-spacing: 5px;
     font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    background: linear-gradient(96deg, var(--gold-bright) 10%, #fff7ed 50%, var(--purple) 96%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: var(--gold-bright);
   }
 
   .sub {
@@ -381,56 +306,50 @@
     line-height: 1.75;
   }
 
-  .grid {
+  /* 战绩读数：两列文本 + 分隔线 */
+  .stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
-    gap: 7px;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 22px;
     width: 100%;
-    margin-top: 2px;
+    margin-top: 4px;
+    text-align: left;
   }
   .cell {
     display: flex;
-    flex-direction: column;
-    gap: 3px;
-    padding: 9px 6px;
-    border-radius: var(--r-sm);
-    background: linear-gradient(180deg, rgba(3, 5, 10, 0.88), rgba(8, 12, 22, 0.72));
-    border: 1px solid var(--edge-faint);
-    box-shadow: var(--bevel-inset);
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--edge-faint);
   }
   .cell b {
-    font-size: 22px;
-    line-height: 1.15;
+    font-size: 20px;
+    order: 2;
   }
   .cell b i {
     font-style: normal;
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--muted-2);
     font-weight: 400;
     text-shadow: none;
   }
   .cell span {
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--muted);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
+    order: 1;
   }
 
-  /* 战利品墙：按章排列全部曲线的缩略轮廓（嵌进面板的凹槽） */
+  /* 战利品墙：按章排列全部曲线的缩略轮廓（无外框） */
   .wall {
     display: flex;
     flex-direction: column;
-    gap: 7px;
+    gap: 8px;
     width: 100%;
-    box-sizing: border-box;
-    margin: 4px 0 2px;
-    padding: 10px 10px 12px;
-    border-radius: var(--r-md);
-    border: 1px solid var(--edge-faint);
-    background: linear-gradient(180deg, rgba(3, 5, 10, 0.9), rgba(7, 11, 20, 0.85));
-    box-shadow: var(--bevel-inset);
+    margin: 6px 0 2px;
+    padding: 12px 0;
+    border-top: 1px solid var(--edge-faint);
+    border-bottom: 1px solid var(--edge-faint);
   }
   .wall-ch {
     position: relative;
@@ -439,7 +358,6 @@
     justify-content: center;
     gap: 6px;
   }
-  /* 战利品墙的格子是按钮：点一下直接载入那一关再玩（reset 掉按钮默认外观） */
   .wall-item {
     appearance: none;
     background: none;
@@ -456,22 +374,19 @@
     gap: 1px;
     border-radius: 8px;
     transition: background 0.15s;
+    animation: wall-in 0.4s cubic-bezier(0.34, 1.3, 0.64, 1) backwards;
   }
   .wall-item:hover {
     background: rgba(255, 255, 255, 0.05);
   }
   .wall-item:focus-visible {
-    outline: 2px solid rgba(79, 209, 197, 0.65);
+    outline: 2px solid var(--cyan);
     outline-offset: 1px;
-  }
-  /* 逐关点亮：错峰淡入（opacity 放在子元素上，避免与"未点亮"状态打架） */
-  .wall-item {
-    animation: wall-in 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) backwards;
   }
   @keyframes wall-in {
     from {
       opacity: 0;
-      transform: translateY(10px) scale(0.72);
+      transform: translateY(8px) scale(0.8);
     }
     to {
       opacity: 1;
@@ -480,7 +395,7 @@
   }
   .wall-item svg,
   .wall-item .wall-st {
-    opacity: 0.42;
+    opacity: 0.45;
   }
   .wall-item.lit svg,
   .wall-item.lit .wall-st {
@@ -491,8 +406,7 @@
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 10px;
-    letter-spacing: 1px;
+    font-size: 12px;
     color: var(--muted);
     white-space: nowrap;
   }
@@ -507,31 +421,30 @@
     stroke-linejoin: round;
   }
   .wall-item.lit polyline {
-    stroke: rgba(79, 209, 197, 0.9);
+    stroke: rgba(0, 245, 212, 0.9);
   }
   .wall-item.full polyline {
-    stroke: rgba(251, 191, 36, 0.95);
-    filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5));
+    stroke: rgba(245, 184, 65, 0.95);
   }
   .wall-st {
-    font-size: 9px;
+    font-size: 11px;
     letter-spacing: 1px;
     color: var(--gold);
     line-height: 1;
   }
-  /* 悬停/键盘聚焦时冒出关卡名（否则 18 个名字会把墙挤成一团） */
+  /* 悬停/键盘聚焦时冒出关卡名 */
   .wall-tip {
     position: absolute;
     left: 50%;
     bottom: calc(100% + 3px);
     transform: translateX(-50%) translateY(2px);
-    padding: 1px 6px;
+    padding: 2px 8px;
     border-radius: 5px;
-    border: 1px solid rgba(130, 150, 210, 0.35);
-    background: #171d33;
+    border: 1px solid var(--edge-faint);
+    background: var(--metal-3);
     color: var(--text);
-    font-size: 10px;
-    line-height: 16px;
+    font-size: 12px;
+    line-height: 18px;
     white-space: nowrap;
     opacity: 0;
     pointer-events: none;
@@ -550,8 +463,8 @@
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -566,18 +479,13 @@
 
   .note {
     margin: 0;
-    padding: 10px 12px;
-    border-radius: var(--r-sm);
-    background: linear-gradient(180deg, rgba(14, 10, 28, 0.9), rgba(8, 6, 18, 0.88));
-    border: 1px solid rgba(167, 139, 250, 0.35);
-    box-shadow: var(--bevel-inset);
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     color: var(--muted);
-    line-height: 1.8;
+    line-height: 1.7;
     text-align: left;
   }
 
-  /* 动作常驻：21 关战利品墙 + 结算统计在矮屏会滚，主按钮不能掉到首屏之外 */
+  /* 主操作常驻：战利品墙在矮屏会滚，按钮不能掉出首屏 */
   .foot {
     position: sticky;
     bottom: 0;
@@ -585,22 +493,21 @@
     display: flex;
     justify-content: center;
     margin: 0 -24px;
-    padding: 10px 24px 18px;
+    padding: 14px 24px 18px;
     background: linear-gradient(
       180deg,
-      rgba(9, 13, 22, 0) 0,
-      rgba(9, 13, 22, 0.96) 16px,
-      #090d16 100%
+      rgba(11, 17, 30, 0) 0,
+      rgba(11, 17, 30, 0.96) 16px,
+      #0b111e
     );
   }
 
-  /* 主按钮：金色厚键（与 .g-btn--primary .g-btn--lg 同规格） */
   button.primary {
     appearance: none;
     width: 100%;
     min-height: 52px;
     padding: 0 24px;
-    border-radius: 12px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: var(--fs-lg);
     font-weight: 700;
@@ -608,50 +515,44 @@
     color: #1a1002;
     border: 1px solid #ffe7a3;
     background: var(--face-gold);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
     box-shadow:
       var(--bevel-top),
       inset 0 -3px 0 rgba(140, 80, 0, 0.55),
-      0 4px 0 #7a4d05,
-      0 10px 26px rgba(245, 184, 65, 0.35);
+      0 3px 0 #7a4d05;
     -webkit-tap-highlight-color: transparent;
     transition:
       transform 0.09s ease,
-      background 0.12s ease,
-      box-shadow 0.12s ease;
+      background 0.12s ease;
   }
   button.primary:hover {
     background: var(--face-gold-hover);
   }
   button.primary:active {
-    transform: translateY(3px);
-    box-shadow:
-      var(--bevel-top),
-      inset 0 2px 8px rgba(0, 0, 0, 0.5);
+    transform: translateY(2px);
   }
 
-  /* 精通结局：金色更重，边框更亮 */
-  .mastered .card {
-    border-color: rgba(245, 184, 65, 0.6);
-    box-shadow:
-      var(--sh-game-lg),
-      var(--bevel-top),
-      inset 0 0 90px rgba(245, 184, 65, 0.12);
+  /* 精通结局：标题更亮，不加额外装饰 */
+  .mastered h2 {
+    color: var(--gold-bright);
   }
 
   /* 矮屏：收紧密度 */
   @media (max-height: 520px) {
     .card {
-      gap: 8px;
-      padding: 0 16px 0;
+      gap: 9px;
+      padding: 0 16px;
     }
     .card-rail {
       margin: 0 -16px 0;
-      padding: 8px 12px;
+      padding: 9px 12px;
     }
     .foot {
       margin: 0 -16px;
-      padding: 8px 16px 14px;
+      padding: 10px 16px 14px;
+    }
+    .wall {
+      gap: 5px;
+      padding: 8px 0;
     }
   }
 </style>

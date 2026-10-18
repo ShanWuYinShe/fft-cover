@@ -305,9 +305,8 @@
     return () => cancelAnimationFrame(raf);
   });
 
-  /* ---------- 精简徽章行与主行动 ---------- */
+  /* ---------- 一句话结论与主行动 ---------- */
 
-  /** 成就徽章（小 chip）：有才显示，新达成的带高亮 */
   /**
    * 窄屏（≤640）：结算卡菜单向下展开（避开卡片里的星级/得分）；
    * 桌面向上（避开下方运行栏）。必须监听媒体查询变化——直接读
@@ -325,22 +324,25 @@
     return () => mq.removeEventListener('change', sync);
   });
 
-  const badges = $derived.by(() => {
-    const out: Array<{ icon: string; text: string; fresh: boolean }> = [];
-    // 掌握类徽章（👑💎🎯）只在本局全清时展示：isPerfect/isExact 是"本关历史"口径，
-    // 直接挂在 0/24 的结算卡上会读成"这局完美全清了"（实测踩过）
+  /**
+   * 一句话结论：大数字下面唯一的一行判断（原来是一排装饰 chip）。
+   * 掌握类结论只在本局全清时出现：isPerfect/isExact 是"本关历史"口径，
+   * 直接挂在 0/24 的结算卡上会读成"这局完美全清了"（实测踩过）。
+   */
+  const verdict = $derived.by(() => {
+    const parts: string[] = [];
+    if (st >= 3) parts.push('三星达成');
+    else if (st > 0) parts.push(st + ' 星');
+    else parts.push('还没拿到星');
     const runCleared = engine.runCleared;
-    if (runCleared && engine.isPerfect)
-      out.push({ icon: 'crown', text: '完美全清', fresh: engine.newPerfect });
-    if (runCleared && engine.isExpertClear)
-      out.push({ icon: 'gem', text: '专家全清', fresh: engine.newExpertClear });
-    if (runCleared && engine.isExact)
-      out.push({ icon: 'target', text: '精确解', fresh: engine.newExact });
-    if (engine.streakJustBumped > 1)
-      out.push({ icon: 'flame', text: '连胜 ' + engine.streakJustBumped + ' 天', fresh: true });
-    if (engine.newSeals.length > 0)
-      out.push({ icon: 'award', text: '新盖 ' + engine.newSeals.length + ' 印', fresh: true });
-    return out;
+    if (runCleared && engine.isPerfect) parts.push('完美全清');
+    if (runCleared && engine.isExact) parts.push('精确解');
+    if (runCleared && engine.isExpertClear) parts.push('专家全清');
+    if (engine.newRecord) parts.push('新纪录');
+    if (engine.newClearRecord) parts.push('最快全清');
+    if (engine.streakJustBumped > 1) parts.push('连胜 ' + engine.streakJustBumped + ' 天');
+    if (engine.newSeals.length > 0) parts.push('新盖 ' + engine.newSeals.length + ' 印');
+    return parts.join(' · ');
   });
 
   /** 主按钮：能推进就推进（下一关），否则再来一次 */
@@ -359,14 +361,8 @@
 
 <div class="result">
   <div class="card">
-    <!-- 座舱装饰：扫描线 + 四角青铜包边 + 结算铭牌 -->
-    <span class="g-scanlines card-scan" aria-hidden="true"></span>
-    <span class="g-corner tl" aria-hidden="true"></span>
-    <span class="g-corner tr" aria-hidden="true"></span>
-    <span class="g-corner bl" aria-hidden="true"></span>
-    <span class="g-corner br" aria-hidden="true"></span>
     <div class="card-rail">
-      <span class="g-label">观 测 结 算</span>
+      <span class="g-label">结算</span>
       <span class="rail-lv">{engine.level?.name ?? '自由观测'}</span>
     </div>
     <div class="card-body">
@@ -375,6 +371,7 @@
         <div class="line">沙盒探索结束：收集 {got} / {n} 点 · 得分 {engine.score}</div>
         <div class="best">沙盒成绩不计入记录——挑战模式见真章！</div>
       {:else}
+        <!-- 大数字一：星级 -->
         <div class="stars" aria-label="{st} 星">
           {#each [0, 1, 2] as i (i)}
             <span class="star" class:on={i < st} style="animation-delay: {0.15 + i * 0.13}s">
@@ -382,79 +379,53 @@
             </span>
           {/each}
         </div>
+        <!-- 大数字二：得分 -->
         <div class="score-big">
           <b class="g-num g-num--gold">{shownScore}</b>
-          <span class="score-cap">
-            得分{#if engine.newRecord}<i class="rec">新纪录</i>{/if}
-          </span>
+          <span class="score-cap">得分</span>
         </div>
-        <!-- 一行摘要：收集 / 全清 / 与上届对比 -->
-        <div class="stat-row">
+        <!-- 一句话结论：这一局是什么水平 -->
+        <p class="verdict">{verdict}</p>
+        <!-- 一行明细：收集 / 全清 / 上届对比 / 距最佳 -->
+        <p class="detail">
           <span>收集 <b>{got}</b>/{n}</span>
           {#if engine.lastClearT !== null}
-            <span class="dot">·</span>
-            <span
-              >全清 <b>{engine.lastClearT.toFixed(1)}s</b>{#if engine.newClearRecord}<i class="rec"
-                  >最快</i
-                >{/if}</span
-            >
+            <span class="sep">·</span>
+            <span>全清 <b>{engine.lastClearT.toFixed(1)}s</b></span>
           {/if}
           {#if engine.lastGhostDelta !== null}
-            <span class="dot">·</span>
-            <span
-              class="ghost-line"
-              class:ahead={engine.lastGhostDelta > 0}
-              class:even={engine.lastGhostDelta === 0}
-              >上届对比 {engine.lastGhostDelta > 0
-                ? '+'
-                : ''}{engine.lastGhostDelta}{' '}{engine.lastGhostVsBest ? '最佳' : '上届'}</span
+            <span class="sep">·</span>
+            <span class:ghost-ahead={engine.lastGhostDelta > 0}
+              >较{engine.lastGhostVsBest ? '最佳' : '上届'}
+              {engine.lastGhostDelta > 0 ? '+' : ''}{engine.lastGhostDelta}</span
             >
           {/if}
           {#if engine.bestGap !== null}
-            <span class="dot">·</span>
+            <span class="sep">·</span>
             <span title="本关个人最佳那局收集了更多点，再来一局追上它"
               >距最佳还差 <b>{engine.bestGap}</b> 点</span
             >
           {/if}
-        </div>
-        <!-- 成就徽章：有才出现，一眼扫过 -->
-        {#if badges.length > 0}
-          <div class="chips">
-            {#each badges as b (b.text)}
-              <span class="chip" class:fresh={b.fresh}
-                ><Icon name={b.icon} size={13} /> {b.text}</span
-              >
-            {/each}
-          </div>
-        {/if}
+        </p>
         {#if chapterSeal}
-          <div class="chapter-seal-banner">
+          <p class="seal-line">
             <span class="cs-seal">{chapterSeal.seal}</span>
-            <span class="cs-txt">
-              <b>章节印 · {chapterSeal.seal}</b>
-              <i
-                >{chapterSeal.name} 全部 {chapterSeal.count} 关、共 {chapterSeal.count * 4} 枚朱印集齐</i
-              >
-            </span>
-          </div>
+            {chapterSeal.name} 章节印集齐（{chapterSeal.count} 关全部达成）
+          </p>
         {/if}
-        <span class="g-divider card-div" aria-hidden="true"></span>
+        <!-- 下一步：一行可点的文字，不再是盒子 -->
         {#if nextSeal}
           <button
             type="button"
-            class="next-seal"
-            title={nextAction ? '点这里：' + nextAction.label : '下一枚印'}
+            class="next-line"
+            title={nextAction ? '点这里：' + nextAction.label : '下一枚目标'}
             onclick={doNextAction}
           >
-            <span class="ns-seal">{nextSeal.seal}</span>
-            <span class="ns-txt">下一枚印 <b>{nextSeal.name}</b> · {nextSeal.how}</span>
+            <span class="ns-txt">下一枚目标 <b>{nextSeal.name}</b> · {nextSeal.how}</span>
             {#if nextAction}<span class="ns-go">{nextAction.label} →</span>{/if}
           </button>
         {:else}
-          <div class="next-seal all-done">
-            <span class="ns-seal">印</span>
-            <span class="ns-txt">本关四枚朱印已集齐 ✓</span>
-          </div>
+          <p class="next-line done">本关四枚目标已集齐 ✓</p>
         {/if}
       {/if}
     </div>
@@ -507,13 +478,14 @@
     justify-content: center;
     align-items: center;
     padding: 12px;
-    background: radial-gradient(circle at 50% 45%, rgba(8, 12, 22, 0.66), rgba(3, 5, 11, 0.92));
-    backdrop-filter: blur(5px);
+    background: radial-gradient(circle at 50% 45%, rgba(8, 12, 22, 0.6), rgba(3, 5, 11, 0.9));
+    backdrop-filter: blur(4px);
     border-radius: 14px;
     animation: fade-in 0.3s ease-out;
     z-index: 5;
   }
-  /* 结果面板：游戏结算卡（金属装甲板 + 四角包边 + 上浮入场） */
+
+  /* 结算卡：一块平板；信息只有「大数字 → 结论 → 明细 → 两个按钮」 */
   .card {
     position: relative;
     display: flex;
@@ -521,68 +493,19 @@
     align-items: stretch;
     width: min(100%, 400px);
     max-height: 100%;
-    /* 默认放行溢出：四角包边贴在外沿，且「⋯」菜单向下展开时不能被裁 */
+    /* 放行溢出：结算卡的「⋯」菜单向下展开时不能被裁 */
     overflow: visible;
-    border-radius: 8px;
-    background: linear-gradient(180deg, var(--metal-2) 0%, var(--metal) 45%, #070c16 100%);
+    border-radius: 10px;
+    background: var(--metal);
     border: 1px solid var(--edge-soft);
-    box-shadow:
-      var(--sh-game-lg),
-      var(--bevel-top),
-      inset 0 0 60px rgba(245, 184, 65, 0.06);
-    animation: card-in 0.42s cubic-bezier(0.34, 1.4, 0.64, 1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    animation: card-in 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
     text-align: center;
-  }
-  /* 顶部亮金发丝线 */
-  .card::before {
-    content: '';
-    position: absolute;
-    inset: -1px -1px auto;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--edge-hot) 14%,
-      var(--edge-hot) 86%,
-      transparent
-    );
-    opacity: 0.8;
-    pointer-events: none;
-  }
-  .card-scan {
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    opacity: 0.65;
-  }
-  /* 结算铭牌：左侧小标题 + 右侧关卡名 */
-  .card-rail {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 9px 14px 8px;
-    border-bottom: 1px solid var(--edge-soft);
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.1), rgba(245, 184, 65, 0.015));
-    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.5);
-    border-radius: 8px 8px 0 0;
-    position: relative;
-    z-index: 1;
-  }
-  .rail-lv {
-    font-size: var(--fs-xs);
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: 1px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   @keyframes card-in {
     from {
       opacity: 0;
-      transform: translateY(14px) scale(0.94);
+      transform: translateY(12px) scale(0.96);
     }
     to {
       opacity: 1;
@@ -590,277 +513,53 @@
     }
   }
 
-  /* 下一枚印：结算页的下一步指引（整行可点，直接落到那个动作） */
-  .next-seal {
+  /* 卡片抬头：左「结算」铭牌 + 右关卡名，一条底线分隔 */
+  .card-rail {
     display: flex;
     align-items: center;
-    gap: 9px;
-    width: 100%;
-    padding: 8px 10px;
-    border-radius: var(--r-sm);
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.14), rgba(245, 184, 65, 0.035));
-    border: 1px solid rgba(245, 184, 65, 0.42);
-    box-shadow:
-      var(--bevel-top),
-      0 2px 0 rgba(0, 0, 0, 0.45);
-    font: inherit;
-    font-size: var(--fs-xs);
-    color: var(--muted);
-    text-align: left;
-    cursor: pointer;
-    transition:
-      background 0.15s,
-      border-color 0.15s,
-      transform 0.09s;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid var(--edge-faint);
+    border-radius: 10px 10px 0 0;
+    position: relative;
+    z-index: 1;
   }
-  button.next-seal:hover {
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.22), rgba(245, 184, 65, 0.07));
-    border-color: rgba(245, 184, 65, 0.75);
-  }
-  button.next-seal:active {
-    transform: translateY(2px);
-  }
-  /* 分区金线 */
-  .card-div {
-    width: 100%;
-    margin: 4px 0 2px;
-  }
-  .ns-txt {
-    flex: 1;
-    min-width: 0;
-  }
-  .ns-go {
-    flex: none;
-    padding: 3px 8px;
-    border-radius: 999px;
-    border: 1px solid rgba(0, 245, 212, 0.5);
-    background: rgba(0, 245, 212, 0.12);
-    color: var(--cyan);
-    font-size: 10px;
-    white-space: nowrap;
-  }
-  .ns-txt b {
-    color: var(--gold-bright);
-  }
-  .ns-seal {
-    flex: none;
-    width: 22px;
-    height: 22px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1;
-    color: #fff;
-    background: linear-gradient(160deg, #d92b2b, #991b1b);
-    border: 1px solid rgba(255, 200, 200, 0.3);
-    box-shadow: 0 2px 8px rgba(217, 43, 43, 0.45);
-  }
-  .next-seal.all-done {
-    background: rgba(16, 185, 129, 0.1);
-    border-color: rgba(16, 185, 129, 0.45);
-  }
-  .next-seal.all-done .ns-seal {
-    background: linear-gradient(160deg, #10b981, #059669);
-    box-shadow: none;
-  }
-  /* 每日连胜提示 */
-  .chapter-seal-banner {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: var(--r-md);
-    background: linear-gradient(135deg, rgba(217, 43, 43, 0.22), rgba(245, 184, 65, 0.1));
-    border: 1px solid rgba(217, 43, 43, 0.6);
-    box-shadow: 0 0 28px rgba(217, 43, 43, 0.22);
-    animation: ch-banner-in 0.36s ease-out 0.25s backwards;
-  }
-  @keyframes ch-banner-in {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  .cs-seal {
-    flex: none;
-    width: 40px;
-    height: 40px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: 24px;
-    font-weight: 700;
-    line-height: 1;
-    color: #fff;
-    background: linear-gradient(160deg, #d92b2b, #991b1b);
-    border: 1px solid rgba(255, 200, 200, 0.4);
-    box-shadow: 0 4px 18px rgba(217, 43, 43, 0.55);
-    animation: seal-stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s backwards;
-  }
-  .cs-txt {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    text-align: left;
-    min-width: 0;
-  }
-  .cs-txt b {
+  .rail-lv {
     font-size: var(--fs-sm);
-    color: #f6c9a8;
-    letter-spacing: 1px;
-  }
-  .cs-txt i {
-    font-style: normal;
-    font-size: var(--fs-xs);
-    color: var(--muted);
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .card-body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* 5px（原 7px）：星级→得分→摘要→徽章收成一个紧凑视觉组，
-       加快读取并让「下一关」主按钮的引导更顺（Gemini 评审 #4） */
-    gap: 5px;
+    gap: 8px;
     min-height: 0;
     overflow-y: auto;
-    padding: 14px 18px 10px;
+    padding: 16px 18px 12px;
     text-align: center;
   }
-  /* 星级：逐颗弹出 */
+
+  /* 大数字一：星级（逐颗弹出） */
   .stars {
     display: flex;
-    gap: 6px;
-    font-size: 34px;
+    gap: 8px;
+    font-size: 42px;
     line-height: 1;
+    letter-spacing: 0;
   }
   .stars .star {
-    color: rgba(160, 172, 200, 0.35);
+    color: rgba(160, 172, 200, 0.3);
     animation: star-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
   }
   .stars .star.on {
     color: var(--gold);
-    text-shadow:
-      0 0 18px rgba(251, 191, 36, 0.7),
-      0 0 42px rgba(251, 191, 36, 0.35);
-  }
-  /* 超大得分数字 */
-  .score-big {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    margin: 2px 0 0;
-  }
-  .score-big b {
-    font-size: 40px;
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: 1px;
-    font-variant-numeric: tabular-nums;
-    background: linear-gradient(180deg, #ffe9a8, var(--gold) 65%, #e79a12);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    filter: drop-shadow(0 4px 18px rgba(251, 191, 36, 0.35));
-  }
-  .score-cap {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: var(--fs-xs);
-    letter-spacing: 3px;
-    color: var(--muted);
-  }
-  .rec {
-    font-style: normal;
-    font-size: 10px;
-    letter-spacing: 0;
-    padding: 1px 6px;
-    border-radius: 999px;
-    color: #0a0d18;
-    background: linear-gradient(135deg, #ffe9a8, var(--gold));
-    font-weight: 700;
-  }
-  /* 次要统计行：嵌进面板的读数条 */
-  .stat-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 7px;
-    width: 100%;
-    padding: 6px 10px;
-    box-sizing: border-box;
-    border-radius: var(--r-sm);
-    background: linear-gradient(180deg, rgba(3, 5, 10, 0.85), rgba(8, 12, 22, 0.7));
-    border: 1px solid var(--edge-faint);
-    box-shadow: var(--bevel-inset);
-    font-size: var(--fs-md);
-    color: var(--muted);
-  }
-  .stat-row b {
-    color: var(--gold-bright);
-    font-variant-numeric: tabular-nums;
-  }
-  /* 成就徽章：一行小 chip，有才出现；fresh（本局新达成）描金 */
-  .chips {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-  }
-  .chip {
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: var(--fs-xs);
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    color: var(--muted);
-    background: linear-gradient(180deg, var(--metal-2), var(--metal-deep));
-    border: 1px solid var(--edge-soft);
-    box-shadow: var(--bevel-top);
-    white-space: nowrap;
-  }
-  .chip.fresh {
-    color: var(--gold-bright);
-    border-color: rgba(245, 184, 65, 0.55);
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.24), rgba(245, 184, 65, 0.06));
-    box-shadow:
-      var(--bevel-top),
-      0 0 14px rgba(245, 184, 65, 0.3);
-  }
-  .stat-row .dot {
-    color: var(--muted-2);
-  }
-  .stars {
-    font-size: 42px;
-    letter-spacing: 8px;
-    color: var(--gold);
-    text-shadow: 0 0 24px rgba(251, 191, 36, 0.6);
-    animation: star-pop 0.5s ease-out backwards;
-  }
-  @keyframes pop-in {
-    from {
-      opacity: 0;
-      transform: scale(0.92);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
+    text-shadow: 0 0 18px rgba(245, 184, 65, 0.55);
   }
   @keyframes star-pop {
     from {
@@ -875,81 +574,173 @@
       opacity: 1;
     }
   }
-  .line {
+
+  /* 大数字二：得分 */
+  .score-big {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .score-big b {
+    font-size: 46px;
+    line-height: 1;
+    letter-spacing: 1px;
+    background: linear-gradient(180deg, #ffe9a8, var(--gold) 65%, #e79a12);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .score-cap {
+    font-size: var(--fs-sm);
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+
+  /* 一句话结论 */
+  .verdict {
+    margin: 2px 0 0;
+    font-size: var(--fs-lg);
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--gold-bright);
+    line-height: 1.4;
+  }
+
+  /* 一行明细 */
+  .detail {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: var(--fs-sm);
+    color: var(--muted);
+  }
+  .detail b {
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .detail .sep {
+    color: var(--muted-2);
+  }
+  .detail .ghost-ahead {
+    color: var(--cyan);
+  }
+
+  /* 章节印集齐：一行庆祝（红印 + 文字） */
+  .seal-line {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: var(--fs-sm);
+    color: var(--text);
+  }
+  .cs-seal {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
     font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    background: linear-gradient(160deg, #d92b2b, #991b1b);
+  }
+
+  /* 下一步：一行可点的文字（下划线分隔），不再是盒子按钮 */
+  .next-line {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    margin-top: 2px;
+    padding: 10px 2px;
+    font: inherit;
+    font-size: var(--fs-sm);
+    color: var(--muted);
+    text-align: left;
+    background: none;
+    border: none;
+    border-top: 1px solid var(--edge-faint);
+    cursor: pointer;
+    transition: color 0.12s ease;
+  }
+  .next-line:hover {
+    color: var(--text);
+  }
+  .next-line.done {
+    cursor: default;
+    justify-content: center;
+    color: var(--cyan);
+  }
+  .ns-txt b {
+    color: var(--gold-bright);
+  }
+  .ns-go {
+    color: var(--cyan);
+    white-space: nowrap;
+  }
+
+  /* 沙盒分支 */
+  .line {
+    font-size: var(--fs-lg);
     color: var(--text);
   }
   .best {
-    font-size: 13px;
+    font-size: var(--fs-sm);
     color: var(--muted);
   }
-  /* 上届竞速结果：与上届同一时刻相比多收/少收了多少点 */
-  .ghost-line {
-    width: 100%;
-    padding: 6px 10px;
-    border-radius: var(--r-sm);
-    background: rgba(248, 113, 113, 0.1);
-    border: 1px solid rgba(248, 113, 113, 0.4);
-    font-size: var(--fs-xs);
-    color: var(--muted);
-  }
-  .ghost-line.ahead {
-    background: rgba(79, 209, 197, 0.1);
-    border-color: rgba(79, 209, 197, 0.42);
-  }
-  .ghost-line.even {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: var(--line);
-  }
+
   .btns {
     display: flex;
     gap: 8px;
     width: 100%;
-    padding: 10px 14px 13px;
+    padding: 12px 14px 14px;
     box-sizing: border-box;
     flex: 0 0 auto;
     border-top: 1px solid var(--edge-faint);
-    background: linear-gradient(180deg, rgba(4, 7, 13, 0.6), rgba(4, 7, 13, 0.95));
-    border-radius: 0 0 8px 8px;
   }
-  /* 主按钮已用 .g-btn--lg 规格：这里只负责占位宽度 */
   .btns button {
     width: 100%;
   }
-  /* 主按钮占满，⋯ 收紧为方形（MoreMenu 是子组件，需 :global） */
   .btns button.primary {
     flex: 1;
   }
+  /* ⋯ 菜单与主按钮等高（MoreMenu 是子组件，需 :global） */
   .btns :global(.mm) {
     flex: 0 0 48px;
   }
   .btns :global(.mm-btn) {
     width: 100%;
     height: 100%;
-    min-height: 44px;
+    min-height: 52px;
   }
-  /* 矮屏（手机横屏 ~390px 高）：压缩结算卡密度，不靠隐蔽滚动也能看全 */
+
+  /* 矮屏（手机横屏 ~390px 高）：压缩密度 */
   @media (max-height: 460px) {
     .card-body {
-      padding: 8px 14px 4px;
-      gap: 3px;
+      padding: 10px 14px 6px;
+      gap: 6px;
     }
     .stars {
-      font-size: 24px;
-      gap: 4px;
-    }
-    .score-big b {
       font-size: 28px;
     }
-    .next-seal {
-      padding: 6px 10px;
+    .score-big b {
+      font-size: 32px;
     }
   }
-  /* 矮视口（画布只有 ~180–250px 高）：结算卡若仍贴在画布框内，「收集 / 全清 /
-     完美全清 / 下一枚印」全被裁掉甚至与主按钮串行——实测 320×568（竖屏）只剩
-     星级与分数、640×360（横屏）下一枚印行被「下一关」压住。矮视口一律整屏
-     显示（z-index 高于底部标签栏，结算时整屏就是这一张卡），统计一行不落。
-     手机竖屏（≤640 宽）同理：座舱壳下画布只有 ~430px 高，结算卡必须整屏。 */
+  /* 矮视口或手机竖屏：结算卡整屏显示（座舱壳下画布高度不够放完整卡） */
   @media (max-width: 900px) and (max-height: 700px), (max-width: 640px) {
     .result {
       position: fixed;
@@ -959,38 +750,22 @@
       padding: 10px;
     }
   }
-  /* 手机窄屏：说明文字与「对比频谱 →」挤在一行会把「拟合度」拦腰折断
-     （实测 390 宽），改为说明占满首行、动作按钮落到第二行右对齐。 */
   @media (max-width: 640px) {
     .card-body {
-      padding: 10px 14px 6px;
-      gap: 4px;
+      padding: 12px 14px 8px;
+      gap: 6px;
     }
     .stars {
-      font-size: 28px;
-      gap: 4px;
+      font-size: 34px;
     }
     .score-big b {
-      font-size: 30px;
+      font-size: 38px;
     }
-    .stat-row {
-      font-size: 11px;
-    }
-    .next-seal {
-      flex-wrap: wrap;
-      row-gap: 4px;
-      padding: 5px 8px;
-      font-size: 11px;
-    }
-    .ns-txt {
-      flex: 1 1 100%;
-      line-height: 1.35;
-    }
-    .ns-go {
-      margin-left: auto;
+    .verdict {
+      font-size: var(--fs-md);
     }
     .btns {
-      padding: 6px 14px 10px;
+      padding: 10px 14px 12px;
     }
   }
 </style>
