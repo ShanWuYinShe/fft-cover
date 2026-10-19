@@ -51,6 +51,7 @@
 <style>
   /* 舞台：画布吃满机坞左侧的可用高度 */
   .stage-wrap {
+    position: relative;
     flex: 1 1 auto;
     width: 100%;
     min-width: 0;
@@ -63,6 +64,16 @@
     box-sizing: border-box;
   }
 
+  /* 画布上方一层极淡金雾：让画布「浮」在星云里，而不是贴上去 */
+  .stage-wrap::before {
+    content: '';
+    position: absolute;
+    inset: -6%;
+    pointer-events: none;
+    background: radial-gradient(50% 50% at 50% 50%, var(--gold-dim), transparent 70%);
+  }
+
+  /* 画布基座 = 嵌在座舱里的一口深井：外圈一圈金雾；井内那层 inset 由画布自己给 */
   .canvas-box {
     position: relative;
     flex: 0 0 auto;
@@ -70,6 +81,8 @@
     width: min(100%, calc(100dvh - var(--hud-h) - var(--cmd-h) - 60px));
     max-width: 100%;
     margin: 0 auto;
+    border-radius: var(--radius-md);
+    box-shadow: var(--hint-glow);
   }
 
   /* 4 隅古青铜角花 */

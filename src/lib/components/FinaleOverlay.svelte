@@ -452,7 +452,7 @@
   }
   .wall-item polyline {
     fill: none;
-    stroke: rgba(150, 170, 200, 0.6);
+    stroke: rgba(163, 144, 109, 0.6);
     stroke-width: 8;
     stroke-linejoin: round;
   }
@@ -530,12 +530,7 @@
     justify-content: center;
     margin: 0 -20px;
     padding: 12px 20px 16px;
-    background: linear-gradient(
-      180deg,
-      rgba(11, 17, 30, 0) 0,
-      rgba(11, 17, 30, 0.96) 16px,
-      #0b111e
-    );
+    background: linear-gradient(180deg, rgba(20, 15, 9, 0) 0, rgba(20, 15, 9, 0.96) 16px, #140f09);
   }
 
   button.primary {

@@ -196,8 +196,7 @@
     font-weight: 600;
     white-space: nowrap;
     border: none;
-    border-radius: 0;
-    clip-path: var(--chamfer-sm);
+    border-radius: var(--r-sm);
     background: var(--edge-bronze);
     -webkit-tap-highlight-color: transparent;
     transition: color 0.12s ease;
@@ -207,7 +206,7 @@
     position: absolute;
     inset: 1px 1px 2px;
     z-index: -1;
-    clip-path: var(--chamfer-sm);
+    border-radius: calc(var(--r-sm) - 1px);
     background: var(--face-plate);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     transition: background 0.12s ease;
@@ -240,7 +239,7 @@
     margin-top: -3.5px;
     border-radius: 50%;
     flex: none;
-    background: rgba(148, 163, 184, 0.28);
+    background: rgba(163, 144, 109, 0.28);
     box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.7);
   }
   .toggle-btn.on .lamp {
@@ -264,7 +263,7 @@
   .bars .bar {
     width: 3px;
     border-radius: 1px;
-    background: rgba(148, 163, 184, 0.25);
+    background: rgba(163, 144, 109, 0.25);
   }
   .bars .bar:nth-child(1) {
     height: 5px;

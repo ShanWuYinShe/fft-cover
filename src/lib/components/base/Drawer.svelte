@@ -91,7 +91,7 @@
     padding: 0;
   }
 
-  /* 侧舱 = 器物面板：青铜边 + 内侧暗线 + 四角铆钉 */
+  /* 侧舱 = 器物面板：青铜边 + 内侧暗线（右上角包角来自 .g-rivets::after） */
   .drawer-panel {
     position: fixed;
     z-index: 60;
@@ -176,10 +176,9 @@
     z-index: 1;
   }
 
-  /* 回纹发丝：叠一层暗罩，把纹样压到「发丝」级（契约 ≤.18 alpha） */
+  /* 标题条 = 黄铜铭牌（不再叠回纹；拉丝由 --plate-brass 自带） */
   .drawer-header.g-pattern-bar {
-    background-image:
-      linear-gradient(rgba(9, 14, 26, 0.62), rgba(9, 14, 26, 0.62)), var(--pattern-hui);
+    background: var(--plate-brass);
   }
   .drawer-header::before {
     content: '';

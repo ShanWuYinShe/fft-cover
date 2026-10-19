@@ -487,7 +487,7 @@
     stroke-linejoin: round;
   }
   .dex-item.dim .dex-shape polyline {
-    stroke: rgba(150, 170, 200, 0.4);
+    stroke: rgba(163, 144, 109, 0.4);
   }
   .dex-q {
     fill: var(--muted);

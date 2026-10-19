@@ -97,6 +97,19 @@
     background: transparent;
   }
 
+  /* 整屏电影颗粒：盖在所有面板**上方**的一层静态后处理（fixed + z-index 40 + overlay）
+     —— 这是「贴了图的游戏」最关键的一层，只此一处，不参与并发动画额度 */
+  .game-screen::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+    background-image: var(--tex-grain);
+    opacity: 0.045;
+    mix-blend-mode: overlay;
+  }
+
   .gs-hud {
     grid-area: hud;
     min-width: 0;
@@ -128,6 +141,7 @@
   }
 
   /* ---------- 右侧机坞：贴边立柱，内部滚动 ---------- */
+  /* 面 = 拉丝装甲板：斜向高光 + 拉丝 + 内沿暖亮线 + 内框发丝 + 外柔影 */
   .gs-dock {
     grid-area: dock;
     position: relative;
@@ -135,11 +149,37 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(180deg, rgba(12, 18, 32, 0.96) 0%, rgba(6, 10, 19, 0.99) 100%);
+    background: var(--mat-plate);
     border-left: 1px solid var(--edge-bronze);
-    box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.6);
+    box-shadow: var(--mat-plate-shadow);
+  }
+  /* 器物框：内缩 6px 的一道铜线（伪元素，不加 DOM） */
+  .gs-dock::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    z-index: 2;
+    border: 1px solid var(--mat-frame-line);
+    border-radius: 5px;
+    box-shadow: inset 0 0 0 1px var(--edge-inner);
+    pointer-events: none;
+  }
+  /* 雕花包角：全屏只此一枚（机坞右上角，镜像朝内） */
+  .gs-dock::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 3;
+    width: 34px;
+    height: 34px;
+    background: var(--tex-corner) no-repeat center / 34px 34px;
+    transform: scaleX(-1);
+    opacity: 0.55;
+    pointer-events: none;
   }
 
+  /* 抬头 = 一块黄铜铭牌（原来是贴边的冷蓝标题条） */
   .dock-head {
     position: relative;
     flex: 0 0 auto;
@@ -147,14 +187,12 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    padding: 8px 12px;
-    /* 标题条：回纹发丝带 + 左侧金色铭牌块（器物语言） */
-    background-color: rgba(9, 14, 25, 0.9);
-    background-image: var(--pattern-hui);
-    background-repeat: repeat-x;
-    background-position: 0 center;
-    border-bottom: 1px solid var(--edge-bronze);
-    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.7);
+    margin: 8px 10px 0;
+    padding: 6px 10px;
+    background: var(--plate-brass);
+    border: 1px solid var(--plate-brass-line);
+    border-radius: var(--r-sm);
+    box-shadow: var(--plate-brass-shadow);
   }
   .dock-head::before {
     content: '';
@@ -169,16 +207,21 @@
 
   .dock-title {
     margin: 0;
-    font-size: 14px;
-    color: var(--text);
-    letter-spacing: 1px;
+    font-size: 13px;
+    color: var(--gold-bright);
+    letter-spacing: 1.5px;
     font-weight: 700;
     white-space: nowrap;
+    /* 柔和浮雕：深色下唇 + 暖色上唇（不用外发光） */
+    text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.6),
+      0 1px 0 rgba(255, 224, 150, 0.12);
   }
 
+  /* 计数在黄铜铭牌上：牌面比面板亮，用 --text 才够 4.5:1（--muted 实测仅 ≈3.9:1） */
   .dock-count {
     font-size: var(--ctl-font-sm);
-    color: var(--muted);
+    color: var(--text);
     font-weight: 600;
   }
 
@@ -197,12 +240,13 @@
     -webkit-overflow-scrolling: touch;
   }
 
+  /* 「画面偏窄」提示：与教学/专家提示同一族（铜牌，不用青色装饰） */
   .fitting-tip {
     font-size: 12px;
-    color: var(--cyan);
-    background: rgba(0, 245, 212, 0.08);
-    border: 1px solid rgba(0, 245, 212, 0.25);
-    border-radius: 6px;
+    color: var(--text);
+    background: var(--note-bg);
+    border: 1px solid var(--note-edge);
+    border-radius: var(--r-sm);
     padding: 6px 10px;
     margin: 0 0 10px;
     line-height: 1.4;
@@ -267,7 +311,7 @@
 
     .gs-cmd {
       border-top: 1px solid var(--edge-bronze);
-      background: linear-gradient(180deg, rgba(10, 15, 27, 0.92), rgba(5, 8, 15, 0.98));
+      background: var(--mat-plate);
     }
 
     /* 机坞吃掉剩余高度，内部滚动（高度由 grid 行决定，不再写 max-height） */

@@ -58,13 +58,10 @@
     display: block;
     margin: 8px 10px 0;
     padding: 7px 10px;
-    border-radius: 10px;
-    background: linear-gradient(180deg, rgba(14, 24, 42, 0.95), rgba(6, 12, 22, 0.96));
-    border: 1px solid rgba(0, 245, 212, 0.45);
-    box-shadow:
-      var(--bevel-top),
-      0 4px 14px rgba(0, 0, 0, 0.55),
-      0 0 14px rgba(0, 245, 212, 0.16);
+    border-radius: var(--r-sm);
+    background: var(--note-bg);
+    border: 1px solid var(--note-edge);
+    box-shadow: var(--bevel-top), var(--sh-1), var(--hint-glow);
     font-size: 12px;
     line-height: 1.5;
     color: var(--text);
@@ -73,22 +70,20 @@
     animation: guide-in 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
   }
 
+  /* 目标数字：青玉 = 「能量/目标」语义（与画布金色目标环同族但不同色阶） */
   .first-guide b {
     color: var(--cyan);
     white-space: nowrap;
   }
 
   .first-guide.ok {
-    background: linear-gradient(180deg, rgba(30, 26, 10, 0.95), rgba(14, 12, 4, 0.96));
-    border-color: rgba(245, 184, 65, 0.7);
-    box-shadow:
-      var(--bevel-top),
-      0 6px 20px rgba(0, 0, 0, 0.65),
-      0 0 18px rgba(245, 184, 65, 0.3);
+    background: var(--face-gold-plate);
+    border-color: var(--edge-bronze-hot);
+    box-shadow: var(--bevel-top), var(--sh-2), var(--sh-glow-hot);
   }
 
   .first-guide.ok b {
-    color: var(--gold-bright);
+    color: #241300;
   }
 
   /* 小按键：有厚度的微型游戏键（高度走令牌，触屏自动放大到 40） */
@@ -99,25 +94,23 @@
     height: var(--ctl-sm);
     padding: 0 10px;
     margin-left: 8px;
-    border-radius: 7px;
-    background: var(--face-metal);
-    border: 1px solid var(--edge);
+    border-radius: var(--r-sm);
+    background: var(--mat-block);
+    border: 1px solid var(--edge-bronze);
     color: var(--text);
     font-size: 11px;
     font-weight: 700;
-    box-shadow:
-      var(--bevel-top),
-      0 2px 0 rgba(0, 0, 0, 0.5);
+    box-shadow: var(--bevel-top), var(--groove-shadow);
     transition: all 0.1s ease;
   }
   .mini-btn:hover {
-    background: var(--face-metal-hover);
+    background: var(--mat-plate);
     color: var(--gold-bright);
-    border-color: var(--edge-hot);
+    border-color: var(--edge-bronze-hot);
   }
   .mini-btn:active {
     transform: translateY(2px);
-    box-shadow: var(--bevel-inset);
+    box-shadow: var(--groove-shadow);
   }
 
   .remote-tip {
@@ -128,12 +121,10 @@
     gap: 8px;
     padding: 7px 10px;
     margin: 8px 10px 0;
-    border-radius: 10px;
-    background: linear-gradient(135deg, rgba(167, 139, 250, 0.18), rgba(0, 245, 212, 0.08));
-    border: 1px solid rgba(167, 139, 250, 0.55);
-    box-shadow:
-      var(--bevel-top),
-      0 4px 14px rgba(0, 0, 0, 0.5);
+    border-radius: var(--r-sm);
+    background: var(--note-bg);
+    border: 1px solid var(--note-edge);
+    box-shadow: var(--bevel-top), var(--sh-1);
     font-size: 12px;
     color: var(--text);
     text-align: left;
@@ -150,15 +141,15 @@
     justify-content: center;
     width: var(--ctl-sm);
     height: var(--ctl-sm);
-    border-radius: 7px;
-    background: rgba(10, 16, 28, 0.6);
-    border: 1px solid var(--edge-soft);
+    border-radius: var(--r-sm);
+    background: var(--mat-block);
+    border: 1px solid var(--edge-bronze);
     color: var(--muted);
     font-size: 12px;
   }
   .remote-tip .rt-close:hover {
     color: var(--text);
-    border-color: var(--edge);
+    border-color: var(--edge-bronze-hot);
   }
 
   .expert-tip {
@@ -169,12 +160,10 @@
     gap: 8px;
     padding: 7px 10px;
     margin: 8px 10px 0;
-    border-radius: 10px;
-    background: linear-gradient(135deg, rgba(167, 139, 250, 0.2), rgba(0, 245, 212, 0.06));
-    border: 1px solid rgba(167, 139, 250, 0.55);
-    box-shadow:
-      var(--bevel-top),
-      0 4px 14px rgba(0, 0, 0, 0.5);
+    border-radius: var(--r-sm);
+    background: var(--note-bg);
+    border: 1px solid var(--note-edge);
+    box-shadow: var(--bevel-top), var(--sh-1);
     font-size: 12px;
     color: var(--text);
     text-align: left;
@@ -182,6 +171,6 @@
     box-sizing: border-box;
   }
   .expert-tip b {
-    color: #c4b5fd;
+    color: var(--purple);
   }
 </style>

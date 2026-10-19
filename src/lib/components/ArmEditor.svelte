@@ -614,9 +614,9 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
-    /* 面板被撑高时，把富余高度均摊到各段之间（无富余时与原来一致，不留空档） */
+    /* 富余高度吃掉，但参数行从顶部起排（原 space-evenly 会把三条摊开 ~110px） */
     flex: 1 0 auto;
-    justify-content: space-evenly;
+    justify-content: flex-start;
   }
 
   /* 区块首次出现：上移 6px 淡入（300ms，逐块 60ms 错峰）；
@@ -662,11 +662,12 @@
     justify-content: space-between;
     gap: 8px;
   }
+  /* 标签 = 次级暖灰（金留给读数）；不加字距，否则「半径」两字会被撑散 */
   .param-name {
     font-size: var(--ctl-font);
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: var(--text);
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--muted);
     white-space: nowrap;
   }
   .param-value {
@@ -698,12 +699,14 @@
   .val-btn:hover {
     border-color: var(--edge-bronze-hot);
   }
+  /* 读数 = 金漆数字（19px，等宽数字不跳动，柔和外光不是硬描边） */
   .param-value .val-num {
-    font-size: 16px;
+    font-size: 19px;
     line-height: 1.1;
     font-family: 'JetBrains Mono', monospace;
-    color: #b9f7e8;
-    text-shadow: none;
+    font-variant-numeric: tabular-nums;
+    color: var(--gold-bright);
+    text-shadow: var(--thumb-shadow);
   }
   .param-value .val-num.ccw {
     color: var(--purple);
@@ -722,27 +725,26 @@
   .val-unit {
     font-style: normal;
     font-size: var(--ctl-font-sm);
-    color: rgba(157, 240, 216, 0.62);
+    color: var(--muted);
   }
-  /* 只读读数（倍率）也用玉牌承载，保证三行读数同一种器物语言 */
+  /* 只读读数（倍率）也用同一种凹槽承载，保证三行读数同一种器物语言 */
   .param-value--plaque {
     min-height: var(--ctl-md);
     padding: 0 10px;
     align-items: center;
-    border-radius: 4px;
-    background: var(--face-jade);
-    border: 1px solid rgba(16, 185, 129, 0.42);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.07),
-      inset 0 0 0 1px rgba(0, 0, 0, 0.5);
+    border-radius: var(--r-sm);
+    background: var(--groove-bg);
+    border: 1px solid var(--edge-bronze);
+    box-shadow: var(--groove-shadow);
   }
   .num-input {
     width: 64px;
     height: var(--ctl-md);
     padding: 0;
-    background: var(--metal-deep);
-    border: 1px solid var(--edge);
-    border-radius: var(--ctl-radius);
+    background: var(--groove-bg);
+    border: 1px solid var(--edge-bronze);
+    border-radius: var(--r-sm);
+    box-shadow: var(--groove-shadow);
     color: var(--gold-bright);
     font-family: 'JetBrains Mono', monospace;
     font-size: var(--ctl-font);
@@ -768,7 +770,7 @@
     min-width: 0;
   }
 
-  /* 方向切换 = 铜板键（公共 .g-btn：切角铜边 + 内金属面） */
+  /* 方向切换 = 小铜板键（未选中 --mat-block，选中态见下方 .ccw） */
   .dir-btn {
     display: inline-flex;
     align-items: center;
@@ -776,7 +778,11 @@
     flex: 0 0 auto;
     min-height: var(--ctl-md);
     padding: 0 10px;
-    color: var(--cyan);
+    background: var(--mat-block);
+    border: 1px solid var(--edge-bronze);
+    border-radius: var(--ctl-radius);
+    box-shadow: var(--mat-block-shadow);
+    color: var(--text);
     font-size: var(--ctl-font-sm);
     font-weight: 700;
     letter-spacing: 0.5px;
@@ -798,7 +804,7 @@
     transform: rotate(180deg);
   }
 
-  /* ---------- 核心滑杆 = 玉尺：青铜凹槽 + 两端铜钉 + 金箔填充 + 玉石立方滑块 ---------- */
+  /* ---------- 核心滑杆 = 雕刻凹槽 + 金珠把手 ---------- */
   .range-wrap {
     position: relative;
     display: block;
@@ -806,42 +812,19 @@
     min-width: 0;
     height: 26px;
   }
-  /* 两端铜钉（压在填充与输入层之上，仅装饰） */
-  .range-wrap::before,
-  .range-wrap::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    z-index: 3;
-    width: 4px;
-    height: 4px;
-    margin-top: -2px;
-    border-radius: 50%;
-    background: var(--rivet);
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
-    pointer-events: none;
-  }
-  .range-wrap::before {
-    left: 1px;
-  }
-  .range-wrap::after {
-    right: 1px;
-  }
-  /* 玉尺凹槽：内凹阴影 + 1px 青铜边 */
+  /* 轨道 = 一条凹槽：内阴影 + 下沿暖亮线 + 1px 青铜边 */
   .range-track {
     position: absolute;
     top: 50%;
     left: 0;
     right: 0;
     z-index: 0;
-    height: 6px;
+    height: 5px;
     transform: translateY(-50%);
-    border-radius: 2px;
+    border-radius: var(--r-pill);
     border: 1px solid var(--edge-bronze);
-    background: linear-gradient(180deg, #04070c 0%, #0a1018 100%);
-    box-shadow:
-      inset 0 2px 5px rgba(0, 0, 0, 0.85),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+    background: var(--groove-bg);
+    box-shadow: var(--groove-shadow);
     overflow: hidden;
     pointer-events: none;
   }
@@ -851,10 +834,8 @@
     width: 100%;
     height: 100%;
     transform-origin: left center;
-    background: linear-gradient(90deg, rgba(255, 231, 163, 0.72) 0%, rgba(214, 146, 20, 0.88) 100%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.45),
-      inset 0 -1px 0 rgba(120, 70, 0, 0.5);
+    background: var(--face-gold-plate);
+    box-shadow: var(--hint-glow);
     transition: transform 90ms linear;
   }
 
@@ -872,88 +853,66 @@
     touch-action: pan-y;
   }
   .c-range::-webkit-slider-runnable-track {
-    height: 6px;
+    height: 5px;
     background: transparent;
     border: none;
   }
+  /* 把手 = 17px 金珠（宝石高光叠金箔），两套伪元素写法保持一致 */
   .c-range::-webkit-slider-thumb {
     appearance: none;
     -webkit-appearance: none;
-    width: 14px;
-    height: 14px;
-    margin-top: -4px;
-    border-radius: 2px;
-    /* 切角 2px 的玉石立方（不用圆形） */
-    clip-path: polygon(
-      2px 0,
-      calc(100% - 2px) 0,
-      100% 2px,
-      100% calc(100% - 2px),
-      calc(100% - 2px) 100%,
-      2px 100%,
-      0 calc(100% - 2px),
-      0 2px
-    );
-    border: 1px solid var(--edge-bronze-hot);
-    background: linear-gradient(180deg, #c8fff0 0%, #3fd9bd 45%, #0c7d6a 100%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.7),
-      inset 0 -1px 0 rgba(0, 60, 50, 0.55);
+    width: 17px;
+    height: 17px;
+    margin-top: -6px;
+    border-radius: 50%;
+    border: 1px solid var(--bronze-deep);
+    background: var(--tex-gem), var(--thumb-fill);
+    box-shadow: var(--thumb-shadow);
     cursor: grab;
     transition: transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   /* 按住滑块：放大（红线内 1.08） */
   .c-range:active::-webkit-slider-thumb {
     transform: scale(1.08);
-    background: linear-gradient(180deg, #fff8e1 0%, #f7c250 45%, #c8870c 100%);
   }
-  /* 焦点：切角会切掉外描边，改成「铜边变金 + 玉面提亮」 */
+  /* 焦点：描边变金 + 一圈金雾（圆把手不需要切角补偿） */
   .c-range:focus-visible::-webkit-slider-thumb {
     border-color: var(--gold-bright);
-    background: linear-gradient(180deg, #e9fff9 0%, #7cf0d8 45%, #14a58c 100%);
+    box-shadow:
+      var(--thumb-shadow),
+      0 0 0 2px var(--gold-dim);
   }
   /* 到端点：一次轻微「顿」感，不循环 */
   .c-range.bump::-webkit-slider-thumb {
     animation: thumb-bump 200ms ease-out;
   }
   .c-range::-moz-range-track {
-    height: 6px;
+    height: 5px;
     background: transparent;
     border: none;
   }
   .c-range::-moz-range-progress {
-    height: 6px;
+    height: 5px;
     background: transparent;
   }
   .c-range::-moz-range-thumb {
-    width: 14px;
-    height: 14px;
-    border-radius: 2px;
-    clip-path: polygon(
-      2px 0,
-      calc(100% - 2px) 0,
-      100% 2px,
-      100% calc(100% - 2px),
-      calc(100% - 2px) 100%,
-      2px 100%,
-      0 calc(100% - 2px),
-      0 2px
-    );
-    border: 1px solid var(--edge-bronze-hot);
-    background: linear-gradient(180deg, #c8fff0 0%, #3fd9bd 45%, #0c7d6a 100%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.7),
-      inset 0 -1px 0 rgba(0, 60, 50, 0.55);
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    border: 1px solid var(--bronze-deep);
+    background: var(--tex-gem), var(--thumb-fill);
+    box-shadow: var(--thumb-shadow);
     cursor: grab;
     transition: transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .c-range:active::-moz-range-thumb {
     transform: scale(1.08);
-    background: linear-gradient(180deg, #fff8e1 0%, #f7c250 45%, #c8870c 100%);
   }
   .c-range:focus-visible::-moz-range-thumb {
     border-color: var(--gold-bright);
-    background: linear-gradient(180deg, #e9fff9 0%, #7cf0d8 45%, #14a58c 100%);
+    box-shadow:
+      var(--thumb-shadow),
+      0 0 0 2px var(--gold-dim);
   }
   .c-range.bump::-moz-range-thumb {
     animation: thumb-bump 200ms ease-out;
@@ -970,11 +929,14 @@
     }
   }
 
-  /* 引导态专属描边：半径行是普通盒子，用 outline（不会被裁切） */
+  /* 引导态：D 的定稿是「一圈细铜边 + 极淡金雾」，不是 2px 粗金框
+     （粗框会跟滑杆凹槽、读数芯片叠成三层盒子）；用 outline 而非 border，避免 2px 跳动 */
   .param.guide {
-    outline: 2px solid var(--gold-bright);
-    outline-offset: 3px;
-    border-radius: 10px;
+    outline: 1px solid var(--plate-brass-line);
+    outline-offset: 0;
+    border-radius: var(--r-sm);
+    background: var(--gold-dim);
+    box-shadow: var(--hint-glow);
     animation: guide-pulse 1.6s ease-in-out infinite;
   }
   @keyframes guide-pulse {
@@ -983,10 +945,10 @@
       outline-color: var(--gold-bright);
     }
     50% {
-      outline-color: rgba(245, 184, 65, 0.35);
+      outline-color: var(--plate-brass-line);
     }
   }
-  /* 方向键是切角键帽，outline 会被 clip-path 切掉 → 改成沿切角形状的金色描边光晕 */
+  /* 方向键：切角已取消，但键帽仍是圆角金属块，描边沿用金色光晕更稳 */
   .dir-btn.guide {
     animation: key-guide-pulse 1.6s ease-in-out infinite;
   }
@@ -1065,9 +1027,11 @@
     }
   }
 
-  /* ---------- 高级调谐（默认折叠） ---------- */
+  /* ---------- 高级调谐（默认折叠，钉在仪表舱底部） ---------- */
   .adv {
     min-width: 0;
+    /* 参数行从顶部起排后，折叠条吃掉剩余高度、贴到机坞底部 */
+    margin-top: auto;
   }
   .adv-summary {
     display: flex;
@@ -1099,14 +1063,16 @@
     flex: none;
     width: 3px;
     height: 12px;
+    border-radius: 1px;
     background: var(--face-gold-plate);
-    clip-path: var(--chamfer-sm);
+    box-shadow: 0 0 6px rgba(245, 184, 65, 0.35);
   }
   .adv-summary:hover {
     color: var(--gold-bright);
   }
   .adv-chev {
     display: inline-flex;
+    color: var(--gold);
     transition: transform 0.15s ease;
   }
   .adv[open] .adv-chev {
@@ -1162,13 +1128,14 @@
   .compass-svg:active {
     cursor: grabbing;
   }
+  /* 罗盘 SVG 的面 = 暖黑金属阶（内腔 → 抬起面），不再是冷蓝 */
   .dial-track {
-    fill: #05080f;
+    fill: var(--metal-deep);
     stroke: var(--edge-soft);
     stroke-width: 1.5;
   }
   .dial-plate {
-    fill: #0a101c;
+    fill: var(--metal);
     stroke: var(--edge-faint);
     stroke-width: 1;
   }
@@ -1201,10 +1168,10 @@
     fill: var(--gold-bright);
   }
   .hub-bg {
-    fill: #0b1120;
+    fill: var(--metal-2);
   }
   .hub-ring {
-    fill: #121b2c;
+    fill: var(--metal-3);
     stroke: var(--edge-soft);
     stroke-width: 1.5;
   }
@@ -1254,14 +1221,16 @@
     gap: 8px;
     min-width: 0;
   }
+  /* 刻度尺 = 一条长凹槽（与滑杆轨道同一种面） */
   .ruler {
     position: relative;
     flex: 1 1 auto;
     min-width: 0;
     height: 26px;
     border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-faint);
-    background: rgba(4, 7, 14, 0.7);
+    border: 1px solid var(--edge-bronze);
+    background: var(--groove-bg);
+    box-shadow: var(--groove-shadow);
     overflow: hidden;
   }
   .ruler-fill {
@@ -1310,14 +1279,10 @@
   }
   /* 选中档位所在行：键面加极小回纹（其余行保持素面） */
   .gear-key.row-lit:not(.active)::before {
-    background:
-      var(--pattern-hui) 0 0 / 10px 10px repeat,
-      var(--face-plate);
+    background: var(--face-plate);
   }
   .gear-key.row-lit:not(.active):hover:not(:disabled)::before {
-    background:
-      var(--pattern-hui) 0 0 / 10px 10px repeat,
-      var(--face-plate-hot);
+    background: var(--face-plate-hot);
   }
   .gear-key.active {
     background: var(--bronze-bright);
@@ -1326,9 +1291,7 @@
     animation: gear-pop 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .gear-key.active::before {
-    background:
-      var(--pattern-hui) 0 0 / 10px 10px repeat,
-      var(--face-gold-plate);
+    background: var(--face-gold-plate);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
   }
   /* 宝石灯：内嵌在键帽右上角 */
@@ -1363,9 +1326,7 @@
     color: #160c2e;
   }
   .gear-key.active.ccw::before {
-    background:
-      var(--pattern-hui) 0 0 / 10px 10px repeat,
-      linear-gradient(180deg, #c4b5fd 0%, #a78bfa 50%, #6d4fc4 100%);
+    background: linear-gradient(180deg, #c4b5fd 0%, #a78bfa 50%, #6d4fc4 100%);
   }
   .gear-key.active.ccw::after {
     background: radial-gradient(circle at 35% 30%, #f3ebff 0%, #c4b5fd 55%, #4c2f8f 100%);
@@ -1422,18 +1383,14 @@
   /* 选中键在 hover / focus 下保持「金面 / 青碧面」，不被 .g-btn 的提亮面盖掉 */
   .gear-key.active:hover:not(:disabled)::before,
   .gear-key.active:focus-visible::before {
-    background:
-      var(--pattern-hui) 0 0 / 10px 10px repeat,
-      var(--face-gold-plate);
+    background: var(--face-gold-plate);
   }
   .gear-key.active:focus-visible {
     color: #1a1002;
   }
   .gear-key.active.ccw:hover:not(:disabled)::before,
   .gear-key.active.ccw:focus-visible::before {
-    background:
-      var(--pattern-hui) 0 0 / 10px 10px repeat,
-      linear-gradient(180deg, #c4b5fd 0%, #a78bfa 50%, #6d4fc4 100%);
+    background: linear-gradient(180deg, #c4b5fd 0%, #a78bfa 50%, #6d4fc4 100%);
   }
   .gear-key.active.ccw:focus-visible {
     color: #160c2e;

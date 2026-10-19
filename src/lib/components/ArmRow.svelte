@@ -64,17 +64,18 @@
     min-width: 0;
     border-radius: var(--ctl-radius);
     border: 1px solid var(--edge-bronze);
-    background: linear-gradient(180deg, #0b1220 0%, #05080f 100%);
+    background: var(--mat-block);
     transition:
       background 0.12s ease,
       border-color 0.12s ease;
   }
   .arm-slot.on {
-    background: linear-gradient(180deg, #0c1a20 0%, #050d10 100%);
+    background: var(--mat-plate);
   }
   .arm-slot.sel {
     border-color: var(--edge-bronze-hot);
-    background: linear-gradient(180deg, #151d2e 0%, #0a1018 100%);
+    background: var(--mat-plate);
+    box-shadow: inset 0 0 0 1px var(--plate-brass-line);
   }
   .arm-slot.locked {
     opacity: 0.5;
@@ -93,16 +94,18 @@
   .power-btn:disabled {
     cursor: not-allowed;
   }
-  /* 通电键 = 键帽：切角铜边 + 内凹键槽 */
+  /* 通电键 = 键帽：铜边 + 内凹键槽 */
   .power-rock {
     display: flex;
     align-items: center;
     justify-content: center;
     width: var(--ctl-xs);
     height: var(--ctl-xs);
-    clip-path: var(--chamfer-sm);
+    border-radius: var(--r-sm);
     background: var(--edge-bronze);
-    box-shadow: inset 0 0 0 2px #060b14;
+    box-shadow:
+      inset 0 0 0 2px var(--bronze-deep),
+      var(--bevel-top);
     transition:
       transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
       background 200ms ease;
@@ -116,10 +119,11 @@
     height: 5px;
     border-radius: 1px;
     transform: rotate(45deg);
-    background: #1b2334;
+    background: var(--bronze-deep);
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
     transition: background 240ms ease;
   }
+  /* 通电灯：青玉 = 能量/启用语义（D 定稿保留，不是冷蓝残留） */
   .arm-slot.on .power-lamp {
     background: radial-gradient(circle at 35% 30%, #dffff7 0%, #00f5d4 60%, #065f52 100%);
     box-shadow: 0 0 4px rgba(0, 245, 212, 0.65);

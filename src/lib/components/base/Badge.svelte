@@ -45,8 +45,7 @@
   }
 
   .badge.chamfer {
-    clip-path: var(--chamfer-sm);
-    border-radius: 0;
+    border-radius: var(--r-sm);
   }
 
   .badge-sm {

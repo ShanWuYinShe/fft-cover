@@ -213,20 +213,12 @@
   /* 卡片内纵向节奏：全部走 --space-4（块间）/ --space-3（发丝线到文字）/
      --space-1（块内）/ --space-2（菜单行距），不留零散 px */
   .ts-console {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
     width: min(500px, 100%);
     padding: var(--space-4) 22px var(--space-4);
-  }
-
-  /* 四角铆钉：位置内移到切角之内（切角 8px，铆钉点中心落在 9px 处） */
-  .ts-console.g-rivets::after {
-    background-position:
-      9px 9px,
-      calc(100% - 9px) 9px,
-      9px calc(100% - 9px),
-      calc(100% - 9px) calc(100% - 9px);
   }
 
   /* 回纹发丝标题条：左侧一枚小方块铭牌 */

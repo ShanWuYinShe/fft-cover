@@ -50,7 +50,7 @@
     max-width: 400px;
     box-sizing: border-box;
     padding: 18px 20px 16px;
-    /* 切角铜边 + 面来自 .g-chamfer，四角铆钉来自 .g-rivets */
+    /* 面来自 .g-chamfer；右上角一枚雕花包角来自 .g-rivets::after（第七轮语义） */
     /* 入场：0.96 → 1 缩放 + 淡入（320ms），结束后不留 transform */
     animation: tut-pop 320ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }

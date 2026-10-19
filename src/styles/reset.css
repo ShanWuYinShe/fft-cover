@@ -22,12 +22,13 @@ body {
 
 body {
   background-color: var(--bg);
+  /* 深空星云底：暖黑基底 + 顶部青铜微光 + 三点星尘（青/金保留为「灵色」星点） */
   background-image:
     radial-gradient(
       circle at 50% 12%,
-      rgba(20, 36, 68, 0.45) 0%,
-      rgba(6, 8, 14, 0.95) 60%,
-      #030408 100%
+      rgba(74, 57, 31, 0.4) 0%,
+      rgba(10, 8, 5, 0.95) 60%,
+      #050403 100%
     ),
     radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.15), transparent),
     radial-gradient(1px 1px at 75% 18%, rgba(245, 184, 65, 0.18), transparent),

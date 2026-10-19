@@ -198,7 +198,7 @@
     max-height: 100%;
     overflow: visible;
     border-radius: 10px;
-    /* 与普通结算卡同一块器物面板：青铜边 + 内侧 1px 暗线（铆钉由 .g-rivets 提供） */
+    /* 与普通结算卡同一块器物面板：青铜边 + 内侧 1px 暗线（右上角包角由 .g-rivets 提供） */
     background: var(--face-plate);
     border: 1px solid var(--edge-bronze);
     box-shadow:

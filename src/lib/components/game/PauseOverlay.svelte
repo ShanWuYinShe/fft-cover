@@ -129,7 +129,7 @@
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-4);
-    /* 器物面板：青铜边 + 内侧暗线（铆钉由 .g-rivets 提供，见模板）
+    /* 器物面板：青铜边 + 内侧暗线（右上角包角由 .g-rivets::after 提供，见模板）
        两条阴影必须写在同一个 box-shadow 里——分两条会互相覆盖，内暗线会丢 */
     background: var(--face-plate);
     border: 1px solid var(--edge-bronze);

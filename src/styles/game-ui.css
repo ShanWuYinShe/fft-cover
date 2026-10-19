@@ -41,72 +41,61 @@
   text-shadow: 0 0 18px rgba(245, 184, 65, 0.55);
 }
 
-/* ---------- 凹槽面板：嵌进机箱的深色内腔 ---------- */
+/* ---------- 凹槽面板：嵌进机箱的深色内腔（第七轮：雕刻凹槽质感） ---------- */
 .g-inset {
-  background:
-    linear-gradient(180deg, rgba(3, 5, 10, 0.92), rgba(8, 12, 22, 0.85)),
-    radial-gradient(120% 80% at 50% 0%, rgba(0, 245, 212, 0.04), transparent 60%);
-  border: 1px solid var(--edge-soft);
-  box-shadow: var(--bevel-inset);
-  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.42));
+  border: 1px solid var(--mat-frame-line);
+  box-shadow: var(--groove-shadow);
+  border-radius: var(--radius-sm);
 }
 
-/* ---------- 装甲面板：抬起的金属板（第五轮：青铜边 + 内暗线） ---------- */
+/* ---------- 装甲面板：抬起的青铜板（第七轮：材质贴图 + 内沿亮线） ---------- */
 .g-plate {
-  background: var(--face-plate);
+  background: var(--mat-plate);
   border: 1px solid var(--edge-bronze);
-  box-shadow:
-    var(--bevel-top),
-    inset 0 0 0 1px var(--edge-inner),
-    0 6px 18px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--mat-plate-shadow);
   border-radius: var(--radius-md);
 }
 
-/* ---------- 器物工具类（第五轮公共件） ---------- */
+/* ---------- 器物工具类 ---------- */
 
-/* 切角板：外层当 1px 铜边，内层 1px 缩进当金属面（clip-path 会切掉 border，所以用两层画边） */
+/* 铜边板：外层当 1px 铜边，内层 1px 缩进当金属面（第七轮去掉切角，改圆角） */
 .g-chamfer {
   position: relative;
   isolation: isolate;
-  clip-path: var(--chamfer-md);
+  border-radius: var(--r-md);
   background: var(--edge-bronze);
+  box-shadow: var(--sh-1);
 }
 .g-chamfer::before {
   content: '';
   position: absolute;
   inset: 1px;
   z-index: -1;
-  clip-path: var(--chamfer-md);
+  border-radius: calc(var(--r-md) - 1px);
   background: var(--face-plate);
 }
 
-/* 四角铆钉：用 ::after 的四张背景图铺出四颗半球 */
+/* 器物包角：第七轮起 .g-rivets 不再是四角铆钉，改为右上角一枚雕花包角
+   （内联 SVG 描边，一块面板只放一处；原来的 `--rivet` 已置 none） */
 .g-rivets::after {
   content: '';
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
+  top: 6px;
+  right: 6px;
+  width: 34px;
+  height: 34px;
   pointer-events: none;
-  background-image: var(--rivet), var(--rivet), var(--rivet), var(--rivet);
-  background-size: 4px 4px;
-  background-repeat: no-repeat;
-  background-position:
-    3px 3px,
-    calc(100% - 3px) 3px,
-    3px calc(100% - 3px),
-    calc(100% - 3px) calc(100% - 3px);
-  opacity: 0.85;
+  background: var(--tex-corner) no-repeat center / 34px 34px;
+  opacity: 0.5;
 }
 
-/* 回纹发丝带：面板/弹窗标题条用（只在标题条出现，不铺满）
-   叠一层暗罩把有效 alpha 压到 ≈.10 —— 直接用 .26 的单元会读成格纹而不是发丝 */
+/* 黄铜标题条：面板/弹窗标题用（第七轮去掉回纹，改铜牌 + 金丝压边） */
 .g-pattern-bar {
   background-image:
-    linear-gradient(rgba(9, 14, 26, 0.62), rgba(9, 14, 26, 0.62)), var(--pattern-hui);
-  background-repeat: repeat-x, repeat-x;
-  background-position:
-    0 center,
-    0 center;
+    linear-gradient(180deg, rgba(255, 224, 150, 0.07), transparent 70%), var(--plate-brass);
+  background-repeat: no-repeat, no-repeat;
+  box-shadow: inset 0 -1px 0 var(--plate-brass-line);
 }
 
 /* 方形 socket：把图标嵌进内凹的键槽（按钮内图标统一走它） */
@@ -116,29 +105,26 @@
   justify-content: center;
   width: calc(var(--ctl-md) - 10px);
   height: calc(var(--ctl-md) - 10px);
-  border-radius: 3px;
-  background: linear-gradient(180deg, #070c17, #101a2c);
+  border-radius: var(--r-sm);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.44));
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.8),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
-    0 0 0 1px rgba(201, 162, 74, 0.35);
+    0 0 0 1px rgba(201, 162, 74, 0.3);
   color: var(--gold);
   flex: none;
 }
 
-/* 玉牌：状态/读数小块（青碧描字 + 内凹） */
+/* 读数块：第七轮从「玉牌」改为雕刻凹槽（金漆字），玉色只保留在文字上作启用信号 */
 .g-chip {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   min-height: var(--ctl-sm);
   padding: 0 8px;
-  border-radius: 4px;
-  background: var(--face-jade);
-  border: 1px solid rgba(16, 185, 129, 0.42);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.5);
+  border-radius: var(--r-sm);
+  background: rgba(0, 0, 0, 0.42);
+  border: 1px solid rgba(201, 162, 74, 0.3);
+  box-shadow: var(--groove-shadow);
   color: #9df0d8;
   font-size: var(--ctl-font-sm);
   letter-spacing: 0.5px;
@@ -186,9 +172,9 @@
 /* ---------- 游戏按钮：厚、立体、可按 ----------
  * 降噪约定（第二轮）：外发光只给「主操作」与「选中/激活态」；
  * 普通按键的 hover 只用面/描边变化，不再加光晕。 */
-/* 铜板键：切角 4px + 1px 青铜边（外层铜边、内层金属面）
+/* 铜板键：圆角 + 1px 青铜边（外层铜边、内层金属面）
  * 结构：.g-btn 本体 = 铜边；::before = 面（z-index:-1 让它压在文字之下、铜边之上）。
- * 焦点态不用 outline（会被 clip-path 切掉），改成「铜边变金 + 面提亮」。 */
+ * 第七轮：切角取消（clip-path 会把圆角与描边一起切掉），面改为拉丝青铜材质。 */
 .g-btn {
   appearance: none;
   position: relative;
@@ -200,8 +186,7 @@
   min-height: var(--ctl-md);
   padding: 0 12px;
   border: none;
-  border-radius: 0;
-  clip-path: var(--chamfer-sm);
+  border-radius: var(--ctl-radius);
   background: var(--edge-bronze);
   color: var(--text);
   font-family: inherit;
@@ -223,9 +208,9 @@
   position: absolute;
   inset: 1px 1px 2px;
   z-index: -1;
-  clip-path: var(--chamfer-sm);
-  background: var(--face-plate);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: calc(var(--ctl-radius) - 1px);
+  background: var(--mat-block);
+  box-shadow: var(--bevel-top);
   transition:
     background 0.12s ease,
     inset 0.09s ease;
@@ -287,7 +272,8 @@
 }
 .g-btn--primary::before {
   inset: 1px 1px 3px;
-  background: var(--face-gold-plate);
+  background: var(--tex-brush), var(--face-gold-plate);
+  background-blend-mode: soft-light, normal;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.6),
     inset 0 -1px 0 rgba(150, 95, 0, 0.45);
@@ -356,7 +342,7 @@
 }
 .g-btn--ghost::before {
   inset: 1px 1px 2px;
-  background: linear-gradient(180deg, rgba(14, 20, 34, 0.92), rgba(6, 10, 18, 0.88));
+  background: linear-gradient(180deg, rgba(28, 22, 14, 0.92), rgba(12, 9, 6, 0.9));
 }
 .g-btn--ghost:hover:not(:disabled) {
   color: var(--gold-bright);
@@ -372,13 +358,13 @@
 }
 .g-btn--icon::before {
   inset: 2px;
-  background: linear-gradient(180deg, #080d19, #131d31);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.44));
   box-shadow:
     inset 0 2px 5px rgba(0, 0, 0, 0.8),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+    0 1px 0 rgba(255, 214, 130, 0.07);
 }
 .g-btn--icon:hover:not(:disabled)::before {
-  background: linear-gradient(180deg, #0d1526, #1b2743);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(58, 46, 27, 0.5));
 }
 .g-btn--icon:active:not(:disabled)::before {
   inset: 3px 1px 1px;
@@ -390,10 +376,10 @@
   padding: 0 22px;
   font-size: calc(var(--ctl-font) + 2px);
   letter-spacing: 2px;
-  clip-path: var(--chamfer-md);
+  border-radius: var(--ctl-radius-lg);
 }
 .g-btn--lg::before {
-  clip-path: var(--chamfer-md);
+  border-radius: calc(var(--ctl-radius-lg) - 1px);
 }
 .g-btn--primary.g-btn--lg {
   padding-right: 26px;
@@ -429,19 +415,13 @@
   background: var(--metal);
 }
 
-/* ---------- 分隔线：金色发丝 + 中心菱形 ---------- */
+/* ---------- 分隔线：金丝（两端渐隐）+ 中心菱形 ---------- */
 .g-divider {
   position: relative;
   display: block;
   height: 1px;
   margin: 10px 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--edge-soft) 12%,
-    var(--edge-soft) 88%,
-    transparent
-  );
+  background: var(--mat-rule);
   border: none;
 }
 .g-divider::after {

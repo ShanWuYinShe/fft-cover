@@ -105,15 +105,14 @@
     align-items: center;
     gap: 6px;
     padding: 14px 28px;
-    border-radius: 0;
-    /* 器物铭牌：切角 + 青铜边 + 四角铆钉 + 顶部金箔发丝 */
-    clip-path: var(--chamfer-md);
-    background: var(--face-plate);
+    border-radius: var(--r-md);
+    /* 器物铭牌：青铜边 + 顶部金箔发丝（不再有铆钉，第七轮改右上角包角） */
+    background: var(--mat-plate);
     border: none;
     box-shadow:
       inset 0 0 0 1px var(--edge-bronze-hot),
       inset 0 2px 0 -1px rgba(255, 209, 102, 0.5),
-      0 16px 40px rgba(0, 0, 0, 0.7);
+      var(--sh-game-lg);
     transform: scale(0.92);
     transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: auto;

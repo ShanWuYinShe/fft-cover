@@ -52,9 +52,9 @@
       height: 100%;
       padding: 6px 10px calc(6px + env(safe-area-inset-bottom));
       box-sizing: border-box;
-      background: linear-gradient(180deg, rgba(10, 15, 27, 0.96) 0%, rgba(4, 7, 13, 0.99) 100%);
-      border-top: 1px solid var(--edge);
-      box-shadow: 0 -8px 22px rgba(0, 0, 0, 0.55);
+      background: var(--mat-plate);
+      border-top: 1px solid var(--edge-bronze);
+      box-shadow: var(--mat-plate-shadow);
       transition:
         transform 0.22s ease,
         opacity 0.18s ease;
@@ -76,10 +76,13 @@
          这里保证被挤压时按键仍 ≥--ctl-md（触屏 42px） */
       min-height: var(--ctl-md);
       padding: 0 8px;
-      /* 斜边标签页：左右各切 7px */
-      clip-path: polygon(7px 0, calc(100% - 7px) 0, 100% 100%, 0 100%);
-      background: linear-gradient(180deg, #131d31, #0a1120);
-      box-shadow: inset 0 0 0 1px var(--edge-bronze);
+      /* 斜边标签页 → 圆角键帽（D：切角一律退场，改雕刻凹槽 + 键帽面料） */
+      border-radius: var(--r-sm);
+      background: var(--mat-block);
+      box-shadow:
+        inset 0 0 0 1px var(--plate-brass-line),
+        var(--bevel-top),
+        var(--groove-shadow);
       color: var(--muted);
       font-size: var(--ctl-font-sm);
       font-weight: 700;
@@ -89,16 +92,18 @@
     .tab-btn:hover {
       color: var(--text);
     }
-    /* clip-path 会切掉全局 :focus-visible 的描边：焦点用「铜边变金 + 面提亮」表达 */
+    /* 焦点用「铜边变金 + 面提亮」表达（不再依赖会被切掉的外描边） */
     .tab-btn:focus-visible {
-      background: linear-gradient(180deg, #1c2a44, #101a2e);
-      box-shadow: inset 0 0 0 1px var(--edge-bronze-hot);
+      background: var(--mat-plate);
+      box-shadow:
+        inset 0 0 0 1px var(--edge-bronze-hot),
+        var(--bevel-top);
       color: var(--gold-bright);
     }
     .tab-btn:active {
-      background: linear-gradient(180deg, #0b1220, #16213a);
+      background: var(--groove-bg);
       transform: translateY(2px);
-      box-shadow: var(--bevel-inset);
+      box-shadow: var(--groove-shadow);
     }
 
     .tab-ico {
@@ -112,7 +117,7 @@
       opacity: 0.6;
     }
 
-    /* 选中：金箔标签页（全屏唯一的金色面） */
+    /* 选中：金箔键帽（全屏唯一的金色面） */
     .tab-btn.on {
       background: var(--face-gold-plate);
       color: #241300;
@@ -121,7 +126,8 @@
         0 -1px 0 rgba(120, 70, 0, 0.35);
       box-shadow:
         inset 0 0 0 1px #ffe7a3,
-        inset 0 -2px 0 rgba(140, 80, 0, 0.45);
+        inset 0 -2px 0 rgba(140, 80, 0, 0.45),
+        var(--sh-glow-hot);
     }
 
     .tab-btn.on .tab-caret {
@@ -132,7 +138,8 @@
     .tab-btn.on:focus-visible {
       box-shadow:
         inset 0 0 0 1px #fff6d8,
-        inset 0 -2px 0 rgba(140, 80, 0, 0.45);
+        inset 0 -2px 0 rgba(140, 80, 0, 0.45),
+        var(--sh-glow-hot);
     }
   }
 </style>

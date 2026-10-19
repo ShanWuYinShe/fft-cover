@@ -62,8 +62,9 @@
     border-bottom: 1px solid var(--edge-faint);
   }
 
-  /* 两端的菱形收口 */
+  /* 两端的菱形收口：D 的定稿取消了（base.css:353 display:none），保留 DOM 与规则便于回退 */
   .crown-cap {
+    display: none;
     position: absolute;
     top: 50%;
     width: 8px;
@@ -86,20 +87,23 @@
     min-width: 0;
   }
 
+  /* 抬头小字：11px 次级暖灰（mockup 实测 11px/700/ls1.4/muted） */
   .crown-eyebrow {
     font-size: 11px;
-    color: var(--gold);
-    letter-spacing: 2.5px;
+    color: var(--muted);
+    letter-spacing: 1.4px;
     font-weight: 700;
     white-space: nowrap;
   }
 
+  /* 关卡名：15px 金漆浮雕（mockup 实测 #ffd166 + 1px 暗描边 + 12px 暖光） */
   .crown-title {
     margin: 0;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: 2px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--gold-bright);
+    letter-spacing: 1px;
+    text-shadow: var(--thumb-shadow);
     white-space: nowrap;
   }
 
@@ -110,6 +114,7 @@
     flex: 0 0 auto;
   }
 
+  /* 星位 = 素环（mockup：background:none / 1px 铜边 / 无内影无外光），反馈只由星形自己给 */
   .star-gem-socket {
     width: 24px;
     height: 24px;
@@ -117,12 +122,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle at 50% 35%, #1a2440 0%, #070c16 70%);
-    border: 1.5px solid var(--edge-bronze);
-    box-shadow:
-      inset 0 2px 6px rgba(0, 0, 0, 0.85),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.07),
-      0 2px 6px rgba(0, 0, 0, 0.4);
+    background: none;
+    border: 1px solid var(--plate-brass-line);
+    box-shadow: none;
     position: relative;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
@@ -134,13 +136,10 @@
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  .star-gem-socket.lit {
-    border-color: #ffd700;
-    background: radial-gradient(circle, #453008 0%, #1c1303 100%);
-  }
+  /* 点亮 = 星形变金 + 暖光 + 轻微放大（环保持素环，不再叠第二层发光） */
   .star-gem-socket.lit .gem-star {
-    color: #ffd700;
-    text-shadow: 0 0 10px #ffd700;
+    color: var(--gold-bright);
+    text-shadow: var(--thumb-shadow);
     transform: scale(1.18);
   }
 

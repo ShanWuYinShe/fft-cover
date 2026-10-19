@@ -94,7 +94,7 @@
     position: fixed;
     inset: 0;
     /* 全屏压暗即足够把注意力锁在弹窗上，不再加金色氛围光 */
-    background: rgba(3, 5, 11, 0.8);
+    background: var(--scrim);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     z-index: 100;
@@ -107,13 +107,11 @@
 
   .modal-shell {
     position: relative;
-    /* 器物面板：青铜边（1px）+ 内侧 1px 暗线 + 铆钉（.g-rivets::after） */
-    background: var(--face-plate);
+    /* 器物面板：拉丝材质面 + 青铜边；右上角包角来自 .g-rivets::after */
+    background: var(--mat-block);
     border: 1px solid var(--edge-bronze);
-    border-radius: 10px;
-    box-shadow:
-      inset 0 0 0 1px var(--edge-inner),
-      0 4px 8px rgba(0, 0, 0, 0.5);
+    border-radius: var(--r-md);
+    box-shadow: var(--mat-block-shadow);
     display: flex;
     flex-direction: column;
     /* 矮屏（手机横屏 844×390 等）：整体不超视口，内部滚动 */
@@ -136,25 +134,21 @@
     height: calc(100dvh - 24px);
   }
 
-  /* 标题条：回纹发丝底 + 左侧 3px 金牌块 + 底线 */
+  /* 标题条：黄铜铭牌底 + 左侧 3px 金牌块 + 发丝底线 */
   .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
     padding: 12px var(--space-4) 10px 16px;
-    border-bottom: 1px solid var(--edge-bronze);
-    background-color: rgba(0, 0, 0, 0.18);
+    background: var(--plate-brass);
+    border-bottom: 1px solid var(--plate-brass-line);
+    box-shadow: var(--plate-brass-shadow);
     flex-shrink: 0;
     position: relative;
     z-index: 1;
   }
 
-  /* 回纹发丝：叠一层暗罩，把纹样压到「发丝」级（契约 ≤.18 alpha） */
-  .modal-header.g-pattern-bar {
-    background-image:
-      linear-gradient(rgba(9, 14, 26, 0.62), rgba(9, 14, 26, 0.62)), var(--pattern-hui);
-  }
   /* 左侧金牌块（铭牌） */
   .modal-header::before {
     content: '';

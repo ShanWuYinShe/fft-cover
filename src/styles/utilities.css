@@ -24,12 +24,11 @@
 }
 
 .glass-panel-gold {
-  background: linear-gradient(180deg, rgba(16, 24, 42, 0.92) 0%, rgba(8, 12, 22, 0.95) 100%);
+  background: linear-gradient(180deg, rgba(42, 33, 20, 0.92) 0%, rgba(18, 14, 9, 0.95) 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(245, 184, 65, 0.3);
+  border: 1px solid var(--edge-bronze);
   box-shadow:
-    0 8px 30px rgba(0, 0, 0, 0.65),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 0 20px rgba(245, 184, 65, 0.08);
+    var(--sh-2),
+    inset 0 1px 0 rgba(255, 224, 150, 0.12);
 }

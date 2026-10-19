@@ -243,17 +243,17 @@
   }
 
   /* 章节导航：一行标题 + 左右翻页键，无底座 */
-  /* 章节条 = 卷轴段：左右切角 + 上下铜线 */
+  /* 章节条 = 卷轴段：圆角 + 上下铜线 */
   .ch-nav {
     position: relative;
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 4px 6px;
-    clip-path: var(--chamfer-sm);
+    border-radius: var(--r-sm);
     background:
       linear-gradient(180deg, rgba(201, 162, 74, 0.16), rgba(0, 0, 0, 0)) padding-box,
-      linear-gradient(180deg, #1a2440, #101828);
+      linear-gradient(180deg, #2a2114, #16110a);
     box-shadow: inset 0 1px 0 rgba(201, 162, 74, 0.35);
   }
   .ch-nav::after {
@@ -597,9 +597,11 @@
     gap: 10px;
     text-align: left;
     width: 100%;
-    clip-path: var(--chamfer-sm);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.12));
-    box-shadow: inset 0 1px 0 rgba(201, 162, 74, 0.28);
+    border-radius: var(--r-sm);
+    background: var(--mat-block);
+    box-shadow:
+      inset 0 1px 0 rgba(201, 162, 74, 0.28),
+      var(--groove-shadow);
   }
   .teaser.open {
     appearance: none;

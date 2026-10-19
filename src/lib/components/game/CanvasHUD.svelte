@@ -106,22 +106,19 @@
     gap: 6px;
   }
 
+  /* 收集读数 = 画布上唯一的大数字，装在一块小铜牌里 */
   .collect-readout {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     gap: 0;
-    border: 1px solid rgba(16, 185, 129, 0.35);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.06),
-      inset 0 0 0 1px rgba(0, 0, 0, 0.55),
-      0 6px 18px rgba(0, 0, 0, 0.5);
     min-width: 108px;
     padding: 6px 12px 9px;
-    border-radius: 10px;
-    background: rgba(9, 14, 24, 0.82);
-    border: 1px solid var(--edge-soft);
+    border-radius: var(--r-sm);
+    background: var(--plate-brass);
+    border: 1px solid var(--plate-brass-line);
+    box-shadow: var(--plate-brass-shadow);
     overflow: hidden;
   }
   .collect-label {
@@ -186,9 +183,10 @@
     display: inline-flex;
     align-items: center;
     padding: 3px 10px;
-    border-radius: 999px;
-    background: rgba(8, 12, 22, 0.85);
-    border: 1px solid var(--edge-soft);
+    border-radius: var(--r-pill);
+    background: var(--groove-bg);
+    border: 1px solid var(--edge-bronze);
+    box-shadow: var(--groove-shadow);
     font-size: 12px;
     color: var(--gold);
   }
@@ -207,17 +205,18 @@
     gap: 6px;
   }
 
-  /* 本关目标：小字读数，不抢收集数字 */
+  /* 本关目标：小铜牌（与机坞铭牌同一种面），读数不抢收集数字 */
   .hud-goal {
     display: inline-flex;
     align-items: center;
     gap: 4px;
     height: var(--ctl-sm);
     padding: 0 8px;
-    border-radius: var(--ctl-radius);
-    background: rgba(9, 14, 24, 0.82);
-    border: 1px solid var(--edge-soft);
-    color: #9df0d8;
+    border-radius: var(--r-sm);
+    background: var(--plate-brass);
+    border: 1px solid var(--plate-brass-line);
+    box-shadow: var(--plate-brass-shadow);
+    color: var(--text);
     font-size: var(--ctl-font-sm);
     transition:
       border-color 0.12s ease,
@@ -228,25 +227,25 @@
     font-weight: 800;
   }
   .hud-goal:hover {
-    border-color: var(--edge);
+    border-color: var(--edge-bronze-hot);
     color: var(--gold-bright);
   }
 
+  /* 设置键：凹槽小方键（原冷蓝胶囊 + 切角已取消） */
   .hud-settings-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: var(--ctl-sm);
     height: var(--ctl-sm);
-    border-radius: 0;
-    clip-path: var(--chamfer-sm);
-    box-shadow: inset 0 0 0 1px var(--edge-bronze);
-    background: rgba(9, 14, 24, 0.82);
-    border: 1px solid var(--edge-soft);
+    border-radius: var(--ctl-radius);
+    background: var(--groove-bg);
+    border: 1px solid var(--edge-bronze);
+    box-shadow: var(--groove-shadow);
     color: var(--muted);
   }
   .hud-settings-btn:hover {
-    border-color: var(--edge);
+    border-color: var(--edge-bronze-hot);
     color: var(--gold-bright);
   }
 

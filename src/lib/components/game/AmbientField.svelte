@@ -24,11 +24,11 @@
     overflow: hidden;
     max-width: 100vw;
     max-height: 100dvh;
-    background:
-      radial-gradient(ellipse 90% 70% at 50% 8%, rgba(20, 34, 62, 0.85) 0%, transparent 62%),
-      radial-gradient(ellipse 70% 60% at 78% 92%, rgba(245, 184, 65, 0.06) 0%, transparent 60%),
-      linear-gradient(180deg, #070b15 0%, #04060c 55%, #03050a 100%);
+    /* D 的深空星云底：暖黑基底 + 青/紫/金三团星云（贴图内联，无外链） */
+    background: var(--tex-nebula), linear-gradient(180deg, #0d0a06 0%, #080604 55%, #050403 100%);
   }
+  /* 注：整屏颗粒层不在这里 —— 它要盖在面板**上方**（后处理质感），
+     统一由 GameShell 的 .game-screen::after 提供（fixed + z-index 40 + opacity .045 + overlay） */
 
   .halo {
     position: absolute;

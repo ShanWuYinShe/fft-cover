@@ -189,7 +189,7 @@
     if (!octx) return;
     octx.drawImage(src, 0, 0);
     const h = src.height;
-    octx.fillStyle = 'rgba(8,10,20,.92)';
+    octx.fillStyle = 'rgba(20,15,9,.92)';
     octx.fillRect(0, h, off.width, FOOTER);
     // 第一行：关卡名 + 得分 + 星级
     octx.fillStyle = '#fbbf24';
@@ -244,7 +244,7 @@
       octx.strokeStyle = g.done ? 'rgba(192,57,43,.9)' : 'rgba(255,255,255,.16)';
       octx.lineWidth = 1;
       octx.strokeRect(x, y, 34, 34);
-      octx.fillStyle = g.done ? '#fdece7' : 'rgba(139,147,167,.65)';
+      octx.fillStyle = g.done ? '#fdece7' : 'rgba(163,144,109,.65)';
       octx.font = 'bold 20px "STKaiti", "KaiTi", serif';
       octx.textAlign = 'center';
       octx.fillText(g.seal, x + 17, y + 24);
@@ -512,7 +512,7 @@
     justify-content: center;
     align-items: center;
     padding: 12px;
-    background: radial-gradient(circle at 50% 45%, rgba(8, 12, 22, 0.6), rgba(3, 5, 11, 0.9));
+    background: radial-gradient(circle at 50% 45%, rgba(20, 15, 9, 0.6), rgba(5, 4, 3, 0.9));
     backdrop-filter: blur(4px);
     border-radius: 14px;
     animation: fade-in 0.3s ease-out;
@@ -530,7 +530,7 @@
     /* 放行溢出：结算卡的「⋯」菜单向下展开时不能被裁 */
     overflow: visible;
     border-radius: 10px;
-    /* 器物面板：青铜边 + 内侧 1px 暗线 + 铆钉（.g-rivets::after） */
+    /* 器物面板：青铜边 + 内侧 1px 暗线；右上角包角来自 .g-rivets::after（第七轮语义） */
     background: var(--face-plate);
     border: 1px solid var(--edge-bronze);
     box-shadow:
@@ -583,7 +583,7 @@
   }
 
   /* 大数字一：星级（逐颗弹出） */
-  /* 顶部金箔发丝线（器物面板的高光边；铆钉占的是 ::after） */
+  /* 顶部金箔发丝线（器物面板的高光边；::after 让给 .g-rivets 的包角） */
   .card::before {
     content: '';
     position: absolute;
@@ -610,8 +610,8 @@
     width: 1.15em;
     height: 1.15em;
     border-radius: 6px;
-    color: rgba(160, 172, 200, 0.3);
-    background: linear-gradient(180deg, #070c17, #101a2c);
+    color: rgba(163, 144, 109, 0.3);
+    background: linear-gradient(180deg, #0c0906, #1a1409);
     box-shadow:
       inset 0 2px 5px rgba(0, 0, 0, 0.85),
       0 0 0 1px rgba(201, 162, 74, 0.25);

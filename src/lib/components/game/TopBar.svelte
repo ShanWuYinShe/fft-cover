@@ -79,15 +79,10 @@
     /* 左右内边距对称：三段贴边距离一致 */
     padding: 0 var(--space-3);
     box-sizing: border-box;
-    /* 顶栏 = 器物上沿：青铜底边 + 回纹发丝 + 中央一道金箔高光 */
-    background-color: rgba(9, 14, 25, 0.96);
-    background-image: var(--pattern-hui-soft);
-    background-repeat: repeat-x;
-    background-position: 0 center;
-    border-bottom: 1px solid var(--edge-bronze);
-    box-shadow:
-      inset 0 -1px 0 rgba(0, 0, 0, 0.7),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    /* 顶栏 = 天穹铜梁：装甲板面料 + 底部一道内框发丝线 */
+    background: var(--mat-plate);
+    border-bottom: 1px solid var(--mat-frame-line);
+    box-shadow: var(--mat-plate-shadow);
   }
   .game-hud-bar::after {
     content: '';
@@ -109,21 +104,18 @@
     flex: 1 1 0;
   }
 
-  /* ---------- 安静按键：金属面 + 细描边，没有发光 ---------- */
+  /* ---------- 安静按键：凹槽面 + 细铜边，没有发光 ---------- */
   .hud-quiet-btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     height: var(--ctl-md);
     padding: 0 10px 0 8px;
-    border-radius: 0;
-    clip-path: var(--chamfer-sm);
-    background: var(--face-plate);
-    border: none;
-    box-shadow:
-      inset 0 0 0 1px var(--edge-bronze),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    color: var(--text);
+    border-radius: var(--ctl-radius);
+    background: var(--groove-bg);
+    border: 1px solid var(--edge-bronze);
+    box-shadow: var(--groove-shadow);
+    color: var(--muted);
     font-size: var(--ctl-font);
     font-weight: 600;
     transition:
@@ -133,17 +125,15 @@
   }
   .hud-quiet-btn:hover {
     background: var(--face-plate-hot);
+    border-color: var(--edge-bronze-hot);
     color: var(--gold-bright);
   }
   .hud-quiet-btn:active {
     transform: translateY(1px);
   }
-  /* clip-path 会切掉全局 :focus-visible 的描边：焦点改用「铜边变金 + 面提亮」表达 */
   .hud-quiet-btn:focus-visible {
     background: var(--face-plate-hot);
-    box-shadow:
-      inset 0 0 0 1px var(--edge-bronze-hot),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    border-color: var(--edge-bronze-hot);
     color: var(--gold-bright);
   }
   .hud-quiet-btn.icon-only {
@@ -158,8 +148,8 @@
     color: var(--gold-bright);
   }
   .hud-quiet-btn.active {
-    background: rgba(245, 184, 65, 0.16);
-    box-shadow: inset 0 0 0 1px var(--edge-bronze-hot);
+    background: var(--gold-dim);
+    border-color: var(--edge-bronze-hot);
     color: var(--gold-bright);
   }
 
@@ -170,11 +160,10 @@
 
   .hud-stars {
     font-size: var(--ctl-font-sm);
-    color: #9df0d8;
-    font-weight: 700;
     color: var(--gold-bright);
-    background: rgba(245, 184, 65, 0.1);
-    border-radius: 5px;
+    font-weight: 700;
+    background: var(--gold-dim);
+    border-radius: var(--r-sm);
     padding: 2px 7px;
   }
   .hud-stars i {
@@ -213,13 +202,13 @@
       background 0.12s ease;
   }
   .brand-btn:hover {
-    border-color: var(--edge-soft);
-    background: rgba(245, 184, 65, 0.05);
+    border-color: var(--edge-bronze);
+    background: var(--gold-dim);
   }
   .title-brand {
     font-size: var(--fs-lg);
     font-weight: 700;
-    color: rgba(241, 245, 249, 0.85);
+    color: var(--text);
     letter-spacing: 3px;
     white-space: nowrap;
   }
@@ -230,8 +219,8 @@
     display: inline-block;
     font-size: 10px;
     font-weight: 700;
-    color: #ffffff;
-    background: linear-gradient(160deg, #c0392b, #8e2a1f);
+    color: var(--text);
+    background: var(--face-seal);
     padding: 2px 5px;
     border-radius: 3px;
     letter-spacing: 1px;

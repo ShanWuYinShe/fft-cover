@@ -93,13 +93,13 @@
     /* 机坞比面板高时把面板撑满（第六轮：消灭机坞下半屏死区） */
     flex: 1 0 auto;
     padding: 8px 10px 10px;
-    border-radius: var(--radius-md);
+    border-radius: var(--r-md);
     border: 1px solid var(--edge-bronze);
-    background: var(--face-plate);
+    background: var(--mat-plate);
     box-shadow:
       var(--bevel-top),
-      inset 0 0 0 1px rgba(0, 0, 0, 0.55),
-      0 3px 8px rgba(0, 0, 0, 0.42);
+      inset 0 0 0 1px var(--edge-inner),
+      var(--mat-plate-shadow);
     /* 区块首次出现：上移 6px 淡入；只在挂载时播一次，重复渲染不重播 */
     animation: deck-in 300ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
@@ -137,8 +137,9 @@
     flex: none;
     width: 3px;
     height: 13px;
+    border-radius: 1px;
     background: var(--face-gold-plate);
-    clip-path: var(--chamfer-sm);
+    box-shadow: 0 0 6px rgba(245, 184, 65, 0.35);
   }
   .deck-hint {
     font-size: var(--ctl-font-sm);
@@ -153,7 +154,7 @@
     margin-top: 6px;
   }
 
-  /* 插槽：外层 = 1px 青铜边（切角），::before = 内缩的凹槽腔 */
+  /* 插槽：外层 = 1px 青铜边（圆角键帽），::before = 内缩的凹槽腔 */
   .slot {
     position: relative;
     isolation: isolate;
@@ -165,7 +166,7 @@
     min-height: var(--ctl-md);
     padding: 0 5px;
     border: none;
-    clip-path: var(--chamfer-sm);
+    border-radius: var(--r-sm);
     background: var(--edge-bronze);
     color: var(--muted);
     cursor: pointer;
@@ -180,9 +181,9 @@
     position: absolute;
     inset: 1px;
     z-index: -1;
-    clip-path: var(--chamfer-sm);
-    background: linear-gradient(180deg, #0a1222 0%, #05080f 100%);
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.85);
+    border-radius: calc(var(--r-sm) - 1px);
+    background: var(--groove-bg);
+    box-shadow: var(--groove-shadow);
   }
   .slot:hover {
     color: var(--text);
@@ -193,7 +194,7 @@
   }
   .slot.on::before {
     box-shadow:
-      inset 0 2px 6px rgba(0, 0, 0, 0.8),
+      var(--groove-shadow),
       inset 0 0 0 1px rgba(0, 245, 212, 0.16);
   }
   /* 选中：金边（只换边色，不加外发光） */
@@ -203,7 +204,7 @@
   }
   .slot.active::before {
     box-shadow:
-      inset 0 2px 6px rgba(0, 0, 0, 0.8),
+      var(--groove-shadow),
       inset 0 0 0 1px rgba(245, 184, 65, 0.32);
   }
   /* 按下：面下沉 1px + 内阴影加深（第五轮四态；桌面不整块缩放） */
@@ -220,7 +221,7 @@
     width: 7px;
     height: calc(var(--ctl-md) - 12px);
     border-radius: 2px;
-    border: 1px solid rgba(201, 162, 74, 0.4);
+    border: 1px solid var(--plate-brass-line);
     background: #04070c;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9);
     overflow: hidden;
@@ -275,7 +276,7 @@
     box-shadow: 0 0 5px rgba(255, 209, 102, 0.75);
   }
 
-  /* 引导态专属高亮：clip-path 会切掉 outline，改用沿切角形状的金色描边光晕 */
+  /* 引导态专属高亮：金色描边光晕（沿圆角形状，不依赖 clip-path） */
   .slot.guide {
     animation: slot-guide-pulse 1.6s ease-in-out infinite;
   }

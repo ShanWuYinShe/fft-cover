@@ -202,12 +202,7 @@
     justify-content: center;
     margin: 4px -18px 0;
     padding: 12px 18px 16px;
-    background: linear-gradient(
-      180deg,
-      rgba(11, 17, 30, 0) 0,
-      rgba(11, 17, 30, 0.96) 16px,
-      #0b111e
-    );
+    background: linear-gradient(180deg, rgba(20, 15, 9, 0) 0, rgba(20, 15, 9, 0.96) 16px, #140f09);
   }
 
   /* 主操作：金色厚键 */

@@ -173,14 +173,35 @@
     width: 100%;
     padding: 0 14px;
     box-sizing: border-box;
-    /* 指令栏 = 器物下沿：青铜上边 + 回纹发丝 */
-    background-color: rgba(9, 13, 23, 0.98);
-    background-image: var(--pattern-hui-soft);
-    background-repeat: repeat-x;
-    background-position: 0 center;
-    border-top: 1px solid var(--edge-bronze);
-    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.6);
+    /* 指令栏 = 器物下沿：装甲板面料 + 顶部内框发丝线 */
+    background: var(--mat-plate);
+    border-top: 1px solid var(--mat-frame-line);
+    box-shadow: var(--mat-plate-shadow);
     z-index: 20;
+  }
+  /* 器物内框：内缩一道铜线 */
+  .command-bar::after {
+    content: '';
+    position: absolute;
+    inset: 6px 12px;
+    z-index: 2;
+    border: 1px solid var(--mat-frame-line);
+    border-radius: 5px;
+    box-shadow: inset 0 0 0 1px var(--edge-inner);
+    pointer-events: none;
+  }
+  /* 雕花包角：全屏第二枚（左下角，与机坞那枚合计 2 处） */
+  .command-bar::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    bottom: 6px;
+    z-index: 3;
+    width: 34px;
+    height: 34px;
+    background: var(--tex-corner) no-repeat center / 34px 34px;
+    opacity: 0.55;
+    pointer-events: none;
   }
 
   .cmd-group {
@@ -203,7 +224,7 @@
     justify-content: flex-end;
   }
 
-  /* ---------- 主操作：全屏唯一金色 ---------- */
+  /* ---------- 主操作：全屏唯一金色（金箔牌匾：拉丝叠金，深字） ---------- */
   .cmd-primary {
     position: relative;
     display: inline-flex;
@@ -213,21 +234,21 @@
     height: var(--ctl-lg);
     min-width: 168px;
     padding: 0 22px;
-    border-radius: 0;
+    border-radius: var(--ctl-radius-lg);
     border: none;
-    clip-path: var(--chamfer-md);
-    background: var(--face-gold);
-    color: #1a1002;
+    background-color: var(--gold);
+    background-image: var(--tex-brush), var(--face-gold-plate);
+    background-blend-mode: soft-light, normal;
+    color: #241300;
     font-size: calc(var(--ctl-font) + 2px);
     font-weight: 700;
     letter-spacing: 2px;
     white-space: nowrap;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
     box-shadow:
-      var(--bevel-top),
-      inset 0 -3px 0 rgba(140, 80, 0, 0.5),
-      0 4px 0 #7a4d05,
-      0 8px 24px rgba(245, 184, 65, 0.28);
+      inset 0 1px 0 rgba(255, 255, 255, 0.75),
+      inset 0 -2px 0 rgba(120, 70, 0, 0.45),
+      var(--sh-game);
     transition:
       transform 0.09s ease,
       filter 0.12s ease;
@@ -235,18 +256,16 @@
   .cmd-primary:hover {
     filter: brightness(1.06);
   }
-  /* clip-path 会切掉全局 :focus-visible 的描边：焦点改用「铜边变金 + 面提亮」表达 */
   .cmd-primary:focus-visible {
-    background: var(--face-gold-hover);
+    background-image: var(--tex-brush), var(--face-gold-hover);
     box-shadow:
-      var(--bevel-top),
-      inset 0 0 0 1px var(--edge-bronze-hot),
-      inset 0 -3px 0 rgba(140, 80, 0, 0.5),
-      0 4px 0 #7a4d05,
-      0 8px 24px rgba(245, 184, 65, 0.28);
+      inset 0 1px 0 rgba(255, 255, 255, 0.75),
+      inset 0 0 0 2px var(--edge-bronze-hot),
+      inset 0 -2px 0 rgba(120, 70, 0, 0.45),
+      var(--sh-game);
   }
   .cmd-primary:active {
-    transform: translateY(3px);
+    transform: translateY(2px);
     box-shadow:
       inset 0 2px 8px rgba(0, 0, 0, 0.5),
       0 1px 0 rgba(0, 0, 0, 0.5);
@@ -270,35 +289,20 @@
       0 4px 0 #6b1010;
   }
 
-  /* 待发脉冲：唯一允许的呼吸光，用来指路 */
+  /* 待发提示：D 只留一圈静态铜边（循环呼吸光取消，全屏并发动画 -1） */
   .primary-ring {
     position: absolute;
     inset: -4px;
-    border-radius: 15px;
-    border: 1px solid rgba(255, 209, 102, 0.45);
-    animation: cmd-pulse 2.4s ease-in-out infinite;
+    border-radius: var(--ctl-radius-lg);
+    border: 1px solid var(--plate-brass-line);
+    opacity: 0.5;
     pointer-events: none;
   }
-  @keyframes cmd-pulse {
-    0%,
-    100% {
-      opacity: 0.2;
-      transform: scale(0.995);
-    }
-    50% {
-      opacity: 0.6;
-      transform: scale(1.015);
-    }
-  }
   .cmd-primary.danger .primary-ring {
-    border-color: rgba(252, 165, 165, 0.45);
-  }
-  :global(.reduce-motion) .primary-ring {
-    animation: none;
-    opacity: 0.35;
+    border-color: var(--cinnabar);
   }
 
-  /* ---------- 次级按键：安静 ---------- */
+  /* ---------- 次级按键：小铜牌（安静，只有材质没有光） ---------- */
   .ctrl-btn {
     display: inline-flex;
     align-items: center;
@@ -307,8 +311,9 @@
     height: var(--ctl-md);
     padding: 0 10px;
     border-radius: var(--ctl-radius);
-    background: rgba(19, 28, 46, 0.7);
-    border: 1px solid var(--edge-soft);
+    background: var(--mat-block);
+    border: 1px solid var(--edge-bronze);
+    box-shadow: var(--mat-block-shadow);
     color: var(--text);
     font-size: var(--ctl-font-sm);
     font-weight: 600;
@@ -319,29 +324,30 @@
       color 0.12s ease;
   }
   .ctrl-btn:hover:not(:disabled) {
-    background: rgba(30, 42, 66, 0.85);
-    border-color: var(--edge);
+    background: var(--face-plate-hot);
+    border-color: var(--edge-bronze-hot);
     color: var(--gold-bright);
   }
   .ctrl-btn:disabled {
     opacity: 0.45;
   }
   .ctrl-btn.gold {
-    border-color: var(--edge);
+    border-color: var(--plate-brass-line);
     color: var(--gold-bright);
-    background: rgba(245, 184, 65, 0.14);
+    background: var(--plate-brass);
   }
 
-  /* 键位提示：小号、低对比，只帮键盘玩家 */
+  /* 键位提示：12px + --muted（11px/--muted-2 只有 3.77:1，低于红线） */
   .key-hint {
     display: inline-flex;
     align-items: center;
     gap: 5px;
     margin-left: 4px;
-    font-size: 11px;
-    color: var(--muted-2);
+    font-size: var(--ctl-font-sm);
+    color: var(--muted);
     white-space: nowrap;
   }
+  /* 键位提示：键帽 = 小凹槽（内阴影 + 下沿暖亮线） */
   .key-hint kbd {
     display: inline-flex;
     align-items: center;
@@ -349,10 +355,10 @@
     min-width: 20px;
     height: 18px;
     padding: 0 4px;
-    border-radius: 3px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    background: rgba(30, 42, 66, 0.7);
-    border: 1px solid var(--edge-faint);
+    border-radius: var(--r-sm);
+    background: var(--groove-bg);
+    box-shadow: var(--groove-shadow);
+    border: 1px solid var(--edge-bronze);
     color: var(--muted);
     font-family: inherit;
     font-size: 10px;
