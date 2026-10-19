@@ -50,7 +50,7 @@
       aria-label="成就"
       onclick={() => (uiState.showAchv = true)}
     >
-      <Icon name="trophy" size={17} />
+      <Icon name="trophy" size={16} />
     </button>
     <button
       type="button"
@@ -59,7 +59,7 @@
       aria-label="设置"
       onclick={() => (uiState.showSettings = true)}
     >
-      <Icon name="gear" size={17} />
+      <Icon name="gear" size={16} />
     </button>
   </div>
 </header>
@@ -76,7 +76,8 @@
     gap: 12px;
     height: 100%;
     width: 100%;
-    padding: 0 14px 0 12px;
+    /* 左右内边距对称：三段贴边距离一致 */
+    padding: 0 var(--space-3);
     box-sizing: border-box;
     /* 顶栏 = 器物上沿：青铜底边 + 回纹发丝 + 中央一道金箔高光 */
     background-color: rgba(9, 14, 25, 0.96);
@@ -103,7 +104,7 @@
   .hud-left {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-2);
     min-width: 0;
     flex: 1 1 0;
   }
@@ -127,30 +128,38 @@
     font-weight: 600;
     transition:
       background 0.12s ease,
-      border-color 0.12s ease,
+      box-shadow 0.12s ease,
       color 0.12s ease;
   }
   .hud-quiet-btn:hover {
-    background: rgba(30, 42, 66, 0.85);
-    border-color: var(--edge);
+    background: var(--face-plate-hot);
     color: var(--gold-bright);
   }
   .hud-quiet-btn:active {
     transform: translateY(1px);
   }
-  .hud-quiet-btn:hover {
+  /* clip-path 会切掉全局 :focus-visible 的描边：焦点改用「铜边变金 + 面提亮」表达 */
+  .hud-quiet-btn:focus-visible {
     background: var(--face-plate-hot);
+    box-shadow:
+      inset 0 0 0 1px var(--edge-bronze-hot),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
     color: var(--gold-bright);
   }
   .hud-quiet-btn.icon-only {
     width: var(--ctl-md);
     padding: 0;
     justify-content: center;
-    color: var(--muted);
+    /* 与左端「关卡」入口的图标同色同尺寸，三段视觉重量一致 */
+    color: var(--gold);
+  }
+  .hud-quiet-btn.icon-only:hover,
+  .hud-quiet-btn.icon-only:focus-visible {
+    color: var(--gold-bright);
   }
   .hud-quiet-btn.active {
     background: rgba(245, 184, 65, 0.16);
-    border-color: var(--edge);
+    box-shadow: inset 0 0 0 1px var(--edge-bronze-hot);
     color: var(--gold-bright);
   }
 
@@ -179,8 +188,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
+    width: var(--ctl-xs);
+    height: var(--ctl-xs);
     color: var(--bronze-bright);
   }
 
@@ -193,18 +202,22 @@
   .brand-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 4px 10px;
+    gap: var(--space-2);
+    /* 与左右两端的按键同高：三段在顶栏里是同一层级的入口 */
+    min-height: var(--ctl-md);
+    padding: 0 10px;
     border-radius: var(--ctl-radius);
     border: 1px solid transparent;
-    transition: all 0.12s ease;
+    transition:
+      border-color 0.12s ease,
+      background 0.12s ease;
   }
   .brand-btn:hover {
     border-color: var(--edge-soft);
     background: rgba(245, 184, 65, 0.05);
   }
   .title-brand {
-    font-size: 15px;
+    font-size: var(--fs-lg);
     font-weight: 700;
     color: rgba(241, 245, 249, 0.85);
     letter-spacing: 3px;
@@ -228,7 +241,7 @@
   .hud-right-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
     flex: 1 1 0;
     justify-content: flex-end;
   }

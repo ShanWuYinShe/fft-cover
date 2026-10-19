@@ -52,32 +52,25 @@
 {/if}
 
 <style>
-  /* 引导条：贴在画布下沿的一条任务提示铭牌 */
+  /* 引导条：挂在机坞顶端的任务铭牌（第六轮：从画布上挪开，不再遮挡目标点） */
   .first-guide {
-    position: absolute;
-    bottom: 52px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 24px);
-    max-width: 460px;
+    flex: 0 0 auto;
     display: block;
-    padding: 8px 14px;
-    margin: 0;
+    margin: 8px 10px 0;
+    padding: 7px 10px;
     border-radius: 10px;
     background: linear-gradient(180deg, rgba(14, 24, 42, 0.95), rgba(6, 12, 22, 0.96));
     border: 1px solid rgba(0, 245, 212, 0.45);
     box-shadow:
       var(--bevel-top),
-      0 6px 20px rgba(0, 0, 0, 0.65),
-      0 0 16px rgba(0, 245, 212, 0.18);
-    font-size: 12.5px;
+      0 4px 14px rgba(0, 0, 0, 0.55),
+      0 0 14px rgba(0, 245, 212, 0.16);
+    font-size: 12px;
     line-height: 1.5;
     color: var(--text);
-    text-align: center;
-    z-index: 15;
-    pointer-events: auto;
-    animation: guide-in 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
+    text-align: left;
     box-sizing: border-box;
+    animation: guide-in 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
   }
 
   .first-guide b {
@@ -98,12 +91,12 @@
     color: var(--gold-bright);
   }
 
-  /* 小按键：有厚度的微型游戏键 */
+  /* 小按键：有厚度的微型游戏键（高度走令牌，触屏自动放大到 40） */
   .mini-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 26px;
+    height: var(--ctl-sm);
     padding: 0 10px;
     margin-left: 8px;
     border-radius: 7px;
@@ -128,22 +121,22 @@
   }
 
   .remote-tip {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     gap: 8px;
-    padding: 7px 12px;
-    margin: 0 auto;
-    max-width: 100%;
+    padding: 7px 10px;
+    margin: 8px 10px 0;
     border-radius: 10px;
     background: linear-gradient(135deg, rgba(167, 139, 250, 0.18), rgba(0, 245, 212, 0.08));
     border: 1px solid rgba(167, 139, 250, 0.55);
     box-shadow:
       var(--bevel-top),
       0 4px 14px rgba(0, 0, 0, 0.5);
-    font-size: 12.5px;
+    font-size: 12px;
     color: var(--text);
-    text-align: center;
+    text-align: left;
     animation: guide-in 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
     box-sizing: border-box;
   }
@@ -151,11 +144,12 @@
     color: var(--purple);
   }
   .remote-tip .rt-close {
+    flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: var(--ctl-sm);
+    height: var(--ctl-sm);
     border-radius: 7px;
     background: rgba(10, 16, 28, 0.6);
     border: 1px solid var(--edge-soft);
@@ -168,32 +162,26 @@
   }
 
   .expert-tip {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 8px;
-    padding: 7px 12px;
-    margin: 0 auto;
-    max-width: 100%;
+    padding: 7px 10px;
+    margin: 8px 10px 0;
     border-radius: 10px;
     background: linear-gradient(135deg, rgba(167, 139, 250, 0.2), rgba(0, 245, 212, 0.06));
     border: 1px solid rgba(167, 139, 250, 0.55);
     box-shadow:
       var(--bevel-top),
       0 4px 14px rgba(0, 0, 0, 0.5);
-    font-size: 12.5px;
+    font-size: 12px;
     color: var(--text);
-    text-align: center;
+    text-align: left;
     animation: guide-in 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
     box-sizing: border-box;
   }
   .expert-tip b {
     color: #c4b5fd;
-  }
-
-  @media (min-width: 641px) {
-    .first-guide {
-      bottom: 12px;
-    }
   }
 </style>

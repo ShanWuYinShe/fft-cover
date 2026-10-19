@@ -614,6 +614,9 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
+    /* 面板被撑高时，把富余高度均摊到各段之间（无富余时与原来一致，不留空档） */
+    flex: 1 0 auto;
+    justify-content: space-evenly;
   }
 
   /* 区块首次出现：上移 6px 淡入（300ms，逐块 60ms 错峰）；

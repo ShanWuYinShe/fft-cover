@@ -72,7 +72,9 @@
       gap: 6px;
       flex: 1 1 0;
       min-width: 0;
-      min-height: 40px;
+      /* 命中区下限走令牌：真机安全区（home 指示条）会吃掉导航槽的padding，
+         这里保证被挤压时按键仍 ≥--ctl-md（触屏 42px） */
+      min-height: var(--ctl-md);
       padding: 0 8px;
       /* 斜边标签页：左右各切 7px */
       clip-path: polygon(7px 0, calc(100% - 7px) 0, 100% 100%, 0 100%);
@@ -87,11 +89,14 @@
     .tab-btn:hover {
       color: var(--text);
     }
+    /* clip-path 会切掉全局 :focus-visible 的描边：焦点用「铜边变金 + 面提亮」表达 */
+    .tab-btn:focus-visible {
+      background: linear-gradient(180deg, #1c2a44, #101a2e);
+      box-shadow: inset 0 0 0 1px var(--edge-bronze-hot);
+      color: var(--gold-bright);
+    }
     .tab-btn:active {
       background: linear-gradient(180deg, #0b1220, #16213a);
-    }
-
-    .tab-btn:active {
       transform: translateY(2px);
       box-shadow: var(--bevel-inset);
     }
@@ -121,6 +126,13 @@
 
     .tab-btn.on .tab-caret {
       opacity: 0.8;
+    }
+
+    /* 选中的标签页本身就是金色面：焦点再提亮一档边线 */
+    .tab-btn.on:focus-visible {
+      box-shadow:
+        inset 0 0 0 1px #fff6d8,
+        inset 0 -2px 0 rgba(140, 80, 0, 0.45);
     }
   }
 </style>

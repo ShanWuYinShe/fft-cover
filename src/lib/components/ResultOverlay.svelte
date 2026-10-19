@@ -349,7 +349,7 @@
    * 掌握类结论只在本局全清时出现：isPerfect/isExact 是"本关历史"口径，
    * 直接挂在 0/24 的结算卡上会读成"这局完美全清了"（实测踩过）。
    */
-  const verdict = $derived.by(() => {
+  const verdictParts = $derived.by(() => {
     const parts: string[] = [];
     if (st >= 3) parts.push('三星达成');
     else if (st > 0) parts.push(st + ' 星');
@@ -362,7 +362,7 @@
     if (engine.newClearRecord) parts.push('最快全清');
     if (engine.streakJustBumped > 1) parts.push('连胜 ' + engine.streakJustBumped + ' 天');
     if (engine.newSeals.length > 0) parts.push('新盖 ' + engine.newSeals.length + ' 印');
-    return parts.join(' · ');
+    return parts;
   });
 
   /** 主按钮：能推进就推进（下一关），否则再来一次 */
@@ -410,8 +410,12 @@
           <b class="g-num g-num--gold">{shownScore}</b>
           <span class="score-cap">得分</span>
         </div>
-        <!-- 一句话结论：这一局是什么水平 -->
-        <p class="verdict">{verdict}</p>
+        <!-- 一句话结论：每一段各自不换行（换行只发生在段与段之间），避免行尾只剩一个字 -->
+        <p class="verdict">
+          {#each verdictParts as part, i (i)}<span class="vseg"
+              >{part}{i < verdictParts.length - 1 ? ' ·' : ''}</span
+            >{/each}
+        </p>
         <!-- 结算印章：斜盖入（内容与结论行重复，故对读屏隐藏） -->
         {#if stamp}
           <span class="stamp g-seal" aria-hidden="true">{stamp}</span>
@@ -688,14 +692,23 @@
     color: var(--muted);
   }
 
-  /* 一句话结论 */
+  /* 一句话结论：徽章段整段不折行（wrap 只发生在段与段之间），段间用一个间隔符 */
   .verdict {
     margin: 2px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    column-gap: var(--space-1);
     font-size: var(--fs-lg);
     font-weight: 600;
     letter-spacing: 1px;
     color: var(--gold-bright);
     line-height: 1.4;
+    max-width: 100%;
+  }
+  .verdict .vseg {
+    white-space: nowrap;
   }
 
   /* 一行明细 */

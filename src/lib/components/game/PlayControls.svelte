@@ -216,9 +216,6 @@
     border-radius: 0;
     border: none;
     clip-path: var(--chamfer-md);
-    box-shadow:
-      inset 0 0 0 1px rgba(255, 214, 130, 0.9),
-      inset 0 1px 0 rgba(255, 255, 255, 0.35);
     background: var(--face-gold);
     color: #1a1002;
     font-size: calc(var(--ctl-font) + 2px);
@@ -238,6 +235,16 @@
   .cmd-primary:hover {
     filter: brightness(1.06);
   }
+  /* clip-path 会切掉全局 :focus-visible 的描边：焦点改用「铜边变金 + 面提亮」表达 */
+  .cmd-primary:focus-visible {
+    background: var(--face-gold-hover);
+    box-shadow:
+      var(--bevel-top),
+      inset 0 0 0 1px var(--edge-bronze-hot),
+      inset 0 -3px 0 rgba(140, 80, 0, 0.5),
+      0 4px 0 #7a4d05,
+      0 8px 24px rgba(245, 184, 65, 0.28);
+  }
   .cmd-primary:active {
     transform: translateY(3px);
     box-shadow:
@@ -251,6 +258,14 @@
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
     box-shadow:
       var(--bevel-top),
+      inset 0 -3px 0 rgba(80, 10, 10, 0.55),
+      0 4px 0 #6b1010;
+  }
+  .cmd-primary.danger:focus-visible {
+    filter: brightness(1.12);
+    box-shadow:
+      var(--bevel-top),
+      inset 0 0 0 1px rgba(255, 235, 220, 0.9),
       inset 0 -3px 0 rgba(80, 10, 10, 0.55),
       0 4px 0 #6b1010;
   }
@@ -335,8 +350,6 @@
     height: 18px;
     padding: 0 4px;
     border-radius: 3px;
-    border: 1px solid var(--edge-bronze);
-    background: linear-gradient(180deg, #101a2c, #070c17);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     background: rgba(30, 42, 66, 0.7);
     border: 1px solid var(--edge-faint);
@@ -388,13 +401,12 @@
     }
   }
 
+  /* 手机横屏：指令栏自己独占底部一行（竖屏的导航条在这一档不出现），
+     横向空间富余，主操作不再压缩——沿用基础档的 min-width，保证 ≥150px */
   @media (max-width: 900px) and (orientation: landscape) {
     .command-bar {
       padding: 4px 10px;
       min-height: 52px;
-    }
-    .cmd-primary {
-      min-width: 140px;
     }
     .desktop-only {
       display: none;

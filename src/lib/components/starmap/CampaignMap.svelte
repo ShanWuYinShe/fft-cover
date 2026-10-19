@@ -299,8 +299,10 @@
     align-items: center;
     gap: 6px;
   }
+  /* 章节名与摘要同档字号：摘要（印 x/y）原来与章节名同为 12px 偏小，
+     一起提到 --fs-md，避免次级读数比主标题还大、层级倒挂 */
   .ch-title b {
-    font-size: var(--fs-sm);
+    font-size: var(--fs-md);
     color: var(--gold-bright);
     letter-spacing: 1px;
   }
@@ -320,7 +322,7 @@
   }
 
   .ch-summary {
-    font-size: var(--fs-sm);
+    font-size: var(--fs-md);
     color: var(--muted);
     letter-spacing: 0.5px;
   }
@@ -388,10 +390,12 @@
     cursor: not-allowed;
   }
 
+  /* 章节标语：与章节摘要同一档次要色（--muted-2 在抽屉面上只有 4.0:1，
+     不达正文 AA；改用 --muted 后 ≈6.4:1，不动全局令牌） */
   .ch-tag {
     margin: 0 0 8px;
     font-size: var(--fs-sm);
-    color: var(--muted-2);
+    color: var(--muted);
     line-height: 1.5;
   }
   .ch-key {

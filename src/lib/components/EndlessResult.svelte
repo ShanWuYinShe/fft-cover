@@ -104,7 +104,7 @@
             破劫通达 · 继续挑战下一宿
           {/if}
         </p>
-        <span class="stamp" aria-hidden="true">{stamp}</span>
+        <span class="stamp g-seal" aria-hidden="true">{stamp}</span>
         <p class="detail">
           <span>本宿实得 <b>{engine.score}</b> 分</span>
           <span class="sep">·</span>
@@ -144,7 +144,7 @@
             止步第 {engine.endlessWave} 宿
           {/if}
         </p>
-        <span class="stamp" aria-hidden="true">{stamp}</span>
+        <span class="stamp g-seal" aria-hidden="true">{stamp}</span>
         <p class="detail">
           {#if engine.endlessBest.wave > 0}
             <span>历代最佳 第 {engine.endlessBest.wave} 宿 · {engine.endlessBest.score} 分</span>
@@ -197,10 +197,13 @@
     width: min(100%, 380px);
     max-height: 100%;
     overflow: visible;
-    background: var(--metal);
-    border: 1px solid var(--edge-soft);
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    /* 与普通结算卡同一块器物面板：青铜边 + 内侧 1px 暗线（铆钉由 .g-rivets 提供） */
+    background: var(--face-plate);
+    border: 1px solid var(--edge-bronze);
+    box-shadow:
+      inset 0 0 0 1px var(--edge-inner),
+      0 4px 8px rgba(0, 0, 0, 0.5);
     animation: card-in 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
     text-align: center;
   }
@@ -215,13 +218,10 @@
     }
   }
 
-  /* 结论印章：斜盖入 -8° → -6°，1.3 → 1.0（220ms，等大数字走完再盖） */
+  /* 结论印章：面/边/字色交给公共件 .g-seal（与结算卡同一枚朱印），本地只留排版与斜盖角度 */
   .stamp {
     align-self: center;
     padding: 3px 12px;
-    border: 1px solid rgba(217, 43, 43, 0.7);
-    border-radius: 4px;
-    color: #f0a6a6;
     font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
     font-size: var(--fs-md);
     font-weight: 700;
@@ -374,9 +374,6 @@
     -webkit-tap-highlight-color: transparent;
     /* 形与四态交给公共件 .g-btn--primary（牌匾）：本地只保留布局与字号 */
   }
-  .go:hover {
-    background: var(--face-gold-hover);
-  }
   .go:active {
     transform: translateY(2px);
   }
@@ -389,11 +386,6 @@
     font-size: var(--ctl-font-sm);
     font-weight: 600;
     white-space: nowrap;
-  }
-  .ghost-btn:hover {
-    color: var(--text);
-    border-color: var(--edge);
-    background: rgba(255, 255, 255, 0.05);
   }
   .ghost-btn:active {
     transform: translateY(1px);

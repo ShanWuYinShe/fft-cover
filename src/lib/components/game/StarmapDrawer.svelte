@@ -62,8 +62,4 @@
   .sm-count b {
     color: var(--gold-bright);
   }
-
-  .starmap-body {
-    padding-bottom: var(--space-4);
-  }
 </style>

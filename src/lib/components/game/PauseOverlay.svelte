@@ -127,14 +127,16 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 16px;
-    /* 器物面板：青铜边 + 内侧暗线（铆钉由 .g-rivets 提供，见模板） */
+    gap: var(--space-2);
+    padding: var(--space-4);
+    /* 器物面板：青铜边 + 内侧暗线（铆钉由 .g-rivets 提供，见模板）
+       两条阴影必须写在同一个 box-shadow 里——分两条会互相覆盖，内暗线会丢 */
     background: var(--face-plate);
     border: 1px solid var(--edge-bronze);
-    box-shadow: inset 0 0 0 1px var(--edge-inner);
+    box-shadow:
+      inset 0 0 0 1px var(--edge-inner),
+      0 4px 8px rgba(0, 0, 0, 0.5);
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     text-align: center;
     /* 进场：0.97 缩放 + 淡入 220ms */
     animation: pm-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) backwards;
@@ -180,7 +182,7 @@
   }
   .pm-panel h3 {
     margin: 0;
-    font-size: 20px;
+    font-size: var(--fs-xl);
     letter-spacing: 4px;
     color: var(--text);
   }
@@ -211,12 +213,14 @@
   }
 
   /* 三个动作：主操作金色，其余金属面 */
-  /* 按钮：形与四态交给公共件 .g-btn / .g-btn--primary，本地只保留布局、字号与入场编排 */
+  /* 按钮：形与四态（含 :focus-visible）全部交给公共件 .g-btn / .g-btn--primary，
+     本地只保留布局、字号与入场编排——本地的 border/background/box-shadow/color
+     会盖掉公共件与结算卡同一套的边色与焦点态 */
   .pm-btn {
     position: relative;
     width: 100%;
     min-height: var(--ctl-md);
-    margin-top: 4px;
+    margin-top: var(--space-1);
     padding: 0 14px;
     font-size: var(--ctl-font-sm);
     font-weight: 600;
@@ -234,31 +238,15 @@
       transform: translateY(0);
     }
   }
-  .pm-btn:hover {
-    color: var(--gold-bright);
-    border-color: var(--edge);
-    background: rgba(255, 255, 255, 0.1);
-  }
 
-  /* 主操作：金色实心（全屏唯一发光点之一） */
+  /* 主操作：金色实心（全屏唯一发光点之一），尺寸 = 结算卡的主操作。
+     焦点态由公共件 .g-btn--primary:focus-visible 统一表达，本地不再覆盖。 */
   .pm-btn.primary {
     min-height: var(--ctl-lg);
     margin-top: 0;
-    margin-bottom: 4px;
     font-size: var(--ctl-font);
     font-weight: 700;
     letter-spacing: 2px;
-    color: #1a1002;
-    border-color: #ffe7a3;
-    background: var(--face-gold);
-    box-shadow:
-      var(--bevel-top),
-      inset 0 -3px 0 rgba(140, 80, 0, 0.55),
-      0 3px 0 #7a4d05;
-  }
-  .pm-btn.primary:hover {
-    color: #120a00;
-    background: var(--face-gold-hover);
   }
   .pm-btn:active {
     transform: translateY(2px);

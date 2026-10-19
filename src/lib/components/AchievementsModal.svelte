@@ -356,7 +356,7 @@
     {/if}
     <div class="list" class:hide={tab !== 'achv'}>
       {#each achvGroups as g (g.id)}
-        <div class="ag-head g-pattern-bar">
+        <div class="ag-head">
           <b>{g.name}</b>
           <span class="ag-count">{g.got}/{g.total}</span>
           <span class="ag-bar"><i style="width: {g.total ? (g.got / g.total) * 100 : 0}%"></i></span
@@ -561,11 +561,10 @@
   .list {
     display: flex;
     flex-direction: column;
-    margin-bottom: 12px;
     text-align: left;
   }
-  /* 成就分组标题：区块名 + 计数 + 细进度线（无底座） */
-  /* 分区铭牌：左侧 3px 金牌块 + 回纹发丝底 */
+  /* 成就分组标题：区块名 + 计数 + 进度条（无底纹：回纹只属于面板/弹窗标题条） */
+  /* 分区铭牌：左侧 3px 金牌块 + 青铜底线 */
   .ag-head {
     display: flex;
     align-items: center;
@@ -579,11 +578,6 @@
     position: relative;
   }
 
-  /* 回纹发丝：叠一层暗罩，把纹样压到「发丝」级（契约 ≤.18 alpha） */
-  .ag-head.g-pattern-bar {
-    background-image:
-      linear-gradient(rgba(9, 14, 26, 0.62), rgba(9, 14, 26, 0.62)), var(--pattern-hui);
-  }
   .ag-head::before {
     content: '';
     position: absolute;
@@ -606,18 +600,24 @@
     font-variant-numeric: tabular-nums;
     color: var(--muted);
   }
+  /* 分组进度：与行内 .prog-bar 同一表达（凹槽 + 铜线 + 金箔填充），
+     不再用青色渐变 —— 三处进度/选中表达统一到金箔语言 */
   .ag-bar {
     flex: 1;
-    height: 3px;
-    border-radius: 2px;
-    background: rgba(255, 255, 255, 0.09);
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.75), rgba(255, 255, 255, 0.05));
+    box-shadow:
+      inset 0 2px 3px rgba(0, 0, 0, 0.75),
+      0 0 0 1px rgba(201, 162, 74, 0.28);
     overflow: hidden;
   }
   .ag-bar i {
     display: block;
     height: 100%;
-    border-radius: 2px;
-    background: linear-gradient(90deg, rgba(0, 245, 212, 0.7), rgba(245, 184, 65, 0.85));
+    border-radius: 3px;
+    background: linear-gradient(180deg, #ffe9a8, var(--gold) 55%, #c98a10);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
   }
   /* 成就条目：安静的行，靠行内分隔线 + 留白分组（无卡片、无描边、无发光） */
   .item {
@@ -646,9 +646,9 @@
       inset 0 2px 4px rgba(0, 0, 0, 0.8),
       0 0 0 1px rgba(201, 162, 74, 0.3);
   }
-  /* 未解锁：暗槽 + 标题降级（描述保持 --muted 实色，保证 AA） */
+  /* 未解锁：暗槽 + 标题降级（图标描边对槽底 ≥3:1；描述保持 --muted 实色，保证 AA） */
   .item:not(.got) .icon {
-    opacity: 0.7;
+    opacity: 0.85;
   }
   .item:not(.got) .nm {
     color: var(--muted);

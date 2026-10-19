@@ -256,15 +256,22 @@
     .hud {
       padding: 6px 8px;
     }
+    /* 竖屏画布小：收集读数改成单行「收集 0/24」，把压住画布的高度从 ~75px 收到 ~34px */
     .collect-readout {
-      min-width: 92px;
-      padding: 4px 10px 8px;
+      flex-direction: row;
+      align-items: baseline;
+      gap: 5px;
+      min-width: 0;
+      padding: 3px 10px 7px;
+    }
+    .collect-label {
+      letter-spacing: 1px;
     }
     .hud-goal {
       font-size: 11px;
     }
     .collect-value b {
-      font-size: 26px;
+      font-size: 24px;
     }
     .hud-goal {
       font-size: 11px;

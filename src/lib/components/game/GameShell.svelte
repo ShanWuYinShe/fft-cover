@@ -3,6 +3,7 @@
   import MobileNav from './MobileNav.svelte';
   import StarmapDrawer from './StarmapDrawer.svelte';
   import GameArena from './GameArena.svelte';
+  import GuideOverlay from './GuideOverlay.svelte';
   import PlayControls from './PlayControls.svelte';
   import AmbientField from './AmbientField.svelte';
   import ScreenFrame from './ScreenFrame.svelte';
@@ -50,6 +51,9 @@
         指针 {onArmCount}/{armLimit}
       </span>
     </div>
+
+    <!-- 任务引导条：挂在机坞顶端（不再压在画布上），只在编辑阶段出现 -->
+    <GuideOverlay />
 
     <div class="dock-body">
       {#if engine.autoSolve}
@@ -184,6 +188,9 @@
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior: contain;
+    /* 纵向弹性：面板矮于机坞时把调参台撑满，不留半屏死区 */
+    display: flex;
+    flex-direction: column;
     padding: 8px 10px 10px;
     scrollbar-width: thin;
     scrollbar-color: rgba(245, 184, 65, 0.35) transparent;

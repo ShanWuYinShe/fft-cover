@@ -127,6 +127,9 @@
 
 <style>
   .settings-rows {
+    /* 开关列宽：两个 --ctl-lg 加一个小间隔——刚好容下最宽的读数
+       （音量三格电平 + “100%”），五行左边缘因此对齐；不写死 px */
+    --ctl-col: calc(var(--ctl-lg) * 2 + var(--space-2));
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
@@ -173,6 +176,8 @@
   }
 
   /* 铜制拨钮：切角铜边 + 内层金属面，开 = 金面 + 右端宝石灯 */
+  /* 宽度统一走 --ctl-col：开/关、各行读数长短都不再让拨钮忽宽忽窄，
+     同一列左边缘对齐（右端对齐弹窗内容右边界） */
   .toggle-btn {
     appearance: none;
     position: relative;
@@ -182,9 +187,9 @@
     justify-content: center;
     gap: 7px;
     flex: none;
-    min-width: 68px;
+    width: var(--ctl-col);
     min-height: var(--ctl-md);
-    padding: 0 18px 0 10px;
+    padding: 0 var(--space-5) 0 var(--space-2);
     cursor: pointer;
     color: var(--muted);
     font-size: var(--ctl-font-sm);
@@ -326,7 +331,7 @@
   .desc {
     margin: 0;
     font-size: var(--fs-sm);
-    line-height: 1.7;
+    line-height: 1.6;
     color: var(--muted);
   }
   .desc.formula {

@@ -252,6 +252,24 @@
 .g-btn:focus-visible::before {
   background: var(--face-plate-hot);
 }
+/* 金箔主操作：全局焦点态的字色（金）压在金面上会消失（实测 #ffd166 on #ffd166），
+   主操作改用与 hover 同一档的「面提亮 + 深字」表达焦点。
+   特异性与 .g-btn:focus-visible 相同，靠书写顺序覆盖。 */
+.g-btn--primary:focus-visible {
+  background: #fff0c0;
+  color: #1c0e00;
+}
+.g-btn--primary:focus-visible::before {
+  background: var(--face-gold-hover);
+}
+/* 朱砂危险键同理：焦点不该把红面换成暗金属面（会丢"危险"语义） */
+.g-btn--danger:focus-visible {
+  background: #f3b0a0;
+  color: #fff;
+}
+.g-btn--danger:focus-visible::before {
+  background: var(--face-seal);
+}
 .g-btn:disabled {
   opacity: 0.42;
   cursor: not-allowed;

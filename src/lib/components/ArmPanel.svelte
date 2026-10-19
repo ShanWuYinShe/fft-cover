@@ -90,6 +90,8 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
+    /* 机坞比面板高时把面板撑满（第六轮：消灭机坞下半屏死区） */
+    flex: 1 0 auto;
     padding: 8px 10px 10px;
     border-radius: var(--radius-md);
     border: 1px solid var(--edge-bronze);

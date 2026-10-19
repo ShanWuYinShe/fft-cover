@@ -204,18 +204,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px 16px;
+    padding: var(--space-6) var(--space-4);
   }
 
   /* ---------- 面板：只有一层描边，安静的重心 ---------- */
   /* 器物面板：切角铜边由 .g-chamfer 画（本体=铜边、::before=金属面），
      这里只管布局与内容安全边距 */
+  /* 卡片内纵向节奏：全部走 --space-4（块间）/ --space-3（发丝线到文字）/
+     --space-1（块内）/ --space-2（菜单行距），不留零散 px */
   .ts-console {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-4);
     width: min(500px, 100%);
-    padding: 16px 22px 18px;
+    padding: var(--space-4) 22px var(--space-4);
   }
 
   /* 四角铆钉：位置内移到切角之内（切角 8px，铆钉点中心落在 9px 处） */
@@ -232,7 +234,6 @@
     position: relative;
     display: block;
     height: 12px;
-    margin-bottom: 2px;
     opacity: 0.9;
   }
 
@@ -346,6 +347,8 @@
   }
 
   /* 朱印：真印面（.g-seal 给朱砂面 + 1px 亮边 + -2° 旋转），这里只把它压成方印 */
+  /* 印面加深一档 + 字放大到 16px：原来 13px 白字在印面渐变最亮处只有 3.75:1，
+     且字太小、笔画被抗锯齿糊掉；加深后印面全段 ≥4.5，字也占满印面更像真印 */
   .ts-name .ts-seal {
     flex: 0 0 auto;
     width: var(--ctl-xs);
@@ -354,9 +357,10 @@
     padding: 0;
     justify-content: center;
     font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: calc(var(--ctl-font-sm) + 1px);
+    font-size: calc(var(--fs-lg) + 1px);
     letter-spacing: 0;
     line-height: 1;
+    background: linear-gradient(180deg, #c8382c 0%, #a52218 55%, #7d120c 100%);
   }
 
   /* 副标题铭牌：两侧云翼短线（clip-path 三角翼，无新增 DOM/文案） */
@@ -390,7 +394,7 @@
   .ts-menu {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-2);
   }
 
   .ts-menu .ts-item {
@@ -481,15 +485,19 @@
   /* 键盘焦点：不用 outline（会被 clip-path 切掉），走公共件的铜边变金 + 面提亮 */
 
   /* ---------- 三步上手：一行一步，不带盒子 ---------- */
+  /* 对齐语言统一为「居中」：卡片其余部分（品牌区、菜单、页脚）都以卡片中线为轴，
+     这里也把小标题与清单块居中；清单文字本身仍左对齐——步骤句长短不一，
+     文字居中会让换行后的行首参差，块居中则既对齐重心又保住可读性 */
   .ts-steps {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    align-items: center;
+    gap: var(--space-1);
     border-top: 1px solid var(--edge-faint);
   }
 
   .ts-steps-title {
-    margin: 12px 0 2px;
+    margin: var(--space-3) 0 var(--space-1);
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 3px;
@@ -499,6 +507,9 @@
   .ts-steps-list {
     margin: 0;
     padding-left: 1.5em;
+    /* 清单块按最长一行收窄并居中，换行时仍从同一左边缘起排 */
+    width: fit-content;
+    max-width: 100%;
     /* 三步上手是「怎么玩」的一级信息，用正文色而不是次要色 */
     color: var(--text);
     font-size: var(--fs-md);
@@ -519,7 +530,7 @@
     align-items: center;
     justify-content: center;
     gap: 4px 14px;
-    padding-top: 12px;
+    padding-top: var(--space-3);
     border-top: 1px solid var(--edge-faint);
     font-size: var(--fs-sm);
     color: var(--muted);
@@ -544,11 +555,12 @@
   }
 
   /* ---------- 页脚 ---------- */
+  /* 上间距与「三步上手」的发丝线同档（--space-3），两处节奏一致 */
   .ts-foot {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-top: 10px;
+    padding-top: var(--space-3);
     border-top: 1px solid var(--edge-faint);
   }
 
@@ -584,7 +596,6 @@
       width: 26px;
       height: 26px;
       line-height: 24px;
-      font-size: 14px;
     }
 
     .ts-sub {
