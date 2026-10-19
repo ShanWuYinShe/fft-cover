@@ -238,3 +238,29 @@ bringToFront 只是把该标签设为「活动」,**不抢用户焦点**(实测�
 质量需在重置后跑;Flash-Lite 无需 thinking tier(`ensureModel(..., false)`)。
 用 `document.querySelector('.picker-primary-text').closest('button').getAttribute('aria-label')`
 读当前模式,菜单项文本用 split 取名字段前先 `replace(/\s+/g,' ')`。
+
+## 2026-10-19 实测:并行多实例截图与两个脚本坑(第六轮)
+
+**一条并行线一个 Chrome 实例**(端口 + `--user-data-dir` 都不同,实测 4 个共存无冲突):
+`9411/.workwork/ui-r6/chrome-profile`(Lead)、`9412/9413/9414`(各 teammate)。
+每个实例一份 profile = 每个实例一份 localStorage,这是**并行改 UI 时唯一可靠的隔离**——
+同 origin 共用 profile 会互相串档(存档/成就/引导阶段全串),截出来的图不是你要的状态。
+`shot.mjs` / `verify.mjs` 都认 `CDP_PORT` 与 `APP_URL` 两个环境变量,别改脚本。
+
+- **`shot.mjs` 的 `pause` 场景是空跑(实测)**:它调 `window.__ENGINE.pause()`,而引擎**没有**这个方法
+  (`toggleRun()` / `stopRun()` 才是真的),表达式外面套了 `e.pause && e.pause()` 所以静默跳过——
+  截出来的其实是运行态,而运行态的指令栏也是红色的「结束并结算」,肉眼很难发现拍错了。
+  正确的暂停:`window.__ENGINE.startRun()` → 等 1s → `window.__ENGINE.toggleRun()`(running→paused),
+  见 `.workwork/ui-r6/check6.mjs pause`。**结论:凡是「脚本没报错但界面没变」的场景,先确认调的
+  engine 方法真的存在**(`grep "方法名" src/lib/game/engine.svelte.ts`),别信截图。
+- **`:focus-visible` 的确定性验证**:截图没法表达焦点态,用 CDP 强制伪类 + 读计算属性:
+  `DOM.getDocument` → `DOM.querySelector` → `CSS.forcePseudoState { forcedPseudoClasses:['focus-visible'] }`
+  → `DOM.resolveNode` + `Runtime.callFunctionOn` 返回 `backgroundColor/boxShadow/color/...` 前后对比。
+  `check6.mjs focus` 就是这么抓到「主操作按钮焦点后金字压金面(2.36:1)」的——截图完全看不出来。
+- **沙盒里 `ps` 被拒**(`/bin/ps: Operation not permitted`):查监听进程用
+  `lsof -nP -iTCP:<port> -sTCP:LISTEN`;确认某进程是不是自己起的,用
+  `lsof -a -p <pid> -d cwd -Fn`(看 cwd)或 `lsof -a -p <pid> -Fn | grep <profile 目录名>`。
+  **清理只 kill 自己起的**(按端口逐个核对),别人的实例(如用户自己跑着的 dev server)原样留着。
+- **worktree 里软链 node_modules 会让 `git status` 出现未跟踪项**:`.gitignore` 的 `node_modules/`
+  只匹配真目录、不匹配软链。清理 worktree 前**先 `rm` 这个软链**(删软链不会动主树),
+  否则 `git worktree remove` 会因未跟踪文件失败,而 `--force` 有删穿主树依赖的风险。
