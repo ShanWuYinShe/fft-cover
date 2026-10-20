@@ -265,6 +265,76 @@ GPU 渲染正常、页面加载正常）；只有 workspace-write 沙盒内才�
 
 详见 `scripts/e2e-smoke.md`。关键：必须跑 dev server（动态 import 源码在 preview 不可用）；seg1 结果落 `sessionStorage['__e2eSeg1']`；每次运行用全新会话（长会话劣化）；「🎨 创作」在更多玩法折叠条内。agent-browser 通用坑见用户级 browser-automation-safety skill。
 
+
+## 美术皮肤：糖果星域（第十四轮定稿，**取代第七轮「星图金铜」**）
+
+用户对第七轮金铜皮肤的评价是「整个 UI 太难看，一眼看过去毫无想玩的想法」；对比多套样张后选定
+**明亮卡通（玩具盒）**，并要求「完全重构」。第十四轮把外壳、画布、调参台、弹层、标题页全部重做。
+
+- **三层三色纪律**：60% 中性（白卡 / 浅蓝底）、30% 珊瑚主色（主操作 / 选中 / 铭牌）、
+  10% 点缀（薄荷=成功启用、天蓝=信息、葡萄紫=高级、危险红=结束）。**不允许五色竞争。**
+- **厚度公式**：本体当「侧壁」+ `::before` 当面 + 底部露 3–5px；投影是 0 模糊纯色偏移。
+  **禁止**黑色模糊阴影、`backdrop-filter`、`mix-blend-mode`、`clip-path`、回纹/铆钉/包角/扫描线。
+- **圆角族**：`--r-sm`12 / `--r-md`18 / `--r-lg`28 / `--r-xl`36 / `--r-pill`999，同层级只用一档。
+- **浅底对比度铁律（实测，别再犯）**：
+
+  | 场景 | 不合格写法 | 正确写法 |
+  | --- | --- | --- |
+  | 白底上的珊瑚字 | `--coral-deep` 3.77:1 | `--coral-text` #b5431a → 5.55:1 |
+  | 珊瑚面上的白字 | 白字 2.6:1 | `--coral-ink` #4a1a00 → 5.6:1 |
+  | 薄荷面上的白字 | 白字 2.15:1 | `--mint-ink` #073a34 → 5.9:1 |
+  | 危险面上的白字 | 原 `--face-seal` 3.0:1 | 渐变加深到 #c9332a→#a3201a → 5.3:1 |
+  | 未获得星 | `--line-bright` 1.8:1 | #6f96ab → 3.17:1 |
+
+  文字色基线：`--text` 10.3:1 / `--muted` 6.3:1 / `--muted-2` 4.8:1。
+- **画布必须是「有颜色的夜空」，不能是「白壳里的黑圆盘」**：第十三轮用浅色天空 + 居中深色圆盘，
+  实测读起来像白纸上开了个黑洞。第十四轮改成**满幅夜空场景**（靛蓝→葡萄紫→暖橙地平线 +
+  三团柔光星云 + 90 颗固定星点 + 暗角），星盘边界只由刻度环与柔光表达。
+  语义色（金目标 #fbbf24 / 青指针 / 紫轨迹 / 红警示）在这套底上实测 7.3–13:1，**颜色一个没改**；
+  改的只是形状：目标改白厚环 + 金内环的「糖果圈」，连杆加粗到 4.2/5.6 并加圆头。
+- **星盘半径按内容算**，不要按视口短边：`arenaRadius()` 用关卡 `pts`/`curve` 相对中心的外接半径
+  ×1.5（下限 140，上限短边/2−16）。旧写法 `shortSide/2 - 10` 在竖屏下环比玩法内容大 2.4 倍。
+
+## 画布 CPU：静态层离屏烘焙 + 空闲降帧（第十四轮实测）
+
+改前空闲态整屏每帧重绘占 **7.0% 单核**（CDP `Performance.getMetrics` 的 TaskDuration 差值，
+10s/场景，未节流 Chrome），停掉 rAF 立刻降到 0.1% —— 空闲 CPU 几乎全来自「每帧重画静态背景」。
+
+| 场景 | 改前 | 改后 |
+| --- | --- | --- |
+| 调参空闲（edit） | 7.0% | **3.7%** |
+| 动画运行（running） | 12.2% | **9.8%** |
+| 暂停（paused） | 5.8% | **2.4%** |
+| 标题页 | 8.8% | **3.9%** |
+
+三招（都在 `Stage.svelte`）：
+1. **静态背景烘焙到离屏 canvas**（夜空 + 星云 + 星点 + 暗角），每帧只 `drawImage` 一次；
+   尺寸或 `arenaRadius()` 变化才重烘（`bgDirty`/`bgRadius`）。
+2. **渐变缓存**：`skyGrad`/`nebulaCache`/`arenaGlow` 全部缓存，半径变化时失效；
+   不再每帧 `createLinearGradient`/`createRadialGradient`（profiler 里排前三）。
+3. **非运行态 30fps**：`frame()` 里 `if (phase !== 'running' && now - lastDraw < 33) skip draw`；
+   运行态保持 60fps，手感不变。
+
+### 两个必须记住的坑
+
+- **TDZ 白屏**：在 `Stage.svelte` 新增 `let skyGrad = null` 这类缓存变量时，**必须声明在 `resize()`
+  之前**。`resize()` 在组件初始化阶段就被 `$effect` 调用，若声明在它后面（文件更下方），
+  会抛 `ReferenceError: skyGrad is not defined` 并整页白屏。
+- **read 工具对长文件会静默截断**：`Stage.svelte` 1497 行，`read` 只回来 1322 行且不报错，
+  直接「读全文 → 回写」会**丢掉 175 行**（本轮真实发生，靠 `git checkout HEAD --` 救回）。
+  **长文件一律用 node 脚本按字符串替换改**，改完 `wc -l` 核对行数、`svelte-check` 复核。
+
+## 浏览器验证统一走 agent-browser（用户明确要求）
+
+用户指示：「不要再用自研管线了，必须全部走浏览器自动化的 skill」。**不要再写自建 CDP 截图脚本**，
+一律 `agent-browser`（`.workwork/` 下旧的 `capture.mjs`/`audit.mjs` 只作历史参考，不再新增）。
+
+- `agent-browser` 在 workspace-write 沙盒下会因 `~/.agent-browser` 不可写而硬失败；
+  本机约定是**以固有权限运行**它（保住 Chrome 原生沙盒 + 全机共享 daemon），不是绕过沙盒。
+- 常用：`agent-browser set viewport 1440 900` → `open <url>` → `wait --fn "!!document.querySelector('canvas')"`
+  → `screenshot --if-changed name.png`；量指标用 `eval "<表达式>"`（结果自己解析）。
+- **务必 `agent-browser close`** 收尾；全机 owner daemon（`--remote-debugging-port=0` 那批进程）不受影响，别去 kill。
+
 ## 已知限制
 
 - agent-browser 长会话跑多步 e2e 不可靠（session 劣化），全流程自动化需独立 Playwright 实例（未立项，等用户决定）
