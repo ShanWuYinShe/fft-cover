@@ -76,6 +76,8 @@
 </div>
 
 <style>
+  /* 画布 HUD：浮在铺满的画布上。
+     顶部要避开顶栏（--hud-h）与左上角缎带，否则读数会被压在下面。 */
   .hud {
     position: absolute;
     inset: 0;
@@ -83,7 +85,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 10px 12px;
+    padding: calc(var(--hud-h) + 8px) 12px 12px;
     z-index: 8;
   }
   .hud > * {

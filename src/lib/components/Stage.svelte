@@ -66,12 +66,14 @@
   function screenToLogical(clientX: number, clientY: number): { x: number; y: number } {
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-    const k = SIZE / rect.width; // CSS → 画布像素
+    // 逻辑单位 → CSS 像素的比例（画布铺满容器后不再是 SIZE/rect.width）
+    const k = viewW / rect.width;
     const sx = (clientX - rect.left) * k;
     const sy = (clientY - rect.top) * k;
+    // 容器中心对应逻辑点 (SIZE/2, SIZE/2)
     return {
-      x: (sx - SIZE / 2) / zoom + SIZE / 2 + panX,
-      y: (sy - SIZE / 2) / zoom + SIZE / 2 + panY,
+      x: (sx - viewW / 2) / zoom + SIZE / 2 + panX,
+      y: (sy - viewH / 2) / zoom + SIZE / 2 + panY,
     };
   }
 
@@ -236,14 +238,48 @@
   /** 拖拽中的实时数值（画布提示用） */
   let dragInfo: { x: number; y: number; r: number; deg: number } | null = $state(null);
 
+  /**
+   * 画布铺满容器的等比缩放（第九轮：主区域占满整屏，HUD 浮在其上）。
+   *
+   * 逻辑空间仍是 640×640 的正方形（所有绘制代码围绕 SIZE/2 这个中心写），
+   * 但视口不再被裁成正方形：按容器宽高比把「可见逻辑范围」扩出去，
+   * 画布只负责把这块扩展后的范围等比映射到容器上。
+   *
+   *   scale = 容器宽 / 可见宽（= 容器高 / 可见高，两者相等 → 圆不会变椭圆）
+   *   可见宽 = SIZE × max(1, w/h)，可见高 = SIZE × max(1, h/w)
+   *
+   * 所以：容器比正方形更宽 → 左右两侧多露出星盘外的空间；更高 → 上下多露。
+   * 星盘本体（半径 SIZE/2-10）永远完整可见，且不会被拉伸。
+   */
+  let viewScale = 1; // 逻辑单位 → CSS 像素
+  let viewW = SIZE; // 可见逻辑宽
+  let viewH = SIZE; // 可见逻辑高
+
   function resize(): void {
     if (!canvas) return;
     const dpr = window.devicePixelRatio || 1;
-    const w = canvas.clientWidth;
-    canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(w * dpr);
+    const cw = Math.max(1, canvas.clientWidth);
+    const ch = Math.max(1, canvas.clientHeight);
+    canvas.width = Math.round(cw * dpr);
+    canvas.height = Math.round(ch * dpr);
+
+    // 可见逻辑范围：短边恒为 SIZE，长边按容器比例扩展
+    const aspect = cw / ch;
+    viewW = aspect >= 1 ? SIZE * aspect : SIZE;
+    viewH = aspect >= 1 ? SIZE : SIZE / aspect;
+    // 等比：用宽度定标（与高度定标等价，因为 viewW/viewH 已按比例算好）
+    viewScale = canvas.width / viewW;
+
     ctx = canvas.getContext('2d');
-    ctx?.setTransform(canvas.width / SIZE, 0, 0, canvas.width / SIZE, 0, 0);
+    // 把「可见逻辑范围」的中心对齐到容器中心：SIZE/2 是逻辑原点
+    ctx?.setTransform(
+      viewScale,
+      0,
+      0,
+      viewScale,
+      canvas.width / 2 - (SIZE / 2) * viewScale,
+      canvas.height / 2 - (SIZE / 2) * viewScale,
+    );
   }
 
   /**
@@ -359,24 +395,34 @@
   }
 
   /**
-   * 画布内 UI 文字的字号补偿：画布逻辑坐标是 640，手机画布只有 ~338px，
+   * 画布内 UI 文字的字号补偿：逻辑坐标短边恒为 640，容器小的时候
    * 直接写 12px 实际只渲染出 ~6.3px（实测「连击 / 预览收集」在手机上糊成
-   * 一团）。这里按「逻辑尺寸 ÷ 实际显示宽度」反向放大，使物理字号恒定。
+   * 一团）。这里按「逻辑短边 ÷ 实际显示短边」反向放大，使物理字号恒定。
    * 只用于画布上的界面文字，不用于图形（曲线粗细另有 1/zoom 处理）。
+   *
+   * 第九轮起画布铺满容器，短边不再是 clientWidth（可能是高），所以用
+   * 「逻辑短边 / CSS 短边」的等比关系：viewScale 就是 逻辑→CSS 的倍数。
    */
   function canvasK(): number {
-    const shown = canvas?.clientWidth || SIZE;
-    // 上限 1.6：再大长文案（预览收集 / 上届漏点）会在 640 逻辑宽里溢出
-    return Math.min(1.6, Math.max(1, SIZE / shown));
+    // viewScale = 画布像素 / 逻辑单位；除以 dpr 得到 CSS 比例
+    const dpr = window.devicePixelRatio || 1;
+    const cssPerLogical = viewScale / dpr;
+    if (!cssPerLogical || cssPerLogical <= 0) return 1;
+    // 上限 1.6：再大长文案（预览收集 / 上届漏点）会在逻辑宽里溢出
+    return Math.min(1.6, Math.max(1, 1 / cssPerLogical));
   }
 
   /**
    * 线宽下限保护：逻辑线宽乘上屏幕比例后若不足 ~1.2px，会被抗锯齿糊成灰蒙蒙
-   * 的细线（手机 338px 画布下 1.8 逻辑 → 0.95px，目标曲线/指针线都发虚）。
+   * 的细线（手机小画布下 1.8 逻辑 → 0.95px，目标曲线/指针线都发虚）。
    * 只做「不低于下限」，不整体放大——线条属信息承载图形，放大过头会改变画面气质。
    */
   function shownW(): number {
-    return canvas?.clientWidth || SIZE;
+    // 返回「当前显示下 1 逻辑单位对应的 CSS 像素数」的倒数关系所需基数：
+    // 保持原语义（越小画布 → 越大补偿）
+    const dpr = window.devicePixelRatio || 1;
+    const cssPerLogical = viewScale / dpr;
+    return cssPerLogical > 0 ? SIZE * cssPerLogical : SIZE;
   }
   function lineW(base: number): number {
     return Math.max(base, 1.2 * (SIZE / shownW()));
@@ -467,12 +513,25 @@
   const TRAIL_N = 22;
   const tipTrail: { x: number; y: number }[] = [];
 
+  /**
+   * 星盘半径：随可视范围放大。
+   * 画布铺满整屏后，短边可能远大于 640 逻辑（例如 1440×900 时可视逻辑宽 1024），
+   * 星盘若仍固定为 SIZE/2-10=310 就只占中间一小块，四周全是空星域。
+   * 取「可视短边的一半」再留 10 逻辑单位边距。
+   */
+  function arenaRadius(): number {
+    const shortSide = Math.min(viewW, viewH);
+    return shortSide / 2 - 10;
+  }
+
   /** 星盘刻度环（构建一次复用，绕原点） */
   let tickPath: Path2D | null = null;
+  let tickPathR = 0;
   function tickRing(): Path2D {
-    if (tickPath) return tickPath;
+    const R = arenaRadius();
+    if (tickPath && Math.abs(tickPathR - R) < 0.5) return tickPath;
     const p = new Path2D();
-    const R = SIZE / 2 - 10;
+    tickPathR = R;
     const N = 72;
     for (let i = 0; i < N; i++) {
       const a = (i / N) * Math.PI * 2;
@@ -551,7 +610,9 @@
       lastStarTier = 0;
     }
 
-    ctx.clearRect(0, 0, SIZE, SIZE);
+    // 清屏：铺满容器后可见逻辑范围可能比 SIZE 更大（宽屏左右/竖屏上下），
+    // 只清 SIZE 会留下上一帧的残影，所以按实际可见范围清。
+    ctx.clearRect(SIZE / 2 - viewW / 2, SIZE / 2 - viewH / 2, viewW, viewH);
 
     // 相位切换：捕捉起跑瞬间 / 归位里程碑
     if (engine.phase !== prevPhase) {
@@ -579,7 +640,7 @@
     // —— 星盘：外环 + 缓慢旋转的刻度环 + 内圈柔光（让世界有边界、有生命）——
     const cx0 = SIZE / 2;
     const cy0 = SIZE / 2;
-    const arenaR = SIZE / 2 - 10;
+    const arenaR = arenaRadius();
     if (!arenaGlow) {
       const g = ctx.createRadialGradient(0, 0, arenaR * 0.35, 0, 0, arenaR);
       g.addColorStop(0, 'rgba(0,0,0,0)');
@@ -666,11 +727,13 @@
     }
 
     // 网格底纹：按当前可见范围绘制（随缩放自适应），每 160px 一条亮线
-    const half = SIZE / 2 / zoom;
-    const left = SIZE / 2 + panX - half;
-    const top = SIZE / 2 + panY - half;
-    const right = SIZE / 2 + panX + half;
-    const bottom = SIZE / 2 + panY + half;
+    // 可见范围：铺满容器后不再是 SIZE 正方形，按 viewW/viewH 算（含缩放与平移）
+    const halfW = viewW / 2 / zoom;
+    const halfH = viewH / 2 / zoom;
+    const left = SIZE / 2 + panX - halfW;
+    const top = SIZE / 2 + panY - halfH;
+    const right = SIZE / 2 + panX + halfW;
+    const bottom = SIZE / 2 + panY + halfH;
     ctx.lineWidth = Math.max(1 / zoom, 1.2 * (SIZE / shownW()));
     for (let g = Math.floor(left / 40) * 40; g <= right; g += 40) {
       const major = ((g % 160) + 160) % 160 === 0;
@@ -1365,18 +1428,17 @@
 </button>
 
 <style>
+  /* 画布铺满整个主区域（第九轮）：不再锁正方形，HUD 浮在它上面。
+     逻辑空间仍是 640 正方形，视口按容器比例扩展，所以圆不会变椭圆。 */
   canvas {
     display: block;
     width: 100%;
-    aspect-ratio: 1 / 1;
+    height: 100%;
     touch-action: none;
-    background: #050810;
-    border: 1px solid rgba(245, 184, 65, 0.3);
-    border-radius: var(--radius-md);
-    box-shadow:
-      0 16px 50px rgba(0, 0, 0, 0.8),
-      inset 0 0 60px rgba(0, 0, 0, 0.8),
-      0 0 30px rgba(245, 184, 65, 0.1);
+    background: radial-gradient(ellipse at 50% 45%, #16243a 0%, #0a1220 55%, #060b14 100%);
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   .view-reset {

@@ -22,15 +22,16 @@
 <!-- 座舱外框（四角包边 + 视口发丝线） -->
 <ScreenFrame />
 
-<!-- 全屏座舱：顶栏 / 舞台 / 右侧机坞 / 底部指令栏 四区贴边 -->
+<!-- 全屏座舱：画布铺满整屏，HUD / 指令栏 / 机坞都浮在它上面 -->
 <div
   class="game-screen"
   data-tab={uiState.mobileTab}
   class:panel-expanded={uiState.panelExpanded}
   class:panel-hidden={engine.phase === 'running'}
   class:starmap-open={uiState.starMapOpen}
+  class:dock-open={uiState.dockOpen}
 >
-  <!-- 顶部座舱天穹 HUD -->
+  <!-- 顶部座舱天穹 HUD（浮层，背景渐隐让画布透出） -->
   <div class="gs-hud">
     <TopBar />
   </div>
@@ -38,10 +39,22 @@
   <!-- 读屏实时播报 -->
   <div class="sr-only" role="status" aria-live="polite">{screenReader.srLive}</div>
 
-  <!-- 画布核心竞技台 -->
+  <!-- 画布核心竞技台：占满整屏 -->
   <main class="gs-stage">
     <GameArena />
   </main>
+
+  <!-- 调参台开关（机坞收起时唯一入口，浮在指令栏右侧） -->
+  <button
+    type="button"
+    class="dock-toggle"
+    aria-label={uiState.dockOpen ? '收起调参台' : '展开调参台'}
+    aria-expanded={uiState.dockOpen}
+    onclick={() => uiState.toggleDock()}
+  >
+    <span class="dock-toggle-ico" aria-hidden="true">{uiState.dockOpen ? '✕' : '⚙'}</span>
+    <span class="dock-toggle-text">调参</span>
+  </button>
 
   <!-- 右侧机坞：指针调参台 -->
   <aside class="gs-dock" aria-label="指针调参台">
@@ -83,17 +96,17 @@
    * 桌面 ┌── 顶栏 ──┐ / ├ 舞台 │ 机坞 ┤ / └── 指令栏 ──┘
    * 手机  舞台（含画布）→ 机坞面板（内部滚动）→ 指令栏 → 底部导航
    * ============================================================ */
+  /* 全屏舞台（第九轮）：游戏主区域占满整屏，HUD / 指令栏 / 机坞都是浮层。
+     原来「顶栏 + 舞台 + 机坞 + 指令栏」四区把主区域切成一块正方形，
+     正常游戏不会那样——画布必须是背景，UI 浮在上面。 */
   .game-screen {
     position: fixed;
     inset: 0;
     z-index: 1;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) var(--dock-w);
-    grid-template-rows: var(--hud-h) minmax(0, 1fr) var(--cmd-h);
-    grid-template-areas:
-      'hud hud'
-      'stage dock'
-      'cmd cmd';
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'stage';
     background: transparent;
   }
 
@@ -110,48 +123,127 @@
     mix-blend-mode: overlay;
   }
 
+  /* ---------- 浮层体系（第九轮）----------
+     舞台铺满整屏，其余三块都浮在画布之上：
+       HUD    贴顶，顶部渐隐让画布透出来
+       指令栏  贴底居中，胶囊浮条
+       机坞    右侧滑入面板（默认收起），点「调参」展开
+     pointer-events 只在需要的地方打开，画布始终可交互。 */
+
+  /* 顶栏：贴顶，背景渐隐（画布从下面透出来） */
   .gs-hud {
-    grid-area: hud;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
     min-width: 0;
     min-height: 0;
-    z-index: 3;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(6, 10, 18, 0.78) 0%, rgba(6, 10, 18, 0) 100%);
+  }
+  /* 顶栏内部控件恢复可点（背景层本身不拦画布） */
+  .gs-hud > :global(*) {
+    pointer-events: auto;
   }
 
+  /* 舞台：占满整屏（唯一占 grid 的区） */
   .gs-stage {
     grid-area: stage;
     position: relative;
     min-width: 0;
     min-height: 0;
     display: flex;
-    padding: 8px 12px 4px 14px;
+    padding: 0;
   }
 
+  /* 指令栏：贴底居中的胶囊浮条 */
   .gs-cmd {
-    grid-area: cmd;
-    z-index: 3;
+    position: fixed;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    z-index: 22;
     min-width: 0;
+    width: auto;
+    max-width: calc(100vw - 24px);
   }
 
-  /* 移动端底部导航槽（桌面不占位） */
+  /* 移动端底部导航：贴底浮层 */
   .gs-nav {
     display: none;
-    grid-area: nav;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 21;
     min-width: 0;
     min-height: 0;
   }
 
-  /* ---------- 右侧机坞：贴边立柱，内部滚动 ---------- */
+  /* ---------- 调参台开关：机坞收起时唯一入口 ---------- */
+  .dock-toggle {
+    position: fixed;
+    right: 14px;
+    bottom: calc(var(--cmd-h) + 22px);
+    z-index: 23;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--ctl-md);
+    padding: 0 16px;
+    border-radius: 999px;
+    background: var(--plate-brass);
+    border: 1px solid var(--plate-brass-line);
+    box-shadow: var(--plate-brass-shadow);
+    color: var(--gold-bright);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition:
+      transform 120ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 160ms ease;
+  }
+  .dock-toggle:hover {
+    box-shadow: var(--plate-brass-shadow), var(--sh-glow-hot);
+  }
+  .dock-toggle:active {
+    transform: scale(0.96);
+  }
+  .dock-toggle:focus-visible {
+    outline: 2px solid var(--gold-bright);
+    outline-offset: 2px;
+  }
+  .dock-toggle-ico {
+    display: inline-flex;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  /* ---------- 右侧机坞：滑入式浮层（默认收起，不占主区域） ---------- */
   /* 面 = 拉丝装甲板：斜向高光 + 拉丝 + 内沿暖亮线 + 内框发丝 + 外柔影 */
   .gs-dock {
-    grid-area: dock;
-    position: relative;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 24;
+    width: min(var(--dock-w), 92vw);
     min-width: 0;
     min-height: 0;
     display: flex;
     flex-direction: column;
     background: var(--mat-plate);
     border-left: 1px solid var(--edge-bronze);
-    box-shadow: var(--mat-plate-shadow);
+    box-shadow: -16px 0 44px rgba(0, 0, 0, 0.55);
+    /* 收起：整体移出屏幕右侧；展开由 .dock-open 打开 */
+    transform: translateX(calc(100% + 12px));
+    transition: transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+  }
+  .game-screen.dock-open .gs-dock {
+    transform: translateX(0);
   }
   /* 器物框：内缩 6px 的一道铜线（伪元素，不加 DOM） */
   .gs-dock::after {
@@ -251,76 +343,61 @@
     margin: 0 0 10px;
     line-height: 1.4;
   }
+  /* ============================================================
+   * 响应式：画布始终铺满，只调整浮层的位置与尺寸
+   * （第九轮重写：原来的六套 grid 都在给画布分一块地，现在画布是背景）
+   * ============================================================ */
 
-  /* ---------- 中等宽度：机坞收窄，避免舞台被压扁 ---------- */
+  /* 中等宽度：机坞窄一档（它已是浮层，不影响画布） */
   @media (max-width: 1180px) and (min-width: 901px) {
-    .game-screen {
-      grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
-    }
-  }
-
-  /* ---------- 竖屏平板（641–900px）：顶栏在上、舞台居中、机坞在下 ---------- */
-  @media (min-width: 641px) and (max-width: 900px) and (orientation: portrait) {
-    .game-screen {
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: var(--hud-h) auto minmax(160px, 1fr) var(--cmd-h);
-      grid-template-areas:
-        'hud'
-        'stage'
-        'dock'
-        'cmd';
-    }
-    .gs-stage {
-      padding: 6px 12px 0;
-    }
     .gs-dock {
-      border-left: none;
-      border-top: 1px solid var(--edge-soft);
-    }
-    .gs-dock::before {
-      display: none;
+      width: min(340px, 92vw);
     }
   }
 
-  /* ---------- 手机竖屏：舞台 → 机坞面板 → 指令栏 → 底部导航 ---------- */
+  /* ---------- 手机竖屏：顶栏隐藏（HUD 芯片已在画布上），底部导航浮层 ---------- */
   @media (max-width: 640px) and (orientation: portrait) {
-    .game-screen {
-      grid-template-columns: minmax(0, 1fr);
-      /* 舞台按内容取高（画布不被压扁），机坞吃掉剩余高度并内部滚动 */
-      grid-template-rows: auto minmax(0, 1fr) auto auto;
-      grid-template-areas:
-        'stage'
-        'dock'
-        'cmd'
-        'nav';
-    }
-
     .gs-hud {
       display: none;
     }
 
+    /* 画布铺满整屏（指令栏与导航都是浮层，压在画布上） */
     .gs-stage {
-      padding: 2px 4px 0;
+      padding: 0;
     }
 
     .gs-nav {
       display: block;
       height: var(--tab-h);
-      z-index: 3;
+      background: var(--mat-plate);
+      border-top: 1px solid var(--edge-bronze);
     }
 
     .gs-cmd {
-      border-top: 1px solid var(--edge-bronze);
-      background: var(--mat-plate);
+      bottom: calc(var(--tab-h) + 8px);
     }
 
-    /* 机坞吃掉剩余高度，内部滚动（高度由 grid 行决定，不再写 max-height） */
     .gs-dock {
+      width: min(100vw, 460px);
+      top: auto;
+      height: min(62dvh, 520px);
+      border-radius: var(--r-md) var(--r-md) 0 0;
       border-left: none;
-      border-top: 1px solid var(--edge-soft);
+      border-top: 1px solid var(--edge-bronze);
+      transform: translateY(calc(100% + 12px));
     }
-    .gs-dock::before {
+    .game-screen.dock-open .gs-dock {
+      transform: translateY(0);
+    }
+    .gs-dock::before,
+    .gs-dock::after {
       display: none;
+    }
+
+    /* 调参按钮避让底部导航 */
+    .dock-toggle {
+      right: 12px;
+      bottom: calc(var(--cmd-h) + var(--tab-h) + 14px);
     }
 
     .dock-head {
@@ -330,73 +407,69 @@
       font-size: 14px;
       letter-spacing: 1.5px;
     }
-
     .dock-body {
       padding: 8px 10px 12px;
     }
-
-    /* 展开态：面板独占整屏（否则画布会被压扁、引导条会压住面板控件） */
-    .game-screen.panel-expanded {
-      grid-template-rows: 0 minmax(0, 1fr) auto auto;
-    }
-    .game-screen.panel-expanded .gs-stage {
-      display: none;
-    }
-
-    /* 运行中：机坞让位给画布（保留指令栏与底部导航操作） */
-    .game-screen.panel-hidden {
-      grid-template-rows: minmax(0, 1fr) 0 auto auto;
-    }
-    .game-screen.panel-hidden .gs-dock {
-      display: none;
-    }
-    .game-screen.panel-hidden .gs-stage {
-      display: flex;
-      flex: 1 1 auto;
-      flex-direction: column;
-      justify-content: center;
-    }
-    /* 机坞收起后，画布吃掉空出来的高度（缎带仍贴顶，画布在剩余区域居中） */
-    .game-screen.panel-hidden :global(.stage-wrap) {
-      flex: 1 1 auto;
-      justify-content: flex-start;
-    }
-    .game-screen.panel-hidden :global(.canvas-box) {
-      width: min(94vw, 58dvh);
-      margin-top: auto;
-      margin-bottom: auto;
-    }
   }
 
-  /* ---------- 手机横屏：舞台在左、机坞在右，指令栏贴底 ---------- */
+  /* ---------- 手机横屏：画布铺满，浮层更紧凑 ---------- */
   @media (max-width: 900px) and (orientation: landscape) {
     .gs-hud {
       display: none;
     }
-    .game-screen {
-      grid-template-columns: minmax(0, 52vw) minmax(0, 1fr);
-      grid-template-rows: minmax(0, 1fr) auto;
-      grid-template-areas:
-        'stage dock'
-        'cmd cmd';
-    }
+
     .gs-stage {
-      padding: 4px 6px;
+      padding: 0;
     }
+
+    .gs-cmd {
+      bottom: 6px;
+    }
+
+    .gs-dock {
+      width: min(340px, 88vw);
+    }
+
+    .dock-toggle {
+      right: 10px;
+      bottom: calc(var(--cmd-h) + 12px);
+      padding: 0 12px;
+    }
+    .dock-toggle-text {
+      display: none;
+    }
+
     .dock-head {
       padding: 6px 10px;
     }
     .dock-title {
       font-size: 13px;
     }
+  }
+
+  /* 运行态：调参台自动收起，把画面完全让给游戏 */
+  .game-screen.panel-hidden .gs-dock {
+    transform: translateX(calc(100% + 12px));
+  }
+  @media (max-width: 640px) and (orientation: portrait) {
     .game-screen.panel-hidden .gs-dock {
-      display: none;
+      transform: translateY(calc(100% + 12px));
     }
-    .game-screen.panel-hidden {
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-areas:
-        'stage'
-        'cmd';
+  }
+
+  /* 展开调参台时，按钮变「收起」并让位到面板左侧之外 */
+  .game-screen.dock-open .dock-toggle {
+    right: calc(min(var(--dock-w), 92vw) + 14px);
+  }
+  @media (max-width: 1180px) and (min-width: 901px) {
+    .game-screen.dock-open .dock-toggle {
+      right: calc(min(340px, 92vw) + 14px);
+    }
+  }
+  @media (max-width: 640px) and (orientation: portrait) {
+    .game-screen.dock-open .dock-toggle {
+      right: 12px;
+      bottom: calc(min(62dvh, 520px) + 14px);
     }
   }
 </style>

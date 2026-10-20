@@ -14,6 +14,11 @@ class UIState {
   starMapOpen = $state(false);
   mobileTab = $state<'levels' | 'arms' | 'score'>('arms');
   panelExpanded = $state(false);
+  /**
+   * 右侧调参台（机坞）展开态。第九轮起机坞是滑入式浮层、默认收起，
+   * 让游戏主区域（画布）占满整屏——正常游戏都是画布打底、HUD 浮在上面。
+   */
+  dockOpen = $state(false);
   updateReady = $state(false);
   shareNote = $state<string | null>(null);
   chapterIntro = $state<ChapterProgress | null>(null);
@@ -58,6 +63,17 @@ class UIState {
   togglePanelExpanded(): void {
     this.panelExpanded = !this.panelExpanded;
     haptic(10, engine.soundOn);
+  }
+
+  /** 切换调参台（右侧机坞）展开态 */
+  toggleDock(): void {
+    this.dockOpen = !this.dockOpen;
+    haptic(10, engine.soundOn);
+  }
+
+  /** 关闭调参台 */
+  closeDock(): void {
+    this.dockOpen = false;
   }
 
   /** 设置分享通知文本，数秒后自动淡出 */

@@ -49,7 +49,7 @@
 </section>
 
 <style>
-  /* 舞台：画布吃满机坞左侧的可用高度 */
+  /* 舞台：铺满主区域（第九轮）——游戏主区域必须占满，HUD 浮在画布上 */
   .stage-wrap {
     position: relative;
     flex: 1 1 auto;
@@ -58,31 +58,47 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+    align-items: stretch;
+    justify-content: stretch;
+    gap: 0;
     box-sizing: border-box;
   }
 
-  /* 画布上方一层极淡金雾：让画布「浮」在星云里，而不是贴上去 */
+  /* 画布外的一层极淡金雾：让画布「浮」在星云里，而不是贴上去 */
   .stage-wrap::before {
     content: '';
     position: absolute;
-    inset: -6%;
+    inset: 0;
     pointer-events: none;
+    z-index: 1;
     background: radial-gradient(50% 50% at 50% 50%, var(--gold-dim), transparent 70%);
   }
 
-  /* 画布基座 = 嵌在座舱里的一口深井：外圈一圈金雾；井内那层 inset 由画布自己给 */
+  /* 顶部/底部渐隐：让浮在上面的 HUD 与指令栏有落脚处，
+     不至于直接压在星盘与目标点上（纯装饰，不拦事件） */
+  .stage-wrap::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background:
+      linear-gradient(180deg, rgba(6, 10, 18, 0.72) 0%, rgba(6, 10, 18, 0) 18%),
+      linear-gradient(0deg, rgba(6, 10, 18, 0.68) 0%, rgba(6, 10, 18, 0) 16%);
+  }
+
+  /* 画布基座 = 铺满主区域的深井（不再是居中的正方形） */
   .canvas-box {
     position: relative;
-    flex: 0 0 auto;
-    /* 视口高 - 顶栏 - 指令栏 - 缎带与间隙 —— 剩下的都留给画布 */
-    width: min(100%, calc(100dvh - var(--hud-h) - var(--cmd-h) - 60px));
-    max-width: 100%;
-    margin: 0 auto;
-    border-radius: var(--radius-md);
-    box-shadow: var(--hint-glow);
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    overflow: hidden;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   /* 4 隅古青铜角花 */
@@ -149,49 +165,15 @@
     transform: rotate(135deg) scaleX(-1);
   }
 
-  /* ---------- 手机竖屏：画布按视口高与宽取小，机坞面板留在下方 ---------- */
+  /* ---------- 手机竖屏：画布同样铺满主区域，只缩小角花 ---------- */
   @media (max-width: 640px) and (orientation: portrait) {
-    .stage-wrap {
-      flex: 0 0 auto;
-      justify-content: flex-start;
-      gap: 4px;
-    }
-    .canvas-box {
-      width: min(94vw, 40dvh);
-    }
     .stage-bracket {
       width: 16px;
       height: 16px;
     }
   }
 
-  @media (max-width: 640px) and (orientation: portrait) and (max-height: 720px) {
-    .canvas-box {
-      width: min(92vw, 34dvh);
-    }
-  }
+  /* 竖屏平板：铺满（原 56dvh 限制已移除） */
 
-  /* ---------- 竖屏平板（641–900px）：画布按视口高占比收一收，给机坞留空间 ---------- */
-  @media (min-width: 641px) and (max-width: 900px) and (orientation: portrait) {
-    .stage-wrap {
-      flex: 0 0 auto;
-      justify-content: flex-start;
-      width: 100%;
-    }
-    .canvas-box {
-      width: min(100%, 56dvh);
-    }
-  }
-
-  /* ---------- 手机横屏：画布占左侧 52vw ---------- */
-  @media (max-width: 900px) and (orientation: landscape) {
-    .stage-wrap {
-      justify-content: center;
-      gap: 4px;
-      width: 100%;
-    }
-    .canvas-box {
-      width: min(48vw, calc(100dvh - 130px));
-    }
-  }
+  /* 手机横屏：铺满（原 48vw 限制已移除） */
 </style>

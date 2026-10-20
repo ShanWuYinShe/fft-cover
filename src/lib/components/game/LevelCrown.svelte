@@ -48,18 +48,26 @@
   /* ============================================================
    * 关卡缎带：一条横贯舞台顶部的铭牌，两端有菱形收口
    * ============================================================ */
+  /* 第九轮：画布铺满后，缎带改为浮在画布左上角的浮层，
+     不再占据舞台的一行高度（否则画布顶部会被压掉一条） */
   .stage-crown-bezel {
-    position: relative;
-    width: 100%;
+    position: fixed;
+    top: calc(var(--hud-h) + 2px);
+    left: 12px;
+    z-index: 18;
+    width: auto;
+    max-width: min(520px, calc(100vw - 24px));
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 12px;
-    padding: 5px 14px;
+    padding: 4px 12px;
     box-sizing: border-box;
-    background: transparent;
-    border-top: 1px solid transparent;
-    border-bottom: 1px solid var(--edge-faint);
+    background: rgba(8, 12, 20, 0.5);
+    border: 1px solid var(--edge-faint);
+    border-radius: var(--r-sm);
+    backdrop-filter: blur(6px);
+    pointer-events: none;
   }
 
   /* 两端的菱形收口：D 的定稿取消了（base.css:353 display:none），保留 DOM 与规则便于回退 */
