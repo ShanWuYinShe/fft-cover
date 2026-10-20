@@ -142,6 +142,49 @@ workspace 内起一个专属 headless Chrome，用 CDP HTTP + 内置 WebSocket �
   `http://localhost:5200/` 两个 origin 隔离。
 - dev server 端口：本仓库会话用 5200（`pnpm dev --port 5200`），别和 5199/5173 混。
 
+### CDP 截图脚本的资源治理（第九轮实测，风扇起飞的根因）
+
+**每次 `PUT /json/new` 都会开一个新标签页，headless Chrome 每个 tab 至少一个 renderer 进程；
+不关闭就会堆积，实测把机器拖到 171 个 Chrome 进程、风扇狂转。**
+
+- **每个脚本都必须 `finally` 里 `GET /json/close/<tabId>`**，并且 tabId 要真的从 `connect()`
+  返回出来——第九轮踩的坑是关闭语句写成了
+  ``fetch(`/json/close/${(await Promise.resolve('')).toString()}`)``（插值恒为空串），
+  请求静默失败、一个 tab 都没关，`audit8.mjs` 跑两轮堆了 44 个 tab。
+- **批量脚本尤其危险**：`audit8.mjs` 是 9 场景 × 4 视口 = 36 次 new；`space.mjs` 是 21 次。
+  写这类循环时，close 必须放在**循环体内**（不是循环外），且用当次迭代的 tabId。
+- **自查命令**（跑完脚本后确认没泄漏）：
+  ```bash
+  # 跑之前/之后各执行一次，数字应相同
+  curl -s http://127.0.0.1:9421/json/list | python3 -c "import sys,json; print(len(json.load(sys.stdin)))"
+  # 全机 CDP 进程数（正常应为 0 或 1 个实例的进程树）
+  pgrep -f "remote-debugging-port" | wc -l
+  ```
+- **收尾必关**：`kill -9 <主进程 pid>` 后要 `pgrep -f "remote-debugging-port"` 复查，
+  子进程可能残留；`top` 在本机沙盒里会被拒（`Operation not permitted`），
+  用 `pgrep -P <pid> | wc -l` 数子进程规模代替。
+
+### 移动端视口要用真实机型，别用 390（第九轮纠正）
+
+390×844 只是 iPhone 13/14/15 一档，且属于**偏窄**的一端。Statcounter 2025-07 与
+多份 2025–2026 统计的一致结论（[FASTCODING](https://fastcoding.jp/blog/all/info/designwidth-202509/)、
+[designrush](https://www.designrush.com/agency/web-development-companies/trends/website-dimensions#1)、
+[phone-simulator](https://phone-simulator.com/blog/most-popular-mobile-screen-resolutions-in-2026)）：
+
+| 宽度×高度 | 占比/机型 |
+| --- | --- |
+| **360×800** | **最常见（≈10.3%）**，中端 Android 主力 |
+| 390×844 | 6.55%，iPhone 13/14/15 |
+| 393×852 | 5.35%，iPhone 15/16 Pro |
+| 412×915 / 411×891 | 4.3%，Galaxy S24、Pixel 8/9 |
+| 375×812 | 4.2%，iPhone SE 一系 |
+| 430×932 | iPhone 16 Plus |
+| 440×956 | iPhone 16 Pro Max |
+| 725×870 | 折叠屏展开（现代手机整体跨度 360–707 CSS px） |
+
+**验收至少覆盖 360 / 411 / 440 三档 + 844×390 横屏**，只用 390 会漏掉最常见的窄屏与
+大屏机型。实测第九轮铺满改造在 360–725 全区间画布都是 100% 占满、无横向溢出。
+
 ## 存档键清单（constants.ts，全部登记在 SAVE_KEYS 参与备份）
 
 | 键                                          | 内容                                                 | 备注                                                            |
