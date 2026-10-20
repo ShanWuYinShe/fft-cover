@@ -161,7 +161,7 @@
         <div class="invite-btns">
           <button
             type="button"
-            class="mini-btn g-btn g-btn--icon"
+            class="mini-btn g-btn g-btn--sm"
             title="复制邀请码"
             onclick={copySeed}
           >
@@ -197,52 +197,67 @@
   .extra-section {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    margin-top: var(--space-2);
+    gap: 8px;
+    margin-top: 0;
   }
 
-  /* 无尽入口：一行（左标题 / 右战绩），无卡片 */
+  /* 无尽入口：整行白卡 */
   .endless-trigger-btn {
     width: 100%;
-    min-height: 38px;
+    min-height: 52px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 8px 0;
+    padding: 12px 14px;
     box-sizing: border-box;
     cursor: pointer;
     color: var(--text);
-    font-size: var(--ctl-font-sm);
-    border-bottom: 1px solid var(--edge-faint);
-    /* 形与四态交给公共件 .g-btn / .g-btn--icon：本地只保留布局与字号 */
+    font-size: 14px;
+    border-radius: var(--r-md);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
+    box-shadow: var(--mat-block-shadow);
+    transition: border-color 0.12s ease;
   }
+
+  .endless-trigger-btn::before {
+    content: none;
+  }
+
   .endless-trigger-btn:hover,
   .endless-trigger-btn.active {
-    color: var(--gold-bright);
+    border-color: var(--mint-bright);
   }
+
   .et-left {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: var(--gold-bright);
-    white-space: nowrap;
-  }
-  .et-right {
-    font-size: 12px;
-    color: var(--muted);
+    font-weight: 900;
+    letter-spacing: 0.3px;
+    color: var(--mint-edge);
     white-space: nowrap;
   }
 
-  /* 随机星轨：小标题 + 两个动作键（无卡片） */
+  .et-right {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 随机星轨：白卡 + 两枚动作键 */
   .gen-box {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--edge-faint);
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: var(--r-md);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
+    box-shadow: var(--mat-block-shadow);
   }
 
   .gen-header {
@@ -252,69 +267,71 @@
     gap: 8px;
     flex-wrap: wrap;
   }
+
   .gen-label {
-    font-size: var(--fs-sm);
-    color: var(--gold-bright);
-    font-weight: 700;
-    letter-spacing: 1.5px;
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: 0.3px;
     white-space: nowrap;
   }
+
   .diff-chips {
     display: flex;
     gap: 6px;
     flex: none;
   }
+
   .diff-chip {
-    min-height: var(--ctl-md);
-    padding: 0 10px;
+    min-height: var(--ctl-sm);
+    padding: 0 12px;
     cursor: pointer;
-    font-size: var(--ctl-font-sm);
-    font-weight: 600;
+    font-size: var(--fs-xs);
+    font-weight: 800;
     white-space: nowrap;
-    /* 形与四态交给公共件 .g-btn / .g-btn--icon：本地只保留布局与字号 */
   }
-  .diff-chip:hover {
-    color: var(--text);
-    border-color: var(--edge);
-    background: rgba(255, 255, 255, 0.05);
-  }
+
   .diff-chip.active {
-    color: var(--gold-bright);
-    border-color: var(--gold);
-    background: rgba(245, 184, 65, 0.1);
-    font-weight: 700;
+    background: var(--mint-edge);
+    color: var(--mint-ink);
+  }
+
+  .diff-chip.active::before {
+    background: var(--face-jade);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.45),
+      inset 0 -2px 0 rgba(10, 119, 107, 0.25);
   }
 
   .gen-actions {
     display: flex;
     gap: var(--space-2);
   }
+
   .action-btn {
     flex: 1;
     min-height: var(--ctl-md);
-    padding: 0 8px;
+    padding: 0 10px;
     cursor: pointer;
     color: var(--text);
-    font-size: var(--ctl-font-sm);
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 800;
     white-space: nowrap;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    /* 形与四态交给公共件 .g-btn / .g-btn--icon：本地只保留布局与字号 */
-  }
-  .action-btn:hover {
-    border-color: var(--edge);
-    color: var(--gold-bright);
-    background: rgba(255, 255, 255, 0.05);
   }
 
   .seed-box {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 10px 0 0;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: var(--r-md);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
+    box-shadow: var(--mat-block-shadow);
   }
 
   .invite-header {
@@ -323,71 +340,93 @@
     justify-content: space-between;
     gap: 8px;
   }
+
   .invite-code {
-    font-size: var(--fs-sm);
+    font-size: 13px;
+    font-weight: 600;
     color: var(--muted);
     white-space: nowrap;
   }
+
   .invite-code b {
-    color: var(--gold-bright);
+    color: var(--coral-edge);
+    font-weight: 900;
     letter-spacing: 1px;
   }
+
   .invite-btns {
     display: flex;
-    gap: 4px;
+    gap: 6px;
   }
 
   .seed-input-row {
     display: flex;
-    gap: 6px;
+    gap: 8px;
   }
+
   .seed-input {
     flex: 1;
     min-width: 0;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid var(--edge-faint);
-    border-radius: 8px;
-    padding: 0 10px;
     height: var(--ctl-md);
+    padding: 0 12px;
+    border-radius: var(--r-sm);
+    border: 2px solid var(--line-bright);
+    background: var(--groove-bg);
+    box-shadow: var(--groove-shadow);
     font-size: var(--ctl-font-sm);
+    font-weight: 600;
     color: var(--text);
   }
+
   .seed-input::placeholder {
     color: var(--muted-2);
   }
+
   .seed-input:focus {
-    border-color: var(--cyan);
+    border-color: var(--coral-text);
     outline: none;
   }
 
-  /* 载入 / 复制 / 分享：安静小键 */
-  .load-btn,
-  .mini-btn {
+  /* 载入：白面厚键 */
+  .load-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 4px;
     cursor: pointer;
-    font-size: var(--ctl-font-sm);
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 800;
     white-space: nowrap;
-    padding: 0 10px;
+    padding: 0 14px;
     height: var(--ctl-md);
-    /* 形与四态交给公共件 .g-btn / .g-btn--icon：本地只保留布局与字号 */
-  }
-  .load-btn:hover,
-  .mini-btn:hover {
-    color: var(--gold-bright);
-    border-color: var(--edge);
-    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--r-sm);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
+    box-shadow: 0 3px 0 #d9eefb;
+    color: var(--text);
+    transition:
+      color 0.12s ease,
+      border-color 0.12s ease;
   }
 
-  /* 触屏：无尽入口行补到统一控件高度 */
+  .load-btn:hover {
+    color: var(--coral-edge);
+    border-color: var(--coral-text);
+  }
+
+  /* 复制 / 分享：小号白面药丸（形态来自 .g-btn） */
+  .mini-btn {
+    min-height: var(--ctl-md);
+    padding: 0 10px;
+    cursor: pointer;
+    font-size: var(--fs-xs);
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
   @media (pointer: coarse) {
     .endless-trigger-btn {
       min-height: var(--ctl-md);
     }
   }
-
-  /* 其余高度全部由 --ctl-* 按指针类型自动切换（桌面 30 / 触屏 42） */
 </style>

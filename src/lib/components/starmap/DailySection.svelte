@@ -43,7 +43,7 @@
       {#if isDaily}
         <button
           type="button"
-          class="mini-btn g-btn g-btn--icon"
+          class="mini-btn g-btn g-btn--sm"
           title="分享今日挑战链接"
           onclick={shareDaily}
         >
@@ -123,14 +123,17 @@
   .daily-section {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    margin-top: var(--space-2);
+    gap: 8px;
+    margin-top: 0;
   }
 
-  /* 每日一练：小标题 + 一行难度键（无卡片） */
+  /* 每日一练：白卡 */
   .daily-card {
-    padding: 10px 0;
-    border-bottom: 1px solid var(--edge-faint);
+    padding: 12px 14px;
+    border-radius: var(--r-md);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
+    box-shadow: var(--mat-block-shadow);
   }
 
   .dc-header {
@@ -138,160 +141,186 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    margin-bottom: var(--space-2);
+    margin-bottom: 10px;
   }
-  .dc-title {
+
+  .daily-card .dc-title {
     display: flex;
     align-items: center;
     gap: 6px;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 0.3px;
     color: var(--text);
-    font-weight: 600;
-    letter-spacing: 1px;
   }
 
   .diff-btn-group {
     display: flex;
     gap: 6px;
   }
-  /* 难度键：安静描边；当前档描金 */
+
+  /* 难度键：白面小键，当前档 = 薄荷 */
   .diff-btn {
     flex: 1;
     min-height: var(--ctl-md);
     padding: 0 8px;
     cursor: pointer;
     font-size: var(--ctl-font-sm);
-    font-weight: 600;
+    font-weight: 800;
     white-space: nowrap;
-    /* 形与四态交给公共件 .g-btn / .g-btn--icon：本地只保留布局与字号 */
   }
-  .diff-btn:hover {
-    color: var(--text);
-    border-color: var(--edge);
-    background: rgba(255, 255, 255, 0.05);
-  }
+
   .diff-btn.active {
-    color: var(--gold-bright);
-    border-color: var(--gold);
-    background: rgba(245, 184, 65, 0.1);
-    font-weight: 700;
+    background: var(--mint-edge);
+    color: var(--mint-ink);
+  }
+
+  .diff-btn.active::before {
+    background: var(--face-jade);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.45),
+      inset 0 -2px 0 rgba(10, 119, 107, 0.25);
   }
 
   .weekly-card {
     width: 100%;
   }
+
+  /* 每周挑战：整行白卡 */
   .weekly-btn {
     width: 100%;
-    min-height: 38px;
+    min-height: 52px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 8px 0;
+    padding: 12px 14px;
     box-sizing: border-box;
     cursor: pointer;
     color: var(--text);
-    font-size: var(--ctl-font-sm);
-    border-bottom: 1px solid var(--edge-faint);
-    /* 形与四态交给公共件 .g-btn / .g-btn--icon：本地只保留布局与字号 */
+    font-size: 14px;
+    border-radius: var(--r-md);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
+    box-shadow: var(--mat-block-shadow);
+    transition: border-color 0.12s ease;
   }
+
+  .weekly-btn::before {
+    content: none;
+  }
+
   .weekly-btn:hover {
-    color: var(--gold-bright);
+    border-color: var(--coral-bright);
   }
+
   .weekly-btn.active {
-    color: var(--gold-bright);
+    border-color: var(--mint);
   }
+
   .w-left {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    white-space: nowrap;
-  }
-  .w-right {
-    color: var(--muted);
+    font-weight: 900;
+    letter-spacing: 0.3px;
     white-space: nowrap;
   }
 
-  /* 打卡格：一行 7 格（无外框） */
+  .w-left :global(svg) {
+    color: var(--coral-text);
+  }
+
+  .w-right {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 打卡格：白卡里一排浅蓝凹槽 */
   .dweek {
     display: flex;
     align-items: center;
-    gap: 5px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--edge-faint);
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 12px;
+    border-radius: var(--r-md);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
+    box-shadow: var(--mat-block-shadow);
   }
-  /* 每日格 = 星位小槽（内凹 + 铜线） */
+
   .dcell {
-    flex: 1;
-    height: 26px;
+    flex: 1 1 30px;
+    min-width: 30px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.6), rgba(255, 255, 255, 0.03));
-    box-shadow:
-      inset 0 1px 3px rgba(0, 0, 0, 0.7),
-      0 0 0 1px rgba(201, 162, 74, 0.22);
-    font-size: 12px;
+    gap: 2px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line);
+    background: var(--bg-bay-inset);
+    font-size: var(--fs-xs);
+    font-weight: 800;
     color: var(--muted);
   }
+
   .dcell i {
     font-style: normal;
     line-height: 1;
   }
+
   .dcell.today {
-    border-color: var(--gold);
-    color: var(--gold-bright);
-    box-shadow: 0 0 8px rgba(245, 184, 65, 0.3);
+    border-color: var(--coral-text);
+    color: var(--coral-edge);
+    box-shadow: 0 0 0 2px var(--coral-dim);
   }
+
   .dcell.done {
-    background: linear-gradient(160deg, rgba(217, 43, 43, 0.55), rgba(142, 42, 31, 0.45));
-    border-color: rgba(217, 43, 43, 0.6);
-    color: #fdece7;
-  }
-  /* 触屏：每周挑战行补到统一控件高度 */
-  @media (pointer: coarse) {
-    .weekly-btn {
-      min-height: var(--ctl-md);
-    }
+    border-color: var(--mint-edge);
+    background: var(--face-jade);
+    color: var(--mint-ink);
   }
 
   .dweek-cap {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 12px;
+    margin-left: 2px;
+    font-size: var(--fs-xs);
+    font-weight: 700;
     color: var(--muted);
-    margin-left: 6px;
     white-space: nowrap;
-  }
-  .dweek-cap.full {
-    color: var(--gold-bright);
-    font-weight: 700;
-  }
-  .dweek-cap.atrisk {
-    color: #f87171;
-    font-weight: 700;
+    font-variant-numeric: tabular-nums;
   }
 
-  /* 分享键：安静小键 */
+  .dweek-cap.full {
+    color: var(--mint-edge);
+    font-weight: 800;
+  }
+
+  .dweek-cap.atrisk {
+    color: var(--danger-deep);
+    font-weight: 800;
+  }
+
+  /* 分享键：小号白面药丸 */
   .mini-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
     min-height: var(--ctl-md);
     padding: 0 10px;
     cursor: pointer;
-    font-size: var(--ctl-font-sm);
-    font-weight: 600;
+    font-size: var(--fs-xs);
+    font-weight: 800;
     white-space: nowrap;
-    /* 形与四态交给公共件 .g-btn / .g-btn--icon：本地只保留布局与字号 */
   }
-  .mini-btn:hover {
-    color: var(--gold-bright);
-    border-color: var(--edge);
-    background: rgba(255, 255, 255, 0.05);
+
+  /* 触屏：每周挑战行补到统一控件高度 */
+  @media (pointer: coarse) {
+    .weekly-btn {
+      min-height: var(--ctl-md);
+    }
   }
 </style>

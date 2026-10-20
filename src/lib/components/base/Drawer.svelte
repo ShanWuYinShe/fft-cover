@@ -40,7 +40,7 @@
   style="--drawer-width: {width}"
   aria-hidden={!open}
 >
-  <!-- 抽屉把手：底部抽屉用一根金属横杆提示“可推回” -->
+  <!-- 抽屉把手：底部抽屉用一根糖果条提示“可推回” -->
   {#if side === 'bottom'}
     <span class="drawer-grip" aria-hidden="true"></span>
   {/if}
@@ -81,9 +81,7 @@
   .drawer-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(3, 5, 11, 0.8);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: var(--scrim);
     z-index: 55;
     border: none;
     cursor: pointer;
@@ -91,19 +89,18 @@
     padding: 0;
   }
 
-  /* 侧舱 = 器物面板：青铜边 + 内侧暗线（右上角包角来自 .g-rivets::after） */
+  /* 侧舱 = 白卡厚板：白面 + 3px 白边 + 大硬投影 */
   .drawer-panel {
     position: fixed;
     z-index: 60;
     display: flex;
     flex-direction: column;
-    background: var(--face-plate);
-    box-shadow:
-      inset 0 0 0 1px var(--edge-inner),
-      0 4px 8px rgba(0, 0, 0, 0.5);
+    background: var(--mat-block);
+    border: 3px solid #ffffff;
+    box-shadow: var(--sh-3);
     transition:
-      transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-      visibility 0.32s;
+      transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+      visibility 0.26s;
     /* 收起时彻底不可见、不可聚焦（否则键盘仍能 Tab 进离屏抽屉） */
     visibility: hidden;
   }
@@ -116,7 +113,7 @@
     bottom: 0;
     left: 0;
     width: var(--drawer-width);
-    border-right: 1px solid var(--edge-bronze);
+    border-radius: 0 var(--r-lg) var(--r-lg) 0;
     transform: translateX(-105%);
   }
   .drawer-left.open {
@@ -130,7 +127,7 @@
     bottom: 0;
     right: 0;
     width: var(--drawer-width);
-    border-left: 1px solid var(--edge-bronze);
+    border-radius: var(--r-lg) 0 0 var(--r-lg);
     transform: translateX(105%);
   }
   .drawer-right.open {
@@ -141,73 +138,69 @@
     left: 0;
     right: 0;
     bottom: 0;
-    /* 矮屏也必须留出顶部余量，并保证内容区可滚 */
     max-height: min(85dvh, calc(100dvh - 24px));
-    border-top: 1px solid var(--edge-soft);
-    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
     transform: translateY(105%);
   }
   .drawer-bottom.open {
     transform: none;
   }
 
-  /* 底部抽屉的把手 */
+  /* 底部抽屉的把手：薄荷糖果条 */
   .drawer-grip {
     flex: none;
     align-self: center;
     width: 54px;
-    height: 4px;
-    margin: 7px 0 2px;
-    border-radius: 2px;
-    background: var(--metal-3);
+    height: 5px;
+    margin: 9px 0 3px;
+    border-radius: var(--r-pill);
+    background: var(--line-bright);
   }
 
-  /* 抽屉标题条：回纹发丝 + 左侧金牌块 + 铜线分隔 */
-  .drawer-header {
+  /* 抽屉标题条：白卡面 + 珊瑚铭牌条 + 浅蓝发丝线 */
+  .drawer-header,
+  .drawer-header.g-pattern-bar {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: 12px var(--space-3) 10px 16px;
-    border-bottom: 1px solid var(--edge-bronze);
-    background-color: rgba(0, 0, 0, 0.18);
+    padding: 14px 14px 12px 24px;
+    background: var(--mat-block);
+    border-bottom: 2px solid var(--line);
+    box-shadow: none;
     flex-shrink: 0;
-    position: relative;
-    z-index: 1;
   }
 
-  /* 标题条 = 黄铜铭牌（不再叠回纹；拉丝由 --plate-brass 自带） */
-  .drawer-header.g-pattern-bar {
-    background: var(--plate-brass);
-  }
   .drawer-header::before {
     content: '';
     position: absolute;
-    left: 6px;
-    top: 9px;
-    bottom: 9px;
-    width: 3px;
-    border-radius: 1px;
-    background: linear-gradient(180deg, var(--gold-bright), var(--bronze) 70%, var(--bronze-deep));
-    box-shadow: 0 0 6px rgba(245, 184, 65, 0.35);
+    left: 10px;
+    top: 16px;
+    bottom: 14px;
+    width: 5px;
+    border-radius: var(--r-pill);
+    background: var(--coral);
   }
 
   .drawer-title {
     margin: 0;
     min-width: 0;
-    font-size: var(--fs-lg);
-    color: var(--gold-bright);
-    letter-spacing: 2px;
+    font-family: var(--font-round);
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
     line-height: 1.3;
+    color: var(--text);
   }
 
-  /* 收起键：socket 键帽（形与四态走 .g-btn--icon） */
+  /* 收起键：白面圆键（形与四态走 .g-btn--icon） */
   .drawer-close {
     flex: none;
-    color: var(--gold);
+    color: var(--muted);
   }
   .drawer-close:hover {
-    color: var(--gold-bright);
+    color: var(--coral-text);
   }
 
   .drawer-content {
@@ -216,10 +209,9 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     padding: var(--space-3);
+    background: var(--bg-chassis);
     scrollbar-width: thin;
-    scrollbar-color: rgba(245, 184, 65, 0.35) transparent;
-    position: relative;
-    z-index: 1;
+    scrollbar-color: #b6dcf2 transparent;
   }
 
   /* 矮屏：收紧内边距 */
@@ -228,7 +220,21 @@
       padding: 10px var(--space-3);
     }
     .drawer-header {
-      padding: 8px var(--space-3);
+      padding: 9px 12px 8px 22px;
     }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drawer-panel,
+    .drawer-backdrop {
+      transition: none;
+      animation: none;
+    }
+  }
+
+  :global(.reduce-motion) .drawer-panel,
+  :global(.reduce-motion) .drawer-backdrop {
+    transition: none;
+    animation: none;
   }
 </style>

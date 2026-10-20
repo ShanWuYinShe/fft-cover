@@ -182,7 +182,11 @@
                 {/if}
               </span>
               <span class="st" aria-label="{st} 星">
-                {locked ? '未解锁' : '★'.repeat(st) + '☆'.repeat(3 - st)}
+                {#if locked}
+                  未解锁
+                {:else}
+                  <i class="st-on">{'★'.repeat(st)}</i><i class="st-off">{'☆'.repeat(3 - st)}</i>
+                {/if}
               </span>
               {#if !locked && st > 0}
                 <span class="stats font-tabular">
@@ -225,12 +229,14 @@
   .campaign-map {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: 10px;
   }
-  /* 抽屉打开时整块淡入（与 LevelPicker 的 60ms 错峰对齐：它是第 2 个子块） */
+
+  /* 抽屉打开时整块淡入（与 LevelPicker 的 60ms 错峰对齐） */
   .campaign-map.open {
     animation: cm-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) 60ms backwards;
   }
+
   @keyframes cm-in {
     from {
       opacity: 0;
@@ -242,44 +248,30 @@
     }
   }
 
-  /* 章节导航：一行标题 + 左右翻页键，无底座 */
-  /* 章节条 = 卷轴段：圆角 + 上下铜线 */
+  /* 章节导航：白卡条 */
   .ch-nav {
     position: relative;
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 4px 6px;
-    border-radius: var(--r-sm);
-    background:
-      linear-gradient(180deg, rgba(201, 162, 74, 0.16), rgba(0, 0, 0, 0)) padding-box,
-      linear-gradient(180deg, #2a2114, #16110a);
-    box-shadow: inset 0 1px 0 rgba(201, 162, 74, 0.35);
-  }
-  .ch-nav::after {
-    content: '';
-    position: absolute;
-    left: 8px;
-    right: 8px;
-    bottom: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--edge-bronze), transparent);
-    pointer-events: none;
+    padding: 8px 10px;
+    border-radius: var(--r-md);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
+    box-shadow: var(--mat-block-shadow);
   }
 
-  /* 章节翻页键：桌面 30（触屏 42），安静的行内键 */
-  /* 翻页键：形与四态交给公共件 .g-btn--icon（键帽） */
+  /* 章节翻页键：白面圆键（形与四态交给公共件 .g-btn--icon） */
   .nav-btn {
     flex: none;
-    width: var(--ctl-md);
-    height: var(--ctl-md);
+    color: var(--muted);
     font-size: var(--ctl-font-sm);
-    color: var(--gold);
   }
+
   .nav-btn:hover:not(:disabled) {
-    color: var(--gold-bright);
-    background: rgba(255, 255, 255, 0.06);
+    color: var(--coral-text);
   }
+
   .nav-btn:disabled {
     opacity: 0.35;
     cursor: not-allowed;
@@ -291,183 +283,207 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1px;
+    gap: 2px;
     text-align: center;
   }
+
   .ch-title {
     display: flex;
     align-items: center;
     gap: 6px;
   }
-  /* 章节名与摘要同档字号：摘要（印 x/y）原来与章节名同为 12px 偏小，
-     一起提到 --fs-md，避免次级读数比主标题还大、层级倒挂 */
+
   .ch-title b {
-    font-size: var(--fs-md);
-    color: var(--gold-bright);
-    letter-spacing: 1px;
-  }
-
-  .ch-seal {
-    width: 22px;
-    height: 22px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    font-size: 13px;
-    color: #fff;
-    background: linear-gradient(160deg, #d92b2b, #991b1b);
-    border: 1px solid rgba(255, 200, 200, 0.3);
-    box-shadow: 0 2px 10px rgba(217, 43, 43, 0.5);
-  }
-
-  .ch-summary {
-    font-size: var(--fs-md);
-    color: var(--muted);
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--text);
     letter-spacing: 0.5px;
   }
 
-  /* 章节翻页圆点：可视点很小，按键本体走统一控件尺寸（桌面 30 / 触屏 42） */
+  .ch-seal {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--coral-ink);
+    background: var(--face-gold-plate);
+    box-shadow: 0 2px 0 var(--coral-edge);
+  }
+
+  .ch-summary {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.3px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 章节翻页圆点：可视点很小，按键本体给足热区 */
   .dots {
     display: flex;
     justify-content: center;
-    /* 窄屏放不下时换行，宁可两行也不缩热区 */
     flex-wrap: wrap;
     gap: 2px;
-    margin: 2px 0 4px;
+    margin: 0 0 2px;
   }
-  /* 圆点翻页 = 键帽槽（可视点很小，槽给足热区） */
+
   .dot {
     appearance: none;
     position: relative;
     width: var(--ctl-md);
-    height: var(--ctl-md);
+    height: var(--ctl-xs);
     padding: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0));
-    border: 1px solid transparent;
+    border-radius: var(--r-pill);
+    background: transparent;
+    border: none;
     cursor: pointer;
-    transition:
-      background 0.18s ease,
-      border-color 0.18s ease;
   }
+
   .dot::before {
     content: '';
     width: 8px;
     height: 8px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.18);
-    box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.6);
+    border-radius: var(--r-pill);
+    background: var(--line-bright);
     transition:
       width 0.18s ease,
-      border-radius 0.18s ease,
       background 0.18s ease,
       box-shadow 0.18s ease;
   }
-  .dot:hover:not(:disabled) {
-    background: rgba(245, 184, 65, 0.08);
-    border-color: var(--edge-soft);
+
+  .dot:hover:not(:disabled)::before {
+    background: var(--mint-bright);
   }
+
   .dot.on::before {
     width: 24px;
-    border-radius: 4px;
-    background: var(--gold);
-    box-shadow: 0 0 12px rgba(245, 184, 65, 0.6);
+    background: var(--mint);
+    box-shadow: 0 2px 0 var(--mint-edge);
   }
+
   .dot.done::before {
-    background: rgba(245, 184, 65, 0.55);
+    background: var(--mint-bright);
   }
+
   .dot.done.on::before {
-    background: linear-gradient(90deg, var(--gold), var(--cyan));
+    background: var(--mint);
   }
+
   .dot.locked::before {
-    background: rgba(255, 255, 255, 0.07);
+    background: var(--line);
   }
+
   .dot:disabled {
     cursor: not-allowed;
   }
 
-  /* 章节标语：与章节摘要同一档次要色（--muted-2 在抽屉面上只有 4.0:1，
-     不达正文 AA；改用 --muted 后 ≈6.4:1，不动全局令牌） */
+  /* 章节标语：自己的白卡信息条（不把文字直接铺在抽屉底上） */
   .ch-tag {
-    margin: 0 0 8px;
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: var(--r-sm);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
+    box-shadow: 0 2px 0 #d9eefb;
     font-size: var(--fs-sm);
+    font-weight: 600;
     color: var(--muted);
-    line-height: 1.5;
+    line-height: 1.55;
   }
+
   .ch-key {
     margin-left: 6px;
-    color: rgba(196, 181, 253, 0.85);
+    color: var(--grape-deep);
+    font-weight: 800;
   }
 
   .map-list {
     display: flex;
     flex-direction: column;
-    gap: 0;
-  }
-  .map-row {
-    position: relative;
-    padding-top: 10px;
-  }
-  .map-row:first-child {
-    padding-top: 0;
+    gap: 8px;
   }
 
+  .map-row {
+    position: relative;
+  }
+
+  /* 关卡之间的糖果连接线 */
   .link {
     position: absolute;
     left: 22px;
-    top: 0;
-    width: 2px;
-    height: 10px;
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.6), rgba(0, 245, 212, 0.35));
-    box-shadow: 0 0 6px rgba(245, 184, 65, 0.3);
+    top: -8px;
+    width: 4px;
+    height: 8px;
+    border-radius: var(--r-pill);
+    background: var(--line-bright);
   }
+
   .link.hidden {
     display: none;
   }
 
-  /* 星图航段：每一关是一段带倒角的金属板 */
-  /* 关卡行：一行一段，靠分隔线分组（无卡片、无描边、无发光） */
+  /* 星图航段：每一关都是自己的白卡 */
   .node {
     appearance: none;
     position: relative;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     width: 100%;
-    min-height: 38px;
-    padding: 4px 6px;
+    min-height: 56px;
+    padding: 10px 12px;
     box-sizing: border-box;
     text-align: left;
-    border: none;
-    border-bottom: 1px solid var(--edge-faint);
-    background: none;
+    border: 2px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--mat-block);
+    box-shadow: var(--mat-block-shadow);
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition:
+      border-color 0.15s ease,
+      transform 0.12s ease;
   }
+
   .node:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--coral-bright);
   }
-  /* 当前关：金色左轨 + 淡金底（发光只给这一个选中态） */
+
+  .node:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  /* 当前关：薄荷描边 + 薄荷左侧轨 */
   .node.active {
-    background: rgba(245, 184, 65, 0.08);
+    border-color: var(--mint);
+    background: linear-gradient(180deg, #ffffff 0%, #eafbf5 100%);
+    box-shadow:
+      0 4px 0 rgba(15, 148, 132, 0.28),
+      0 12px 22px rgba(15, 148, 132, 0.16);
   }
+
   .node.active::before {
     content: '';
     position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: var(--gold);
+    left: -2px;
+    top: 14px;
+    bottom: 14px;
+    width: 5px;
+    border-radius: var(--r-pill);
+    background: var(--mint);
   }
+
   /* 抽屉打开时左轨滑入（180ms） */
   .campaign-map.open .node.active::before {
     animation: rail-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
+
   @keyframes rail-in {
     from {
       opacity: 0;
@@ -478,72 +494,72 @@
       transform: translateX(0) scaleY(1);
     }
   }
-  /* 新解锁的关卡弹一下：1.0 → 1.06 → 1.0（260ms） */
+
+  /* 新解锁的关卡弹一下：1.0 → 1.05 → 1.0（260ms） */
   .node.pop {
     animation: node-pop 0.26s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
+
   @keyframes node-pop {
     0% {
       transform: scale(1);
     }
     45% {
-      transform: scale(1.06);
+      transform: scale(1.05);
     }
     100% {
       transform: scale(1);
     }
   }
-  .node.active .nm {
-    color: var(--gold-bright);
-  }
-  /* 锁定关：文字保持 --muted 可读，只是不再高亮 */
-  .node:disabled {
+
+  /* 锁定关：灰底灰字，但仍然可读 */
+  .node:disabled,
+  .node.locked {
+    background: var(--line-quiet);
+    border-color: var(--line);
+    box-shadow: none;
     cursor: not-allowed;
   }
+
   .node:disabled .nm {
-    color: var(--muted);
-    font-weight: 500;
-  }
-  .node:disabled .st {
-    color: var(--muted);
+    color: var(--muted-2);
+    font-weight: 700;
   }
 
-  /* 星位：小圆槽（未达成为暗槽，达成后嵌金宝石） */
+  .node:disabled .st {
+    color: var(--muted-2);
+  }
+
+  /* 星位：小圆槽（未达成浅蓝，达成薄荷糖果） */
   .node .idx {
     flex: 0 0 auto;
     position: relative;
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     font-size: var(--ctl-font-sm);
-    font-weight: 700;
+    font-weight: 900;
     font-variant-numeric: tabular-nums;
     color: var(--muted);
-    background: radial-gradient(circle at 50% 35%, #1a2440, #070c17 70%);
-    box-shadow:
-      inset 0 1px 3px rgba(0, 0, 0, 0.8),
-      0 0 0 1px rgba(201, 162, 74, 0.3);
+    background: var(--bg-bay-inset);
+    box-shadow: inset 0 2px 3px rgba(90, 150, 190, 0.18);
   }
-  /* 三星 / 完美：序号点亮成金色，一眼看出已通关 */
-  /* 达成：圆槽里嵌一颗金宝石 */
-  .node.done .idx {
-    color: #2a1700;
-    background: var(--face-gold-plate, linear-gradient(180deg, #ffe7a3, #d69214));
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.55),
-      0 0 0 1px var(--edge-bronze-hot),
-      0 0 10px rgba(245, 184, 65, 0.35);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+
+  .node.done .idx,
+  .node.active .idx {
+    color: var(--mint-ink);
+    background: var(--face-jade);
+    box-shadow: 0 2px 0 var(--mint-edge);
   }
-  /* 完美全清：宝石加冕（金环更亮） */
+
+  /* 完美全清：薄荷槽外加一枚珊瑚环 */
   .node.done.perfect .idx {
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.6),
-      0 0 0 1px #ffe7a3,
-      0 0 12px rgba(255, 209, 102, 0.55);
+      0 0 0 3px var(--coral-dim),
+      0 2px 0 var(--mint-edge);
   }
 
   .node-body {
@@ -551,74 +567,100 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
   }
+
   .nm {
-    font-weight: 600;
-    font-size: var(--fs-sm);
-    line-height: 1.25;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1.3;
     color: var(--text);
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
   }
+
   .nm .pf {
     font-style: normal;
-    color: var(--gold-bright);
+    color: var(--coral-text);
     display: inline-flex;
   }
 
   .st {
     font-size: var(--fs-sm);
-    line-height: 1.15;
-    color: var(--gold);
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--coral-text);
     letter-spacing: 1px;
   }
 
+  .st i {
+    font-style: normal;
+  }
+
+  .st-on {
+    color: var(--coral-text);
+  }
+
+  .st-off {
+    color: var(--line-bright);
+  }
+
   .stats {
-    font-size: 12px;
+    font-size: 12.5px;
+    font-weight: 600;
     color: var(--muted);
+    font-variant-numeric: tabular-nums;
   }
+
   .stats b {
-    color: var(--gold);
+    color: var(--coral-edge);
+    font-weight: 900;
   }
+
   .stats i {
     font-style: normal;
   }
 
-  /* 下一章：一行提示（解锁时可点，未解锁是安静说明） */
+  /* 下一章：白卡提示条 */
   .teaser {
-    margin-top: 4px;
-    padding: 8px 8px;
-    min-height: 38px;
+    margin-top: 2px;
+    padding: 12px;
+    min-height: 52px;
     box-sizing: border-box;
     display: flex;
     align-items: center;
     gap: 10px;
     text-align: left;
     width: 100%;
-    border-radius: var(--r-sm);
+    border-radius: var(--r-md);
+    border: 2px solid var(--line);
     background: var(--mat-block);
-    box-shadow:
-      inset 0 1px 0 rgba(201, 162, 74, 0.28),
-      var(--groove-shadow);
+    box-shadow: var(--mat-block-shadow);
   }
+
   .teaser.open {
     appearance: none;
     cursor: pointer;
-    color: var(--cyan);
-    background: none;
-    border: none;
-    transition: color 0.12s ease;
+    color: var(--mint-edge);
+    border-color: var(--mint-bright);
+    transition: border-color 0.12s ease;
   }
+
   .teaser.open:hover {
-    color: var(--gold-bright);
+    border-color: var(--mint);
   }
+
   .teaser.locked {
-    background: none;
-    border: none;
-    border-top: 1px solid var(--edge-faint);
     color: var(--muted);
+    background: var(--line-quiet);
+    box-shadow: none;
+  }
+
+  .t-ico {
+    flex: none;
+    display: inline-flex;
+    color: inherit;
   }
 
   .t-txt {
@@ -626,20 +668,24 @@
     flex-direction: column;
     gap: 2px;
   }
+
   .t-txt b {
-    font-size: var(--fs-sm);
+    font-size: 14px;
+    font-weight: 800;
   }
+
   .t-txt i {
     font-style: normal;
-    font-size: 12px;
+    font-size: 12.5px;
+    font-weight: 600;
     color: var(--muted);
   }
 
-  /* 触屏：关卡行/下一章行补到统一控件高度（命中区 ≥40） */
+  /* 触屏：关卡行/下一章行补到统一控件高度 */
   @media (pointer: coarse) {
     .node,
     .teaser {
-      min-height: var(--ctl-md);
+      min-height: calc(var(--ctl-md) + 8px);
     }
   }
 
@@ -651,6 +697,7 @@
       animation: none;
     }
   }
+
   :global(.reduce-motion) .campaign-map.open,
   :global(.reduce-motion) .node.pop,
   :global(.reduce-motion) .campaign-map.open .node.active::before {

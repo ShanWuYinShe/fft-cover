@@ -27,7 +27,7 @@
 </script>
 
 <div class="level-picker" class:open={uiState.starMapOpen}>
-  <!-- 星图头：金属铭牌 + 成就勋章 -->
+  <!-- 星图头：白卡标题条 + 成就勋章 -->
   <div class="picker-header">
     <h2 class="picker-title font-celestial">周天星图</h2>
     {#if campaignBadge || perfectCount > 0 || exactCount > 0}
@@ -102,7 +102,7 @@
   .level-picker {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: 12px;
   }
 
   /* 抽屉打开时内容 60ms 错峰淡入（位移 ≤8px；最多 5 个元素） */
@@ -124,6 +124,7 @@
   .level-picker.open > *:nth-child(n + 5) {
     animation-delay: 240ms;
   }
+
   @keyframes lp-in {
     from {
       opacity: 0;
@@ -135,23 +136,28 @@
     }
   }
 
-  /* 星图头：一行标题 + 勋章，下面一条分隔线（无底座） */
+  /* 星图头：白卡条 + 珊瑚标题 + 勋章 */
   .picker-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
-    padding: 0 0 8px;
-    border-bottom: 1px solid var(--edge-faint);
+    padding: 12px 14px;
+    border-radius: var(--r-md);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
+    box-shadow: var(--mat-block-shadow);
   }
+
   .picker-title {
     margin: 0;
-    font-size: var(--fs-md);
-    color: var(--gold-bright);
-    letter-spacing: 3px;
+    font-family: var(--font-round);
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: 0.5px;
     white-space: nowrap;
-    text-shadow: 0 0 14px rgba(245, 184, 65, 0.35);
   }
 
   .header-badges {
@@ -161,125 +167,164 @@
     flex-wrap: wrap;
     font-size: var(--fs-sm);
   }
-  /* 勋章：一行小字标记（不做芯片） */
+
+  /* 勋章：白药丸小牌 */
   .h-badge {
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    padding: 3px 9px;
+    border-radius: var(--r-pill);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
     color: var(--muted);
     white-space: nowrap;
-    font-size: 12px;
-  }
-  .h-badge--lit {
-    color: var(--gold-bright);
+    font-size: var(--fs-xs);
+    font-weight: 800;
   }
 
-  /* 无尽状态：紧凑三行读数（无底座） */
+  .h-badge--lit {
+    border-color: var(--mint-bright);
+    background: var(--note-bg);
+    color: var(--mint-edge);
+  }
+
+  /* 无尽状态：白卡 + 珊瑚大读数 */
   .endless-banner {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--edge-faint);
+    gap: 6px;
+    padding: 12px 14px;
+    border-radius: var(--r-md);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
+    box-shadow: var(--mat-block-shadow);
   }
+
   .eb-row {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 8px;
-    font-size: var(--fs-sm);
+    font-size: 13.5px;
+    font-weight: 700;
     color: var(--text);
   }
+
   .eb-k {
-    color: var(--muted);
     flex: none;
+    color: var(--muted);
+    font-size: var(--fs-xs);
+    font-weight: 800;
+    letter-spacing: 1px;
   }
+
   .eb-wave {
-    color: var(--gold-bright);
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    color: var(--mint-edge);
+    font-weight: 900;
   }
+
   .eb-score {
-    font-size: 19px;
+    margin-left: auto;
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--coral-text);
+    font-variant-numeric: tabular-nums;
   }
+
   .eb-sub {
+    font-size: var(--fs-sm);
+    font-weight: 600;
     color: var(--muted);
   }
+
   .eb-need {
-    color: var(--gold);
+    color: var(--coral-edge);
+    font-weight: 800;
   }
+
   .eb-ok {
-    color: var(--cyan);
+    color: var(--mint-edge);
+    font-weight: 800;
   }
 
-  /* 折叠区：一行小标题 + 分隔线（无边框盒子） */
-  .level-hint-drawer {
-    border-bottom: 1px solid var(--edge-faint);
-  }
-  .lhd-summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    /* 摘要也是可点热区：走统一控件高度 */
-    min-height: var(--ctl-md);
-    padding: 0 2px;
-    cursor: pointer;
-    font-size: var(--fs-sm);
-    color: var(--cyan);
-    user-select: none;
-  }
-  .lhd-summary::-webkit-details-marker {
-    display: none;
-  }
-  .lhd-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 700;
-    letter-spacing: 2px;
-  }
-  .lhd-body {
-    padding: 2px 0 12px;
-  }
-  .lhd-text {
-    margin: 6px 0 0;
-    font-size: var(--fs-sm);
-    line-height: 1.7;
-    color: var(--text);
-  }
-
+  /* 折叠区：白卡 + 珊瑚/薄荷摘要行 */
+  .level-hint-drawer,
   .more-modes-drawer {
-    border-bottom: 1px solid var(--edge-faint);
+    border: 2px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--mat-block);
+    box-shadow: var(--mat-block-shadow);
+    overflow: hidden;
   }
+
+  .lhd-summary,
   .mm-summary {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    min-height: var(--ctl-md);
-    padding: 0 2px;
+    min-height: 46px;
+    padding: 8px 14px;
     cursor: pointer;
-    font-size: var(--fs-sm);
-    color: var(--gold-bright);
+    font-size: 14px;
+    font-weight: 800;
     user-select: none;
   }
+
+  .lhd-summary {
+    color: var(--coral-edge);
+  }
+
+  .mm-summary {
+    color: var(--mint-edge);
+  }
+
+  .lhd-summary::-webkit-details-marker,
   .mm-summary::-webkit-details-marker {
     display: none;
   }
+
+  .lhd-label,
   .mm-label {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-weight: 700;
-    letter-spacing: 2px;
+    letter-spacing: 0.3px;
   }
+
+  .lhd-caret,
+  .mm-caret {
+    flex: none;
+    color: var(--muted-2);
+    font-size: 12px;
+  }
+
+  .lhd-body {
+    padding: 0 14px 12px;
+  }
+
+  .lhd-text {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: var(--r-sm);
+    border: 2px solid var(--note-edge);
+    background: var(--note-bg);
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
   .mm-body {
-    padding: 2px 0 10px;
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: 8px;
+    padding: 0 14px 14px;
   }
 
   /* 减弱动态效果：位移动画关闭 */
@@ -288,6 +333,7 @@
       animation: none;
     }
   }
+
   :global(.reduce-motion) .level-picker.open > * {
     animation: none;
   }

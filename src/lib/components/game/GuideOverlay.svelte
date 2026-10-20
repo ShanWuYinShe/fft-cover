@@ -12,7 +12,7 @@
 
 {#if engine.remoteChallenge}
   <div class="remote-tip">
-    <span>
+    <span class="rt-text">
       <Icon name="share" size={14} />
       <b>好友的解法挑战</b>——参数已载入，点「开始旋转」试试能不能全清
     </span>
@@ -20,9 +20,10 @@
       type="button"
       class="rt-close"
       title="关闭提示"
+      aria-label="关闭好友挑战提示"
       onclick={() => (engine.remoteChallenge = false)}
     >
-      ✕
+      <Icon name="close" size={14} />
     </button>
   </div>
 {/if}
@@ -52,125 +53,165 @@
 {/if}
 
 <style>
-  /* 引导条：挂在机坞顶端的任务铭牌（第六轮：从画布上挪开，不再遮挡目标点） */
-  .first-guide {
+  /* ============================================================
+   * 引导条 / 提示条（第十四轮）
+   * 薄荷浅底卡（--note-bg / --note-edge）+ 深蓝字 + 12px 圆角 +
+   * 同色相硬投影；强调字用珊瑚深色（薄荷底上仍有 4.5:1）。
+   * ============================================================ */
+  .first-guide,
+  .remote-tip,
+  .expert-tip {
     flex: 0 0 auto;
-    display: block;
     margin: 8px 10px 0;
-    padding: 7px 10px;
+    padding: 9px 12px;
+    box-sizing: border-box;
+    border: 2px solid var(--note-edge);
     border-radius: var(--r-sm);
     background: var(--note-bg);
-    border: 1px solid var(--note-edge);
-    box-shadow: var(--bevel-top), var(--sh-1), var(--hint-glow);
-    font-size: 12px;
-    line-height: 1.5;
+    box-shadow: 0 3px 0 var(--note-edge);
     color: var(--text);
+    font-family: var(--font-round);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    line-height: 1.5;
     text-align: left;
-    box-sizing: border-box;
-    animation: guide-in 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
+    animation: guide-in 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes guide-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 
-  /* 目标数字：青玉 = 「能量/目标」语义（与画布金色目标环同族但不同色阶） */
-  .first-guide b {
-    color: var(--cyan);
-    white-space: nowrap;
+  .first-guide {
+    display: block;
   }
 
+  .remote-tip,
+  .expert-tip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .remote-tip {
+    justify-content: space-between;
+  }
+  .expert-tip {
+    justify-content: flex-start;
+  }
+
+  .rt-text {
+    min-width: 0;
+  }
+
+  .remote-tip :global(svg),
+  .expert-tip :global(svg) {
+    vertical-align: -2px;
+  }
+
+  /* 强调：珊瑚深色（目标数字 / 关键操作） */
+  .first-guide b,
+  .remote-tip b,
+  .expert-tip b {
+    color: var(--coral-edge);
+    font-weight: 800;
+  }
+
+  /* 完成态：边线换成薄荷深色，强调字也随之变薄荷 */
   .first-guide.ok {
-    background: var(--face-gold-plate);
-    border-color: var(--edge-bronze-hot);
-    box-shadow: var(--bevel-top), var(--sh-2), var(--sh-glow-hot);
+    border-color: var(--mint-deep);
+    box-shadow: 0 3px 0 var(--mint-deep);
   }
-
   .first-guide.ok b {
-    color: #241300;
+    color: var(--mint-edge);
   }
 
-  /* 小按键：有厚度的微型游戏键（高度走令牌，触屏自动放大到 40） */
+  /* 小按键：白药丸（触屏高度走 --ctl-md = 44） */
   .mini-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: var(--ctl-sm);
-    padding: 0 10px;
+    min-height: var(--ctl-md);
     margin-left: 8px;
-    border-radius: var(--r-sm);
-    background: var(--mat-block);
-    border: 1px solid var(--edge-bronze);
+    padding: 0 14px;
+    border: 2px solid var(--line);
+    border-radius: var(--r-pill);
+    background: #ffffff;
+    box-shadow: 0 3px 0 var(--mat-frame-line);
     color: var(--text);
-    font-size: 11px;
-    font-weight: 700;
-    box-shadow: var(--bevel-top), var(--groove-shadow);
-    transition: all 0.1s ease;
+    font-family: var(--font-round);
+    font-size: var(--fs-sm);
+    font-weight: 800;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      border-color 120ms ease,
+      color 120ms ease;
   }
   .mini-btn:hover {
-    background: var(--mat-plate);
-    color: var(--gold-bright);
-    border-color: var(--edge-bronze-hot);
+    border-color: var(--coral-text);
+    color: var(--coral-edge);
   }
   .mini-btn:active {
     transform: translateY(2px);
-    box-shadow: var(--groove-shadow);
+    box-shadow: 0 1px 0 var(--mat-frame-line);
+  }
+  .mini-btn:focus-visible {
+    outline: 3px solid var(--sky-deep);
+    outline-offset: 2px;
   }
 
-  .remote-tip {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 7px 10px;
-    margin: 8px 10px 0;
-    border-radius: var(--r-sm);
-    background: var(--note-bg);
-    border: 1px solid var(--note-edge);
-    box-shadow: var(--bevel-top), var(--sh-1);
-    font-size: 12px;
-    color: var(--text);
-    text-align: left;
-    animation: guide-in 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
-    box-sizing: border-box;
-  }
-  .remote-tip b {
-    color: var(--purple);
-  }
-  .remote-tip .rt-close {
+  /* 关闭键：圆形白键 */
+  .rt-close {
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: var(--ctl-sm);
-    height: var(--ctl-sm);
-    border-radius: var(--r-sm);
-    background: var(--mat-block);
-    border: 1px solid var(--edge-bronze);
+    width: var(--ctl-md);
+    height: var(--ctl-md);
+    padding: 0;
+    border: 2px solid var(--line);
+    border-radius: 50%;
+    background: #ffffff;
     color: var(--muted);
-    font-size: 12px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
-  .remote-tip .rt-close:hover {
-    color: var(--text);
-    border-color: var(--edge-bronze-hot);
+  .rt-close:hover {
+    border-color: var(--coral-text);
+    color: var(--coral-edge);
+  }
+  .rt-close:focus-visible {
+    outline: 3px solid var(--sky-deep);
+    outline-offset: 2px;
   }
 
-  .expert-tip {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 8px;
-    padding: 7px 10px;
-    margin: 8px 10px 0;
-    border-radius: var(--r-sm);
-    background: var(--note-bg);
-    border: 1px solid var(--note-edge);
-    box-shadow: var(--bevel-top), var(--sh-1);
-    font-size: 12px;
-    color: var(--text);
-    text-align: left;
-    animation: guide-in 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
-    box-sizing: border-box;
+  @media (prefers-reduced-motion: reduce) {
+    .first-guide,
+    .remote-tip,
+    .expert-tip,
+    .mini-btn {
+      animation: none;
+      transition: none;
+    }
+    .mini-btn:active {
+      transform: none;
+    }
   }
-  .expert-tip b {
-    color: var(--purple);
+  :global(.reduce-motion) .first-guide,
+  :global(.reduce-motion) .remote-tip,
+  :global(.reduce-motion) .expert-tip,
+  :global(.reduce-motion) .mini-btn {
+    animation: none;
+    transition: none;
+  }
+  :global(.reduce-motion) .mini-btn:active {
+    transform: none;
   }
 </style>

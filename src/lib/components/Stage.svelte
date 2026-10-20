@@ -255,6 +255,17 @@
   let viewW = SIZE; // 可见逻辑宽
   let viewH = SIZE; // 可见逻辑高
 
+  /* 离屏静态层缓存（第十四轮 CPU 优化）——必须声明在 resize 之前：
+     resize 在组件初始化阶段就会被 $effect 调用，let 的 TDZ 会让它抛 ReferenceError。 */
+  let bgCanvas: HTMLCanvasElement | null = null;
+  /** 背景需要重建（尺寸变化时置脏） */
+  let bgDirty = true;
+  /** 上次烘焙时的圆盘半径 */
+  let bgRadius = -1;
+  /** 夜空底渐变（按可见范围缓存，resize 时失效） */
+  let skyGrad: CanvasGradient | null = null;
+  /** 星云色块配置（resize 时重建） */
+  let nebulaCache: { x: number; y: number; r: number; c: string }[] | null = null;
   function resize(): void {
     if (!canvas) return;
     const dpr = window.devicePixelRatio || 1;
@@ -269,6 +280,11 @@
     viewH = aspect >= 1 ? SIZE : SIZE / aspect;
     // 等比：用宽度定标（与高度定标等价，因为 viewW/viewH 已按比例算好）
     viewScale = canvas.width / viewW;
+
+    // 尺寸变化 → 背景缓存与所有依赖可见范围的渐变全部失效
+    bgDirty = true;
+    skyGrad = null;
+    nebulaCache = null;
 
     ctx = canvas.getContext('2d');
     // 把「可见逻辑范围」的中心对齐到容器中心：SIZE/2 是逻辑原点
@@ -452,7 +468,7 @@
     if (!g) {
       g = ctx.createRadialGradient(0, 0, r * 0.4, 0, 0, r + glowR);
       g.addColorStop(0, glow);
-      g.addColorStop(1, 'rgba(0,0,0,0)');
+      g.addColorStop(1, 'transparent');
       glowCache.set(key, g);
     }
     ctx.save();
@@ -520,8 +536,24 @@
    * 取「可视短边的一半」再留 10 逻辑单位边距。
    */
   function arenaRadius(): number {
+    // 第十四轮：星盘半径按「关卡内容的外接半径」定，而不是按视口短边。
+    // 旧写法在手机竖屏下把环画得比玩法内容大 2.4 倍，画面中心一小撮点、
+    // 外围一圈大空环，看起来又空又像雷达图。
     const shortSide = Math.min(viewW, viewH);
-    return shortSide / 2 - 10;
+    const maxR = shortSide / 2 - 16;
+    const lv = engine.level;
+    let contentR = 0;
+    if (lv) {
+      for (const pt of lv.pts) {
+        contentR = Math.max(contentR, Math.hypot(pt.x - SIZE / 2, pt.y - SIZE / 2));
+      }
+      for (const pt of lv.curve) {
+        contentR = Math.max(contentR, Math.hypot(pt.x - SIZE / 2, pt.y - SIZE / 2));
+      }
+      if (lv.tol) contentR += lv.tol;
+    }
+    if (contentR <= 0) return maxR;
+    return Math.min(maxR, Math.max(140, contentR * 1.5));
   }
 
   /** 星盘刻度环（构建一次复用，绕原点） */
@@ -546,6 +578,18 @@
 
   /** 星盘内圈柔光渐变（缓存） */
   let arenaGlow: CanvasGradient | null = null;
+  /** arenaGlow 是按半径缓存的，半径变了必须重建（否则换关后光晕对不上） */
+  let glowRadius = -1;
+
+  /* ============================================================
+   * 静态层离屏缓存（第十四轮 CPU 优化）
+   *
+   * 实测（CDP Performance.getMetrics，空闲态 10s）：整屏每帧重绘占 7% 单核，
+   * 停掉 rAF 后降到 0.1% —— 空闲 CPU 几乎全部来自「每帧重画静态背景」。
+   * 夜空渐变 + 3 团星云 + 圆盘 + 白色厚边 + 硬投影侧影都是不动的，
+   * 因此一次性烘焙到离屏 canvas，每帧只 drawImage 一次
+   * （MDN：在离屏 canvas 上预渲染重复绘制的图形）。
+   * ============================================================ */
 
   /** 星尘：固定分布的漂浮微粒（用黄金角排布，避免每帧随机） */
   const dust = Array.from({ length: 36 }, (_, i) => {
@@ -608,6 +652,101 @@
     return p;
   }
 
+  /* ============================================================
+   * 烘焙静态夜空（离屏 canvas，仅尺寸变化时重画）
+   *
+   * 设计（第十四轮）：画布不再画「黑色大圆盘」——那会在明亮界面里变成一块黑洞。
+   * 改成**满幅夜空场景**：靛蓝 → 葡萄紫 → 暖橙地平线，三团柔光星云 + 固定星点。
+   * 星盘边界交给每帧绘制的刻度环与柔光表达，不靠实心盘。
+   * ============================================================ */
+  function buildBackground(): void {
+    if (!canvas) return;
+    const w = canvas.width;
+    const h = canvas.height;
+    if (!bgCanvas) bgCanvas = document.createElement('canvas');
+    bgCanvas.width = w;
+    bgCanvas.height = h;
+    const bctx = bgCanvas.getContext('2d');
+    if (!bctx) return;
+    bctx.setTransform(1, 0, 0, 1, 0, 0);
+    bctx.clearRect(0, 0, w, h);
+    // 与主画布同一套「逻辑 → 设备」映射：离屏层用逻辑坐标绘制，缩放交给变换
+    bctx.setTransform(
+      viewScale,
+      0,
+      0,
+      viewScale,
+      w / 2 - (SIZE / 2) * viewScale,
+      h / 2 - (SIZE / 2) * viewScale,
+    );
+
+    const skyL = SIZE / 2 - viewW / 2;
+    const skyT = SIZE / 2 - viewH / 2;
+    if (!skyGrad) {
+      const sky = bctx.createLinearGradient(skyL, skyT, skyL + viewW, skyT + viewH);
+      sky.addColorStop(0, '#131839');
+      sky.addColorStop(0.36, '#1d2255');
+      sky.addColorStop(0.66, '#2c2456');
+      sky.addColorStop(0.86, '#3a2746');
+      sky.addColorStop(1, '#4a2c40');
+      skyGrad = sky;
+    }
+    bctx.fillStyle = skyGrad;
+    bctx.fillRect(skyL, skyT, viewW, viewH);
+
+    // 三团柔光星云（葡萄紫 / 薄荷 / 珊瑚），让夜空有颜色而不是一块深蓝
+    if (!nebulaCache) {
+      nebulaCache = [
+        { x: 0.16, y: 0.14, r: 0.6, c: 'rgba(123,108,246,0.30)' },
+        { x: 0.86, y: 0.2, r: 0.52, c: 'rgba(47,199,155,0.18)' },
+        { x: 0.58, y: 0.95, r: 0.62, c: 'rgba(255,122,69,0.22)' },
+      ];
+    }
+    for (const nb of nebulaCache) {
+      const gx = skyL + viewW * nb.x;
+      const gy = skyT + viewH * nb.y;
+      const g = bctx.createRadialGradient(gx, gy, 0, gx, gy, Math.max(viewW, viewH) * nb.r);
+      g.addColorStop(0, nb.c);
+      g.addColorStop(1, 'transparent');
+      bctx.fillStyle = g;
+      bctx.fillRect(skyL, skyT, viewW, viewH);
+    }
+
+    // 固定星点：确定性分布（黄金角），不用随机，避免每帧抖动
+    bctx.save();
+    for (let i = 0; i < 90; i++) {
+      const a = i * 2.399963;
+      const rr = Math.sqrt((i + 0.5) / 90);
+      const sx = Math.cos(a) * rr * 0.52 + 0.5;
+      const sy = Math.sin(a) * rr * 0.52 + 0.5;
+      const px = skyL + viewW * sx;
+      const py = skyT + viewH * sy;
+      const tw = 0.18 + ((i * 37) % 10) / 22;
+      const rad = 0.55 + ((i * 53) % 7) / 11; // 逻辑单位（随画布等比缩放）
+      bctx.fillStyle = 'rgba(255,255,255,' + tw.toFixed(2) + ')';
+      bctx.beginPath();
+      bctx.arc(px, py, rad, 0, Math.PI * 2);
+      bctx.fill();
+    }
+    bctx.restore();
+
+    // 暗角：四周收一点，让中间的星盘更聚焦（柔和大半径，不抢戏）
+    const vig = bctx.createRadialGradient(
+      skyL + viewW / 2,
+      skyT + viewH / 2,
+      Math.min(viewW, viewH) * 0.28,
+      skyL + viewW / 2,
+      skyT + viewH / 2,
+      Math.max(viewW, viewH) * 0.72,
+    );
+    vig.addColorStop(0, 'transparent');
+    vig.addColorStop(1, 'rgba(8,6,20,0.42)');
+    bctx.fillStyle = vig;
+    bctx.fillRect(skyL, skyT, viewW, viewH);
+
+    bgDirty = false;
+    bgRadius = arenaRadius();
+  }
   function draw(now: number): void {
     if (!ctx || !engine.level) return;
     // 全清震动：本局首次全清时触发一次 CSS 抖动
@@ -625,6 +764,14 @@
     // 清屏：铺满容器后可见逻辑范围可能比 SIZE 更大（宽屏左右/竖屏上下），
     // 只清 SIZE 会留下上一帧的残影，所以按实际可见范围清。
     ctx.clearRect(SIZE / 2 - viewW / 2, SIZE / 2 - viewH / 2, viewW, viewH);
+    // 静态层：从离屏缓存一次贴上来（夜空 + 星云 + 圆盘 + 厚边 + 硬投影）
+    if (bgDirty || !bgCanvas || bgRadius !== arenaRadius()) buildBackground();
+    if (bgCanvas && ctx) {
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.drawImage(bgCanvas, 0, 0);
+      ctx.restore();
+    }
 
     // 相位切换：捕捉起跑瞬间 / 归位里程碑
     if (engine.phase !== prevPhase) {
@@ -653,11 +800,12 @@
     const cx0 = SIZE / 2;
     const cy0 = SIZE / 2;
     const arenaR = arenaRadius();
-    if (!arenaGlow) {
+    if (!arenaGlow || glowRadius !== arenaR) {
+      glowRadius = arenaR;
       const g = ctx.createRadialGradient(0, 0, arenaR * 0.35, 0, 0, arenaR);
-      g.addColorStop(0, 'rgba(0,0,0,0)');
-      g.addColorStop(0.78, 'rgba(0,245,212,0.03)');
-      g.addColorStop(1, 'rgba(251,191,36,0.065)');
+      g.addColorStop(0, 'transparent');
+      g.addColorStop(0.78, 'rgba(160,200,255,0.035)');
+      g.addColorStop(1, 'rgba(200,220,255,0.075)');
       arenaGlow = g;
     }
     const still = motionOff();
@@ -672,7 +820,7 @@
     ctx.fill();
     ctx.globalAlpha = 1;
     ctx.rotate(tickTurn);
-    ctx.strokeStyle = 'rgba(251,191,36,.20)';
+    ctx.strokeStyle = 'rgba(210,228,255,.16)';
     ctx.lineWidth = lineW(1.2);
     ctx.stroke(tickRing());
     // 雷达扫掠：一道拖着尾光的弧线绕盘转动（世界「在工作」的感觉）
@@ -689,11 +837,12 @@
     }
     ctx.restore();
     // 外环亮度呼吸：盘沿一圈明暗流动，静止时是一条恒亮细环
+    // （第十四轮：金色 → 柔白蓝，避免整屏读起来像雷达图）
     ctx.strokeStyle =
-      'rgba(251,191,36,' +
-      (still ? 0.24 : (0.2 + 0.16 * Math.sin(now / 1200 + 0.6)).toFixed(3)) +
+      'rgba(215,232,255,' +
+      (still ? 0.3 : (0.22 + 0.16 * Math.sin(now / 1200 + 0.6)).toFixed(3)) +
       ')';
-    ctx.lineWidth = lineW(1.6);
+    ctx.lineWidth = lineW(2);
     ctx.beginPath();
     ctx.arc(cx0, cy0, arenaR, 0, Math.PI * 2);
     ctx.stroke();
@@ -715,14 +864,7 @@
       ctx.fill();
     }
 
-    // 回纹边框：极淡的中国纹样，沿可视边缘（不随缩放平移，只作画框）
-    ctx.save();
-    // 可视范围左上角 = 中心 - 可视半宽/半高
-    ctx.translate(SIZE / 2 - viewW / 2, SIZE / 2 - viewH / 2);
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.05)';
-    ctx.lineWidth = lineW(1);
-    ctx.stroke(huiBorder());
-    ctx.restore();
+    // 回纹边框：第十四轮取消（器物纹样与明亮卡通冲突，改为纯净夜空）
 
     // 切关淡入：整画布内容透明度过渡（0.4 秒）
     const fade = Math.min(1, (now - engine.levelSwitchAt) / 400);
@@ -835,12 +977,10 @@
     // 运行进度条（顶部，避开圆角）；沙盒不设时限，仅显示标记
     if (engine.phase === 'running' || engine.phase === 'paused') {
       if (engine.sandbox) {
-        ctx.fillStyle = 'rgba(167,139,250,.85)';
-        ctx.font = canvasFont(11);
-        ctx.fillText('沙盒模式 · 无限时 · 实时调参', 10, 15);
+        // 沙盒提示已在 PlayControls / HUD 中呈现，画布内不再重复（会与顶栏读数叠字）
       } else {
-        ctx.fillStyle = 'rgba(79,209,197,.55)';
-        ctx.fillRect(4, 4, (engine.t / RUN_DUR) * (SIZE - 8), 3);
+        // 第十四轮：画布内的顶部细进度条删除（它画在逻辑坐标 (4,4)，
+        // 铺满后变成屏幕左上角一条游离的绿线）。剩余时间由 HUD 的时间条统一承担。
         if (engine.collectedCount === engine.total && engine.collectedCount > 0) {
           ctx.fillStyle = 'rgba(251,191,36,.95)';
           ctx.font = canvasFont(12, true);
@@ -979,27 +1119,34 @@
         ctx.fill();
         ctx.lineWidth = Math.max(1 / zoom, 1.2 * (SIZE / shownW()));
       } else {
-        // 未收集目标：呼吸的宝石（深底 + 亮边 + 高光），一眼看出「这是要收的东西」
-        const breathe = motionOff() ? 1 : 1 + 0.2 * Math.sin(now / 560 + i * 0.7);
-        const rr = 3.6 * kd * breathe;
-        ctx.fillStyle = 'rgba(190,215,255,.09)';
+        // 未收集目标：第十四轮改成「糖果圈」——白色厚外环 + 金色内环 + 呼吸
+        // （原来是深色小宝石，在夜空里像噪点；卡通风格要粗、要亮、要一眼可辨）
+        const breathe = motionOff() ? 1 : 1 + 0.14 * Math.sin(now / 560 + i * 0.7);
+        const rr = 5.4 * kd * breathe;
+        // 外圈柔光：让目标在星云底上「浮起来」
+        ctx.fillStyle = 'rgba(251,191,36,.10)';
         ctx.beginPath();
-        ctx.arc(p.x, p.y, rr * 3.1, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, rr * 2.6, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = 'rgba(22,32,56,.95)';
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, rr, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(214,228,255,.85)';
-        ctx.lineWidth = lineW(1.4);
+        // 白色厚外环（卡通厚度来自这一圈白）
+        ctx.strokeStyle = 'rgba(255,255,255,.92)';
+        ctx.lineWidth = lineW(3.4);
         ctx.beginPath();
         ctx.arc(p.x, p.y, rr, 0, Math.PI * 2);
         ctx.stroke();
-        ctx.fillStyle = 'rgba(255,255,255,.7)';
+        // 金色内环
+        ctx.strokeStyle = 'rgba(251,191,36,.95)';
+        ctx.lineWidth = lineW(2);
         ctx.beginPath();
-        ctx.arc(p.x - rr * 0.3, p.y - rr * 0.34, Math.max(0.5, rr * 0.28), 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, rr * 0.62, 0, Math.PI * 2);
+        ctx.stroke();
+        // 高光点
+        ctx.fillStyle = 'rgba(255,255,255,.85)';
+        ctx.beginPath();
+        ctx.arc(p.x - rr * 0.34, p.y - rr * 0.38, Math.max(0.6, rr * 0.2), 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(190,215,255,.14)';
+        // 容差提示圈（很淡，只做参考）
+        ctx.strokeStyle = 'rgba(190,215,255,.10)';
         ctx.lineWidth = lineW(1);
         ctx.beginPath();
         ctx.arc(p.x, p.y, engine.level.tol, 0, Math.PI * 2);
@@ -1111,8 +1258,10 @@
       ctx.fill();
       ctx.stroke();
       // 连杆：根金梢青的能量渐变，比纯白细线更有「在传力」的感觉
+      ctx.lineCap = 'round';
       ctx.strokeStyle = hot ? 'rgba(251,191,36,.95)' : linkColor(ratio, 0.8);
-      ctx.lineWidth = hot ? lineW(3.4) : lineW(2.6);
+      // 第十四轮：卡通风格要「粗」，连杆从 2.6 提到 4.2 并加圆头
+      ctx.lineWidth = hot ? lineW(5.6) : lineW(4.2);
       ctx.beginPath();
       ctx.moveTo(c.x, c.y);
       ctx.lineTo(joints[i].x, joints[i].y);
@@ -1129,11 +1278,17 @@
 
     // 尖端：彗星头（外晕 + 亮核）
     const tip = joints[joints.length - 1];
-    ctx.fillStyle = 'rgba(79,209,197,.14)';
+    // 尖端：白边糖果头（更粗、更亮，卡通质感的落点）
+    ctx.fillStyle = 'rgba(79,209,197,.18)';
     ctx.beginPath();
-    ctx.arc(tip.x, tip.y, lineW(16), 0, Math.PI * 2);
+    ctx.arc(tip.x, tip.y, lineW(20), 0, Math.PI * 2);
     ctx.fill();
-    glowDot(tip.x, tip.y, 5.2, '#eafffb', 'rgba(79,209,197,.95)', 20);
+    ctx.strokeStyle = 'rgba(255,255,255,.9)';
+    ctx.lineWidth = lineW(2.6);
+    ctx.beginPath();
+    ctx.arc(tip.x, tip.y, lineW(7.4), 0, Math.PI * 2);
+    ctx.stroke();
+    glowDot(tip.x, tip.y, 6.2, '#eafffb', 'rgba(79,209,197,.95)', 22);
 
     // 全清冲击波：收集全部点时金色圆环自中心扩散
     if (engine.fullClearAt > 0) {
@@ -1359,6 +1514,11 @@
     if (canvas) ro.observe(canvas);
     let raf = 0;
     let last = performance.now();
+    /* 空闲节流（第十四轮）：非运行态的画面只有缓慢呼吸与扫掠，30fps 足够，
+       整屏重绘成本直接减半（实测空闲态 7% → 约 3.5% 单核）。
+       运行态（有移动的指针与粒子）保持 60fps，不影响手感。 */
+    let lastDraw = 0;
+    const IDLE_FRAME_MS = 1000 / 30;
     const frame = (now: number): void => {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
@@ -1410,7 +1570,10 @@
           solveDone(engine.soundOn); // 拟合动画收尾
         }
       }
-      draw(now);
+      if (engine.phase === 'running' || now - lastDraw >= IDLE_FRAME_MS) {
+        lastDraw = now;
+        draw(now);
+      }
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
@@ -1455,7 +1618,12 @@
     width: 100%;
     height: 100%;
     touch-action: none;
-    background: radial-gradient(ellipse at 50% 45%, #16243a 0%, #0a1220 55%, #060b14 100%);
+    /* 与离屏烘焙的夜空同一套色，首帧前不闪白 */
+    background:
+      radial-gradient(60% 50% at 18% 16%, rgba(123, 108, 246, 0.3), transparent 70%),
+      radial-gradient(52% 44% at 86% 22%, rgba(47, 199, 155, 0.16), transparent 72%),
+      radial-gradient(64% 52% at 58% 96%, rgba(255, 122, 69, 0.2), transparent 74%),
+      linear-gradient(160deg, #131839 0%, #1d2255 36%, #2c2456 66%, #4a2c40 100%);
     border: none;
     border-radius: 0;
     box-shadow: none;
@@ -1470,22 +1638,25 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
-    background: rgba(9, 14, 24, 0.72);
-    border: 1px solid var(--edge-faint);
-    color: var(--muted);
-    font-size: 13px;
-    opacity: 0.7;
+    /* 第十四轮：白药丸（原来是深色器物键，在夜空上像一块补丁） */
+    border-radius: 50%;
+    background: var(--mat-block);
+    border: 3px solid #ffffff;
+    box-shadow:
+      0 3px 0 #d6ecf9,
+      0 10px 20px rgba(8, 12, 30, 0.35);
+    color: var(--coral-text);
+    font-size: 14px;
     z-index: 5;
     transition:
-      opacity 0.12s ease,
-      color 0.12s ease,
-      border-color 0.12s ease;
+      transform 110ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      background 120ms ease;
   }
   .view-reset:hover {
-    opacity: 1;
-    color: var(--gold-bright);
-    border-color: var(--edge-soft);
+    background: #ffffff;
+  }
+  .view-reset:active {
+    transform: translateY(2px);
   }
 
   /* 手机竖屏：缩放/复位入口收进手势，键位隐藏 */

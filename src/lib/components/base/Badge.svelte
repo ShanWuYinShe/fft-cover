@@ -27,10 +27,8 @@
 
 <style>
   /* ============================================================
-   * 第五轮：徽章 = 器物。
-   * - 普通徽章 → 玉牌（.g-chip：青碧面 + 内凹 + 4px 圆角）
-   * - 危险/锁定 → 朱印（.g-seal：朱砂面 + 亮边 + -2° 旋转）
-   * 组件只补尺寸档位与各变体的字色，形态交给公共件。
+   * 徽章：白卡药丸（.g-chip）+ 糖果字色。
+   * 金色/朱砂写死色全部换成 --coral / --danger 语义令牌。
    * ============================================================ */
   .badge {
     display: inline-flex;
@@ -38,7 +36,7 @@
     justify-content: center;
     gap: 4px;
     box-sizing: border-box;
-    font-weight: 700;
+    font-weight: 800;
     line-height: 1;
     letter-spacing: 0.5px;
     white-space: nowrap;
@@ -49,74 +47,36 @@
   }
 
   .badge-sm {
-    /* 芯片最小档：桌面 22 / 触屏 32 */
     min-height: var(--ctl-xs);
-    /* 铭牌标签字号下限 11px（第二轮字号收敛规则） */
-    font-size: 11px;
-    padding: 1px 6px;
+    font-size: var(--fs-xs);
+    padding: 2px 8px;
   }
 
   .badge-md {
     min-height: var(--ctl-sm);
     font-size: var(--ctl-font-sm);
-    padding: 2px 8px;
+    padding: 3px 10px;
   }
 
-  /* 玉牌上的变体只改字色/描边色，面仍是青碧（玉牌语义） */
+  /* 变体只改字色（--coral / --mint / --grape），面仍是白卡 */
   .badge-gold {
-    color: var(--gold-bright);
-    border-color: rgba(245, 184, 65, 0.42);
-  }
-
-  .badge-purple {
-    color: var(--purple);
-    border-color: rgba(167, 139, 250, 0.45);
-  }
-
-  .badge-muted {
-    color: var(--muted);
-    border-color: var(--line-quiet);
-  }
-
-  /* 朱印：字色/字距随印面 */
-  .badge-cinnabar {
-    letter-spacing: 1.5px;
-  }
-
-  .badge-gold {
-    background:
-      linear-gradient(180deg, rgba(245, 184, 65, 0.2), rgba(245, 184, 65, 0.06)),
-      linear-gradient(180deg, #18243c 0%, #0d1524 60%, #080e19 100%);
-    color: var(--gold-bright);
-    border-color: rgba(245, 184, 65, 0.42);
+    color: var(--coral-text);
   }
 
   .badge-cyan {
-    background:
-      linear-gradient(180deg, rgba(0, 245, 212, 0.18), rgba(0, 245, 212, 0.05)),
-      linear-gradient(180deg, #14283a 0%, #0b1a24 60%, #071319 100%);
-    color: var(--cyan);
-    border-color: rgba(0, 245, 212, 0.4);
-  }
-
-  .badge-cinnabar {
-    background:
-      linear-gradient(180deg, rgba(217, 43, 43, 0.22), rgba(217, 43, 43, 0.06)),
-      linear-gradient(180deg, #2a1620 0%, #1a0d14 60%, #12080d 100%);
-    color: #fca5a5;
-    border-color: rgba(217, 43, 43, 0.45);
+    color: var(--mint-edge);
   }
 
   .badge-purple {
-    background:
-      linear-gradient(180deg, rgba(167, 139, 250, 0.2), rgba(167, 139, 250, 0.05)),
-      linear-gradient(180deg, #1e1a35 0%, #131024 60%, #0c0a18 100%);
-    color: var(--purple);
-    border-color: rgba(167, 139, 250, 0.45);
+    color: var(--grape-deep);
   }
 
   .badge-muted {
-    color: var(--muted);
-    border-color: var(--line-quiet);
+    color: var(--muted-2);
+  }
+
+  /* 朱印：字色/字距随印面；印面由 .g-seal 给（--danger 系） */
+  .badge-cinnabar {
+    letter-spacing: 1px;
   }
 </style>

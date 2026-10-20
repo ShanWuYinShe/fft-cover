@@ -36,30 +36,42 @@
 </Drawer>
 
 <style>
+  .starmap-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
   .sm-title {
     display: flex;
     align-items: center;
     gap: 10px;
     min-width: 0;
-    font-size: var(--fs-lg);
-    font-weight: 700;
-    color: var(--gold-bright);
-    letter-spacing: 2px;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: 0.5px;
   }
 
   .sm-name {
     white-space: nowrap;
   }
 
-  /* 星数读数：等宽小字，安静地跟在标题后面 */
+  /* 星数读数：珊瑚 tabular 数字，安静地跟在标题后面 */
   .sm-count {
-    font-size: var(--fs-sm);
-    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: var(--r-pill);
+    background: var(--line-2);
+    font-size: 13px;
+    font-weight: 700;
     color: var(--muted);
     letter-spacing: 0;
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   }
+
   .sm-count b {
-    color: var(--gold-bright);
+    color: var(--coral-edge);
+    font-weight: 900;
   }
 </style>

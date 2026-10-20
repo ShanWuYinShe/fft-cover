@@ -66,7 +66,7 @@
 
 <style>
   /* ============================================================
-   * 顶栏：通栏但不抢戏——安静的面，只有「去星图」是按键
+   * 顶栏（第十四轮）：白卡厚条 + 三颗独立药丸，不做通栏底色
    * ============================================================ */
   .game-hud-bar {
     position: relative;
@@ -76,24 +76,12 @@
     gap: 12px;
     height: 100%;
     width: 100%;
-    /* 左右内边距对称：三段贴边距离一致 */
-    padding: 0 var(--space-3);
+    padding: 8px 4px;
     box-sizing: border-box;
-    /* 顶栏 = 天穹铜梁：装甲板面料 + 底部一道内框发丝线 */
-    background: var(--mat-plate);
-    border-bottom: 1px solid var(--mat-frame-line);
-    box-shadow: var(--mat-plate-shadow);
+    background: transparent;
   }
   .game-hud-bar::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    bottom: -1px;
-    width: 34%;
-    height: 1px;
-    transform: translateX(-50%);
-    background: linear-gradient(90deg, transparent, var(--edge-bronze-hot), transparent);
-    pointer-events: none;
+    content: none;
   }
 
   .hud-left {
@@ -104,156 +92,163 @@
     flex: 1 1 0;
   }
 
-  /* ---------- 安静按键：凹槽面 + 细铜边，没有发光 ---------- */
+  /* ---------- 药丸键：白卡 + 3px 白边 + 硬投影 ---------- */
   .hud-quiet-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     height: var(--ctl-md);
-    padding: 0 10px 0 8px;
-    border-radius: var(--ctl-radius);
-    background: var(--groove-bg);
-    border: 1px solid var(--edge-bronze);
-    box-shadow: var(--groove-shadow);
-    color: var(--muted);
+    padding: 0 16px 0 12px;
+    border-radius: var(--r-pill);
+    background: var(--mat-block);
+    border: 3px solid #ffffff;
+    box-shadow:
+      0 3px 0 #d6ecf9,
+      0 10px 20px rgba(56, 116, 150, 0.14);
+    color: var(--text);
+    font-family: var(--font-round);
     font-size: var(--ctl-font);
-    font-weight: 600;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    cursor: pointer;
     transition:
-      background 0.12s ease,
-      box-shadow 0.12s ease,
-      color 0.12s ease;
+      transform 110ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      background 120ms ease;
   }
   .hud-quiet-btn:hover {
-    background: var(--face-plate-hot);
-    border-color: var(--edge-bronze-hot);
-    color: var(--gold-bright);
+    background: #ffffff;
   }
   .hud-quiet-btn:active {
-    transform: translateY(1px);
+    transform: translateY(2px);
   }
   .hud-quiet-btn:focus-visible {
-    background: var(--face-plate-hot);
-    border-color: var(--edge-bronze-hot);
-    color: var(--gold-bright);
+    outline: 3px solid var(--sky-deep);
+    outline-offset: 2px;
   }
+  .hud-quiet-btn.active {
+    background: var(--face-gold-plate);
+    border-color: #ffffff;
+    color: #ffffff;
+    box-shadow: 0 3px 0 var(--coral-edge);
+  }
+
   .hud-quiet-btn.icon-only {
     width: var(--ctl-md);
     padding: 0;
     justify-content: center;
-    /* 与左端「关卡」入口的图标同色同尺寸，三段视觉重量一致 */
-    color: var(--gold);
-  }
-  .hud-quiet-btn.icon-only:hover,
-  .hud-quiet-btn.icon-only:focus-visible {
-    color: var(--gold-bright);
-  }
-  .hud-quiet-btn.active {
-    background: var(--gold-dim);
-    border-color: var(--edge-bronze-hot);
-    color: var(--gold-bright);
+    border-radius: 50%;
   }
 
   .btn-ico {
     display: inline-flex;
-    color: var(--gold);
+    color: var(--coral-text);
+  }
+  .hud-quiet-btn.active .btn-ico {
+    color: #ffffff;
   }
 
+  .btn-text {
+    white-space: nowrap;
+  }
+
+  /* 星数：珊瑚数字 + 浅蓝总数 */
   .hud-stars {
-    font-size: var(--ctl-font-sm);
-    color: var(--gold-bright);
-    font-weight: 700;
-    background: var(--gold-dim);
-    border-radius: var(--r-sm);
-    padding: 2px 7px;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1px;
+    font-size: var(--ctl-font);
+    font-weight: 900;
+    color: var(--coral-text);
+    letter-spacing: 0;
   }
   .hud-stars i {
     font-style: normal;
-    opacity: 0.6;
-    font-weight: 600;
+    font-size: var(--ctl-font-sm);
+    font-weight: 800;
+    color: var(--muted-2);
+  }
+  .hud-quiet-btn.active .hud-stars,
+  .hud-quiet-btn.active .hud-stars i {
+    color: #ffffff;
   }
 
-  /* ---------- 中央品牌：只是回家的入口，不再发光 ---------- */
-  .brand-ring {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--ctl-xs);
-    height: var(--ctl-xs);
-    color: var(--bronze-bright);
-  }
-
+  /* ---------- 中间品牌：白药丸，圆体大字 ---------- */
   .hud-center-brand {
     display: flex;
     align-items: center;
     justify-content: center;
     flex: 0 1 auto;
+    min-width: 0;
   }
+
   .brand-btn {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-2);
-    /* 与左右两端的按键同高：三段在顶栏里是同一层级的入口 */
-    min-height: var(--ctl-md);
-    padding: 0 10px;
-    border-radius: var(--ctl-radius);
-    border: 1px solid transparent;
-    transition:
-      border-color 0.12s ease,
-      background 0.12s ease;
+    gap: 10px;
+    height: var(--ctl-md);
+    padding: 0 18px;
+    border-radius: var(--r-pill);
+    background: var(--mat-block);
+    border: 3px solid #ffffff;
+    box-shadow:
+      0 3px 0 #d6ecf9,
+      0 10px 20px rgba(56, 116, 150, 0.14);
+    cursor: pointer;
+    transition: transform 110ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .brand-btn:hover {
-    border-color: var(--edge-bronze);
-    background: var(--gold-dim);
+    background: #ffffff;
   }
+  .brand-btn:active {
+    transform: translateY(2px);
+  }
+  .brand-btn:focus-visible {
+    outline: 3px solid var(--sky-deep);
+    outline-offset: 2px;
+  }
+
+  .brand-ring {
+    display: inline-flex;
+    color: var(--coral-text);
+  }
+
   .title-brand {
-    font-size: var(--fs-lg);
-    font-weight: 700;
-    color: var(--text);
+    font-family: var(--font-round);
+    font-size: var(--ctl-font);
+    font-weight: 900;
     letter-spacing: 3px;
+    color: var(--text);
     white-space: nowrap;
   }
-  .brand-btn:hover .title-brand {
-    color: var(--gold-bright);
-  }
+
   .brand-seal {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text);
-    background: var(--face-seal);
-    padding: 2px 5px;
-    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    border-radius: var(--r-pill);
+    background: var(--coral-solid);
+    color: #ffffff;
+    font-size: var(--fs-xs);
+    font-weight: 900;
     letter-spacing: 1px;
-    line-height: 1.2;
+    white-space: nowrap;
   }
 
   .hud-right-actions {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: var(--space-2);
     flex: 1 1 0;
-    justify-content: flex-end;
+    min-width: 0;
   }
 
-  /* 中等宽度：收起文字，只留图标 */
-  @media (max-width: 1000px) {
-    .btn-text {
-      display: none;
-    }
+  @media (max-width: 1024px) {
     .title-brand {
-      font-size: 14px;
+      font-size: var(--ctl-font-sm);
       letter-spacing: 2px;
     }
-  }
-
-  /* 手机（竖屏/横屏）走画布内 HUD，顶栏让位给画布 */
-  @media (max-width: 640px) and (orientation: portrait) {
-    .game-hud-bar {
-      display: none;
-    }
-  }
-  @media (max-width: 900px) and (orientation: landscape) {
-    .game-hud-bar {
+    .brand-seal {
       display: none;
     }
   }

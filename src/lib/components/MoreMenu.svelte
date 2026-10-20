@@ -81,7 +81,7 @@
 </script>
 
 <!-- 注意：.mm / .mm-btn / .mm-pop 三个类名是 ResultOverlay 的 :global() 钩子，不能改名。
-     降噪版：无四角包边、无外发光；菜单项统一 44px、图标 + 文字两层结构。 -->
+     糖果版：白卡弹出层 + 硬投影；菜单项图标 + 文字两层结构。 -->
 <div class="mm" bind:this={root}>
   <button
     type="button"
@@ -126,62 +126,72 @@
     display: inline-flex;
   }
 
-  /* 触发键：键帽（外形/四态来自公共件 .g-btn--icon），这里只补「展开态」 */
+  /* 触发键：白面圆键（外形/四态来自公共件 .g-btn--icon），这里只补「展开态」 */
   .mm-btn {
     box-sizing: border-box;
     color: var(--muted);
   }
 
-  /* 展开态 = 键槽点亮（铜边变金 + 面提亮），与公共件选中语义一致 */
   .mm-btn[aria-expanded='true'] {
-    background: var(--edge-bronze-hot);
-    color: var(--gold-bright);
+    color: var(--coral-text);
   }
 
   .mm-btn[aria-expanded='true']::before {
-    background: var(--face-plate-hot);
+    background: var(--coral-dim);
   }
 
-  /* 三点省略号：用三根金属条画，不用 Unicode 字符 */
+  /* 三点省略号：三个糖果圆点，不用 Unicode 字符 */
   .mm-dots {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 4px;
   }
+
   .mm-dots i {
     display: block;
     width: 4px;
     height: 4px;
-    border-radius: 1px;
+    border-radius: 50%;
     background: var(--muted);
     transition: background 0.15s ease;
   }
+
   .mm-btn:hover .mm-dots i,
   .mm-btn[aria-expanded='true'] .mm-dots i {
-    background: var(--gold-bright);
+    background: var(--coral-deep);
   }
 
-  /* 弹出菜单：一层描边 + 安静的投影 */
+  /* 弹出菜单：白卡 + 3px 白边 + 硬投影 */
+  .mm-pop::before {
+    content: none;
+  }
+
   .mm-pop {
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
     z-index: 30;
-    min-width: 180px;
-    max-width: min(300px, 86vw);
+    min-width: 200px;
+    max-width: min(320px, 86vw);
     display: flex;
     flex-direction: column;
-    gap: 1px;
-    padding: 5px;
+    gap: 2px;
+    padding: 7px;
+    background: var(--mat-plate);
+    border: 3px solid #ffffff;
+    border-radius: var(--r-md);
+    box-shadow: var(--sh-3);
     animation: mm-in 180ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
     max-height: calc(100dvh - 40px);
     overflow-y: auto;
   }
+
   .mm-pop.up {
     top: auto;
     bottom: calc(100% + 8px);
   }
+
   @keyframes mm-in {
     from {
       opacity: 0;
@@ -193,24 +203,23 @@
     }
   }
 
-  /* 键帽行：左 socket 图标槽 + 中部标签 + 右端快捷键键帽 */
+  /* 菜单项行：图标槽 + 标签 + 右端快捷键 */
   .mm-pop .mm-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
-    /* 桌面 34 / 触屏 44（触屏仍满足 ≥40 命中区） */
-    min-height: 34px;
-    padding: 3px 8px;
+    min-height: 40px;
+    padding: 6px 10px;
     text-align: left;
-    border-radius: 3px;
-    border: 1px solid transparent;
+    border-radius: var(--r-sm);
+    border: none;
     background: transparent;
     color: var(--text);
     font: inherit;
-    font-size: var(--ctl-font);
-    font-weight: 600;
-    letter-spacing: 0.5px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
     white-space: nowrap;
     cursor: pointer;
     transition:
@@ -251,16 +260,16 @@
   }
 
   .mm-pop .mm-item:hover:not(:disabled) {
-    background: rgba(245, 184, 65, 0.1);
-    color: var(--gold-bright);
+    background: var(--line-2);
+    color: var(--coral-edge);
   }
 
   .mm-pop .mm-item:focus-visible {
-    outline: 2px solid var(--edge-hot);
+    outline: 3px solid var(--sky-deep);
     outline-offset: -2px;
   }
 
-  /* 图标尺寸随控件收（令牌驱动，触屏自动放大）；图标嵌在 .g-socket 键槽里 */
+  /* 图标尺寸随控件收（令牌驱动，触屏自动放大） */
   .mm-pop .mi :global(svg) {
     width: var(--ctl-icon-sm);
     height: var(--ctl-icon-sm);
@@ -271,8 +280,11 @@
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    width: 20px;
-    color: var(--muted);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg-bay-inset);
+    color: var(--coral-text);
     transition: color 0.12s ease;
   }
 
@@ -284,39 +296,39 @@
     text-overflow: ellipsis;
   }
 
-  /* 快捷键键帽：仅当调用方传 hint 时才渲染（{#if it.hint}） */
+  /* 快捷键键帽：白药丸小牌（仅当调用方传 hint 时才渲染） */
   .mm-pop .mm-hint {
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 18px;
-    height: 16px;
-    padding: 0 4px;
-    border-radius: 3px;
-    background: linear-gradient(180deg, #0a1120, #060b14);
-    box-shadow:
-      inset 0 1px 3px rgba(0, 0, 0, 0.8),
-      0 0 0 1px rgba(201, 162, 74, 0.32);
+    min-width: 22px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: var(--r-sm);
+    background: var(--mat-block);
+    border: 1px solid var(--line);
+    box-shadow: 0 1px 0 var(--line);
     color: var(--muted);
-    font-size: 10px;
-    letter-spacing: 0.5px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
   }
 
   .mm-pop .mm-item:hover:not(:disabled) .mi {
-    color: var(--gold-bright);
+    color: var(--coral-text);
   }
 
   .mm-pop .mm-item:disabled {
-    color: var(--muted);
-    opacity: 0.5;
+    color: var(--muted-2);
+    opacity: 0.6;
     cursor: default;
   }
 
-  /* 触屏档位由 pointer: coarse 令牌决定，菜单项补到 44px */
+  /* 触屏档位由 pointer: coarse 令牌决定，菜单项补到 46px */
   @media (pointer: coarse) {
     .mm-pop .mm-item {
-      min-height: 44px;
+      min-height: 46px;
     }
   }
 

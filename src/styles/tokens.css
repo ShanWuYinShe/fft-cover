@@ -1,16 +1,22 @@
 /* ============================================================
- * 浑天璇玑 · 设计令牌 (Design Tokens)
- * 兼容原有变量名，同时提供规范的语义化令牌
+ * 浑天璇玑 · 设计令牌（第十四轮「糖果星域」重制）
+ *
+ * 风格：明亮卡通 · 糖果色 + 厚卡纸。三条纪律：
+ *  1. 层次靠「厚边 + 硬偏移投影 + 同色相暗部」，不靠黑色阴影；
+ *  2. 一种主色（珊瑚橙）+ 一种辅助色（薄荷绿）+ 一种点缀（天蓝/葡萄紫），
+ *     状态色只有危险红；不允许五色竞争；
+ *  3. 所有文字色按 WCAG 在「白卡面」上核算（注释里带实测比值），
+ *     浅底上永远不用浅色字。
  * ============================================================ */
 
 :root {
-  /* --- 颜色：背景层级（暖墨舱体：深空之下是青铜，不是蓝黑） --- */
-  --bg: #0a0805;
-  --bg-2: #14100a;
-  --bg-chassis: #0d0a06;
-  --bg-bay-inset: #070503;
-  --surface-armor: #2a2114;
-  --surface-keycap: #3a2e1b;
+  /* --- 背景层级：天空 → 云 → 奶油 --- */
+  --bg: #bfe3ff;
+  --bg-2: #ffffff;
+  --bg-chassis: #eaf7ff;
+  --bg-bay-inset: #dcf1fd;
+  --surface-armor: #ffffff;
+  --surface-keycap: #f2faff;
 
   --color-bg-deep: var(--bg);
   --color-bg-surface: var(--bg-2);
@@ -19,106 +25,147 @@
   --color-bg-elevated: var(--surface-armor);
   --color-surface-keycap: var(--surface-keycap);
 
-  /* --- 颜色：面板与微质感 --- */
-  --panel: rgba(20, 16, 10, 0.94);
-  --panel-2: rgba(20, 16, 10, 0.6);
+  /* --- 面板与遮罩 --- */
+  --panel: rgba(255, 255, 255, 0.96);
+  --panel-2: rgba(255, 255, 255, 0.78);
   --color-panel: var(--panel);
   --color-panel-translucent: var(--panel-2);
 
-  /* --- 颜色：边框与分割线 --- */
-  --line: rgba(201, 162, 74, 0.22);
-  --line-2: rgba(255, 255, 255, 0.05);
-  --line-quiet: rgba(201, 162, 74, 0.12);
-  --line-bright: rgba(255, 209, 102, 0.5);
-
+  /* --- 描边与分割线（浅蓝发丝，不用灰） --- */
+  --line: #cfe8f8;
+  --line-2: #e3f3fc;
+  --line-quiet: #eaf7fe;
+  --line-bright: #8fc9e8;
   --color-border: var(--line);
   --color-border-subtle: var(--line-2);
   --color-border-quiet: var(--line-quiet);
   --color-border-bright: var(--line-bright);
 
-  /* --- 颜色：浑天灵色 (Celestial Accents) --- */
-  --cyan: #00f5d4;
-  --cyan-dim: rgba(0, 245, 212, 0.12);
-  --cyan-line: rgba(0, 245, 212, 0.35);
-  --holo-cyan: #00f5d4;
+  /* ============================================================
+   * 灵色（允许出现在 UI 上的三个色相 + 一个危险色）
+   * 注意：画布语义色（金目标 / 青指针 / 紫轨迹 / 红警示）硬编码在 Stage.svelte，
+   * 属于用户明确要求保留的部分，不在本节管辖内。
+   * ============================================================ */
 
-  --color-cyan: var(--cyan);
-  --color-cyan-dim: var(--cyan-dim);
-  --color-cyan-line: var(--cyan-line);
+  /* 主色：珊瑚橙（能量 / 主操作 / 焦点） */
+  --coral: #ff7a45;
+  --coral-bright: #ffa06b;
+  --coral-deep: #e2552a;
+  --coral-edge: #c8451d;
+  --coral-ink: #4a1a00; /* 珊瑚面上唯一可用的深字（5.5:1） */
+  /* 文字/图标专用的珊瑚深色：白底 5.55:1、浅蓝卡面 5.31:1
+     （--coral-deep 只有 3.77:1，只能当面，不能当字） */
+  --coral-text: #b5431a;
+  /* 需要「白字压珊瑚」时的实心底：白字 5.55:1（--coral 只有 2.59:1） */
+  --coral-solid: #b5431a;
+  --coral-dim: rgba(255, 122, 69, 0.16);
 
-  --purple: #a78bfa;
-  --purple-dim: rgba(167, 139, 250, 0.12);
-  --holo-purple: #9d4edd;
+  /* 辅助色：薄荷（成功 / 启用 / 进度） */
+  --mint: #2fc79b;
+  --mint-bright: #6fe0bf;
+  --mint-deep: #0f9484;
+  --mint-edge: #0a776b;
+  --mint-ink: #073a34; /* 薄荷面上深字（7.5:1） */
+  --mint-dim: rgba(47, 199, 155, 0.18);
 
-  --color-purple: var(--purple);
-  --color-purple-dim: var(--purple-dim);
+  /* 点缀：天蓝（信息 / 选中）/ 葡萄紫（特殊 / 高级） */
+  --sky: #4aa8d8;
+  --sky-deep: #1f7fa8;
+  --sky-ink: #06344a;
+  --sky-dim: rgba(74, 168, 216, 0.18);
 
-  --gold: #f5b841;
-  --gold-bright: #ffd166;
-  --gold-dim: rgba(245, 184, 65, 0.14);
-  --imperial-gold: #f5b841;
+  --grape: #7b6cf6;
+  --grape-deep: #5b46b8; /* 6.97:1 on white */
+  --grape-dim: rgba(123, 108, 246, 0.16);
 
+  /* 危险：朱红（只用于结束 / 删除 / 失败） */
+  --danger: #e0473a;
+  --danger-deep: #b3261e; /* 6.54:1 on white */
+  --danger-edge: #8f1c16;
+  --danger-dim: rgba(224, 71, 58, 0.16);
+
+  /* ============================================================
+   * 兼容层：旧令牌名全部保留（组件依赖），值重映射到糖果配色。
+   * 新代码请优先使用上面的语义名。
+   * ============================================================ */
+
+  /* --gold 曾用于「金色装饰/文字」，现在= 珊瑚主色 */
+  --gold: var(--coral);
+  --gold-bright: #c8451d; /* 浅底上可读的珊瑚深色，5.2:1 → 文字/图标专用 */
+  --gold-dim: var(--coral-dim);
+  --imperial-gold: var(--coral);
   --color-gold: var(--gold);
   --color-gold-bright: var(--gold-bright);
   --color-gold-dim: var(--gold-dim);
 
-  --cinnabar: #d92b2b;
-  --cinnabar-seal: #d92b2b;
-  --cinnabar-dim: rgba(217, 43, 43, 0.14);
-  --cinnabar-line: rgba(217, 43, 43, 0.48);
+  /* --cyan 曾用于「能量青」，现在= 薄荷深色（浅底可读） */
+  --cyan: var(--mint-deep);
+  --cyan-dim: var(--mint-dim);
+  --cyan-line: var(--mint-edge);
+  --holo-cyan: var(--mint);
+  --color-cyan: var(--cyan);
+  --color-cyan-dim: var(--cyan-dim);
+  --color-cyan-line: var(--cyan-line);
 
+  --purple: var(--grape);
+  --purple-dim: var(--grape-dim);
+  --holo-purple: var(--grape-deep);
+  --color-purple: var(--purple);
+  --color-purple-dim: var(--purple-dim);
+
+  --cinnabar: var(--danger);
+  --cinnabar-seal: var(--danger-deep);
+  --cinnabar-dim: var(--danger-dim);
+  --cinnabar-line: var(--danger-deep);
   --color-cinnabar: var(--cinnabar);
   --color-cinnabar-dim: var(--cinnabar-dim);
   --color-cinnabar-line: var(--cinnabar-line);
 
-  --jade: #10b981;
-  --moon: #f1f5f9;
+  --jade: var(--mint);
+  --moon: #f4fbff;
   --color-jade: var(--jade);
   --color-moon: var(--moon);
 
-  /* --- 颜色：文字排版（暖白 + 青铜灰，跟舱体同源）
-     对比度按「面板最亮端 --mat-hi」核算：text ≈11:1 / muted ≈5.8:1 / muted-2 ≈4.7:1。
-     面板比第五轮亮了一档（青铜面料），文字必须跟着提亮，否则正文会掉到 3.6:1。 --- */
-  --text: #f5eddd;
-  --muted: #bda887;
-  --muted-2: #b09a72;
-
+  /* --- 文字（对比度按白卡面 #ffffff 实测）
+     text   #16455b = 10.3:1
+     muted  #2f6580 =  6.3:1（正文下限）
+     muted2 #4a7d93 =  4.8:1（小字/辅助） --- */
+  --text: #16455b;
+  --muted: #2f6580;
+  --muted-2: #4a7d93;
   --color-text: var(--text);
   --color-text-muted: var(--muted);
   --color-text-dim: var(--muted-2);
 
-  /* --- 几何切角：第七轮取消 ---
-     切角与圆角并存会让每个控件出现「第八个角」，是拟物噪点的主要来源。
-     第七轮已把组件层的切角调用全部清除，这里保留令牌名并置 none，
-     仅作为「旧写法兜底」；新代码一律用下面的 --r-* 圆角。 */
+  /* --- 切角：彻底取消（圆角即正义） --- */
   --chamfer-lg: none;
   --chamfer-md: none;
   --chamfer-sm: none;
   --chamfer-cut: none;
 
-  /* --- 圆角 --- */
-  --r-sm: 6px;
-  --r-md: 9px;
-  --r-lg: 14px;
+  /* --- 圆角：厚卡纸的大圆角 --- */
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 28px;
+  --r-xl: 36px;
   --r-pill: 999px;
-
   --radius-sm: var(--r-sm);
   --radius-md: var(--r-md);
   --radius-lg: var(--r-lg);
   --radius-pill: var(--r-pill);
 
-  /* --- 阴影与光晕（柔而大：游戏面板靠材质分层，不靠硬投影） --- */
-  --sh-1: 0 6px 18px rgba(0, 0, 0, 0.45);
-  --sh-2: 0 14px 36px rgba(0, 0, 0, 0.55);
-  --sh-glow: 0 0 18px rgba(0, 245, 212, 0.28);
-  --sh-gold-glow: 0 0 20px rgba(245, 184, 65, 0.3);
-
+  /* --- 阴影：硬偏移（厚度）+ 大柔光（浮起），永远不用纯黑 --- */
+  --sh-1: 0 3px 0 #d6ecf9, 0 10px 22px rgba(56, 116, 150, 0.14);
+  --sh-2: 0 6px 0 #cfe7f6, 0 20px 40px rgba(56, 116, 150, 0.18);
+  --sh-3: 0 8px 0 #c5e2f4, 0 30px 60px rgba(56, 116, 150, 0.22);
+  --sh-glow: 0 0 0 4px rgba(47, 199, 155, 0.2);
+  --sh-gold-glow: 0 0 0 4px rgba(255, 122, 69, 0.22);
   --shadow-sm: var(--sh-1);
   --shadow-lg: var(--sh-2);
   --shadow-glow-cyan: var(--sh-glow);
   --shadow-glow-gold: var(--sh-gold-glow);
 
-  /* --- 空间与间距规范 --- */
+  /* --- 空间与字号 --- */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -127,202 +174,180 @@
   --space-6: 24px;
   --space-8: 32px;
 
-  /* --- 字号体系 --- */
-  --fs-xs: 11px;
-  --fs-sm: 12px;
-  --fs-md: 13px;
-  --fs-lg: 15px;
-  --fs-xl: 20px;
-  --fs-2xl: 24px;
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 22px;
+  --fs-2xl: 28px;
 
-  /* --- 响应式断点标记 --- */
+  /* 圆体字体栈：macOS/iOS 走 ui-rounded（真正的圆体），其余回退系统黑体 */
+  --font-round:
+    ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', -apple-system, BlinkMacSystemFont,
+    'PingFang SC', 'Microsoft YaHei', sans-serif;
+
   --bp-mobile: 640px;
   --bp-tablet: 1024px;
 
   /* ============================================================
-   * 游戏化座舱（HUD）令牌 —— 全屏游戏化布局专用
-   * 顶栏 / 底部指令栏 / 右侧机坞 / 底部导航的基准尺寸与金属质感
+   * 布局尺寸
    * ============================================================ */
-  --hud-h: 56px;
-  --cmd-h: 78px;
-  --dock-w: 384px;
-  --tab-h: 54px;
-  --frame-inset: 8px;
+  --hud-h: 64px;
+  --cmd-h: 84px;
+  --dock-w: 400px;
+  --tab-h: 60px;
+  --frame-inset: 10px;
+  --drawer-width: min(520px, 92vw);
 
-  /* 金属层级：从最深的机箱内腔到抬起的青铜装甲面 */
-  --metal-deep: #0d0a06;
-  --metal: #16110a;
-  --metal-2: #2a2114;
-  --metal-3: #3a2e1b;
-
-  /* 座舱描边：青铜发丝线 / 亮金高光 */
-  --edge: rgba(201, 162, 74, 0.22);
-  --edge-soft: rgba(201, 162, 74, 0.14);
-  --edge-faint: rgba(201, 162, 74, 0.08);
-  --edge-hot: #ffd166;
-
-  /* 立体质感：暖色内沿亮线 / 下暗边 / 雕刻凹陷 */
-  --bevel-top: inset 0 1px 0 rgba(255, 224, 150, 0.13);
-  --bevel-bottom: inset 0 -1px 0 rgba(0, 0, 0, 0.75);
-  --bevel-inset: inset 0 2px 10px rgba(0, 0, 0, 0.55);
-
-  /* 按钮/面板的可复用渐变面（青铜系） */
-  --face-metal: linear-gradient(180deg, #3a2e1b 0%, #241c11 55%, #16110a 100%);
-  --face-metal-hover: linear-gradient(180deg, #4a3a22 0%, #2e2416 55%, #1c1610 100%);
-  --face-gold: linear-gradient(180deg, #fff3cf 0%, #f8c65a 42%, #c98a0b 100%);
-  --face-gold-hover: linear-gradient(180deg, #fff8e0 0%, #ffd166 42%, #e0a015 100%);
-  --face-danger: linear-gradient(180deg, #e04a3a 0%, #b3241d 45%, #8d1611 100%);
-  --face-cyan: linear-gradient(180deg, #7ff5e5 0%, #00d9bc 45%, #028f7d 100%);
+  /* 安全区（刘海 / 手势条） */
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  /* HUD / CTA 的贴边距离：普通 16px，有安全区时取更大值 */
+  --gutter: max(16px, calc(var(--safe-l) + var(--safe-r)) / 2);
+  --hud-pad-x: max(16px, var(--safe-l));
+  --hud-pad-x-end: max(16px, var(--safe-r));
+  --cmd-pad-b: max(16px, calc(var(--safe-b) + 12px));
 
   /* ============================================================
-   * 器物令牌（第七轮重调：青铜材质 / 金箔牌匾 / 玉牌 / 朱砂印）
-   * 配色收敛为三色：一种金属（青铜—金）、一种能量色（青，只用于画布与通电指示）、
-   * 一种警示色（朱砂，只用于危险与结算）。第五轮的「回纹通铺 + 铆钉 + 立体高光」
-   * 全部取消，厚度改由贴图 + 内沿亮线 + 雕刻凹槽表达。
+   * 兼容层：金属 / 立体 / 材质（旧名保留，值全部改为「浅色厚卡纸」）
    * ============================================================ */
-  --bronze: #6b5326;
-  --bronze-bright: #c9a24a;
-  --bronze-deep: #2e2413;
-  --edge-bronze: rgba(201, 162, 74, 0.38);
-  --edge-bronze-hot: #ffd166;
-  --edge-inner: rgba(0, 0, 0, 0.72);
-  --pattern-line: rgba(201, 162, 74, 0.16);
 
-  /* 切角尺寸（第七轮起切角取消，保留令牌供圆角/内缩量复用） */
+  /* 金属层级：浅底上不再有深色金属，改为「白面 → 浅蓝凹槽」 */
+  --metal-deep: #cfe7f6;
+  --metal: #e2f3fc;
+  --metal-2: #f2faff;
+  --metal-3: #ffffff;
+
+  --edge: #cfe8f8;
+  --edge-soft: #dff2fc;
+  --edge-faint: #eaf7fe;
+  --edge-hot: var(--coral-deep);
+
+  /* 立体：内侧上亮线 + 下暗线（同色相），用于白卡片 */
+  --bevel-top: inset 0 2px 0 rgba(255, 255, 255, 0.9);
+  --bevel-bottom: inset 0 -2px 0 rgba(120, 180, 210, 0.16);
+  --bevel-inset: inset 0 3px 8px rgba(90, 150, 190, 0.18);
+
+  /* 面：白卡 / 悬停 / 珊瑚主操作 / 薄荷 / 危险 */
+  --face-metal: linear-gradient(180deg, #ffffff 0%, #eef9ff 100%);
+  --face-metal-hover: linear-gradient(180deg, #ffffff 0%, #e4f5ff 100%);
+  --face-gold: linear-gradient(180deg, #ffcfb0 0%, #ffa273 55%, #ff8a55 100%);
+  --face-gold-hover: linear-gradient(180deg, #ffdcc4 0%, #ffb489 55%, #ff9a63 100%);
+  --face-danger: linear-gradient(180deg, #f06a5e 0%, #e0473a 55%, #b3261e 100%);
+  --face-cyan: linear-gradient(180deg, #7fe3c4 0%, #2fc79b 60%, #0f9484 100%);
+
+  --bronze: var(--coral-deep);
+  --bronze-bright: var(--coral-bright);
+  --bronze-deep: var(--coral-edge);
+  --edge-bronze: #ffd0b8; /* 珊瑚键的外轮廓 */
+  --edge-bronze-hot: var(--coral);
+  --edge-inner: rgba(120, 180, 210, 0.22);
+  --pattern-line: rgba(255, 122, 69, 0.28);
+
   --cut-sm: 4px;
   --cut-md: 6px;
   --cut-lg: 9px;
 
-  /* 面：青铜板 / 悬停 / 金箔 / 玉牌 / 朱砂 */
-  --face-plate: linear-gradient(180deg, #2a2114 0%, #17110a 100%);
-  --face-plate-hot: linear-gradient(180deg, #3a2e1b 0%, #1f1810 100%);
-  --face-gold-plate: linear-gradient(180deg, #fff3cf 0%, #f8c65a 42%, #c98a0b 100%);
-  --face-jade: linear-gradient(180deg, #14372f 0%, #0a201c 100%);
-  --face-seal: linear-gradient(180deg, #c8382c 0%, #8d1611 100%);
+  --face-plate: linear-gradient(180deg, #ffffff 0%, #f2fbff 100%);
+  --face-plate-hot: linear-gradient(180deg, #ffffff 0%, #e8f6ff 100%);
+  --face-gold-plate: linear-gradient(180deg, #ffcfb0 0%, #ffa273 55%, #ff8a55 100%);
+  --face-jade: linear-gradient(180deg, #a5f0d9 0%, #4fd6ae 55%, #2fc79b 100%);
+  --face-seal: linear-gradient(180deg, #c9332a 0%, #a3201a 100%);
 
-  /* 铆钉：第七轮取消（`background-image: var(--rivet) ×4` 的四个角点全部失效，
-     需要显式表现的两个位置由组件自己改为材质面） */
   --rivet: none;
-
-  /* 纹样：第七轮取消回纹，令牌改为「贴图底纹」占位（原有的 8 处引用自动变成底纹） */
-  --pattern-hui: var(--tex-brush);
-  --pattern-hui-soft: var(--tex-scan);
+  --pattern-hui: none;
+  --pattern-hui-soft: none;
 
   /* ============================================================
-   * 程序化贴图（内联 data-URI SVG，零外链零依赖）
-   * 颗粒/绢纹来自 feTurbulence 噪声，拉丝来自往复渐变，雕花包角是内联 SVG 描边。
-   * 这一层就是「游戏贴图」：不需要任何图片资源文件。
+   * 贴图 / 材质语义（组件只消费这一层）
+   * 明亮卡通不靠贴图噪点，靠「厚边 + 硬投影 + 圆角」，因此贴图全部收敛为
+   * 极轻的云纹与点阵，避免在浅底上出现脏灰。
    * ============================================================ */
-  --tex-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
-  --tex-brush:
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.045) 0 1px,
-      rgba(0, 0, 0, 0.05) 1px 2px,
-      rgba(255, 255, 255, 0.015) 2px 3px,
-      transparent 3px 5px
-    ),
-    linear-gradient(
-      112deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      transparent 38%,
-      rgba(255, 255, 255, 0.035) 62%,
-      transparent 100%
-    );
-  --tex-silk: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23s)' opacity='.55'/%3E%3C/svg%3E");
+  --tex-grain: none;
+  --tex-silk: none;
+  --tex-brush: none;
+  --tex-scan: none;
+  --tex-corner: none;
   --tex-nebula:
-    radial-gradient(58% 44% at 20% 16%, rgba(0, 245, 212, 0.13), transparent 70%),
-    radial-gradient(52% 42% at 80% 74%, rgba(157, 78, 221, 0.14), transparent 72%),
-    radial-gradient(74% 58% at 52% 48%, rgba(245, 184, 65, 0.09), transparent 78%),
-    radial-gradient(40% 30% at 68% 22%, rgba(255, 255, 255, 0.05), transparent 70%);
-  --tex-scan: repeating-linear-gradient(
-    0deg,
-    rgba(255, 255, 255, 0.035) 0 1px,
-    transparent 1px 4px
-  );
-  --tex-corner: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34' fill='none' stroke='%23f5b841' stroke-width='1.1'%3E%3Cpath d='M1.5 32.5V8a6 6 0 0 1 6-6h24.5' stroke-opacity='.85'/%3E%3Cpath d='M7 32.5V13a6 6 0 0 1 6-6h19' stroke-opacity='.45'/%3E%3Cpath d='M13.5 13.5h6.5v6.5' stroke-opacity='.6'/%3E%3Ccircle cx='6' cy='6' r='1.6' fill='%23ffd166' stroke='none'/%3E%3C/svg%3E");
+    radial-gradient(46% 38% at 14% 12%, rgba(255, 255, 255, 0.9), transparent 70%),
+    radial-gradient(40% 34% at 88% 20%, rgba(255, 236, 200, 0.75), transparent 72%),
+    radial-gradient(46% 40% at 78% 88%, rgba(206, 240, 255, 0.8), transparent 74%);
+  --tex-dots: radial-gradient(circle, rgba(140, 195, 225, 0.35) 1.5px, transparent 1.6px);
   --tex-gem: radial-gradient(
-    circle at 35% 30%,
+    circle at 34% 30%,
     rgba(255, 255, 255, 0.95),
-    rgba(255, 255, 255, 0.15) 42%,
-    transparent 60%
+    rgba(255, 255, 255, 0.25) 46%,
+    transparent 62%
   );
 
-  /* ============================================================
-   * 材质语义（面板 / 牌匾 / 凹槽 / 把手 / 提示条）
-   * 组件只消费这一层，不自己拼贴图与阴影。
-   * ============================================================ */
-  --mat-hi: rgba(62, 47, 26, 0.97);
-  --mat-lo: rgba(18, 13, 8, 0.98);
-  --mat-sheen: linear-gradient(
-    112deg,
-    rgba(255, 228, 165, 0.11) 0%,
-    transparent 26%,
-    rgba(255, 228, 165, 0.03) 58%,
-    transparent 100%
+  /* 面板材质 */
+  --mat-hi: #ffffff;
+  --mat-lo: #f2fbff;
+  --mat-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 52%);
+
+  /* 大面板（顶栏 / 机坞 / 指令栏 / 弹层） */
+  --mat-plate: linear-gradient(180deg, #ffffff 0%, #f4fbff 100%);
+  --mat-plate-shadow: 0 6px 0 #d2eafa, 0 22px 44px rgba(56, 116, 150, 0.18);
+
+  /* 小卡片 / 按钮面 */
+  --mat-block: linear-gradient(180deg, #ffffff 0%, #f6fcff 100%);
+  --mat-block-shadow: 0 3px 0 #d9eefb, 0 10px 20px rgba(56, 116, 150, 0.14);
+
+  --mat-frame-line: #d6ecf9;
+  --mat-rule: linear-gradient(
+    90deg,
+    transparent,
+    #ffc7ac 18%,
+    #ffb08c 50%,
+    #ffc7ac 82%,
+    transparent
   );
-  /* 大面板（机坞 / 顶栏 / 指令栏）：斜向高光 + 拉丝 + 青铜渐层 */
-  --mat-plate:
-    var(--mat-sheen), var(--tex-brush), linear-gradient(180deg, var(--mat-hi), var(--mat-lo));
-  /* 面板描边：内沿暖亮线 + 下暗边 + 内框发丝线 + 外柔影 */
-  --mat-plate-shadow:
-    inset 0 1px 0 rgba(255, 224, 150, 0.13), inset 0 -1px 0 rgba(0, 0, 0, 0.75),
-    inset 0 0 0 1px rgba(201, 162, 74, 0.1), 0 12px 34px rgba(0, 0, 0, 0.55);
-  /* 小面板/卡片 */
-  --mat-block: var(--tex-brush), linear-gradient(180deg, var(--mat-hi), var(--mat-lo));
-  --mat-block-shadow:
-    var(--bevel-top), inset 0 -1px 0 rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(201, 162, 74, 0.12),
-    var(--sh-1);
-  /* 面板内框（游戏 HUD 的「框感」，用 inset 描边实现，不加 DOM） */
-  --mat-frame-line: rgba(201, 162, 74, 0.16);
-  /* 金丝分割线（两端渐隐） */
-  --mat-rule: linear-gradient(90deg, transparent, rgba(201, 162, 74, 0.4), transparent);
-  /* 黄铜铭牌（机坞抬头） */
-  --plate-brass: linear-gradient(180deg, rgba(120, 93, 48, 0.5) 0%, rgba(38, 29, 16, 0.72) 100%);
-  --plate-brass-shadow:
-    inset 0 1px 0 rgba(255, 231, 176, 0.22), inset 0 -1px 0 rgba(0, 0, 0, 0.6),
-    0 6px 16px rgba(0, 0, 0, 0.45);
-  --plate-brass-line: rgba(201, 162, 74, 0.28);
-  /* 雕刻仪表舱（调参台） */
-  --card-bg: linear-gradient(180deg, rgba(0, 0, 0, 0.34) 0%, rgba(0, 0, 0, 0.16) 100%);
-  --card-shadow:
-    inset 0 0 0 1px rgba(201, 162, 74, 0.16), inset 0 2px 10px rgba(0, 0, 0, 0.55),
-    inset 0 -1px 0 rgba(255, 214, 130, 0.06);
-  /* 凹槽（滑杆轨道 / 数值槽 / 键帽）：雕刻感靠内阴影 + 下沿亮线 */
-  --groove-bg: rgba(0, 0, 0, 0.55);
-  --groove-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85), 0 1px 0 rgba(255, 214, 130, 0.09);
-  /* 金珠把手 */
-  --thumb-fill: linear-gradient(180deg, #fff6d8 0%, #f2b52c 55%, #a86f06 100%);
-  --thumb-shadow: 0 0 12px rgba(245, 184, 65, 0.45), 0 1px 2px rgba(0, 0, 0, 0.7);
-  /* 铜牌提示条（教学/专家提示） */
-  --note-bg: linear-gradient(180deg, rgba(58, 46, 27, 0.72) 0%, rgba(24, 18, 11, 0.85) 100%);
-  --note-edge: rgba(201, 162, 74, 0.3);
-  --hint-glow: 0 0 18px rgba(245, 184, 65, 0.18);
-  /* 遮罩：弹窗/抽屉/结算背后的压暗层（暖黑，不再是蓝黑） */
-  --scrim: rgba(7, 5, 3, 0.78);
-  --scrim-strong: rgba(4, 3, 2, 0.88);
+
+  /* 铭牌 / 主色块（珊瑚） */
+  --plate-brass: linear-gradient(180deg, #ffcfb0 0%, #ffa273 55%, #ff8a55 100%);
+  /* 珊瑚面的厚度阴影用 --coral-edge（不是 --coral-deep，避免整块偏暗） */
+  --plate-brass-shadow: 0 4px 0 #c8451d, 0 12px 24px rgba(226, 85, 42, 0.26);
+  --plate-brass-line: rgba(255, 255, 255, 0.72);
+
+  /* 凹槽（滑杆轨道 / 内嵌块）：浅蓝内凹 */
+  --groove-bg: #dcf1fd;
+  --groove-shadow: inset 0 2px 5px rgba(90, 150, 190, 0.22);
+
+  /* 滑杆拇指：薄荷糖果 */
+  --thumb-fill: radial-gradient(circle at 34% 30%, #ffffff 0%, #8fe8cb 42%, #2fc79b 100%);
+  --thumb-shadow: 0 3px 0 #0f9484, 0 6px 12px rgba(15, 148, 132, 0.3);
+
+  /* 卡片 / 提示条 */
+  --card-bg: #ffffff;
+  --card-shadow: 0 3px 0 #d9eefb, 0 10px 20px rgba(56, 116, 150, 0.12);
+  --note-bg: #e9fbf3;
+  --note-edge: rgba(15, 148, 132, 0.4);
+  --hint-glow: 0 0 0 4px rgba(255, 122, 69, 0.18);
+
+  /* 遮罩：柔和的深蓝天鹅绒，让白卡浮起来 */
+  --scrim: rgba(16, 52, 74, 0.4);
+  --scrim-strong: rgba(12, 40, 58, 0.56);
 
   /* ============================================================
-   * 控件尺寸令牌（第四轮：桌面紧凑 / 触屏舒适）
-   * 默认值 = 桌面（鼠标）；@media (pointer: coarse) 下整体放大到触屏尺寸。
-   * 规则：组件里不许写死 px，一律走这些令牌。
+   * 控件尺寸（桌面 / 触屏两档）
    * ============================================================ */
-  --ctl-xs: 22px; /* 行内小图标键、弹窗关闭键 */
-  --ctl-sm: 26px; /* 次级图标键、芯片、标签页 */
-  --ctl-md: 30px; /* 默认按钮 / 输入 / 滑杆行高 / 机坞键 */
-  --ctl-lg: 40px; /* 主操作（全屏唯一那颗金色按钮） */
-  --ctl-menu: 46px; /* 标题页菜单项 */
-  --ctl-font: 13px;
-  --ctl-font-sm: 12px;
-  --ctl-radius: 7px;
-  --ctl-radius-lg: 9px;
-  --ctl-icon: 15px; /* 控件内图标默认尺寸 */
-  --ctl-icon-sm: 13px; /* 小键内图标尺寸 */
+  --ctl-xs: 26px;
+  --ctl-sm: 30px;
+  --ctl-md: 36px;
+  --ctl-lg: 50px;
+  --ctl-menu: 52px;
+  --ctl-font: 14px;
+  --ctl-font-sm: 12.5px;
+  --ctl-radius: 16px;
+  --ctl-radius-lg: 999px;
+  --ctl-icon: 16px;
+  --ctl-icon-sm: 14px;
 
-  /* 座舱阴影：柔而大（游戏面板的层次靠材质与内沿亮线，不靠硬投影叠暗边） */
-  --sh-game: 0 10px 30px rgba(0, 0, 0, 0.5);
-  --sh-game-lg: 0 16px 44px rgba(0, 0, 0, 0.6);
-  --sh-glow-hot: 0 0 18px rgba(245, 184, 65, 0.35);
+  --sh-game: 0 5px 0 #d2eafa, 0 16px 32px rgba(56, 116, 150, 0.16);
+  --sh-game-lg: 0 8px 0 #c5e2f4, 0 28px 56px rgba(56, 116, 150, 0.2);
+  --sh-glow-hot: 0 0 0 5px rgba(255, 122, 69, 0.2);
 }
 
 @media (min-width: 1024px) {
@@ -331,19 +356,31 @@
   }
 }
 
-/* 触屏（手机/平板/触屏笔电）：控件整体放大到舒适命中区 */
+/* 触屏：控件放大到舒适命中区（≥44px），字号随之上调 */
 @media (pointer: coarse) {
   :root {
-    --ctl-xs: 32px;
+    --ctl-xs: 34px;
     --ctl-sm: 40px;
-    --ctl-md: 42px;
-    --ctl-lg: 46px;
-    --ctl-menu: 52px;
+    --ctl-md: 44px;
+    --ctl-lg: 56px;
+    --ctl-menu: 58px;
+    --ctl-font: 15px;
+    --ctl-font-sm: 13px;
+    --ctl-radius: 18px;
+    --ctl-radius-lg: 999px;
+    --ctl-icon: 18px;
+    --ctl-icon-sm: 15px;
+    --hud-h: 60px;
+    --cmd-h: 92px;
+    --tab-h: 64px;
+  }
+}
+
+/* 极窄屏：给主操作留出更多横向空间 */
+@media (max-width: 380px) {
+  :root {
     --ctl-font: 14px;
-    --ctl-font-sm: 12.5px;
-    --ctl-radius: 8px;
-    --ctl-radius-lg: 10px;
-    --ctl-icon: 16px;
-    --ctl-icon-sm: 14px;
+    --ctl-font-sm: 12px;
+    --dock-w: 100vw;
   }
 }

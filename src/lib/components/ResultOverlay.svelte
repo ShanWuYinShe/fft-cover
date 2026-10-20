@@ -189,17 +189,17 @@
     if (!octx) return;
     octx.drawImage(src, 0, 0);
     const h = src.height;
-    octx.fillStyle = 'rgba(20,15,9,.92)';
+    octx.fillStyle = 'rgba(255,255,255,.94)';
     octx.fillRect(0, h, off.width, FOOTER);
     // 第一行：关卡名 + 得分 + 星级
-    octx.fillStyle = '#fbbf24';
+    octx.fillStyle = '#e2552a';
     octx.font = 'bold 44px sans-serif';
     const head = (engine.level?.name ?? '') + '  ' + engine.score + ' 分';
     octx.fillText(head, 40, h + 52);
     const headW = octx.measureText(head).width;
     octx.font = 'bold 38px sans-serif';
     octx.fillText('★'.repeat(st) + '☆'.repeat(3 - st), 40 + headW + 16, h + 52);
-    octx.fillStyle = '#8b93a7';
+    octx.fillStyle = '#2f6580';
     octx.font = '30px sans-serif';
     // 进步对比：与上一局得分差（历史中倒数第二条为本局之前的一局）
     const hist = engine.recentHistory(10);
@@ -210,7 +210,7 @@
       const d = cur - prev;
       if (d !== 0) {
         deltaText = '  较上局 ' + (d > 0 ? '+' : '') + d;
-        octx.fillStyle = d > 0 ? '#4fd1c5' : '#f87171';
+        octx.fillStyle = d > 0 ? '#0f9484' : '#b3261e';
       }
     }
     octx.fillText(
@@ -239,19 +239,19 @@
     imgGoals.forEach((g, i) => {
       const x = 40 + i * 44;
       const y = h + 110;
-      octx.fillStyle = g.done ? '#c0392b' : 'rgba(255,255,255,.05)';
+      octx.fillStyle = g.done ? '#ff7a45' : '#e3f3fc';
       octx.fillRect(x, y, 34, 34);
-      octx.strokeStyle = g.done ? 'rgba(192,57,43,.9)' : 'rgba(255,255,255,.16)';
+      octx.strokeStyle = g.done ? '#c8451d' : '#cfe8f8';
       octx.lineWidth = 1;
       octx.strokeRect(x, y, 34, 34);
-      octx.fillStyle = g.done ? '#fdece7' : 'rgba(163,144,109,.65)';
+      octx.fillStyle = g.done ? '#ffffff' : '#4a7d93';
       octx.font = 'bold 20px "STKaiti", "KaiTi", serif';
       octx.textAlign = 'center';
       octx.fillText(g.seal, x + 17, y + 24);
     });
     octx.textAlign = 'start';
     if (invite) {
-      octx.fillStyle = '#4fd1c5';
+      octx.fillStyle = '#0f9484';
       octx.font = '28px sans-serif';
       octx.fillText('邀请码 ' + invite, 40 + imgGoals.length * 44 + 10, h + 136);
     }
@@ -505,40 +505,40 @@
 </div>
 
 <style>
+  /* ============================================================
+   * 结算卡：深蓝天鹅绒遮罩 + 白卡厚边
+   * 大数字 40px/900 珊瑚、tabular；星级珊瑚 / 未得浅蓝
+   * ============================================================ */
   .result {
     position: absolute;
     inset: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 12px;
-    background: radial-gradient(circle at 50% 45%, rgba(20, 15, 9, 0.6), rgba(5, 4, 3, 0.9));
-    backdrop-filter: blur(4px);
-    border-radius: 14px;
-    animation: fade-in 0.3s ease-out;
+    padding: 14px;
+    background: var(--scrim-strong);
+    border-radius: var(--r-lg);
     z-index: 5;
+    animation: fade-in 0.3s ease-out;
   }
 
-  /* 结算卡：一块平板；信息只有「大数字 → 结论 → 明细 → 两个按钮」 */
   .card {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    width: min(100%, 400px);
+    width: min(100%, 420px);
     max-height: 100%;
     /* 放行溢出：结算卡的「⋯」菜单向下展开时不能被裁 */
     overflow: visible;
-    border-radius: 10px;
-    /* 器物面板：青铜边 + 内侧 1px 暗线；右上角包角来自 .g-rivets::after（第七轮语义） */
-    background: var(--face-plate);
-    border: 1px solid var(--edge-bronze);
-    box-shadow:
-      inset 0 0 0 1px var(--edge-inner),
-      0 4px 8px rgba(0, 0, 0, 0.5);
-    animation: card-in 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
     text-align: center;
+    background: var(--mat-plate);
+    border: 3px solid #ffffff;
+    border-radius: var(--r-xl);
+    box-shadow: var(--sh-3);
+    animation: card-in 0.32s cubic-bezier(0.16, 1, 0.3, 1);
   }
+
   @keyframes card-in {
     from {
       opacity: 0;
@@ -550,22 +550,48 @@
     }
   }
 
-  /* 卡片抬头：左「结算」铭牌 + 右关卡名，一条底线分隔 */
+  /* 顶部珊瑚胶带：纸胶带（washi tape）——贴在手作卡片上的装订感。
+     注意别做成实心药丸：那样看起来像一块游离的橙色标签。 */
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: -10px;
+    width: 108px;
+    height: 22px;
+    margin-left: -54px;
+    border-radius: 5px;
+    background: rgba(255, 122, 69, 0.88);
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 255, 255, 0.55),
+      0 3px 0 rgba(200, 69, 29, 0.35);
+    transform: rotate(-1.5deg);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* 卡片抬头：左「结算」标签 + 右关卡名 */
   .card-rail {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    padding: 10px 14px 8px;
-    border-bottom: 1px solid var(--edge-faint);
-    border-radius: 10px 10px 0 0;
+    padding: 15px 16px 10px;
+    border-bottom: 2px solid var(--line);
     position: relative;
     z-index: 1;
   }
+
+  .card-rail .g-label {
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: var(--coral-edge);
+  }
+
   .rail-lv {
-    font-size: var(--fs-sm);
-    font-weight: 600;
-    color: var(--text);
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--muted);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -575,68 +601,51 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     min-height: 0;
     overflow-y: auto;
-    padding: 12px 16px 10px;
+    padding: 14px 18px 12px;
     text-align: center;
   }
 
-  /* 大数字一：星级（逐颗弹出） */
-  /* 顶部金箔发丝线（器物面板的高光边；::after 让给 .g-rivets 的包角） */
-  .card::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold) 20%, var(--gold) 80%, transparent);
-    opacity: 0.55;
-    pointer-events: none;
-    z-index: 2;
-  }
-
+  /* 星级：珊瑚实星 / 浅蓝空星 */
   .stars {
     display: flex;
-    gap: 8px;
-    font-size: 42px;
+    gap: 12px;
+    font-size: 44px;
     line-height: 1;
     letter-spacing: 0;
   }
-  /* 星位：每颗星坐在一个方形宝石座里（未达成 = 暗槽） */
+
   .stars .star {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.15em;
-    height: 1.15em;
-    border-radius: 6px;
-    color: rgba(163, 144, 109, 0.3);
-    background: linear-gradient(180deg, #0c0906, #1a1409);
-    box-shadow:
-      inset 0 2px 5px rgba(0, 0, 0, 0.85),
-      0 0 0 1px rgba(201, 162, 74, 0.25);
+    width: 1em;
+    height: 1em;
+    color: var(--line-bright);
+    text-shadow: 0 3px 0 #ffffff;
   }
-  /* 已达成：金座 + 宝石（唯一的发光在这里） */
+
   .stars .star.on {
-    color: #3a2400;
-    background: var(--face-gold-plate, linear-gradient(180deg, #ffe7a3, #d69214));
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.55),
-      0 0 0 1px var(--edge-bronze-hot),
-      0 0 12px rgba(245, 184, 65, 0.45);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+    color: var(--coral-text);
+    text-shadow:
+      0 3px 0 #ffffff,
+      0 7px 12px rgba(226, 85, 42, 0.28);
   }
-  /* 已达成的星逐颗弹入：0.4 → 1.12 → 1.0（每颗 120ms，见内联 delay） */
+
+  /* 已达成的星逐颗弹入：0.4 → 1.08 → 1.0（每颗 120ms，见内联 delay） */
   .stars .star.pop {
     animation: star-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
   }
+
   @keyframes star-pop {
     from {
       transform: scale(0.4);
       opacity: 0;
     }
     60% {
-      transform: scale(1.12);
+      transform: scale(1.08);
     }
     to {
       transform: scale(1);
@@ -644,21 +653,26 @@
     }
   }
 
-  /* 结算印章：斜盖入 -8° → -6°，1.3 → 1.0（220ms，等星级弹完再盖） */
-  /* 朱印（.g-seal 给形与色），这里只保留本卡的落款角度与盖章动画。
-     选择器带 .card-body 提高优先级，压过公共件的 rotate(-2deg)。 */
+  /* 结算印章：薄荷庆祝印（形与色在这里压过公共 .g-seal 的朱红） */
   .card-body .stamp {
     align-self: center;
     margin-top: 2px;
-    padding: 3px 12px;
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: var(--fs-md);
-    letter-spacing: 3px;
+    padding: 4px 14px;
+    font-family: var(--font-round);
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 2px;
     white-space: nowrap;
+    color: var(--mint-ink);
+    background: var(--face-jade);
+    border: 2px solid #ffffff;
+    border-radius: var(--r-sm);
+    box-shadow: 0 3px 0 var(--mint-edge);
     /* 基准态就是盖好后的角度：动画结束后自然停在 -6° */
     transform: rotate(-6deg);
     animation: stamp-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s backwards;
   }
+
   @keyframes stamp-in {
     from {
       opacity: 0;
@@ -670,29 +684,31 @@
     }
   }
 
-  /* 大数字二：得分 */
+  /* 大数字：得分 */
   .score-big {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 2px;
   }
+
   .score-big b {
-    font-size: 46px;
+    font-size: 40px;
+    font-weight: 900;
     line-height: 1;
     letter-spacing: 1px;
-    background: linear-gradient(180deg, #ffe9a8, var(--gold) 65%, #e79a12);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: var(--coral-text);
+    font-variant-numeric: tabular-nums;
   }
+
   .score-cap {
-    font-size: var(--fs-sm);
-    letter-spacing: 2px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
     color: var(--muted);
   }
 
-  /* 一句话结论：徽章段整段不折行（wrap 只发生在段与段之间），段间用一个间隔符 */
+  /* 一句话结论：整段不折行（wrap 只发生在段与段之间） */
   .verdict {
     margin: 2px 0 0;
     display: flex;
@@ -700,13 +716,14 @@
     justify-content: center;
     align-items: baseline;
     column-gap: var(--space-1);
-    font-size: var(--fs-lg);
-    font-weight: 600;
-    letter-spacing: 1px;
-    color: var(--gold-bright);
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: var(--text);
     line-height: 1.4;
     max-width: 100%;
   }
+
   .verdict .vseg {
     white-space: nowrap;
   }
@@ -719,114 +736,144 @@
     justify-content: center;
     flex-wrap: wrap;
     gap: 6px;
-    font-size: var(--fs-sm);
+    font-size: 13px;
+    font-weight: 600;
     color: var(--muted);
   }
+
   .detail b {
     color: var(--text);
+    font-weight: 900;
     font-variant-numeric: tabular-nums;
   }
+
   .detail .sep {
     color: var(--muted-2);
   }
+
   .detail .ghost-ahead {
-    color: var(--cyan);
+    color: var(--mint-edge);
+    font-weight: 800;
   }
 
-  /* 章节印集齐：一行庆祝（红印 + 文字） */
+  /* 章节印集齐：白卡提示条 + 珊瑚印 */
   .seal-line {
     margin: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    font-size: var(--fs-sm);
+    padding: 7px 12px;
+    border-radius: var(--r-sm);
+    border: 2px solid var(--note-edge);
+    background: var(--note-bg);
+    font-size: 13px;
+    font-weight: 700;
     color: var(--text);
   }
+
   .cs-seal {
     flex: none;
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 5px;
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    border-radius: var(--r-sm);
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 900;
     line-height: 1;
-    color: #fff;
-    background: linear-gradient(160deg, #d92b2b, #991b1b);
+    color: var(--coral-ink);
+    background: var(--face-gold-plate);
   }
 
-  /* 下一步：一行可点的文字（下划线分隔），不再是盒子按钮 */
+  /* 下一步：自己的白卡面 */
   .next-line {
     appearance: none;
     display: flex;
     align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
+    justify-content: space-between;
+    gap: 10px;
     width: 100%;
-    /* 触屏命中区 ≥40（桌面 30） */
     min-height: var(--ctl-md);
     margin-top: 2px;
-    padding: 8px 2px;
+    padding: 10px 12px;
     font: inherit;
-    font-size: var(--ctl-font-sm);
+    font-size: 13px;
+    font-weight: 600;
     color: var(--muted);
     text-align: left;
-    background: none;
-    border: none;
-    border-top: 1px solid var(--edge-faint);
+    background: var(--mat-block);
+    border: 2px solid var(--line);
+    border-radius: var(--r-md);
+    box-shadow: 0 2px 0 #d9eefb;
     cursor: pointer;
-    transition: color 0.12s ease;
+    transition:
+      border-color 0.12s ease,
+      color 0.12s ease;
   }
+
   .next-line:hover {
     color: var(--text);
+    border-color: var(--coral-bright);
   }
+
   .next-line.done {
     cursor: default;
     justify-content: center;
-    color: var(--cyan);
+    color: var(--mint-edge);
+    font-weight: 800;
   }
+
   .ns-txt b {
-    color: var(--gold-bright);
+    color: var(--coral-edge);
+    font-weight: 900;
   }
+
   .ns-go {
-    color: var(--cyan);
+    color: var(--mint-edge);
+    font-weight: 800;
     white-space: nowrap;
   }
 
   /* 沙盒分支 */
   .line {
-    font-size: var(--fs-lg);
+    font-size: 16px;
+    font-weight: 700;
     color: var(--text);
   }
+
   .best {
-    font-size: var(--fs-sm);
+    font-size: 13px;
+    font-weight: 600;
     color: var(--muted);
   }
 
   .btns {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
-    padding: 10px 14px 12px;
+    padding: 12px 16px 16px;
     box-sizing: border-box;
     flex: 0 0 auto;
-    border-top: 1px solid var(--edge-faint);
+    border-top: 2px solid var(--line);
+    background: var(--bg-chassis);
+    border-radius: 0 0 calc(var(--r-xl) - 3px) calc(var(--r-xl) - 3px);
   }
+
   .btns button {
     width: 100%;
   }
+
   .btns button.primary {
     flex: 1;
   }
+
   /* ⋯ 菜单与主按钮等高（MoreMenu 是子组件，需 :global） */
   .btns :global(.mm) {
     flex: 0 0 var(--ctl-lg);
   }
+
   .btns :global(.mm-btn) {
     width: 100%;
     height: 100%;
@@ -840,12 +887,13 @@
       gap: 6px;
     }
     .stars {
-      font-size: 28px;
+      font-size: 30px;
     }
     .score-big b {
-      font-size: 32px;
+      font-size: 34px;
     }
   }
+
   /* 矮视口或手机竖屏：结算卡整屏显示（座舱壳下画布高度不够放完整卡） */
   @media (max-width: 900px) and (max-height: 700px), (max-width: 640px) {
     .result {
@@ -856,33 +904,37 @@
       padding: 10px;
     }
   }
+
   @media (max-width: 640px) {
     .card-body {
       padding: 12px 14px 8px;
       gap: 6px;
     }
     .stars {
-      font-size: 34px;
+      font-size: 36px;
     }
     .score-big b {
-      font-size: 38px;
+      font-size: 36px;
     }
     .verdict {
-      font-size: var(--fs-md);
+      font-size: 15px;
     }
     .btns {
-      padding: 10px 14px 12px;
+      padding: 10px 14px 14px;
     }
   }
 
   /* 减弱动态效果：位移动画全部关闭（颜色/透明度变化保留） */
   @media (prefers-reduced-motion: reduce) {
+    .result,
     .card,
     .stars .star.pop,
     .stamp {
       animation: none;
     }
   }
+
+  :global(.reduce-motion) .result,
   :global(.reduce-motion) .card,
   :global(.reduce-motion) .stars .star.pop,
   :global(.reduce-motion) .stamp {

@@ -55,22 +55,31 @@
     pointer-events: none;
     max-width: 94vw;
   }
+
   .toast-host > :global(*) {
     pointer-events: auto;
   }
 
-  /* PWA 更新卡：一行说明 + 两个按钮，不套铭牌/灯/包边 */
+  /* PWA 更新卡：白卡 + 3px 白边 + 硬投影 */
   .pwa-update-card {
     display: inline-flex;
     align-items: center;
     flex-wrap: wrap;
     justify-content: center;
     gap: 10px;
-    max-width: min(92vw, 460px);
-    padding: 5px 10px;
-    /* 切角铜边 + 面来自 .g-chamfer */
+    max-width: min(92vw, 480px);
+    padding: 8px 12px;
+    background: var(--mat-block);
+    border: 3px solid #ffffff;
+    border-radius: var(--r-md);
+    box-shadow: var(--sh-2);
     /* 与提示条同一套滑入节奏：-12px → 0，240ms */
     animation: pwa-in 240ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+
+  /* 覆盖 .g-chamfer 的双层底：这里只要一张白卡 */
+  .pwa-update-card::before {
+    content: none;
   }
 
   @keyframes pwa-in {
@@ -85,9 +94,9 @@
   }
 
   .pwa-text {
-    font-size: var(--ctl-font-sm);
-    font-weight: 700;
-    letter-spacing: 1px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
     color: var(--text);
     white-space: nowrap;
   }
@@ -98,12 +107,12 @@
     gap: 8px;
   }
 
-  /* 卡片里的按键收紧尺寸，但热区仍 ≥40px（.g-btn 已经是 40px 下限） */
+  /* 卡片里的按键收紧尺寸，但热区仍走统一控件高度 */
   .pwa-actions .pwa-btn {
     min-height: var(--ctl-md);
-    padding: 0 10px;
+    padding: 0 12px;
     font-size: var(--ctl-font-sm);
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
   }
 
   @media (prefers-reduced-motion: reduce) {

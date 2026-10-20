@@ -170,8 +170,10 @@
 </div>
 
 <style>
-  /* 画布 HUD：浮在铺满的画布上。
-     顶部要避开顶栏（--hud-h）与左上角缎带，否则读数会被压在下面。 */
+  /* ============================================================
+   * 画布 HUD（第十四轮）：四角厚卡读数 + 顶部居中得分
+   * 视觉：白卡 + 3px 白边 + 硬投影；大号 tabular 数字；珊瑚主数字
+   * ============================================================ */
   .hud {
     position: absolute;
     inset: 0;
@@ -179,8 +181,8 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    /* 顶部要避开两样东西：顶栏（--hud-h）与浮在左上角的关卡缎带（约 34px） */
-    padding: calc(var(--hud-h) + 44px) 12px 12px;
+    padding: calc(var(--hud-h) + 10px) max(14px, var(--safe-l)) 14px max(14px, var(--safe-r));
+    padding-right: max(14px, var(--safe-r));
     z-index: 8;
   }
   .hud > * {
@@ -189,283 +191,168 @@
 
   .hud-tl {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
     align-items: flex-start;
     gap: 8px;
-    max-width: 60%;
+    max-width: 46%;
   }
 
-  /* ---------- 右上：收集读数是这里唯一的大数字 ---------- */
   .hud-tr {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 6px;
+    gap: 8px;
+    max-width: 52%;
   }
 
-  /* 收集读数 = 画布上唯一的大数字，装在一块小铜牌里 */
+  /* ---------- 通用读数卡 ---------- */
+  .stat-chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: var(--r-pill);
+    background: var(--mat-block);
+    border: 3px solid #ffffff;
+    box-shadow:
+      0 4px 0 #d6ecf9,
+      0 12px 22px rgba(56, 116, 150, 0.16);
+  }
+  .stat-label {
+    font-size: var(--fs-xs);
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+  .stat-value {
+    font-family: var(--font-round);
+    font-variant-numeric: tabular-nums;
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--coral-text);
+  }
+  .stat-sub {
+    font-style: normal;
+    font-size: var(--fs-sm);
+    font-weight: 800;
+    color: var(--muted-2);
+  }
+
+  /* 顶部居中得分：不进 flex 流 */
+  .hud-score-top {
+    position: absolute;
+    top: calc(var(--hud-h) + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 24px;
+    gap: 10px;
+    background: var(--mat-block);
+    border: 3px solid #ffffff;
+    box-shadow:
+      0 5px 0 #d6ecf9,
+      0 14px 26px rgba(56, 116, 150, 0.18);
+  }
+  .hud-score-top .stat-value {
+    font-size: 30px;
+    color: var(--coral-text);
+  }
+  .hud-score-top .stat-label {
+    font-size: var(--fs-sm);
+  }
+
+  /* ---------- 收集大读数：珊瑚厚卡 ---------- */
   .collect-readout {
-    position: relative;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 0;
-    min-width: 108px;
-    padding: 6px 12px 9px;
-    border-radius: var(--r-sm);
+    gap: 2px;
+    min-width: 132px;
+    padding: 10px 20px 12px;
+    border-radius: var(--r-md);
     background: var(--plate-brass);
-    border: 1px solid var(--plate-brass-line);
+    border: 3px solid #ffffff;
     box-shadow: var(--plate-brass-shadow);
     overflow: hidden;
+    position: relative;
   }
   .collect-label {
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: var(--muted);
+    font-size: var(--fs-xs);
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    /* 珊瑚面上的文字用深棕（白字只有 2.6:1） */
+    color: var(--coral-ink);
   }
   .collect-value {
     display: inline-flex;
     align-items: baseline;
     gap: 2px;
+    font-family: var(--font-round);
   }
   .collect-value b {
-    font-size: 30px;
+    font-size: 34px;
     font-weight: 900;
     line-height: 1;
-    color: var(--text);
+    color: var(--coral-ink);
+    text-shadow: 0 2px 0 rgba(255, 255, 255, 0.45);
     font-variant-numeric: tabular-nums;
-    display: inline-block;
-    animation: collect-pop 0.26s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  /* 每次收集数字弹一下（key 块重建时重播），让「收到东西了」有手感 */
-  @keyframes collect-pop {
-    0% {
-      transform: scale(1.32);
-      color: #ffe7a3;
-    }
-    100% {
-      transform: scale(1);
-      color: var(--text);
-    }
-  }
-  :global(.reduce-motion) .collect-value b {
-    animation: none;
   }
   .collect-total {
     font-style: normal;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--muted);
+    font-size: 16px;
+    font-weight: 900;
+    color: rgba(74, 26, 0, 0.72);
   }
+  /* 收集进度的底部小条：白底半透明 */
   .collect-bar {
     position: absolute;
     left: 0;
     bottom: 0;
-    height: 3px;
     width: var(--progress, 0%);
-    background: linear-gradient(90deg, #10b981 0%, #00f5d4 50%, #f5b841 100%);
-    transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    height: 5px;
+    background: var(--coral-ink);
+    opacity: 0.85;
+    border-radius: 0 3px 3px 0;
+    transition: width 200ms cubic-bezier(0.16, 1, 0.3, 1);
   }
-
-  .ghost-tick {
-    position: absolute;
-    bottom: 0;
-    width: 2px;
-    height: 8px;
-    margin-left: -1px;
-    background: var(--gold);
+  .hud-pulse {
+    display: inline-block;
+    animation: hud-pop 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-
-  .ghost-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 10px;
-    border-radius: var(--r-pill);
-    background: var(--groove-bg);
-    border: 1px solid var(--edge-bronze);
-    box-shadow: var(--groove-shadow);
-    font-size: 12px;
-    color: var(--gold);
-  }
-  .ghost-chip.ahead {
-    border-color: rgba(0, 245, 212, 0.55);
-    color: var(--cyan);
-  }
-  .ghost-chip.behind {
-    border-color: rgba(248, 113, 113, 0.55);
-    color: #f87171;
-  }
-
-  .hud-tr-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  /* 本关目标：小铜牌（与机坞铭牌同一种面），读数不抢收集数字 */
-  .hud-goal {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    height: var(--ctl-sm);
-    padding: 0 8px;
-    border-radius: var(--r-sm);
-    background: var(--plate-brass);
-    border: 1px solid var(--plate-brass-line);
-    box-shadow: var(--plate-brass-shadow);
-    color: var(--text);
-    font-size: var(--ctl-font-sm);
-    transition:
-      border-color 0.12s ease,
-      color 0.12s ease;
-  }
-  .hud-goal b {
-    color: var(--gold-bright);
-    font-weight: 800;
-  }
-  .hud-goal:hover {
-    border-color: var(--edge-bronze-hot);
-    color: var(--gold-bright);
-  }
-
-  /* 设置键：凹槽小方键（原冷蓝胶囊 + 切角已取消） */
-  .hud-settings-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--ctl-sm);
-    height: var(--ctl-sm);
-    border-radius: var(--ctl-radius);
-    background: var(--groove-bg);
-    border: 1px solid var(--edge-bronze);
-    box-shadow: var(--groove-shadow);
-    color: var(--muted);
-  }
-  .hud-settings-btn:hover {
-    border-color: var(--edge-bronze-hot);
-    color: var(--gold-bright);
-  }
-
-  /* ---------- 触屏：所有可点件 ≥40px ---------- */
-
-  @media (max-width: 640px) and (orientation: portrait) {
-    .hud {
-      padding: 6px 8px;
+  @keyframes hud-pop {
+    0% {
+      transform: scale(1);
     }
-    /* 竖屏画布小：收集读数改成单行「收集 0/24」，把压住画布的高度从 ~75px 收到 ~34px */
-    .collect-readout {
-      flex-direction: row;
-      align-items: baseline;
-      gap: 5px;
-      min-width: 0;
-      padding: 3px 10px 7px;
+    55% {
+      transform: scale(1.18);
     }
-    .collect-label {
-      letter-spacing: 1px;
-    }
-    .hud-goal {
-      font-size: 11px;
-    }
-    .collect-value b {
-      font-size: 24px;
-    }
-    .hud-goal {
-      font-size: 11px;
-      padding: 0 8px;
+    100% {
+      transform: scale(1);
     }
   }
 
-  /* 矮屏：收起次要读数，给画布让路 */
-  @media (max-width: 640px) and (orientation: portrait) and (max-height: 700px) {
-    .hud-goal {
-      display: none;
-    }
-  }
-  @media (orientation: landscape) and (max-height: 700px) {
-    .hud-goal {
-      display: none;
-    }
-  }
-
-  /* ============================================================
-   * 运行态信息组（第九轮）：得分 / 连击 / 星级进度 / 剩余时间
-   * 原来主游戏屏只有「收集 x/y」，95% 是空白——引擎里的得分、连击、
-   * 进度、星级门槛全都有，但一个都没常驻显示。
-   * ============================================================ */
-
-  /* 通用读数芯片 */
-  .stat-chip {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: var(--r-sm);
-    background: rgba(8, 12, 20, 0.62);
-    border: 1px solid var(--edge-faint);
-    backdrop-filter: blur(6px);
-  }
-  .stat-label {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.5px;
-  }
-  .stat-value {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.1;
-  }
-  .stat-score .stat-value {
-    color: var(--gold-bright);
-  }
-  .stat-sub {
-    font-style: normal;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--muted);
-  }
-  /* 顶部居中得分：不进 flex 流，避免与左侧缎带、右上收集牌打架 */
-  .hud-score-top {
-    position: absolute;
-    top: calc(var(--hud-h) + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 5px 14px;
-    background: rgba(8, 12, 20, 0.72);
-    border-color: var(--edge-bronze);
-  }
-  .hud-score-top .stat-value {
-    font-size: 20px;
-  }
-  .stat-combo {
-    border-color: var(--edge-bronze-hot);
-    background: rgba(60, 40, 12, 0.7);
-  }
-  .stat-combo .stat-value {
-    color: var(--gold-bright);
-    font-size: 19px;
-  }
-
-  /* 星级进度：一条轨道 + 三个门槛刻度 + 当前星数 */
+  /* ---------- 星级进度卡 ---------- */
   .star-meter {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 7px;
     align-items: flex-end;
-    min-width: 168px;
-    padding: 6px 10px;
-    border-radius: var(--r-sm);
-    background: rgba(8, 12, 20, 0.62);
-    border: 1px solid var(--edge-faint);
-    backdrop-filter: blur(6px);
+    min-width: 196px;
+    padding: 10px 16px;
+    border-radius: var(--r-md);
+    background: var(--mat-block);
+    border: 3px solid #ffffff;
+    box-shadow:
+      0 4px 0 #d6ecf9,
+      0 12px 22px rgba(56, 116, 150, 0.16);
   }
   .star-meter-track {
     position: relative;
     width: 100%;
-    height: 5px;
-    border-radius: 3px;
-    background: rgba(0, 0, 0, 0.5);
+    height: 10px;
+    border-radius: var(--r-pill);
+    background: var(--groove-bg);
+    box-shadow: var(--groove-shadow);
     overflow: visible;
   }
   .star-meter-fill {
@@ -473,98 +360,239 @@
     left: 0;
     top: 0;
     height: 100%;
-    border-radius: 3px;
-    background: linear-gradient(90deg, var(--bronze-bright), var(--gold-bright));
+    border-radius: var(--r-pill);
+    background: linear-gradient(90deg, var(--coral-bright), var(--coral));
     transition: width 240ms cubic-bezier(0.16, 1, 0.3, 1);
   }
   .star-meter-tick {
     position: absolute;
     top: -2px;
-    width: 1px;
-    height: 9px;
-    background: rgba(255, 255, 255, 0.35);
+    width: 2px;
+    height: 14px;
+    background: #ffffff;
+    border-radius: 2px;
   }
   .star-meter-legend {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
-    font-size: 11px;
   }
   .star-meter-stars {
     display: inline-flex;
-    gap: 2px;
+    gap: 3px;
   }
   .star-dot {
     font-style: normal;
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.2);
-    transition: color 200ms ease;
+    font-size: 16px;
+    /* 未获得星也要 ≥3:1（原 --line-bright 只有 1.8:1） */
+    color: #6f96ab;
+    transition: color 180ms ease;
   }
   .star-dot.on {
-    color: var(--gold-bright);
-    text-shadow: 0 0 6px rgba(255, 209, 102, 0.5);
+    color: var(--coral-text);
   }
   .star-meter-gap {
+    font-size: var(--fs-xs);
+    font-weight: 800;
     color: var(--muted);
+    white-space: nowrap;
   }
   .star-meter-gap.max {
-    color: var(--gold-bright);
+    color: var(--mint-deep);
   }
 
-  /* 底部剩余时间条：贴在指令栏上方，横贯画布底部 */
+  /* ---------- 本关目标 / 设置：白药丸键 ---------- */
+  .hud-tr-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hud-goal,
+  .hud-settings-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--ctl-sm);
+    padding: 0 14px;
+    border-radius: var(--r-pill);
+    background: var(--mat-block);
+    border: 3px solid #ffffff;
+    box-shadow: 0 3px 0 #d6ecf9;
+    color: var(--muted);
+    font-family: var(--font-round);
+    font-size: var(--ctl-font-sm);
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 110ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .hud-goal b {
+    color: var(--coral-text);
+    font-size: var(--ctl-font);
+  }
+  .hud-settings-btn {
+    width: var(--ctl-sm);
+    padding: 0;
+    justify-content: center;
+    color: var(--coral-text);
+    border-radius: 50%;
+  }
+  .hud-goal:active,
+  .hud-settings-btn:active {
+    transform: translateY(2px);
+  }
+  .hud-goal:focus-visible,
+  .hud-settings-btn:focus-visible {
+    outline: 3px solid var(--sky-deep);
+    outline-offset: 2px;
+  }
+
+  /* 幽灵竞速芯片 */
+  .ghost-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: var(--r-pill);
+    background: var(--grape-dim);
+    border: 2px solid var(--grape);
+    color: var(--grape-deep);
+    font-size: var(--fs-xs);
+    font-weight: 800;
+  }
+  .ghost-chip.ahead {
+    background: var(--mint-dim);
+    border-color: var(--mint);
+    color: var(--mint-edge);
+  }
+  .ghost-chip.behind {
+    background: var(--danger-dim);
+    border-color: var(--danger);
+    color: var(--danger-deep);
+  }
+
+  /* ---------- 底部时间条 ---------- */
   .time-bar {
     position: absolute;
     left: 50%;
-    bottom: calc(var(--cmd-h) + 34px);
+    bottom: calc(var(--cmd-h) + var(--cmd-pad-b) + 10px);
     transform: translateX(-50%);
-    width: min(420px, 62vw);
-    height: 6px;
-    border-radius: 3px;
-    background: rgba(0, 0, 0, 0.55);
-    border: 1px solid var(--edge-faint);
+    width: min(440px, 60vw);
+    height: 16px;
+    border-radius: var(--r-pill);
+    /* 轨道用浅蓝内凹：0% 时也能看出这是进度条，而不是一块白板 */
+    background: var(--groove-bg);
+    border: 3px solid #ffffff;
+    box-shadow:
+      0 4px 0 #d6ecf9,
+      var(--groove-shadow);
     pointer-events: none;
-    overflow: visible;
+    overflow: hidden;
   }
   .time-bar-fill {
     height: 100%;
-    border-radius: 3px;
-    background: linear-gradient(90deg, var(--bronze), var(--gold-bright));
+    border-radius: var(--r-pill);
+    background: linear-gradient(90deg, var(--mint-bright), var(--mint));
     transition: width 120ms linear;
   }
   .time-bar.urgent .time-bar-fill {
-    background: linear-gradient(90deg, #d97706, #fca5a5);
+    background: linear-gradient(90deg, #ff9d7a, var(--danger));
   }
   .time-bar-label {
     position: absolute;
-    right: 0;
-    top: -16px;
-    font-size: 11px;
-    color: var(--muted);
-  }
-  .time-bar.urgent .time-bar-label {
-    color: #fca5a5;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-round);
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: 0.5px;
   }
 
-  /* 小屏（手机竖屏）：读数组缩小一档，避免压住星盘 */
-  @media (max-width: 640px) {
-    .stat-chip {
-      padding: 3px 8px;
+  /* ---------- 响应式 ---------- */
+  @media (max-width: 900px) {
+    .hud {
+      padding: calc(var(--hud-h) + 8px) 12px 10px;
     }
-    .stat-value {
-      font-size: 15px;
+    .hud-score-top {
+      top: calc(var(--hud-h) + 6px);
+      padding: 8px 18px;
     }
-    .stat-combo .stat-value {
-      font-size: 17px;
+    .hud-score-top .stat-value {
+      font-size: 24px;
+    }
+    .collect-value b {
+      font-size: 28px;
     }
     .star-meter {
-      min-width: 132px;
-      padding: 5px 8px;
+      min-width: 168px;
+      padding: 8px 12px;
+    }
+    .stat-chip {
+      padding: 6px 12px;
+    }
+    .stat-value {
+      font-size: 18px;
+    }
+  }
+
+  /* 手机竖屏：顶栏隐藏 → HUD 直接贴顶 */
+  @media (max-width: 640px) and (orientation: portrait) {
+    .hud {
+      padding: calc(10px + var(--safe-t)) 12px 10px;
+    }
+    .hud-score-top {
+      top: calc(10px + var(--safe-t));
+      left: 12px;
+      transform: none;
+    }
+    .hud-tl {
+      max-width: 100%;
+      flex-direction: row;
+      margin-top: 52px;
+    }
+    .hud-tr {
+      max-width: 58%;
+    }
+    .star-meter {
+      min-width: 0;
+      width: 100%;
     }
     .time-bar {
-      width: min(280px, 72vw);
-      bottom: calc(var(--cmd-h) + var(--tab-h) + 20px);
+      width: min(320px, 76vw);
+      bottom: calc(var(--tab-h) + var(--safe-b) + var(--cmd-h) + 22px);
     }
+  }
+
+  /* 手机横屏：更紧凑 */
+  @media (max-width: 900px) and (orientation: landscape) {
+    .hud {
+      padding: calc(8px + var(--safe-t)) 10px 8px;
+    }
+    .hud-score-top {
+      top: calc(8px + var(--safe-t));
+    }
+    .star-meter {
+      display: none;
+    }
+    .time-bar {
+      width: min(300px, 40vw);
+      bottom: calc(var(--ctl-lg) + 26px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hud-pulse {
+      animation: none;
+    }
+    .star-meter-fill,
+    .collect-bar {
+      transition: none;
+    }
+  }
+  :global(.reduce-motion) .hud-pulse {
+    animation: none;
   }
 </style>

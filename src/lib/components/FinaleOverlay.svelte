@@ -96,7 +96,7 @@
   aria-modal="true"
   aria-label={mastered ? '全部关卡三星达成' : '通关达成'}
 >
-  <!-- 完结演出：一块平板 + 落款朱印；内层滚动，主操作常驻 -->
+  <!-- 完结演出：白卡厚边 + 落款印；内层滚动，主操作常驻 -->
   <div class="card-wrap">
     <div class="card g-rivets">
       <div class="card-rail">
@@ -161,7 +161,11 @@
                 <svg viewBox="0 0 640 640" aria-hidden="true">
                   <polyline points={shapePoints(lv.id)} />
                 </svg>
-                <span class="wall-st">{'★'.repeat(lv.stars)}{'☆'.repeat(3 - lv.stars)}</span>
+                <span class="wall-st"
+                  ><i class="st-on">{'★'.repeat(lv.stars)}</i><i class="st-off"
+                    >{'☆'.repeat(3 - lv.stars)}</i
+                  ></span
+                >
                 <!-- 悬停/聚焦才显示关卡名：静态堆 21 个名字会挤成一团 -->
                 <span class="wall-tip" aria-hidden="true">{lv.name}</span>
               </button>
@@ -205,10 +209,10 @@
     align-items: center;
     justify-content: center;
     padding: 16px;
-    background: rgba(4, 6, 12, 0.88);
-    backdrop-filter: blur(5px);
+    background: var(--scrim-strong);
     animation: fin-fade 0.35s ease-out;
   }
+
   @keyframes fin-fade {
     from {
       opacity: 0;
@@ -221,7 +225,7 @@
   /* 外框：限高，内层滚动 */
   .card-wrap {
     position: relative;
-    width: min(94vw, 440px);
+    width: min(94vw, 460px);
     max-height: calc(100dvh - 24px);
     display: flex;
   }
@@ -236,16 +240,17 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     text-align: center;
-    background: var(--metal);
-    border: 1px solid var(--edge-soft);
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    animation: fin-pop 0.45s cubic-bezier(0.34, 1.3, 0.64, 1);
+    background: var(--mat-plate);
+    border: 3px solid #ffffff;
+    border-radius: var(--r-xl);
+    box-shadow: var(--sh-3);
+    animation: fin-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     scrollbar-width: thin;
-    scrollbar-color: rgba(245, 184, 65, 0.3) transparent;
+    scrollbar-color: #b6dcf2 transparent;
   }
+
   @keyframes fin-pop {
     from {
       opacity: 0;
@@ -263,39 +268,48 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin: 0 -20px 2px;
-    padding: 10px 14px 8px;
-    border-bottom: 1px solid var(--edge-faint);
-    border-radius: 10px 10px 0 0;
+    margin: 0 -20px 4px;
+    padding: 15px 16px 10px;
+    border-bottom: 2px solid var(--line);
   }
+
+  .card-rail .g-label {
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: var(--coral-edge);
+  }
+
   .rail-lv {
-    font-size: var(--fs-sm);
-    font-weight: 600;
-    color: var(--text);
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--muted);
     white-space: nowrap;
   }
 
-  /* 落款朱印：竖排两字（避开右上角） */
+  /* 落款印：珊瑚糖果印（竖排两字，避开右上角） */
   .seal {
     position: absolute;
-    top: 46px;
-    right: 12px;
-    width: 36px;
-    height: 46px;
+    top: 52px;
+    right: 14px;
+    width: 38px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
     writing-mode: vertical-rl;
     text-orientation: upright;
     letter-spacing: 2px;
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    font-family: var(--font-round);
     font-size: 16px;
-    font-weight: 700;
-    color: #fdece7;
-    background: linear-gradient(160deg, #c0392b, #8e2a1f);
-    border-radius: 5px;
+    font-weight: 900;
+    color: var(--coral-ink);
+    background: var(--face-gold-plate);
+    border: 2px solid #ffffff;
+    border-radius: var(--r-sm);
+    box-shadow: 0 3px 0 var(--coral-edge);
     animation: seal-stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s backwards;
   }
+
   @keyframes seal-stamp {
     from {
       opacity: 0;
@@ -308,11 +322,12 @@
   }
 
   .burst {
-    margin-top: 22px;
-    color: var(--gold-bright);
+    margin-top: 24px;
+    color: var(--coral-text);
     line-height: 1;
     animation: fin-burst 0.6s cubic-bezier(0.34, 1.5, 0.64, 1);
   }
+
   @keyframes fin-burst {
     0% {
       transform: scale(0.6) rotate(-8deg);
@@ -329,64 +344,78 @@
 
   h2 {
     margin: 0;
-    font-size: 26px;
-    letter-spacing: 5px;
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    color: var(--gold-bright);
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--text);
   }
 
   .sub {
     margin: 0;
-    font-size: var(--fs-sm);
+    font-size: 14px;
+    font-weight: 600;
     color: var(--muted);
-    line-height: 1.75;
+    line-height: 1.7;
   }
 
-  /* 战绩读数：两列文本 + 分隔线 */
+  /* 战绩读数：两列白卡 */
   .stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0 22px;
+    gap: 8px;
     width: 100%;
     margin-top: 4px;
     text-align: left;
   }
+
   .cell {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 8px;
-    padding: 7px 0;
-    border-bottom: 1px solid var(--edge-faint);
+    padding: 10px 12px;
+    border-radius: var(--r-md);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
+    box-shadow: 0 2px 0 #d9eefb;
   }
+
   .cell b {
-    font-size: 20px;
+    font-size: 22px;
+    font-weight: 900;
     order: 2;
+    color: var(--coral-text);
+    font-variant-numeric: tabular-nums;
   }
+
   .cell b i {
     font-style: normal;
-    font-size: var(--fs-sm);
+    font-size: 12px;
     color: var(--muted-2);
-    font-weight: 400;
-    text-shadow: none;
+    font-weight: 700;
   }
+
   .cell span {
-    font-size: var(--fs-sm);
+    font-size: 12.5px;
+    font-weight: 700;
     color: var(--muted);
     order: 1;
   }
 
-  /* 战利品墙：按章排列全部曲线的缩略轮廓（无外框） */
+  /* 战利品墙：一张白卡装下全部曲线缩略 */
   .wall {
     display: flex;
     flex-direction: column;
     gap: 8px;
     width: 100%;
-    margin: 6px 0 2px;
-    padding: 12px 0;
-    border-top: 1px solid var(--edge-faint);
-    border-bottom: 1px solid var(--edge-faint);
+    margin: 4px 0 2px;
+    padding: 12px;
+    border-radius: var(--r-md);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
+    box-shadow: var(--mat-block-shadow);
   }
+
   .wall-ch {
     position: relative;
     display: flex;
@@ -394,11 +423,12 @@
     justify-content: center;
     gap: 6px;
   }
+
   .wall-item {
     appearance: none;
-    background: none;
-    border: none;
-    padding: 0;
+    background: var(--mat-block);
+    border: 2px solid var(--line);
+    padding: 4px;
     margin: 0;
     font: inherit;
     color: inherit;
@@ -408,17 +438,26 @@
     flex-direction: column;
     align-items: center;
     gap: 1px;
-    border-radius: 8px;
-    transition: background 0.15s;
+    border-radius: var(--r-sm);
+    transition:
+      border-color 0.15s,
+      transform 0.12s;
     animation: wall-in 0.4s cubic-bezier(0.34, 1.3, 0.64, 1) backwards;
   }
+
   .wall-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--coral-text);
   }
+
+  .wall-item:active {
+    transform: translateY(1px);
+  }
+
   .wall-item:focus-visible {
-    outline: 2px solid var(--cyan);
+    outline: 3px solid var(--sky-deep);
     outline-offset: 1px;
   }
+
   @keyframes wall-in {
     from {
       opacity: 0;
@@ -429,57 +468,82 @@
       transform: translateY(0) scale(1);
     }
   }
+
   .wall-item svg,
   .wall-item .wall-st {
-    opacity: 0.45;
+    opacity: 0.72;
   }
+
   .wall-item.lit svg,
   .wall-item.lit .wall-st {
     opacity: 1;
   }
+
   .wall-name {
     position: absolute;
     left: 0;
     top: 50%;
     transform: translateY(-50%);
     font-size: 12px;
-    color: var(--muted);
+    font-weight: 700;
+    color: var(--muted-2);
     white-space: nowrap;
   }
+
   .wall-item svg {
-    width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
   }
+
   .wall-item polyline {
     fill: none;
-    stroke: rgba(163, 144, 109, 0.6);
+    stroke: var(--line-bright);
     stroke-width: 8;
     stroke-linejoin: round;
   }
+
   .wall-item.lit polyline {
-    stroke: rgba(0, 245, 212, 0.9);
+    stroke: var(--mint);
   }
+
   .wall-item.full polyline {
-    stroke: rgba(245, 184, 65, 0.95);
+    stroke: var(--coral);
   }
+
   .wall-st {
-    font-size: 11px;
+    font-size: 12px;
+    font-weight: 800;
     letter-spacing: 1px;
-    color: var(--gold);
+    color: var(--coral-text);
     line-height: 1;
   }
+
+  .wall-st i {
+    font-style: normal;
+  }
+
+  .st-on {
+    color: var(--coral-text);
+  }
+
+  .st-off {
+    color: var(--line-bright);
+  }
+
   /* 悬停/键盘聚焦时冒出关卡名 */
   .wall-tip {
     position: absolute;
     left: 50%;
-    bottom: calc(100% + 3px);
+    bottom: calc(100% + 4px);
     transform: translateX(-50%) translateY(2px);
-    padding: 2px 8px;
-    border-radius: 5px;
-    border: 1px solid var(--edge-faint);
-    background: var(--metal-3);
+    padding: 3px 9px;
+    border-radius: var(--r-sm);
+    border: 2px solid #ffffff;
+    background: var(--mat-block);
+    box-shadow: var(--sh-1);
     color: var(--text);
     font-size: 12px;
+    font-weight: 700;
     line-height: 18px;
     white-space: nowrap;
     opacity: 0;
@@ -489,7 +553,9 @@
       transform 0.15s;
     z-index: 3;
   }
-  .wall-item:hover .wall-tip {
+
+  .wall-item:hover .wall-tip,
+  .wall-item:focus-visible .wall-tip {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
@@ -499,23 +565,28 @@
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    border-radius: var(--r-sm);
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 900;
     line-height: 1;
-    color: #fdece7;
-    background: linear-gradient(160deg, #c0392b, #8e2a1f);
+    color: var(--coral-ink);
+    background: var(--face-gold-plate);
   }
 
+  /* 收尾说明：浅薄荷提示卡 */
   .note {
     margin: 0;
-    font-size: var(--fs-sm);
+    padding: 10px 12px;
+    border-radius: var(--r-sm);
+    border: 2px solid var(--note-edge);
+    background: var(--note-bg);
+    font-size: 13px;
+    font-weight: 600;
     color: var(--muted);
     line-height: 1.7;
     text-align: left;
@@ -530,7 +601,7 @@
     justify-content: center;
     margin: 0 -20px;
     padding: 12px 20px 16px;
-    background: linear-gradient(180deg, rgba(20, 15, 9, 0) 0, rgba(20, 15, 9, 0.96) 16px, #140f09);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0, #ffffff 18px);
   }
 
   button.primary {
@@ -539,25 +610,19 @@
     padding: 0 20px;
     cursor: pointer;
     font-size: var(--ctl-font);
-    font-weight: 700;
-    letter-spacing: 2px;
+    font-weight: 800;
+    letter-spacing: 1px;
     -webkit-tap-highlight-color: transparent;
-    /* 形与四态交给公共件 .g-btn--primary（牌匾）：本地只保留布局与字号 */
-  }
-  button.primary:hover {
-    background: var(--face-gold-hover);
-  }
-  button.primary:active {
-    transform: translateY(2px);
   }
 
-  /* 精通结局：标题更亮，不加额外装饰 */
+  /* 精通结局：标题用珊瑚强调 */
   .mastered h2 {
-    color: var(--gold-bright);
+    color: var(--coral-text);
   }
 
   /* 减弱动态效果：位移/缩放动画关闭（颜色/透明度保留） */
   @media (prefers-reduced-motion: reduce) {
+    .finale,
     .card,
     .seal,
     .burst,
@@ -565,6 +630,8 @@
       animation: none;
     }
   }
+
+  :global(.reduce-motion) .finale,
   :global(.reduce-motion) .card,
   :global(.reduce-motion) .seal,
   :global(.reduce-motion) .burst,
@@ -575,20 +642,39 @@
   /* 矮屏：收紧密度 */
   @media (max-height: 520px) {
     .card {
-      gap: 9px;
+      gap: 10px;
       padding: 0 16px;
     }
     .card-rail {
       margin: 0 -16px 0;
-      padding: 9px 12px;
+      padding: 10px 12px;
     }
     .foot {
       margin: 0 -16px;
       padding: 10px 16px 14px;
     }
     .wall {
-      gap: 5px;
-      padding: 8px 0;
+      gap: 6px;
+      padding: 10px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    h2 {
+      font-size: 26px;
+    }
+    .stats {
+      grid-template-columns: 1fr;
+    }
+    /* 窄屏：章名挪到行首，避免与缩略图重叠 */
+    .wall-ch {
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+    .wall-name {
+      position: static;
+      transform: none;
+      margin-right: 4px;
     }
   }
 </style>

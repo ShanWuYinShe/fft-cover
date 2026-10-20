@@ -35,7 +35,7 @@
   }
 </script>
 
-<!-- 指针调参台：默认只露本关槽位 + 核心参数，其他折进 ArmEditor 的「高级调谐」 -->
+<!-- 指针调参台：本关槽位 + 核心参数白卡，其他精度工具折进 ArmEditor 的「高级调谐」 -->
 <section class="deck" aria-label="指针调参">
   <div class="deck-head">
     <h2 class="deck-title">指针</h2>
@@ -62,10 +62,8 @@
             : `点击启通指针 ${CIRCLED[i]}（${CELESTIAL_NAMES[i]}）`}
           onclick={() => pick(i)}
         >
-          <!-- 内嵌律柱：柱槽 + 自下而上的通电能量柱（纯装饰层） -->
-          <span class="slot-fill" aria-hidden="true"></span>
-          <span class="slot-no g-num">{CIRCLED[i]}</span>
-          <span class="g-lamp slot-lamp" aria-hidden="true"></span>
+          <span class="slot-no">{CIRCLED[i]}</span>
+          <span class="slot-lamp" aria-hidden="true"></span>
         </button>
       {/if}
     {/each}
@@ -80,26 +78,22 @@
 
 <style>
   /* ============================================================
-   * 指针调参台 · 器物化（第五轮）
-   * 面板：青铜边 + 金属面 + 内暗线；段头：3px 金铭牌块；
-   * 槽位：青铜切角插槽（切角写法 = 外层铜色 + ::before 内缩 1px 当槽腔）
-   *       + 内嵌可通电律柱 + 菱形宝石灯；选中 = 金边 + 金宝石。
-   * 不发光（宝石灯自身是唯一例外）；动效沿用前几轮。
+   * 指针调参台 · 厚卡纸（第十四轮）
+   * 底板 = 浅蓝卡纸（白边 + 硬投影），里面才是白色参数卡；
+   * 槽位 = 圆形厚按键：白面浅蓝边 → 选中变珊瑚面并压下去；
+   * 未通电整体降饱和，通电靠薄荷小灯点题。
+   * 没有回纹 / 铆钉 / 切角 / 发光。
    * ============================================================ */
   .deck {
     display: flex;
     flex-direction: column;
     min-width: 0;
-    /* 机坞比面板高时把面板撑满（第六轮：消灭机坞下半屏死区） */
     flex: 1 0 auto;
-    padding: 8px 10px 10px;
-    border-radius: var(--r-md);
-    border: 1px solid var(--edge-bronze);
-    background: var(--mat-plate);
-    box-shadow:
-      var(--bevel-top),
-      inset 0 0 0 1px var(--edge-inner),
-      var(--mat-plate-shadow);
+    padding: 12px 14px 14px;
+    border: 3px solid #ffffff;
+    border-radius: var(--r-lg);
+    background: var(--bg-chassis);
+    box-shadow: var(--mat-block-shadow);
     /* 区块首次出现：上移 6px 淡入；只在挂载时播一次，重复渲染不重播 */
     animation: deck-in 300ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
@@ -120,29 +114,32 @@
     gap: 8px;
     flex-wrap: wrap;
   }
-  /* 段头铭牌：左侧 3px 金块 + 金色铭文字 */
+  /* 段头：珊瑚圆点 + 珊瑚深字（不用金属铭牌） */
   .deck-title {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
     margin: 0;
-    font-size: var(--ctl-font);
-    font-weight: 700;
-    letter-spacing: 1.2px;
-    color: var(--gold-bright);
+    font-family: var(--font-round);
+    font-size: var(--fs-lg);
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    /* 16px 正文级：coral-edge 4.45:1 压线，改 coral-text 5.55:1 */
+    color: var(--coral-text);
     white-space: nowrap;
   }
   .deck-title::before {
     content: '';
     flex: none;
-    width: 3px;
-    height: 13px;
-    border-radius: 1px;
-    background: var(--face-gold-plate);
-    box-shadow: 0 0 6px rgba(245, 184, 65, 0.35);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--coral);
+    box-shadow: 0 2px 0 var(--coral-edge);
   }
   .deck-hint {
-    font-size: var(--ctl-font-sm);
+    font-size: var(--fs-sm);
+    font-weight: 600;
     color: var(--muted);
     white-space: nowrap;
   }
@@ -150,151 +147,101 @@
   .slots {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 6px;
+    gap: 10px;
+    margin-top: 10px;
   }
 
-  /* 插槽：外层 = 1px 青铜边（圆角键帽），::before = 内缩的凹槽腔 */
+  /* ---------- 槽位：圆形厚实体（白面 + 浅蓝边 + 4px 硬侧壁） ---------- */
   .slot {
     position: relative;
-    isolation: isolate;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    min-width: 42px;
-    min-height: var(--ctl-md);
-    padding: 0 5px;
-    border: none;
-    border-radius: var(--r-sm);
-    background: var(--edge-bronze);
+    width: var(--ctl-lg);
+    height: var(--ctl-lg);
+    padding: 0;
+    border: 3px solid var(--line);
+    border-radius: 50%;
+    background: #ffffff;
     color: var(--muted);
     cursor: pointer;
+    box-shadow: 0 4px 0 var(--mat-frame-line);
     transition:
       color 120ms ease,
       background 120ms ease,
-      filter 120ms ease,
-      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      border-color 120ms ease,
+      box-shadow 120ms ease,
+      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      filter 120ms ease;
   }
-  .slot::before {
-    content: '';
-    position: absolute;
-    inset: 1px;
-    z-index: -1;
-    border-radius: calc(var(--r-sm) - 1px);
-    background: var(--groove-bg);
-    box-shadow: var(--groove-shadow);
-  }
-  .slot:hover {
+  .slot:hover:not(.active) {
+    border-color: var(--line-bright);
     color: var(--text);
-    background: var(--edge-bronze-hot);
+    transform: translateY(-1px);
   }
-  .slot.on {
-    color: var(--text);
+  .slot:focus-visible {
+    outline: 3px solid var(--sky-deep);
+    outline-offset: 3px;
   }
-  .slot.on::before {
-    box-shadow:
-      var(--groove-shadow),
-      inset 0 0 0 1px rgba(0, 245, 212, 0.16);
-  }
-  /* 选中：金边（只换边色，不加外发光） */
-  .slot.active {
-    color: var(--gold-bright);
-    background: var(--edge-bronze-hot);
-  }
-  .slot.active::before {
-    box-shadow:
-      var(--groove-shadow),
-      inset 0 0 0 1px rgba(245, 184, 65, 0.32);
-  }
-  /* 按下：面下沉 1px + 内阴影加深（第五轮四态；桌面不整块缩放） */
-  .slot:active:not(:disabled)::before {
-    inset: 2px 1px 1px;
-    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.9);
+  /* 未通电：降饱和（仍可点，点一下就通电） */
+  .slot:not(.on) {
+    filter: saturate(0.25);
+    opacity: 0.82;
   }
 
-  /* 内嵌律柱：竖直柱槽；通电时能量柱自下而上填充（开 240ms / 关 140ms 反向） */
-  .slot-fill {
-    position: relative;
-    z-index: 1;
-    flex: none;
-    width: 7px;
-    height: calc(var(--ctl-md) - 12px);
-    border-radius: 2px;
-    border: 1px solid var(--plate-brass-line);
-    background: #04070c;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9);
-    overflow: hidden;
-    pointer-events: none;
-    transition: border-color 240ms ease;
+  /* 选中：珊瑚填充 + 白边 + 下沉感（侧壁变薄、内影加深、整体压 2px） */
+  .slot.active {
+    border-color: #ffffff;
+    background: var(--plate-brass);
+    color: var(--coral-ink);
+    box-shadow:
+      0 2px 0 var(--coral-edge),
+      inset 0 3px 8px rgba(150, 40, 10, 0.26);
+    transform: translateY(2px);
   }
-  .slot-fill::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    transform: scaleY(0);
-    transform-origin: bottom center;
-    background: linear-gradient(180deg, #9cf8e6 0%, #2fd8bb 45%, #0a7a68 100%);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
-    transition: transform 140ms ease-out;
-  }
-  .slot.on .slot-fill {
-    border-color: rgba(0, 245, 212, 0.55);
-  }
-  .slot.on .slot-fill::after {
-    transform: scaleY(1);
-    transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  .slot:active:not(.active) {
+    box-shadow: 0 1px 0 var(--mat-frame-line);
+    transform: translateY(2px);
   }
 
   .slot-no {
-    position: relative;
-    z-index: 1;
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: 12px;
+    font-family: var(--font-round);
+    font-size: 18px;
+    font-weight: 900;
     line-height: 1;
+    font-variant-numeric: tabular-nums;
     letter-spacing: 0;
-    text-shadow: none;
-  }
-  /* 宝石灯：菱形小石。通电 = 青宝石，选中 = 金宝石（唯一允许的发光处） */
-  .slot .slot-lamp {
-    position: relative;
-    z-index: 1;
-    flex: none;
-    width: 5px;
-    height: 5px;
-    border-radius: 1px;
-    transform: rotate(45deg);
-    background: #1b2334;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
-  }
-  .slot.on .slot-lamp {
-    background: radial-gradient(circle at 35% 30%, #dffff7 0%, #00f5d4 60%, #065f52 100%);
-    box-shadow: 0 0 4px rgba(0, 245, 212, 0.65);
-  }
-  .slot.active .slot-lamp {
-    background: radial-gradient(circle at 35% 30%, #fffbe8 0%, #ffd166 60%, #a86b00 100%);
-    box-shadow: 0 0 5px rgba(255, 209, 102, 0.75);
   }
 
-  /* 引导态专属高亮：金色描边光晕（沿圆角形状，不依赖 clip-path） */
+  /* 小灯：右下角一颗糖果点。断电 = 浅蓝，通电 = 薄荷 */
+  .slot-lamp {
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    background: var(--line-bright);
+  }
+  .slot.on .slot-lamp {
+    background: var(--mint);
+    box-shadow: 0 1px 0 var(--mint-edge);
+  }
+
+  /* 引导态：珊瑚描边呼吸（不用发光毛边） */
   .slot.guide {
     animation: slot-guide-pulse 1.6s ease-in-out infinite;
   }
   @keyframes slot-guide-pulse {
     0%,
     100% {
-      filter: drop-shadow(0 0 2px var(--gold-bright)) drop-shadow(0 0 1px var(--gold-bright));
+      outline: 3px solid var(--coral);
+      outline-offset: 2px;
     }
     50% {
-      filter: drop-shadow(0 0 2px rgba(245, 184, 65, 0.3));
-    }
-  }
-
-  /* 触屏：按下保留缩放回弹（桌面用下沉） */
-  @media (pointer: coarse) {
-    .slot:active:not(:disabled) {
-      transform: scale(0.97);
-      transition-timing-function: ease-out;
+      outline: 3px solid var(--coral-bright);
+      outline-offset: 4px;
     }
   }
 
@@ -303,42 +250,25 @@
     .deck {
       animation: none;
     }
-    .slot,
-    .slot-fill,
-    .slot-fill::after {
+    .slot {
       transition: none;
     }
-    .slot.guide {
-      filter: drop-shadow(0 0 1px var(--gold-bright));
-    }
-    .slot:active:not(:disabled) {
+    .slot:hover:not(.active),
+    .slot.active,
+    .slot:active:not(.active) {
       transform: none;
-    }
-    .slot:active:not(:disabled)::before {
-      inset: 1px;
-      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.85);
-    }
-    .slot.on .slot-fill::after {
-      transform: scaleY(1);
     }
   }
   :global(.reduce-motion) .slot.guide,
   :global(.reduce-motion) .deck {
     animation: none;
   }
-  :global(.reduce-motion) .slot,
-  :global(.reduce-motion) .slot-fill,
-  :global(.reduce-motion) .slot-fill::after {
+  :global(.reduce-motion) .slot {
     transition: none;
   }
-  :global(.reduce-motion) .slot.guide {
-    filter: drop-shadow(0 0 1px var(--gold-bright));
-  }
-  :global(.reduce-motion) .slot:active:not(:disabled) {
+  :global(.reduce-motion) .slot:hover:not(.active),
+  :global(.reduce-motion) .slot.active,
+  :global(.reduce-motion) .slot:active:not(.active) {
     transform: none;
-  }
-  :global(.reduce-motion) .slot:active:not(:disabled)::before {
-    inset: 1px;
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.85);
   }
 </style>

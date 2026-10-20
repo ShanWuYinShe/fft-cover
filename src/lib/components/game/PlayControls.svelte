@@ -160,48 +160,31 @@
 
 <style>
   /* ============================================================
-   * 底部指令栏：左「次级」/ 中「主操作」/ 右「更多」
-   * 全屏只有这一颗金色按钮，其余一律安静
+   * 底部指令栏（第十四轮）：白色厚药丸浮条
+   * 左「次级」/ 中「主操作（珊瑚厚实体）」/ 右「更多」
    * ============================================================ */
   .command-bar {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
     height: 100%;
     width: 100%;
-    padding: 0 14px;
+    padding: 8px 12px;
     box-sizing: border-box;
-    /* 指令栏 = 器物下沿：装甲板面料 + 顶部内框发丝线 */
     background: var(--mat-plate);
-    border-top: 1px solid var(--mat-frame-line);
-    box-shadow: var(--mat-plate-shadow);
+    border: 3px solid #ffffff;
+    border-radius: var(--r-pill);
+    box-shadow:
+      0 6px 0 #d2eafa,
+      0 20px 40px rgba(56, 116, 150, 0.2);
     z-index: 20;
   }
-  /* 器物内框：内缩一道铜线 */
-  .command-bar::after {
-    content: '';
-    position: absolute;
-    inset: 6px 12px;
-    z-index: 2;
-    border: 1px solid var(--mat-frame-line);
-    border-radius: 5px;
-    box-shadow: inset 0 0 0 1px var(--edge-inner);
-    pointer-events: none;
-  }
-  /* 雕花包角：全屏第二枚（左下角，与机坞那枚合计 2 处） */
+  /* 内框与包角：第十四轮取消 */
+  .command-bar::after,
   .command-bar::before {
-    content: '';
-    position: absolute;
-    left: 8px;
-    bottom: 6px;
-    z-index: 3;
-    width: 34px;
-    height: 34px;
-    background: var(--tex-corner) no-repeat center / 34px 34px;
-    opacity: 0.55;
-    pointer-events: none;
+    content: none;
   }
 
   .cmd-group {
@@ -213,6 +196,8 @@
   .cmd-left {
     flex: 1 1 0;
     justify-content: flex-start;
+    /* 窄屏时快捷键提示会被主操作压住 → 裁掉溢出，别让它钻到按钮底下 */
+    overflow: hidden;
   }
   .cmd-center {
     flex: 0 1 auto;
@@ -224,169 +209,213 @@
     justify-content: flex-end;
   }
 
-  /* ---------- 主操作：全屏唯一金色（金箔牌匾：拉丝叠金，深字） ---------- */
-  .cmd-primary {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    height: var(--ctl-lg);
-    min-width: 168px;
-    padding: 0 22px;
-    border-radius: var(--ctl-radius-lg);
-    border: none;
-    background-color: var(--gold);
-    background-image: var(--tex-brush), var(--face-gold-plate);
-    background-blend-mode: soft-light, normal;
-    color: #241300;
-    font-size: calc(var(--ctl-font) + 2px);
-    font-weight: 700;
-    letter-spacing: 2px;
-    white-space: nowrap;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.75),
-      inset 0 -2px 0 rgba(120, 70, 0, 0.45),
-      var(--sh-game);
-    transition:
-      transform 0.09s ease,
-      filter 0.12s ease;
-  }
-  .cmd-primary:hover {
-    filter: brightness(1.06);
-  }
-  .cmd-primary:focus-visible {
-    background-image: var(--tex-brush), var(--face-gold-hover);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.75),
-      inset 0 0 0 2px var(--edge-bronze-hot),
-      inset 0 -2px 0 rgba(120, 70, 0, 0.45),
-      var(--sh-game);
-  }
-  .cmd-primary:active {
-    transform: translateY(2px);
-    box-shadow:
-      inset 0 2px 8px rgba(0, 0, 0, 0.5),
-      0 1px 0 rgba(0, 0, 0, 0.5);
-  }
-  .cmd-primary.danger {
-    border-color: #fca5a5;
-    background: var(--face-danger);
-    color: #fff;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
-    box-shadow:
-      var(--bevel-top),
-      inset 0 -3px 0 rgba(80, 10, 10, 0.55),
-      0 4px 0 #6b1010;
-  }
-  .cmd-primary.danger:focus-visible {
-    filter: brightness(1.12);
-    box-shadow:
-      var(--bevel-top),
-      inset 0 0 0 1px rgba(255, 235, 220, 0.9),
-      inset 0 -3px 0 rgba(80, 10, 10, 0.55),
-      0 4px 0 #6b1010;
-  }
-
-  /* 待发提示：D 只留一圈静态铜边（循环呼吸光取消，全屏并发动画 -1） */
-  .primary-ring {
-    position: absolute;
-    inset: -4px;
-    border-radius: var(--ctl-radius-lg);
-    border: 1px solid var(--plate-brass-line);
-    opacity: 0.5;
-    pointer-events: none;
-  }
-  .cmd-primary.danger .primary-ring {
-    border-color: var(--cinnabar);
-  }
-
-  /* ---------- 次级按键：小铜牌（安静，只有材质没有光） ---------- */
+  /* ---------- 次级键：浅蓝药丸 ---------- */
   .ctrl-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    height: var(--ctl-md);
-    padding: 0 10px;
-    border-radius: var(--ctl-radius);
-    background: var(--mat-block);
-    border: 1px solid var(--edge-bronze);
-    box-shadow: var(--mat-block-shadow);
-    color: var(--text);
+    min-height: var(--ctl-md);
+    padding: 0 14px;
+    border-radius: var(--r-pill);
+    background: #eaf7ff;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 0 #d6ecf9;
+    color: var(--muted);
+    font-family: var(--font-round);
     font-size: var(--ctl-font-sm);
-    font-weight: 600;
+    font-weight: 800;
+    cursor: pointer;
     white-space: nowrap;
     transition:
-      background 0.12s ease,
-      border-color 0.12s ease,
-      color 0.12s ease;
+      transform 110ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      background 120ms ease;
   }
   .ctrl-btn:hover:not(:disabled) {
-    background: var(--face-plate-hot);
-    border-color: var(--edge-bronze-hot);
-    color: var(--gold-bright);
+    background: #d9efff;
+    color: var(--coral-text);
+  }
+  .ctrl-btn:active:not(:disabled) {
+    transform: translateY(2px);
+  }
+  .ctrl-btn:focus-visible {
+    outline: 3px solid var(--sky-deep);
+    outline-offset: 2px;
   }
   .ctrl-btn:disabled {
     opacity: 0.45;
+    cursor: not-allowed;
   }
   .ctrl-btn.gold {
-    border-color: var(--plate-brass-line);
-    color: var(--gold-bright);
-    background: var(--plate-brass);
+    background: var(--coral);
+    color: #ffffff;
+    box-shadow: 0 2px 0 var(--coral-edge);
   }
-
-  /* 键位提示：12px + --muted（11px/--muted-2 只有 3.77:1，低于红线） */
-  .key-hint {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    margin-left: 4px;
-    font-size: var(--ctl-font-sm);
-    color: var(--muted);
-    white-space: nowrap;
-  }
-  /* 键位提示：键帽 = 小凹槽（内阴影 + 下沿暖亮线） */
-  .key-hint kbd {
+  /* ---------- 主操作：珊瑚厚实体（全屏唯一高饱和块） ---------- */
+  .cmd-primary {
+    position: relative;
+    isolation: isolate;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 20px;
-    height: 18px;
-    padding: 0 4px;
-    border-radius: var(--r-sm);
-    background: var(--groove-bg);
-    box-shadow: var(--groove-shadow);
-    border: 1px solid var(--edge-bronze);
-    color: var(--muted);
-    font-family: inherit;
-    font-size: 10px;
-    font-weight: 700;
+    gap: 10px;
+    height: var(--ctl-lg);
+    min-width: 220px;
+    padding: 0 34px;
+    border-radius: var(--r-pill);
+    border: 3px solid #ffffff;
+    background: var(--coral-edge);
+    /* 珊瑚面上用深棕字（白字 2.6:1 不合格） */
+    color: var(--coral-ink);
+    font-family: var(--font-round);
+    font-size: calc(var(--ctl-font) + 3px);
+    font-weight: 900;
+    letter-spacing: 2px;
+    white-space: nowrap;
+    box-shadow:
+      0 6px 0 var(--coral-edge),
+      0 16px 30px rgba(200, 70, 30, 0.3);
+    transition:
+      transform 110ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 120ms ease;
+  }
+  /* 面：上 2px / 底 5px 留出侧壁 → 厚度 */
+  .cmd-primary::before {
+    content: '';
+    position: absolute;
+    inset: 2px 2px 6px;
+    border-radius: var(--r-pill);
+    background: var(--face-gold-plate);
+    box-shadow:
+      inset 0 3px 0 rgba(255, 255, 255, 0.42),
+      inset 0 -3px 0 rgba(150, 40, 10, 0.22);
+    z-index: -1;
+  }
+  .cmd-primary:hover:not(:disabled) {
+    background: #a83814;
+  }
+  .cmd-primary:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow:
+      0 2px 0 var(--coral-edge),
+      0 8px 16px rgba(200, 70, 30, 0.26);
+  }
+  .cmd-primary:active:not(:disabled)::before {
+    inset: 2px 2px 2px;
+  }
+  .cmd-primary:focus-visible {
+    outline: 3px solid #ffffff;
+    outline-offset: 3px;
+    box-shadow:
+      0 6px 0 var(--coral-edge),
+      0 0 0 8px var(--coral);
   }
 
+  /* 危险态（结束并结算）：朱红 */
+  .cmd-primary.danger {
+    background: var(--danger-edge);
+    box-shadow:
+      0 6px 0 var(--danger-edge),
+      0 16px 30px rgba(150, 30, 24, 0.3);
+  }
+  .cmd-primary.danger::before {
+    background: var(--face-seal);
+    box-shadow:
+      inset 0 3px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -3px 0 rgba(90, 12, 8, 0.3);
+  }
+  .cmd-primary.danger:hover:not(:disabled) {
+    background: #7a1712;
+  }
+
+  /* 起跑时的一圈扩散（保留「游戏感」反馈） */
+  .primary-ring {
+    position: absolute;
+    inset: -3px;
+    border-radius: var(--r-pill);
+    border: 3px solid var(--mint);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .cmd-primary.ignite .primary-ring {
+    animation: ignite-ring 620ms cubic-bezier(0.16, 1, 0.3, 1) 1;
+  }
+  @keyframes ignite-ring {
+    0% {
+      opacity: 0.85;
+      transform: scale(0.94);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.16);
+    }
+  }
+
+  .primary-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  /* 窄屏用短文案 */
   .bt-short {
     display: none;
   }
 
-  /* ---------- 手机竖屏 ---------- */
-  @media (max-width: 640px) and (orientation: portrait) {
-    .command-bar {
-      gap: 8px;
-      padding: 6px 10px;
-      min-height: 60px;
+  .btn-label {
+    white-space: nowrap;
+  }
+
+  /* 快捷键提示：浅色 chip，不做 kbd 拟物 */
+  .key-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: var(--muted-2);
+    white-space: nowrap;
+  }
+  .key-hint kbd {
+    display: inline-flex;
+    align-items: center;
+    min-height: 20px;
+    padding: 0 7px;
+    border-radius: 6px;
+    background: #eaf7ff;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 0 #d6ecf9;
+    font-family: var(--font-round);
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--muted);
+  }
+
+  /* ---------- 响应式 ---------- */
+  /* 快捷键提示只在宽屏显示：窄屏时会被主操作压住（1440 实测已钻到按钮底下） */
+  @media (max-width: 1500px) {
+    .key-hint {
+      display: none;
     }
-    .cmd-left,
+  }
+
+  @media (max-width: 900px) {
+    .command-bar {
+      padding: 7px 10px;
+      gap: 8px;
+    }
+    .cmd-left {
+      flex: 0 0 auto;
+      overflow: visible;
+    }
     .cmd-right {
       flex: 0 0 auto;
     }
-    .cmd-center {
-      flex: 1 1 auto;
-    }
     .cmd-primary {
-      width: 100%;
       min-width: 0;
-      padding: 0 14px;
+      flex: 1 1 auto;
+      padding: 0 20px;
+      font-size: var(--ctl-font);
+      letter-spacing: 1px;
     }
     .primary-label {
       display: none;
@@ -394,28 +423,36 @@
     .bt-short {
       display: inline;
     }
-    .desktop-only,
-    .btn-label {
+    .key-hint {
       display: none;
     }
+    /* 窄屏：次级键收成图标键，把宽度让给主操作（原来文字按钮把主操作挤到溢出） */
     .ctrl-btn {
-      min-width: var(--ctl-md);
-      padding: 0 8px;
+      width: var(--ctl-md);
+      padding: 0;
+      gap: 0;
     }
-    .primary-ring {
+    .ctrl-btn .btn-label {
       display: none;
     }
   }
 
-  /* 手机横屏：指令栏自己独占底部一行（竖屏的导航条在这一档不出现），
-     横向空间富余，主操作不再压缩——沿用基础档的 min-width，保证 ≥150px */
-  @media (max-width: 900px) and (orientation: landscape) {
-    .command-bar {
-      padding: 4px 10px;
-      min-height: 52px;
+  @media (max-width: 480px) {
+    .cmd-left {
+      flex: 0 0 auto;
     }
-    .desktop-only {
-      display: none;
+    .cmd-primary {
+      min-width: 0;
+      flex: 1 1 auto;
     }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cmd-primary.ignite .primary-ring {
+      animation: none;
+    }
+  }
+  :global(.reduce-motion) .cmd-primary.ignite .primary-ring {
+    animation: none;
   }
 </style>

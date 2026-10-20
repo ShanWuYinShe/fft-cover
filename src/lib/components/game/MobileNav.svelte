@@ -16,10 +16,10 @@
     aria-expanded={armsActive && uiState.panelExpanded}
     onclick={() => uiState.onTab('arms')}
   >
-    <span class="tab-ico"><Icon name="sliders" size={18} /></span>
+    <span class="tab-ico"><Icon name="sliders" size={20} /></span>
     <span class="tab-text">指针调参</span>
     <span class="tab-caret" aria-hidden="true">
-      {armsActive && uiState.panelExpanded ? '▾' : '▴'}
+      <Icon name={armsActive && uiState.panelExpanded ? 'chevron-down' : 'chevron-up'} size={12} />
     </span>
   </button>
 
@@ -31,9 +31,9 @@
     aria-expanded={levelsActive && uiState.panelExpanded}
     onclick={() => uiState.onTab('levels')}
   >
-    <span class="tab-ico"><Icon name="map" size={18} /></span>
+    <span class="tab-ico"><Icon name="map" size={20} /></span>
     <span class="tab-text">星图关卡</span>
-    <span class="tab-caret" aria-hidden="true">›</span>
+    <span class="tab-caret" aria-hidden="true"><Icon name="chevron-right" size={12} /></span>
   </button>
 </nav>
 
@@ -43,18 +43,18 @@
   }
 
   @media (max-width: 640px) and (orientation: portrait) {
-    /* 机箱底部的两个大按键：不再是漂浮的小胶囊 */
+    /* 底部导航 = 一条白卡，按键是药丸（选中项珊瑚底） */
     .mobile-tabs {
       display: flex;
-      align-items: stretch;
+      align-items: center;
       gap: 8px;
       width: 100%;
       height: 100%;
-      padding: 6px 10px calc(6px + env(safe-area-inset-bottom));
+      padding: 8px 10px calc(8px + var(--safe-b));
       box-sizing: border-box;
-      background: var(--mat-plate);
-      border-top: 1px solid var(--edge-bronze);
-      box-shadow: var(--mat-plate-shadow);
+      background: var(--bg-2);
+      border-top: 3px solid #ffffff;
+      box-shadow: 0 -4px 0 var(--mat-frame-line);
       transition:
         transform 0.22s ease,
         opacity 0.18s ease;
@@ -72,74 +72,79 @@
       gap: 6px;
       flex: 1 1 0;
       min-width: 0;
-      /* 命中区下限走令牌：真机安全区（home 指示条）会吃掉导航槽的padding，
-         这里保证被挤压时按键仍 ≥--ctl-md（触屏 42px） */
       min-height: var(--ctl-md);
-      padding: 0 8px;
-      /* 斜边标签页 → 圆角键帽（D：切角一律退场，改雕刻凹槽 + 键帽面料） */
-      border-radius: var(--r-sm);
-      background: var(--mat-block);
-      box-shadow:
-        inset 0 0 0 1px var(--plate-brass-line),
-        var(--bevel-top),
-        var(--groove-shadow);
+      padding: 0 10px;
+      border: none;
+      border-radius: var(--r-pill);
+      background: transparent;
       color: var(--muted);
-      font-size: var(--ctl-font-sm);
-      font-weight: 700;
-      letter-spacing: 1px;
+      font-family: var(--font-round);
+      font-size: var(--fs-xs);
+      font-weight: 800;
+      letter-spacing: 0.5px;
       cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition:
+        background 120ms ease,
+        color 120ms ease,
+        box-shadow 120ms ease,
+        transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .tab-btn:hover {
       color: var(--text);
+      background: var(--bg-chassis);
     }
-    /* 焦点用「铜边变金 + 面提亮」表达（不再依赖会被切掉的外描边） */
     .tab-btn:focus-visible {
-      background: var(--mat-plate);
-      box-shadow:
-        inset 0 0 0 1px var(--edge-bronze-hot),
-        var(--bevel-top);
-      color: var(--gold-bright);
+      outline: 3px solid var(--sky-deep);
+      outline-offset: 2px;
     }
     .tab-btn:active {
-      background: var(--groove-bg);
       transform: translateY(2px);
-      box-shadow: var(--groove-shadow);
     }
 
     .tab-ico {
       display: flex;
       align-items: center;
       line-height: 1;
+      color: var(--mint-deep);
     }
 
     .tab-caret {
-      font-size: 10px;
+      display: inline-flex;
+      align-items: center;
       opacity: 0.6;
     }
 
-    /* 选中：金箔键帽（全屏唯一的金色面） */
+    /* 选中：珊瑚药丸 + 白色内描边 + 底部硬边 + 深棕字 */
     .tab-btn.on {
-      background: var(--face-gold-plate);
-      color: #241300;
-      text-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.5),
-        0 -1px 0 rgba(120, 70, 0, 0.35);
+      background: var(--plate-brass);
+      color: var(--coral-ink);
       box-shadow:
-        inset 0 0 0 1px #ffe7a3,
-        inset 0 -2px 0 rgba(140, 80, 0, 0.45),
-        var(--sh-glow-hot);
+        inset 0 0 0 3px #ffffff,
+        0 3px 0 var(--coral-edge);
     }
-
+    .tab-btn.on .tab-ico {
+      color: var(--coral-ink);
+    }
     .tab-btn.on .tab-caret {
-      opacity: 0.8;
+      opacity: 0.85;
+    }
+    .tab-btn.on:active {
+      transform: translateY(2px);
+      box-shadow:
+        inset 0 0 0 3px #ffffff,
+        0 1px 0 var(--coral-edge);
     }
 
-    /* 选中的标签页本身就是金色面：焦点再提亮一档边线 */
-    .tab-btn.on:focus-visible {
-      box-shadow:
-        inset 0 0 0 1px #fff6d8,
-        inset 0 -2px 0 rgba(140, 80, 0, 0.45),
-        var(--sh-glow-hot);
+    @media (prefers-reduced-motion: reduce) {
+      .mobile-tabs,
+      .tab-btn {
+        transition: none;
+      }
+      .tab-btn:active,
+      .tab-btn.on:active {
+        transform: none;
+      }
     }
   }
 </style>

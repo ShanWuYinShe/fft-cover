@@ -51,7 +51,7 @@
   }
 </script>
 
-<!-- 降噪版提示条：一层描边 + 一个图标 + 文字（去掉状态灯与外发光）
+<!-- 提示条：白卡厚边 + 图标槽 + 文字（糖果配色，无模糊/发光）
      动效：滑入 -12px→0（240ms）+ 图标弹一下，退场反向且快 30% -->
 <div class="toast-item g-chamfer toast-{variant}" class:closing bind:this={itemEl} role="status">
   {#if icon}
@@ -74,22 +74,31 @@
 </div>
 
 <style>
+  /* 提示条：白卡 + 3px 白边 + 圆角 + 硬投影，文案 14px */
   .toast-item {
     position: relative;
     display: inline-flex;
     align-items: center;
     gap: 10px;
     box-sizing: border-box;
-    /* 桌面 30 / 触屏 42 */
-    min-height: var(--ctl-md);
-    padding: 5px 12px;
-    font-size: var(--ctl-font-sm);
-    font-weight: 600;
-    letter-spacing: 0.5px;
+    min-height: var(--ctl-lg);
+    padding: 9px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    line-height: 1.45;
     color: var(--text);
-    /* 切角铜边 + 面来自 .g-chamfer；这里只给变体染边色 */
+    background: var(--mat-block);
+    border: 3px solid #ffffff;
+    border-radius: var(--r-md);
+    box-shadow: var(--sh-2);
     /* backwards：只在动画期间生效，结束后不留 transform */
     animation: toast-in 240ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+
+  /* 覆盖 .g-chamfer 的双层底：这里只要一张白卡 */
+  .toast-item::before {
+    content: none;
   }
 
   @keyframes toast-in {
@@ -119,11 +128,11 @@
     }
   }
 
-  /* 图标弹一下：1 → 1.15 → 1（进场后 120ms 起） */
+  /* 图标弹一下：1 → 1.08 → 1（进场后 120ms 起） */
   .toast-icon {
-    display: flex;
-    align-items: center;
     flex-shrink: 0;
+    width: 26px;
+    height: 26px;
     animation: toast-icon-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1) 120ms backwards;
   }
 
@@ -137,27 +146,27 @@
       transform: scale(1);
     }
     40% {
-      transform: scale(1.15);
+      transform: scale(1.08);
     }
     100% {
       transform: scale(1);
     }
   }
 
-  /* 变体只改铜边色与文字颜色，不加光晕 */
-  .toast-gold {
-    background: var(--edge-bronze-hot);
-    color: var(--gold-bright);
+  /* 变体只换图标槽的糖果底色，字色始终是深蓝（白底可读） */
+  .toast-gold .toast-icon {
+    background: var(--coral-dim);
+    color: var(--coral-text);
   }
 
-  .toast-info {
-    background: #2f8f7e;
-    color: var(--cyan);
+  .toast-info .toast-icon {
+    background: var(--sky-dim);
+    color: var(--sky-deep);
   }
 
-  .toast-success {
-    background: #2f8f7e;
-    color: #a7f3d0;
+  .toast-success .toast-icon {
+    background: var(--mint-dim);
+    color: var(--mint-edge);
   }
 
   .toast-content {
@@ -165,8 +174,7 @@
     min-width: 0;
   }
 
-  /* 视觉 --ctl-xs（桌面 22 / 触屏 32），热区靠 ::after 外扩 9px：
-     22 + 18 = 40px（触屏 32 + 18 = 50px），点击目标始终不低于 40px */
+  /* 关闭键：可见 30px，热区靠 ::after 外扩 9px（≥48px 命中区） */
   .toast-close {
     position: relative;
     flex: 0 0 auto;
@@ -174,17 +182,17 @@
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    width: var(--ctl-xs);
-    height: var(--ctl-xs);
+    width: var(--ctl-sm);
+    height: var(--ctl-sm);
     margin-left: 2px;
-    border-radius: var(--ctl-radius);
-    border: 1px solid transparent;
+    border-radius: 50%;
+    border: none;
     background: transparent;
     color: var(--muted);
     cursor: pointer;
     transition:
       color 0.12s ease,
-      border-color 0.12s ease,
+      background 0.12s ease,
       transform 90ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -195,8 +203,8 @@
   }
 
   .toast-close:hover {
-    color: var(--gold-bright);
-    border-color: var(--edge-soft);
+    color: var(--coral-text);
+    background: var(--line-2);
   }
 
   .toast-close:active {
@@ -204,7 +212,7 @@
   }
 
   .toast-close:focus-visible {
-    outline: 2px solid var(--edge-hot);
+    outline: 3px solid var(--sky-deep);
     outline-offset: 2px;
   }
 

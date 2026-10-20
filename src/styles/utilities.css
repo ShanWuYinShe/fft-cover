@@ -1,5 +1,5 @@
 /* ============================================================
- * 浑天璇玑 · 通用工具类 (Utilities)
+ * 通用工具类
  * ============================================================ */
 
 /* 屏幕阅读器专用 */
@@ -15,20 +15,15 @@
   border: 0;
 }
 
-/* 磨砂玻璃层 */
+/* 白卡浮层（弹窗 / 抽屉 / 面板）：厚白边 + 硬投影，不做毛玻璃 */
 .glass-panel {
-  background: var(--panel);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--line);
+  background: var(--mat-plate);
+  border: 3px solid #ffffff;
+  box-shadow: var(--sh-2);
 }
 
 .glass-panel-gold {
-  background: linear-gradient(180deg, rgba(42, 33, 20, 0.92) 0%, rgba(18, 14, 9, 0.95) 100%);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--edge-bronze);
-  box-shadow:
-    var(--sh-2),
-    inset 0 1px 0 rgba(255, 224, 150, 0.12);
+  background: var(--mat-plate);
+  border: 3px solid #ffffff;
+  box-shadow: var(--sh-3);
 }

@@ -63,10 +63,10 @@
     align-items: center;
     justify-content: center;
     padding: 12px;
-    background: rgba(4, 6, 12, 0.86);
-    backdrop-filter: blur(8px);
+    background: var(--scrim-strong);
     animation: ci-fade 0.35s ease-out;
   }
+
   @keyframes ci-fade {
     from {
       opacity: 0;
@@ -79,12 +79,12 @@
   /* 外框：只负责限高与滚动上限 */
   .card-wrap {
     position: relative;
-    width: min(94vw, 420px);
+    width: min(94vw, 440px);
     max-height: calc(100dvh - 24px);
     display: flex;
   }
 
-  /* 面板：平板 + 1px 描边，内部可滚，矮屏不裁 */
+  /* 入境卡：白卡 + 3px 白边 + 大圆角 + 硬投影 */
   .card {
     position: relative;
     width: 100%;
@@ -94,18 +94,19 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 20px 18px 0;
+    gap: 12px;
+    padding: 22px 20px 0;
     box-sizing: border-box;
     text-align: center;
-    background: var(--metal);
-    border: 1px solid var(--edge-soft);
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    animation: ci-pop 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
+    background: var(--mat-plate);
+    border: 3px solid #ffffff;
+    border-radius: var(--r-xl);
+    box-shadow: var(--sh-3);
+    animation: ci-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     scrollbar-width: thin;
-    scrollbar-color: rgba(245, 184, 65, 0.3) transparent;
+    scrollbar-color: #b6dcf2 transparent;
   }
+
   @keyframes ci-pop {
     from {
       opacity: 0;
@@ -121,6 +122,7 @@
   .row-in {
     animation: ci-row 0.32s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
+
   @keyframes ci-row {
     from {
       opacity: 0;
@@ -132,65 +134,84 @@
     }
   }
 
-  /* 入境朱印：全卡唯一的朱砂色，作为章节标记 */
+  /* 入境珊瑚印：全卡的主色标记 */
   .eyebrow {
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: var(--fs-sm);
-    letter-spacing: 4px;
-    color: #fff1ed;
-    padding: 3px 14px 3px 18px;
-    border-radius: 4px;
-    background: linear-gradient(160deg, #c0392b, #8e2a1f);
-    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 16px;
+    border-radius: var(--r-pill);
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: var(--coral-ink);
+    background: var(--face-gold-plate);
+    border: 2px solid #ffffff;
+    box-shadow: 0 3px 0 var(--coral-edge);
   }
 
   h2 {
     margin: 2px 0 0;
     font-size: 26px;
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    letter-spacing: 5px;
-    color: var(--gold-bright);
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--text);
   }
 
   .tag {
     margin: 0;
-    font-size: var(--fs-sm);
+    font-size: 14px;
+    font-weight: 600;
     color: var(--muted);
     line-height: 1.6;
   }
 
-  /* 本章要点：左侧一条金线 + 正文，不再套凹槽 */
+  /* 本章要点：浅薄荷提示卡 */
   .intro {
     margin: 2px 0 0;
-    padding: 2px 0 2px 12px;
+    padding: 10px 12px;
     width: 100%;
     box-sizing: border-box;
-    border-left: 2px solid var(--edge);
-    font-size: var(--fs-sm);
+    border-radius: var(--r-sm);
+    border: 2px solid var(--note-edge);
+    background: var(--note-bg);
+    font-size: 13.5px;
+    font-weight: 600;
     color: var(--text);
-    line-height: 1.8;
+    line-height: 1.75;
     text-align: left;
   }
+
   .intro :global(b) {
-    color: var(--gold-bright);
-    font-weight: 600;
+    color: var(--coral-edge);
+    font-weight: 800;
   }
 
+  /* 元信息：白药丸 */
   .meta {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
     justify-content: center;
-    font-size: var(--fs-sm);
+    font-size: 12.5px;
+    font-weight: 700;
     color: var(--muted);
     font-variant-numeric: tabular-nums;
   }
-  .meta .k {
-    color: var(--cyan);
+
+  .meta > span {
+    padding: 4px 10px;
+    border-radius: var(--r-pill);
+    background: var(--mat-block);
+    border: 2px solid var(--line);
   }
+
+  .meta .k {
+    color: var(--grape-deep);
+  }
+
   .meta .dot {
-    color: var(--muted-2);
+    display: none;
   }
 
   /* 主操作常驻：面板内滚时按钮不掉出首屏 */
@@ -200,37 +221,33 @@
     align-self: stretch;
     display: flex;
     justify-content: center;
-    margin: 4px -18px 0;
-    padding: 12px 18px 16px;
-    background: linear-gradient(180deg, rgba(20, 15, 9, 0) 0, rgba(20, 15, 9, 0.96) 16px, #140f09);
+    margin: 4px -20px 0;
+    padding: 12px 20px 16px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0, #ffffff 18px);
   }
 
-  /* 主操作：金色厚键 */
+  /* 主操作：珊瑚厚键 */
   button.primary {
     width: 100%;
     min-height: var(--ctl-lg);
     padding: 0 20px;
     cursor: pointer;
     font-size: var(--ctl-font);
-    font-weight: 700;
-    letter-spacing: 2px;
+    font-weight: 800;
+    letter-spacing: 1px;
     -webkit-tap-highlight-color: transparent;
-    /* 形与四态交给公共件 .g-btn--primary（牌匾）：本地只保留布局与字号 */
-  }
-  button.primary:hover {
-    background: var(--face-gold-hover);
-  }
-  button.primary:active {
-    transform: translateY(2px);
   }
 
   /* 减弱动态效果：位移动画关闭（颜色/透明度保留） */
   @media (prefers-reduced-motion: reduce) {
+    .ch-intro,
     .card,
     .row-in {
       animation: none;
     }
   }
+
+  :global(.reduce-motion) .ch-intro,
   :global(.reduce-motion) .card,
   :global(.reduce-motion) .row-in {
     animation: none;
@@ -239,19 +256,25 @@
   /* 矮屏：收紧留白 */
   @media (max-height: 480px) {
     .card {
-      gap: 9px;
+      gap: 10px;
       padding: 16px 18px 0;
     }
     h2 {
-      font-size: 21px;
-      letter-spacing: 4px;
+      font-size: 22px;
+      letter-spacing: 1px;
     }
     .foot {
       margin: 2px -18px 0;
       padding: 10px 18px 14px;
     }
-    button.primary {
-      min-height: 46px;
+  }
+
+  @media (max-width: 640px) {
+    h2 {
+      font-size: 23px;
+    }
+    .intro {
+      font-size: 13px;
     }
   }
 </style>

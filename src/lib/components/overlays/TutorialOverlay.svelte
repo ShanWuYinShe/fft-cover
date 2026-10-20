@@ -32,7 +32,7 @@
   .tutorial-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(4, 6, 12, 0.82);
+    background: var(--scrim-strong);
     z-index: 120;
     display: flex;
     align-items: center;
@@ -41,18 +41,24 @@
     animation: fade-in 0.25s ease-out;
   }
 
-  /* 平静的面板：一层描边 + 一点留白，不堆装饰 */
+  /* 三步卡：白卡厚边，内部每条步骤也是白卡面 */
+  .tut-box::before {
+    content: none;
+  }
+
   .tut-box {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
     width: 100%;
-    max-width: 400px;
+    max-width: 440px;
     box-sizing: border-box;
-    padding: 18px 20px 16px;
-    /* 面来自 .g-chamfer；右上角一枚雕花包角来自 .g-rivets::after（第七轮语义） */
-    /* 入场：0.96 → 1 缩放 + 淡入（320ms），结束后不留 transform */
-    animation: tut-pop 320ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    padding: 22px 22px 18px;
+    background: var(--mat-plate);
+    border: 3px solid #ffffff;
+    border-radius: var(--r-xl);
+    box-shadow: var(--sh-3);
+    animation: tut-pop 0.32s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
 
   @keyframes tut-pop {
@@ -68,27 +74,56 @@
 
   .tut-box h2 {
     margin: 0;
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 22px;
+    font-weight: 900;
     color: var(--text);
     letter-spacing: 1px;
     text-align: center;
   }
 
-  /* 三步：一行一步，匿名序号用金色数字（读屏仍播报第几条） */
+  /* 三步：每一步一张白卡 + 珊瑚序号圆牌 */
   .tut-list {
     margin: 0;
-    padding-left: 1.5em;
+    padding: 0;
+    list-style: none;
+    counter-reset: tut-step;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     color: var(--text);
-    font-size: var(--ctl-font);
-    line-height: 1.55;
-    list-style: decimal;
   }
 
-  /* 三步逐条淡入：60ms 错峰 */
   .tut-list li {
-    margin-bottom: 4px;
+    position: relative;
+    counter-increment: tut-step;
+    padding: 10px 12px 10px 44px;
+    border-radius: var(--r-md);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
+    box-shadow: 0 2px 0 #d9eefb;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
     animation: tut-step-in 240ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+
+  .tut-list li::before {
+    content: counter(tut-step);
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    width: 22px;
+    height: 22px;
+    margin-top: -11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--coral);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
   }
 
   .tut-list li:nth-child(1) {
@@ -114,24 +149,13 @@
     }
   }
 
-  .tut-list li:last-child {
-    margin-bottom: 0;
-  }
-
-  .tut-list li::marker {
-    color: var(--gold);
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* 唯一的主操作：整行金色按钮（尺寸/按压反馈来自全局 .g-btn） */
+  /* 唯一的主操作：整行珊瑚按钮（尺寸/按压反馈来自全局 .g-btn） */
   .tut-box .tut-start-btn {
     width: 100%;
-    /* 主操作档：桌面 40 / 触屏 46 */
     min-height: var(--ctl-lg);
     margin-top: 2px;
     font-size: calc(var(--ctl-font) + 2px);
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
     /* 主按钮最后落位 */
     animation: tut-step-in 240ms cubic-bezier(0.16, 1, 0.3, 1) 340ms backwards;
   }
@@ -142,12 +166,11 @@
     }
 
     .tut-box h2 {
-      font-size: 17px;
+      font-size: 20px;
     }
 
-    .tut-list {
-      font-size: var(--ctl-font-sm);
-      line-height: 1.55;
+    .tut-list li {
+      font-size: 13.5px;
     }
   }
 

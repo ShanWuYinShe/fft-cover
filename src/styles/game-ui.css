@@ -1,180 +1,151 @@
 /* ============================================================
- * 浑天璇玑 · 游戏化 UI 通用件（座舱 HUD 公共层）
+ * 浑天璇玑 · 公共控件层（第十四轮「糖果星域」重制）
  *
- * 这里是「游戏感」的共享积木：金属面板、立体按钮、铭牌标签、
- * 大号读数、缎带、角花、扫描线等。组件内直接写类名即可生效
- * （需要组件样式覆盖时，用组件自己的 scoped 规则提高优先级）。
+ * 设计语言三件套（所有控件一致，不允许例外）：
+ *   ① 厚：本体当「侧壁」，::before 当「面」，底部露 3–4px 侧壁 = 可见厚度；
+ *   ② 硬：投影是 0 模糊的纯色偏移（同色相暗色），不用黑色模糊阴影；
+ *   ③ 圆：三级圆角族 --r-sm/--r-md/--r-lg + 药丸 999px，同层级只用一档。
  *
- * 约定：
- * - 所有颜色/尺寸走 tokens.css 的 --metal-* / --face-* / --edge-* 令牌；
- * - 不做圆润的“网页卡片”：面板要么是嵌进机箱的凹槽，要么是带斜切角的装甲板；
- * - 按钮必须“厚”：上下双色渐变 + 内高光 + 底部硬阴影 + 按下位移。
+ * 色彩纪律（60/30/10）：
+ *   60% 中性（白卡 / 浅蓝底）、30% 珊瑚主色（主操作、选中、铭牌）、
+ *   10% 点缀（薄荷=成功/启用、天蓝=信息、葡萄紫=高级、危险红=结束）。
  * ============================================================ */
 
-/* ---------- 铭牌标签：小号、字距拉开、金色 ---------- */
+/* ---------- 标签：小字、拉开字距、深蓝灰 ---------- */
 .g-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 2.5px;
-  color: var(--gold);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--muted);
   text-transform: uppercase;
   line-height: 1.2;
 }
 
 .g-label--dim {
-  color: var(--muted);
-  font-weight: 600;
-  letter-spacing: 2px;
+  color: var(--muted-2);
+  font-weight: 700;
+  letter-spacing: 1.2px;
 }
 
-/* ---------- 大号读数：HUD 数字 ---------- */
+/* ---------- 大号读数：HUD 数字（圆润、tabular、无发光） ---------- */
 .g-num {
+  font-family: var(--font-round);
   font-variant-numeric: tabular-nums;
   font-weight: 900;
   line-height: 1;
+  letter-spacing: 0.5px;
   color: var(--text);
-  text-shadow: 0 0 16px rgba(245, 184, 65, 0.28);
 }
 
 .g-num--gold {
-  color: var(--gold-bright);
-  text-shadow: 0 0 18px rgba(245, 184, 65, 0.55);
+  color: var(--coral-text);
 }
 
-/* ---------- 凹槽面板：嵌进机箱的深色内腔（第七轮：雕刻凹槽质感） ---------- */
+/* ---------- 凹槽：嵌进白卡的浅蓝内腔（滑杆轨道、内嵌块） ---------- */
 .g-inset {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.42));
-  border: 1px solid var(--mat-frame-line);
+  background: var(--groove-bg);
+  border: 2px solid #ffffff;
   box-shadow: var(--groove-shadow);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
 }
 
-/* ---------- 装甲面板：抬起的青铜板（第七轮：材质贴图 + 内沿亮线） ---------- */
+/* ---------- 厚卡片：白面 + 3px 蓝边 + 硬投影 ---------- */
 .g-plate {
   background: var(--mat-plate);
-  border: 1px solid var(--edge-bronze);
+  border: 3px solid #ffffff;
   box-shadow: var(--mat-plate-shadow);
-  border-radius: var(--radius-md);
+  border-radius: var(--r-md);
 }
 
-/* ---------- 器物工具类 ---------- */
-
-/* 铜边板：外层当 1px 铜边，内层 1px 缩进当金属面（第七轮去掉切角，改圆角） */
+/* ---------- 双层圆角卡（外层彩边、内层白面） ---------- */
 .g-chamfer {
   position: relative;
   isolation: isolate;
   border-radius: var(--r-md);
-  background: var(--edge-bronze);
+  background: var(--line);
   box-shadow: var(--sh-1);
 }
 .g-chamfer::before {
   content: '';
   position: absolute;
-  inset: 1px;
+  inset: 2px;
   z-index: -1;
-  border-radius: calc(var(--r-md) - 1px);
+  border-radius: calc(var(--r-md) - 2px);
   background: var(--face-plate);
 }
 
-/* 器物包角：第七轮起 .g-rivets 不再是四角铆钉，改为右上角一枚雕花包角
-   （内联 SVG 描边，一块面板只放一处；原来的 `--rivet` 已置 none） */
+/* 角标：第十四轮取消一切「包角/铆钉/回纹」装饰，令牌置 none 作为兜底 */
 .g-rivets::after {
-  content: '';
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 34px;
-  height: 34px;
-  pointer-events: none;
-  background: var(--tex-corner) no-repeat center / 34px 34px;
-  opacity: 0.5;
+  content: none;
 }
 
-/* 黄铜标题条：面板/弹窗标题用（第七轮去掉回纹，改铜牌 + 金丝压边） */
+/* 主色铭牌条：珊瑚渐变 + 白描边 + 底部硬边 */
 .g-pattern-bar {
   background-image:
-    linear-gradient(180deg, rgba(255, 224, 150, 0.07), transparent 70%), var(--plate-brass);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent 62%), var(--plate-brass);
   background-repeat: no-repeat, no-repeat;
-  box-shadow: inset 0 -1px 0 var(--plate-brass-line);
+  box-shadow: inset 0 -3px 0 rgba(200, 69, 29, 0.5);
 }
 
-/* 方形 socket：把图标嵌进内凹的键槽（按钮内图标统一走它） */
+/* 图标槽：把图标嵌进浅蓝圆底（按钮内图标统一走它） */
 .g-socket {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: calc(var(--ctl-md) - 10px);
-  height: calc(var(--ctl-md) - 10px);
-  border-radius: var(--r-sm);
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.44));
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.8),
-    0 0 0 1px rgba(201, 162, 74, 0.3);
-  color: var(--gold);
+  width: calc(var(--ctl-md) - 12px);
+  height: calc(var(--ctl-md) - 12px);
+  border-radius: 50%;
+  background: #eaf7ff;
+  box-shadow: inset 0 2px 0 #ffffff;
+  color: var(--coral-text);
   flex: none;
 }
 
-/* 读数块：第七轮从「玉牌」改为雕刻凹槽（金漆字），玉色只保留在文字上作启用信号 */
+/* 读数芯片：药丸、浅蓝底、深字 */
 .g-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  min-height: var(--ctl-sm);
-  padding: 0 8px;
-  border-radius: var(--r-sm);
-  background: rgba(0, 0, 0, 0.42);
-  border: 1px solid rgba(201, 162, 74, 0.3);
-  box-shadow: var(--groove-shadow);
-  color: #9df0d8;
+  gap: 5px;
+  min-height: calc(var(--ctl-sm) - 2px);
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  background: #eaf7ff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 0 #d6ecf9;
+  color: var(--muted);
   font-size: var(--ctl-font-sm);
+  font-weight: 800;
   letter-spacing: 0.5px;
 }
 
-/* 朱印：结论/解锁/封印（方印 + 轻微旋转） */
+/* 印章：结论 / 解锁（珊瑚底、白字、略倾斜） */
 .g-seal {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 8px;
-  border-radius: 3px;
+  padding: 3px 10px;
+  border-radius: var(--r-sm);
   background: var(--face-seal);
-  border: 1px solid #f0a08f;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 235, 220, 0.45),
-    0 2px 6px rgba(150, 20, 10, 0.5);
-  color: #fff3ec;
+  border: 2px solid #ffffff;
+  box-shadow: 0 3px 0 var(--danger-edge);
+  color: #ffffff;
   font-size: var(--ctl-font-sm);
-  font-weight: 700;
-  letter-spacing: 2px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
   transform: rotate(-2deg);
 }
 
-/* 顶部一条亮金发丝线（装甲板的高光边） */
 .g-plate--lit {
   position: relative;
 }
 .g-plate--lit::before {
-  content: '';
-  position: absolute;
-  inset: -1px -1px auto;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--edge-hot) 18%,
-    var(--edge-hot) 82%,
-    transparent
-  );
-  opacity: 0.7;
-  pointer-events: none;
+  content: none;
 }
 
-/* ---------- 游戏按钮：厚、立体、可按 ----------
- * 降噪约定（第二轮）：外发光只给「主操作」与「选中/激活态」；
- * 普通按键的 hover 只用面/描边变化，不再加光晕。 */
-/* 铜板键：圆角 + 1px 青铜边（外层铜边、内层金属面）
- * 结构：.g-btn 本体 = 铜边；::before = 面（z-index:-1 让它压在文字之下、铜边之上）。
- * 第七轮：切角取消（clip-path 会把圆角与描边一起切掉），面改为拉丝青铜材质。 */
+/* ============================================================
+ * 按钮：厚实体（侧壁 + 面 + 硬投影），按下整体下沉
+ * 结构：.g-btn 本体 = 侧壁（深色）；::before = 面（白/珊瑚）；底部露侧壁当厚度
+ * ============================================================ */
 .g-btn {
   appearance: none;
   position: relative;
@@ -184,331 +155,238 @@
   justify-content: center;
   gap: 6px;
   min-height: var(--ctl-md);
-  padding: 0 12px;
+  padding: 0 14px;
   border: none;
   border-radius: var(--ctl-radius);
-  background: var(--edge-bronze);
+  background: #cfe8f8;
   color: var(--text);
-  font-family: inherit;
+  font-family: var(--font-round);
   font-size: var(--ctl-font);
-  font-weight: 600;
-  letter-spacing: 1px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
   transition:
-    filter 0.12s ease,
-    color 0.12s ease;
+    transform 110ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 110ms ease;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
-/* 面：下边留 2px 铜色 = 板件的厚度 */
+/* 面：上、左、右各留 2px 侧壁，底部留 4px = 厚度 */
 .g-btn::before {
   content: '';
   position: absolute;
-  inset: 1px 1px 2px;
+  inset: 2px 2px 4px;
   z-index: -1;
-  border-radius: calc(var(--ctl-radius) - 1px);
+  border-radius: calc(var(--ctl-radius) - 2px);
   background: var(--mat-block);
-  box-shadow: var(--bevel-top);
+  box-shadow:
+    inset 0 2px 0 #ffffff,
+    inset 0 -2px 0 rgba(120, 180, 210, 0.14);
   transition:
-    background 0.12s ease,
-    inset 0.09s ease;
+    inset 100ms ease,
+    background 110ms ease;
 }
 .g-btn:hover:not(:disabled) {
-  color: var(--gold-bright);
-  background: var(--edge-bronze-hot);
+  background: #b6dcf2;
 }
 .g-btn:hover:not(:disabled)::before {
   background: var(--face-plate-hot);
 }
-/* 按下：面下沉 1px（上边留铜色），内阴影加深 */
+/* 按下：整体下沉 3px，面同时压扁（侧壁变薄）→ 物理感 */
 .g-btn:active:not(:disabled) {
-  background: var(--bronze);
+  transform: translateY(3px);
 }
 .g-btn:active:not(:disabled)::before {
-  inset: 2px 1px 1px;
-  box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.75);
+  inset: 2px 2px 1px;
+  box-shadow: inset 0 3px 6px rgba(90, 150, 190, 0.24);
 }
+/* 焦点：外圈深描边（不换底色，避免丢失语义） */
 .g-btn:focus-visible {
-  background: var(--edge-bronze-hot);
-  color: var(--gold-bright);
-}
-.g-btn:focus-visible::before {
-  background: var(--face-plate-hot);
-}
-/* 金箔主操作：全局焦点态的字色（金）压在金面上会消失（实测 #ffd166 on #ffd166），
-   主操作改用与 hover 同一档的「面提亮 + 深字」表达焦点。
-   特异性与 .g-btn:focus-visible 相同，靠书写顺序覆盖。 */
-.g-btn--primary:focus-visible {
-  background: #fff0c0;
-  color: #1c0e00;
-}
-.g-btn--primary:focus-visible::before {
-  background: var(--face-gold-hover);
-}
-/* 朱砂危险键同理：焦点不该把红面换成暗金属面（会丢"危险"语义） */
-.g-btn--danger:focus-visible {
-  background: #f3b0a0;
-  color: #fff;
-}
-.g-btn--danger:focus-visible::before {
-  background: var(--face-seal);
+  outline: 3px solid var(--sky-deep);
+  outline-offset: 3px;
 }
 .g-btn:disabled {
-  opacity: 0.42;
+  opacity: 0.45;
   cursor: not-allowed;
-  filter: grayscale(0.4);
+  filter: saturate(0.4);
 }
 
-/* 牌匾（主操作）：外圈亮金边 + 金箔面 + 右端宝石灯；全屏唯一的金色发光 */
+/* ---------- 主操作：珊瑚厚实体（全屏唯一的高饱和块） ---------- */
 .g-btn--primary {
-  padding-right: 20px;
-  background: var(--edge-bronze-hot);
-  color: #241300;
-  text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.5),
-    0 -1px 0 rgba(120, 70, 0, 0.35);
+  background: var(--coral-edge);
+  /* 珊瑚面上用深棕字：白字只有 2.6:1，深棕 5.6:1 */
+  color: var(--coral-ink);
 }
 .g-btn--primary::before {
-  inset: 1px 1px 3px;
-  background: var(--tex-brush), var(--face-gold-plate);
-  background-blend-mode: soft-light, normal;
+  background: var(--face-gold-plate);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    inset 0 -1px 0 rgba(150, 95, 0, 0.45);
-}
-.g-btn--primary::after {
-  content: '';
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  width: 6px;
-  height: 6px;
-  margin-top: -4px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #fffdf2 0%, #ffd166 45%, #8a5a04 100%);
-  box-shadow: 0 0 6px rgba(255, 209, 102, 0.85);
-  pointer-events: none;
+    inset 0 3px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -3px 0 rgba(150, 40, 10, 0.28);
 }
 .g-btn--primary:hover:not(:disabled) {
-  background: #fff0c0;
-  color: #1c0e00;
+  background: #a83814;
 }
 .g-btn--primary:hover:not(:disabled)::before {
   background: var(--face-gold-hover);
 }
 .g-btn--primary:active:not(:disabled) {
-  background: var(--bronze-bright);
+  background: #90300f;
 }
 .g-btn--primary:active:not(:disabled)::before {
-  inset: 2px 1px 1px;
-  background: linear-gradient(180deg, #dcae43 0%, #e8b845 45%, #b57c08 100%);
+  background: linear-gradient(180deg, #ff9a66 0%, #ec6234 58%, #cf4a20 100%);
+}
+.g-btn--primary:focus-visible {
+  outline-color: #ffffff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px var(--coral);
 }
 
+/* ---------- 危险：朱红厚实体 ---------- */
 .g-btn--danger {
-  background: #e08a7a;
-  color: #fff4ef;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+  background: var(--danger-edge);
+  color: #ffffff;
 }
 .g-btn--danger::before {
-  inset: 1px 1px 3px;
   background: var(--face-seal);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -3px 0 rgba(100, 15, 10, 0.3);
 }
 .g-btn--danger:hover:not(:disabled) {
-  background: #f3b0a0;
-  color: #fff;
+  background: #7a1712;
 }
 
+/* ---------- 薄荷：成功 / 启用 ---------- */
 .g-btn--cyan {
-  background: #2f8f7e;
-  color: #d8fff5;
-  text-shadow: 0 1px 0 rgba(0, 60, 50, 0.5);
+  background: var(--mint-edge);
+  color: var(--mint-ink);
 }
 .g-btn--cyan::before {
-  inset: 1px 1px 3px;
   background: var(--face-jade);
-  box-shadow: inset 0 1px 0 rgba(0, 245, 212, 0.25);
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -3px 0 rgba(6, 80, 70, 0.28);
 }
 .g-btn--cyan:hover:not(:disabled) {
-  background: #46a996;
-  color: #eafffb;
+  background: #075e55;
 }
 
+/* ---------- 幽灵：透明底、浅蓝边（次级操作） ---------- */
 .g-btn--ghost {
-  background: rgba(201, 162, 74, 0.22);
+  background: transparent;
   color: var(--muted);
+  box-shadow: inset 0 0 0 2px var(--line);
 }
 .g-btn--ghost::before {
-  inset: 1px 1px 2px;
-  background: linear-gradient(180deg, rgba(28, 22, 14, 0.92), rgba(12, 9, 6, 0.9));
+  content: none;
 }
 .g-btn--ghost:hover:not(:disabled) {
-  color: var(--gold-bright);
-  background: var(--edge-bronze);
+  background: #eaf7ff;
+  color: var(--coral-text);
+  box-shadow: inset 0 0 0 2px var(--line-bright);
 }
 
-/* 键帽/图标键：方形 socket（内凹键槽） */
+/* ---------- 图标键：圆形厚实体 ---------- */
 .g-btn--icon {
   width: var(--ctl-md);
   min-width: var(--ctl-md);
   height: var(--ctl-md);
   padding: 0;
+  border-radius: 50%;
 }
 .g-btn--icon::before {
-  inset: 2px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.44));
-  box-shadow:
-    inset 0 2px 5px rgba(0, 0, 0, 0.8),
-    0 1px 0 rgba(255, 214, 130, 0.07);
-}
-.g-btn--icon:hover:not(:disabled)::before {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(58, 46, 27, 0.5));
+  inset: 2px 2px 4px;
+  border-radius: 50%;
+  background: var(--mat-block);
 }
 .g-btn--icon:active:not(:disabled)::before {
-  inset: 3px 1px 1px;
-  box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.85);
+  inset: 2px 2px 1px;
 }
 
+/* 尺寸档 */
 .g-btn--lg {
   min-height: var(--ctl-lg);
-  padding: 0 22px;
-  font-size: calc(var(--ctl-font) + 2px);
-  letter-spacing: 2px;
+  padding: 0 26px;
+  font-size: calc(var(--ctl-font) + 3px);
+  letter-spacing: 1.5px;
   border-radius: var(--ctl-radius-lg);
 }
 .g-btn--lg::before {
-  border-radius: calc(var(--ctl-radius-lg) - 1px);
+  inset: 2px 2px 5px;
+  border-radius: calc(var(--ctl-radius-lg) - 2px);
 }
-.g-btn--primary.g-btn--lg {
-  padding-right: 26px;
-}
-.g-btn--primary.g-btn--lg::after {
-  right: 10px;
-  width: 7px;
-  height: 7px;
-  margin-top: -5px;
+.g-btn--sm {
+  min-height: var(--ctl-sm);
+  padding: 0 10px;
+  font-size: var(--ctl-font-sm);
 }
 
-/* ---------- 缎带：关卡名/章节标题 ---------- */
+/* ---------- 缎带：关卡名 / 章节标题（白药丸 + 珊瑚点睛） ---------- */
 .g-ribbon {
   position: relative;
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 22px;
-  background: linear-gradient(180deg, rgba(245, 184, 65, 0.16), rgba(245, 184, 65, 0.04));
-  border-top: 1px solid var(--edge-soft);
-  border-bottom: 1px solid var(--edge-soft);
-  color: var(--gold-bright);
+  padding: 7px 20px;
+  border-radius: var(--r-pill);
+  background: #ffffff;
+  border: 3px solid #ffffff;
+  box-shadow: 0 3px 0 #d6ecf9;
+  color: var(--coral-text);
+  font-weight: 900;
 }
 .g-ribbon::before,
 .g-ribbon::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 10px;
-  height: 10px;
-  transform: translateY(-50%) rotate(45deg);
-  border: 1px solid var(--edge);
-  background: var(--metal);
+  content: none;
 }
 
-/* ---------- 分隔线：金丝（两端渐隐）+ 中心菱形 ---------- */
+/* ---------- 分隔线：浅蓝虚线 + 中心圆点 ---------- */
 .g-divider {
   position: relative;
   display: block;
-  height: 1px;
-  margin: 10px 0;
-  background: var(--mat-rule);
+  height: 2px;
+  margin: 12px 0;
+  background: repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 12px);
   border: none;
 }
 .g-divider::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  transform: translate(-50%, -50%) rotate(45deg);
-  background: var(--gold);
-  box-shadow: 0 0 8px rgba(245, 184, 65, 0.8);
+  content: none;
 }
 
-/* ---------- 角花：四角青铜包边 ---------- */
+/* ---------- 角花：取消（明亮卡通不用四角包边） ---------- */
 .g-corners {
   position: relative;
 }
 .g-corner {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  pointer-events: none;
-  border-color: var(--gold-bright);
-  filter: drop-shadow(0 0 4px rgba(245, 184, 65, 0.6));
-}
-.g-corner.tl {
-  top: -1px;
-  left: -1px;
-  border-top: 2px solid;
-  border-left: 2px solid;
-}
-.g-corner.tr {
-  top: -1px;
-  right: -1px;
-  border-top: 2px solid;
-  border-right: 2px solid;
-}
-.g-corner.bl {
-  bottom: -1px;
-  left: -1px;
-  border-bottom: 2px solid;
-  border-left: 2px solid;
-}
-.g-corner.br {
-  bottom: -1px;
-  right: -1px;
-  border-bottom: 2px solid;
-  border-right: 2px solid;
+  display: none;
 }
 
-/* ---------- 扫描线 / 星尘纹理（装饰层，pointer-events:none） ---------- */
+/* ---------- 扫描线：取消 ---------- */
 .g-scanlines {
-  background-image: repeating-linear-gradient(
-    0deg,
-    rgba(255, 255, 255, 0.028) 0px,
-    rgba(255, 255, 255, 0.028) 1px,
-    transparent 1px,
-    transparent 3px
-  );
-  pointer-events: none;
+  background-image: none;
 }
 
-/* ---------- 状态灯 ---------- */
+/* ---------- 状态灯：实心糖果点 ---------- */
 .g-lamp {
-  width: 7px;
-  height: 7px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: var(--gold);
-  box-shadow:
-    0 0 8px rgba(245, 184, 65, 0.9),
-    inset 0 0 2px #fff;
+  background: var(--coral);
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 0 var(--coral-edge);
 }
 .g-lamp--cyan {
-  background: var(--cyan);
-  box-shadow:
-    0 0 8px rgba(0, 245, 212, 0.9),
-    inset 0 0 2px #fff;
+  background: var(--mint);
+  box-shadow: 0 2px 0 var(--mint-edge);
 }
 .g-lamp--red {
-  background: var(--cinnabar);
-  box-shadow:
-    0 0 8px rgba(217, 43, 43, 0.9),
-    inset 0 0 2px #fff;
+  background: var(--danger);
+  box-shadow: 0 2px 0 var(--danger-edge);
 }
 
-/* ---------- 按压反馈（触屏） ---------- */
+/* ---------- 触屏按压反馈 ---------- */
 .g-tap {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -518,9 +396,14 @@
   .g-btn {
     transition: none;
   }
+  .g-btn:active:not(:disabled) {
+    transform: none;
+  }
 }
 
-/* 尊重「减弱动态效果」设置（App 会给 <html> 加 .reduce-motion） */
 .reduce-motion .g-btn {
   transition: none;
+}
+.reduce-motion .g-btn:active:not(:disabled) {
+  transform: none;
 }

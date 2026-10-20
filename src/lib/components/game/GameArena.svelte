@@ -18,11 +18,6 @@
     class="canvas-box"
     class:shake={engine.phase === 'done' && engine.collectedCount === engine.total}
   >
-    <span class="stage-bracket tl" aria-hidden="true"></span>
-    <span class="stage-bracket tr" aria-hidden="true"></span>
-    <span class="stage-bracket bl" aria-hidden="true"></span>
-    <span class="stage-bracket br" aria-hidden="true"></span>
-
     <!-- 核心渲染视口 -->
     <Stage />
 
@@ -49,7 +44,10 @@
 </section>
 
 <style>
-  /* 舞台：铺满主区域（第九轮）——游戏主区域必须占满，HUD 浮在画布上 */
+  /* ============================================================
+   * 舞台（第十四轮）：画布铺满整屏，HUD 浮在上面
+   * 取消四角包边与暗角渐隐（明亮卡通不需要器物边框）
+   * ============================================================ */
   .stage-wrap {
     position: relative;
     flex: 1 1 auto;
@@ -64,30 +62,7 @@
     box-sizing: border-box;
   }
 
-  /* 画布外的一层极淡金雾：让画布「浮」在星云里，而不是贴上去 */
-  .stage-wrap::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 1;
-    background: radial-gradient(50% 50% at 50% 50%, var(--gold-dim), transparent 70%);
-  }
-
-  /* 顶部/底部渐隐：让浮在上面的 HUD 与指令栏有落脚处，
-     不至于直接压在星盘与目标点上（纯装饰，不拦事件） */
-  .stage-wrap::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 1;
-    background:
-      linear-gradient(180deg, rgba(6, 10, 18, 0.72) 0%, rgba(6, 10, 18, 0) 18%),
-      linear-gradient(0deg, rgba(6, 10, 18, 0.68) 0%, rgba(6, 10, 18, 0) 16%);
-  }
-
-  /* 画布基座 = 铺满主区域的深井（不再是居中的正方形） */
+  /* 画布基座 = 铺满主区域的天空底 */
   .canvas-box {
     position: relative;
     flex: 1 1 auto;
@@ -101,79 +76,35 @@
     box-shadow: none;
   }
 
-  /* 4 隅古青铜角花 */
-  /* 舞台四角：青铜角花 + 内侧云头钩（器物边框语言） */
-  .stage-bracket {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    pointer-events: none;
-    z-index: 4;
+  /* 通关震屏：小幅度、快衰减（浅底上不晃眼） */
+  .canvas-box.shake {
+    animation: stage-shake 420ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
   }
-  .stage-bracket::after {
-    content: '';
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    border: 1.5px solid var(--bronze-bright);
-    border-color: var(--bronze-bright) transparent transparent var(--bronze-bright);
-    border-radius: 50% 0 0 0;
-    opacity: 0.85;
-  }
-  .stage-bracket.tl {
-    top: -3px;
-    left: -3px;
-    border-top: 2px solid var(--edge-bronze-hot);
-    border-left: 2px solid var(--edge-bronze-hot);
-  }
-  .stage-bracket.tl::after {
-    top: 3px;
-    left: 3px;
-    transform: rotate(-45deg);
-  }
-  .stage-bracket.tr {
-    top: -3px;
-    right: -3px;
-    border-top: 2px solid var(--edge-bronze-hot);
-    border-right: 2px solid var(--edge-bronze-hot);
-  }
-  .stage-bracket.tr::after {
-    top: 3px;
-    right: 3px;
-    transform: rotate(45deg) scaleX(-1);
-  }
-  .stage-bracket.bl {
-    bottom: -3px;
-    left: -3px;
-    border-bottom: 2px solid var(--edge-bronze-hot);
-    border-left: 2px solid var(--edge-bronze-hot);
-  }
-  .stage-bracket.bl::after {
-    bottom: 3px;
-    left: 3px;
-    transform: rotate(-135deg);
-  }
-  .stage-bracket.br {
-    bottom: -3px;
-    right: -3px;
-    border-bottom: 2px solid var(--edge-bronze-hot);
-    border-right: 2px solid var(--edge-bronze-hot);
-  }
-  .stage-bracket.br::after {
-    bottom: 3px;
-    right: 3px;
-    transform: rotate(135deg) scaleX(-1);
-  }
-
-  /* ---------- 手机竖屏：画布同样铺满主区域，只缩小角花 ---------- */
-  @media (max-width: 640px) and (orientation: portrait) {
-    .stage-bracket {
-      width: 16px;
-      height: 16px;
+  @keyframes stage-shake {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    18% {
+      transform: translate3d(-4px, 2px, 0);
+    }
+    38% {
+      transform: translate3d(3px, -2px, 0);
+    }
+    58% {
+      transform: translate3d(-2px, 1px, 0);
+    }
+    78% {
+      transform: translate3d(1px, -1px, 0);
     }
   }
 
-  /* 竖屏平板：铺满（原 56dvh 限制已移除） */
-
-  /* 手机横屏：铺满（原 48vw 限制已移除） */
+  @media (prefers-reduced-motion: reduce) {
+    .canvas-box.shake {
+      animation: none;
+    }
+  }
+  :global(.reduce-motion) .canvas-box.shake {
+    animation: none;
+  }
 </style>

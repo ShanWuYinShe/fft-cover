@@ -51,20 +51,17 @@
   }
 </script>
 
-<!-- 游戏主菜单（降噪版 + 入场编排）：背景只留一层浑天环，前景只有主按钮呼吸光
-     入场：logo 1.15→1 收缩 → 菜单四项逐条上移 8px 淡入（60ms 错峰）→ 三步上手 → 页脚
-     动效只走 transform / opacity，振幅 ≤8px、缩放 ≤1.15（仅 logo 一次性入场） -->
+<!-- 游戏主菜单（糖果星域版）：天空场景 + 贴纸标题 + 白卡菜单
+     入场：logo 1.06→1 收缩 → 菜单四项逐条上移 8px 淡入（60ms 错峰）→ 三步上手 → 页脚
+     动效只走 transform / opacity，振幅 ≤8px、缩放 ≤1.08 -->
 <div class="title-screen">
-  <!-- 背景演出：单层缓慢旋转的浑天环（无星点/扫描线/暗角堆料） -->
+  <!-- 背景演出：糖果星球 + 缓慢旋转的珊瑚轨道（无扫描线/暗角堆料） -->
   <div class="ts-sky" aria-hidden="true">
     <span class="ts-ring"></span>
   </div>
 
   <div class="ts-scroll">
-    <div class="ts-console g-chamfer g-rivets">
-      <!-- 回纹发丝标题条（纯装饰，左侧小方块铭牌用 ::before 画） -->
-      <span class="ts-bar g-pattern-bar" aria-hidden="true"></span>
-
+    <div class="ts-console">
       <!-- 品牌区 -->
       <header class="ts-brand">
         <span class="ts-eyebrow">浑天璇玑 · 傅立叶级数</span>
@@ -147,15 +144,22 @@
 </div>
 
 <style>
+  /* ============================================================
+   * 标题页：天空场景 + 糖果贴纸标题 + 白卡菜单
+   * 背景是 body 同款天空渐变（TitleScreen 盖在游戏层之上，必须自带底色）
+   * ============================================================ */
   .title-screen {
     position: fixed;
     inset: 0;
     z-index: 60;
     overflow-x: hidden;
     overflow-y: auto;
-    background: #04060c;
-    animation: ts-in 0.35s ease-out;
     overscroll-behavior: contain;
+    background-color: var(--bg);
+    background-image:
+      var(--tex-nebula), linear-gradient(178deg, #bfe3ff 0%, #d9f0ff 52%, #fff6de 100%);
+    background-attachment: fixed;
+    animation: ts-in 0.35s ease-out;
   }
 
   @keyframes ts-in {
@@ -167,12 +171,36 @@
     }
   }
 
-  /* ---------- 背景：只留一层浑天环 ---------- */
+  /* ---------- 背景：一层缓慢旋转的珊瑚轨道 + 两颗糖果星球 ---------- */
   .ts-sky {
     position: fixed;
     inset: 0;
     pointer-events: none;
     overflow: hidden;
+  }
+
+  .ts-sky::before {
+    content: '';
+    position: absolute;
+    top: max(-14vmin, -160px);
+    right: max(-10vmin, -110px);
+    width: min(48vmin, 460px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 36% 32%, #fffbe8 0%, #ffe3ae 52%, #ffc98a 100%);
+    opacity: 0.9;
+  }
+
+  .ts-sky::after {
+    content: '';
+    position: absolute;
+    left: max(-6vmin, -70px);
+    bottom: max(8vmin, 40px);
+    width: min(22vmin, 220px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #d8fff2 0%, #6fe0bf 56%, #2fc79b 100%);
+    opacity: 0.55;
   }
 
   .ts-ring {
@@ -181,7 +209,7 @@
     top: 50%;
     width: min(112vmin, 900px);
     height: min(112vmin, 900px);
-    border: 1px dashed rgba(245, 184, 65, 0.2);
+    border: 2px dashed rgba(255, 122, 69, 0.28);
     border-radius: 50%;
     transform: translate(-50%, -50%);
     animation: ts-orbit 150s linear infinite;
@@ -204,57 +232,31 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--space-6) var(--space-4);
+    padding: 32px 16px 40px;
   }
 
-  /* ---------- 面板：只有一层描边，安静的重心 ---------- */
-  /* 器物面板：切角铜边由 .g-chamfer 画（本体=铜边、::before=金属面），
-     这里只管布局与内容安全边距 */
-  /* 卡片内纵向节奏：全部走 --space-4（块间）/ --space-3（发丝线到文字）/
-     --space-1（块内）/ --space-2（菜单行距），不留零散 px */
   .ts-console {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
-    width: min(500px, 100%);
-    padding: var(--space-4) 22px var(--space-4);
+    gap: 22px;
+    width: min(680px, 100%);
   }
 
-  /* 回纹发丝标题条：左侧一枚小方块铭牌 */
-  .ts-bar {
-    position: relative;
-    display: block;
-    height: 12px;
-    opacity: 0.9;
-  }
-
-  .ts-bar::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 3px;
-    width: 6px;
-    height: 6px;
-    background: var(--bronze-bright);
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
-  }
-
-  /* ---------- 品牌区 ---------- */
+  /* ---------- 品牌区：贴纸标题 ---------- */
   .ts-brand {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 14px;
     text-align: center;
-    /* 入场：logo 1.15 → 1 收缩 */
-    animation: ts-logo-in 500ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    animation: ts-logo-in 420ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
 
   @keyframes ts-logo-in {
     from {
       opacity: 0;
-      transform: scale(1.15);
+      transform: scale(1.06);
     }
     to {
       opacity: 1;
@@ -262,8 +264,120 @@
     }
   }
 
+  .ts-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    border-radius: var(--r-pill);
+    background: var(--mat-block);
+    border: 2px solid #ffffff;
+    box-shadow: var(--sh-1);
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--coral-edge);
+  }
+
+  .ts-name {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin: 0;
+    font-family: var(--font-round);
+    font-size: clamp(44px, 9vw, 72px);
+    line-height: 1.05;
+    letter-spacing: 2px;
+    font-weight: 900;
+    color: var(--text);
+    white-space: nowrap;
+    text-shadow:
+      0 4px 0 #ffffff,
+      0 10px 20px rgba(56, 116, 150, 0.18);
+  }
+
+  /* 珊瑚方印：标题右侧的糖果印章 */
+  .ts-name .ts-seal {
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    min-height: 0;
+    padding: 0;
+    font-family: var(--font-round);
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 0;
+    line-height: 1;
+    color: var(--coral-ink);
+    background: var(--face-gold-plate);
+    border: 3px solid #ffffff;
+    border-radius: var(--r-sm);
+    box-shadow: 0 4px 0 var(--coral-edge);
+    transform: rotate(-8deg);
+  }
+
+  /* 副标题：白药丸，两侧糖果短线 */
+  .ts-sub {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0;
+    padding: 9px 20px;
+    border-radius: var(--r-pill);
+    background: var(--mat-block);
+    box-shadow: var(--sh-1);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .ts-sub::before,
+  .ts-sub::after {
+    content: '';
+    flex: 0 0 auto;
+    width: 22px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--line-bright);
+  }
+
+  /* ---------- 菜单：白卡大按键，主操作是唯一珊瑚块 ---------- */
+  .ts-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
   .ts-menu .ts-item {
+    position: relative;
+    width: 100%;
+    min-height: calc(var(--ctl-menu) + 6px);
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0 18px;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh-2);
     animation: ts-item-in 300ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+
+  .ts-menu .ts-item::before {
+    border-radius: calc(var(--r-lg) - 2px);
+  }
+
+  .ts-menu .ts-item--main {
+    min-height: calc(var(--ctl-menu) + 12px);
+    font-size: 18px;
+    letter-spacing: 1px;
+    box-shadow: 0 14px 28px rgba(226, 85, 42, 0.26);
+    animation-delay: 0ms;
   }
 
   /* 菜单四项逐条上移淡入：60ms 错峰 */
@@ -314,118 +428,6 @@
     }
   }
 
-  .ts-eyebrow {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 4px;
-    color: var(--gold);
-  }
-
-  .ts-name {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin: 0;
-    font-size: clamp(32px, 8vw, 48px);
-    line-height: 1.15;
-    letter-spacing: 8px;
-    font-weight: 800;
-    white-space: nowrap;
-    background: linear-gradient(135deg, #fff7d6 0%, #ffd166 40%, #f5b841 75%, #d97706 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-
-  /* 朱印：真印面（.g-seal 给朱砂面 + 1px 亮边 + -2° 旋转），这里只把它压成方印 */
-  /* 印面加深一档 + 字放大到 16px：原来 13px 白字在印面渐变最亮处只有 3.75:1，
-     且字太小、笔画被抗锯齿糊掉；加深后印面全段 ≥4.5，字也占满印面更像真印 */
-  .ts-name .ts-seal {
-    flex: 0 0 auto;
-    width: var(--ctl-xs);
-    height: var(--ctl-xs);
-    min-height: 0;
-    padding: 0;
-    justify-content: center;
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: calc(var(--fs-lg) + 1px);
-    letter-spacing: 0;
-    line-height: 1;
-    background: linear-gradient(180deg, #c8382c 0%, #a52218 55%, #7d120c 100%);
-  }
-
-  /* 副标题铭牌：两侧云翼短线（clip-path 三角翼，无新增 DOM/文案） */
-  .ts-sub {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin: 0;
-    font-size: var(--ctl-font-sm);
-    color: var(--muted);
-    letter-spacing: 1.5px;
-    white-space: nowrap;
-  }
-
-  .ts-sub::before,
-  .ts-sub::after {
-    content: '';
-    flex: 0 0 auto;
-    width: 26px;
-    height: 5px;
-    background: linear-gradient(90deg, transparent, var(--bronze-bright));
-    clip-path: polygon(0 50%, 100% 0, 100% 100%);
-  }
-
-  .ts-sub::after {
-    transform: scaleX(-1);
-  }
-
-  /* ---------- 菜单：不再套凹槽盒子，靠间距分组 ---------- */
-  .ts-menu {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .ts-menu .ts-item {
-    position: relative;
-    width: 100%;
-    /* 桌面 42 / 触屏 48：主项比非主项高一档，统一由 --ctl-menu 派生 */
-    min-height: calc(var(--ctl-menu) - 4px);
-    justify-content: flex-start;
-    gap: 10px;
-    padding: 0 14px;
-    font-size: var(--ctl-font);
-    letter-spacing: 1px;
-    /* 面/边/四态全部交给公共件 .g-btn（铜板键），这里只管排版与悬停位移 */
-    transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  /* 主按钮：牌匾（金箔面 + 右端宝石灯，全页唯一金光）——外观全部来自公共件 */
-  .ts-menu .ts-item--main {
-    min-height: var(--ctl-menu);
-    font-size: calc(var(--ctl-font) + 2px);
-    letter-spacing: 1.5px;
-  }
-
-  /* 牌匾右端宝石灯（公共件 .g-btn--primary::after）做唯一呼吸：只加 opacity 动画，
-     不改它的位置/颜色，避免盖掉公共件 */
-  .ts-menu .ts-item--main::after {
-    animation: ts-breathe 2.8s ease-in-out infinite;
-  }
-
-  @keyframes ts-breathe {
-    0%,
-    100% {
-      opacity: 0.5;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-
   .ts-glyph,
   .ts-label {
     transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -443,9 +445,18 @@
     }
   }
 
-  /* 左侧图标：嵌在 .g-socket 键槽里（尺寸/内凹/描边都来自公共件） */
+  /* 左侧图标：嵌在 .g-socket 键槽里（尺寸/内凹来自公共件） */
   .ts-glyph {
     flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+  }
+
+  .ts-item--main .ts-glyph {
+    background: rgba(255, 255, 255, 0.22);
+    box-shadow: none;
+    color: #ffffff;
   }
 
   .ts-label {
@@ -470,95 +481,93 @@
   }
 
   .ts-item--main .ts-arrow {
-    color: #4a2c02;
+    color: #ffffff;
     opacity: 0.9;
   }
 
-  /* 键盘焦点：不用 outline（会被 clip-path 切掉），走公共件的铜边变金 + 面提亮 */
-
-  /* ---------- 三步上手：一行一步，不带盒子 ---------- */
-  /* 对齐语言统一为「居中」：卡片其余部分（品牌区、菜单、页脚）都以卡片中线为轴，
-     这里也把小标题与清单块居中；清单文字本身仍左对齐——步骤句长短不一，
-     文字居中会让换行后的行首参差，块居中则既对齐重心又保住可读性 */
+  /* ---------- 三步上手：一张白卡说明面 ---------- */
   .ts-steps {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: var(--space-1);
-    border-top: 1px solid var(--edge-faint);
+    align-items: stretch;
+    gap: 8px;
+    padding: 16px 20px 18px;
+    background: var(--mat-block);
+    border: 3px solid #ffffff;
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh-2);
   }
 
   .ts-steps-title {
-    margin: var(--space-3) 0 var(--space-1);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    color: var(--gold);
+    margin: 0;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: var(--coral-edge);
   }
 
   .ts-steps-list {
     margin: 0;
-    padding-left: 1.5em;
-    /* 清单块按最长一行收窄并居中，换行时仍从同一左边缘起排 */
-    width: fit-content;
-    max-width: 100%;
-    /* 三步上手是「怎么玩」的一级信息，用正文色而不是次要色 */
+    padding-left: 1.4em;
+    width: 100%;
     color: var(--text);
-    font-size: var(--fs-md);
-    line-height: 1.65;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.7;
     list-style: decimal;
   }
 
   .ts-steps-list li::marker {
-    color: var(--gold);
-    font-weight: 700;
+    color: var(--coral-text);
+    font-weight: 900;
     font-variant-numeric: tabular-nums;
   }
 
-  /* ---------- 战绩：纯文字行，不套芯片盒子 ---------- */
+  /* ---------- 战绩：白卡读数条 ---------- */
   .ts-record {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 4px 14px;
-    padding-top: var(--space-3);
-    border-top: 1px solid var(--edge-faint);
-    font-size: var(--fs-sm);
+    gap: 6px 16px;
+    padding: 12px 16px;
+    background: var(--mat-block);
+    border: 2px solid #ffffff;
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh-1);
+    font-size: 13px;
+    font-weight: 600;
     color: var(--muted);
   }
 
   .ts-stat {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     font-variant-numeric: tabular-nums;
   }
 
   .ts-stat b {
     font-size: 15px;
-    font-weight: 800;
-    color: var(--gold-bright);
+    font-weight: 900;
+    color: var(--coral-edge);
   }
 
   /* 图标由 Icon 子组件渲染，需用 :global 才能染色 */
   .ts-stat :global(svg) {
-    color: var(--gold);
+    color: var(--coral-text);
   }
 
   /* ---------- 页脚 ---------- */
-  /* 上间距与「三步上手」的发丝线同档（--space-3），两处节奏一致 */
   .ts-foot {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-top: var(--space-3);
-    border-top: 1px solid var(--edge-faint);
   }
 
   .ts-ver {
-    font-size: 11px;
-    letter-spacing: 1px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
     color: var(--muted);
     white-space: nowrap;
   }
@@ -566,54 +575,71 @@
   /* ---------- 移动端：收紧密度，保证三步上手也完整可见 ---------- */
   @media (max-width: 640px) {
     .ts-scroll {
-      padding: 16px 12px;
+      padding: 20px 12px 28px;
     }
 
     .ts-console {
-      gap: 14px;
-      padding: 14px 16px 14px;
+      gap: 16px;
+    }
+
+    .ts-brand {
+      gap: 10px;
     }
 
     .ts-eyebrow {
-      letter-spacing: 3px;
+      font-size: 12px;
+      letter-spacing: 1.5px;
     }
 
     .ts-name {
-      font-size: clamp(28px, 9.5vw, 40px);
-      letter-spacing: 5px;
-      gap: 8px;
+      font-size: clamp(38px, 10vw, 52px);
+      letter-spacing: 1px;
+      gap: 10px;
     }
 
     .ts-name .ts-seal {
-      width: 26px;
-      height: 26px;
-      line-height: 24px;
+      width: 34px;
+      height: 34px;
+      font-size: 18px;
     }
 
     .ts-sub {
-      font-size: 12px;
-      letter-spacing: 1px;
+      font-size: 13.5px;
+      padding: 8px 14px;
     }
 
     .ts-menu {
-      gap: 6px;
+      gap: 10px;
+    }
+
+    .ts-menu .ts-item {
+      min-height: calc(var(--ctl-menu) + 2px);
+      padding: 0 14px;
+      font-size: 15px;
+    }
+
+    .ts-menu .ts-item--main {
+      font-size: 16.5px;
+    }
+
+    .ts-steps {
+      padding: 14px 16px 16px;
     }
 
     .ts-steps-list {
-      font-size: var(--fs-sm);
-      line-height: 1.6;
+      font-size: 13.5px;
     }
 
     .ts-record {
-      gap: 4px 10px;
+      gap: 4px 12px;
+      padding: 10px 12px;
     }
   }
 
   /* 矮视口（横屏手机 / 小窗）：压缩留白，靠滚动兜底 */
   @media (max-height: 700px) {
     .ts-console {
-      gap: 10px;
-      padding-top: 14px;
+      gap: 14px;
     }
 
     .ts-sub {
@@ -621,7 +647,7 @@
     }
   }
 
-  /* ---------- 减弱动态效果：位移/缩放/循环动画全关（元素回落到最终态） ---------- */
+  /* ---------- 减弱动态效果：位移/缩放/循环动画全关 ---------- */
   @media (prefers-reduced-motion: reduce) {
     .title-screen,
     .ts-ring,
@@ -629,8 +655,7 @@
     .ts-menu .ts-item,
     .ts-steps,
     .ts-record,
-    .ts-foot,
-    .ts-menu .ts-item--main::after {
+    .ts-foot {
       animation: none;
     }
 
@@ -658,8 +683,7 @@
   :global(.reduce-motion) .ts-menu .ts-item,
   :global(.reduce-motion) .ts-steps,
   :global(.reduce-motion) .ts-record,
-  :global(.reduce-motion) .ts-foot,
-  :global(.reduce-motion) .ts-menu .ts-item--main::after {
+  :global(.reduce-motion) .ts-foot {
     animation: none;
   }
 

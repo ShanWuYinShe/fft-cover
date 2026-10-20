@@ -122,7 +122,7 @@
           <button type="button" class="go g-btn g-btn--primary g-btn--lg" onclick={goNext}
             >启赴下一宿</button
           >
-          <button type="button" class="ghost-btn g-btn" onclick={quit}>
+          <button type="button" class="ghost-btn g-btn g-btn--ghost" onclick={quit}>
             带着 {engine.endlessScore} 分返回星图
           </button>
         </div>
@@ -161,7 +161,8 @@
           <button type="button" class="go g-btn g-btn--primary g-btn--lg" onclick={retry}
             >重启周天璇玑</button
           >
-          <button type="button" class="ghost-btn g-btn" onclick={quit}>返回星图</button>
+          <button type="button" class="ghost-btn g-btn g-btn--ghost" onclick={quit}>返回星图</button
+          >
         </div>
       {/if}
     </div>
@@ -175,13 +176,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 16px;
-    background: rgba(3, 5, 11, 0.9);
-    backdrop-filter: blur(6px);
-    border-radius: var(--radius-md);
-    animation: fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 14px;
+    background: var(--scrim-strong);
+    border-radius: var(--r-lg);
     z-index: 25;
+    animation: fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
+
   @keyframes fade-in {
     from {
       opacity: 0;
@@ -191,22 +192,19 @@
     }
   }
 
-  /* 无尽结算：同样只有「大数字 → 结论 → 明细 → 两个按钮」 */
   .card {
     position: relative;
-    width: min(100%, 380px);
+    width: min(100%, 400px);
     max-height: 100%;
     overflow: visible;
-    border-radius: 10px;
-    /* 与普通结算卡同一块器物面板：青铜边 + 内侧 1px 暗线（右上角包角由 .g-rivets 提供） */
-    background: var(--face-plate);
-    border: 1px solid var(--edge-bronze);
-    box-shadow:
-      inset 0 0 0 1px var(--edge-inner),
-      0 4px 8px rgba(0, 0, 0, 0.5);
-    animation: card-in 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
+    border-radius: var(--r-xl);
+    background: var(--mat-plate);
+    border: 3px solid #ffffff;
+    box-shadow: var(--sh-3);
+    animation: card-in 0.32s cubic-bezier(0.16, 1, 0.3, 1);
     text-align: center;
   }
+
   @keyframes card-in {
     from {
       opacity: 0;
@@ -218,19 +216,24 @@
     }
   }
 
-  /* 结论印章：面/边/字色交给公共件 .g-seal（与结算卡同一枚朱印），本地只留排版与斜盖角度 */
+  /* 结论印章：薄荷庆祝印（本地覆盖公共 .g-seal 的朱红） */
   .stamp {
     align-self: center;
-    padding: 3px 12px;
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: var(--fs-md);
-    font-weight: 700;
-    letter-spacing: 3px;
+    padding: 4px 14px;
+    font-family: var(--font-round);
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 2px;
     white-space: nowrap;
-    /* 基准态就是盖好后的角度：动画结束后自然停在 -6° */
+    color: var(--mint-ink);
+    background: var(--face-jade);
+    border: 2px solid #ffffff;
+    border-radius: var(--r-sm);
+    box-shadow: 0 3px 0 var(--mint-edge);
     transform: rotate(-6deg);
     animation: stamp-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) 0.42s backwards;
   }
+
   @keyframes stamp-in {
     from {
       opacity: 0;
@@ -247,14 +250,20 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    padding: 12px 16px 10px;
-    border-bottom: 1px solid var(--edge-faint);
-    border-radius: 10px 10px 0 0;
+    padding: 15px 16px 10px;
+    border-bottom: 2px solid var(--line);
   }
+
+  .card-rail .g-label {
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: var(--coral-edge);
+  }
+
   .rail-lv {
-    font-size: var(--fs-sm);
-    font-weight: 600;
-    color: var(--text);
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--muted);
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
   }
@@ -263,18 +272,28 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    padding: 12px 16px 14px;
+    gap: 8px;
+    padding: 14px 18px 16px;
   }
 
   .wave-ico {
-    color: var(--cyan);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    color: var(--mint-deep);
+    background: var(--mint-dim);
     line-height: 1;
-    animation: pop 0.45s cubic-bezier(0.34, 1.5, 0.64, 1);
+    animation: pop 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
   }
+
   .wave-ico.dead {
     color: var(--muted-2);
+    background: var(--line-quiet);
   }
+
   @keyframes pop {
     from {
       opacity: 0;
@@ -288,9 +307,9 @@
 
   .line {
     margin: 0;
-    font-size: var(--fs-xl);
-    font-weight: 700;
-    letter-spacing: 1px;
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
     color: var(--text);
   }
 
@@ -300,19 +319,22 @@
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    margin-top: 4px;
+    margin-top: 2px;
   }
+
   .score-big b {
-    font-size: 46px;
+    font-size: 40px;
+    font-weight: 900;
     line-height: 1;
-    background: linear-gradient(180deg, #ffe9a8, var(--gold) 65%, #e79a12);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: var(--coral-text);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 1px;
   }
+
   .score-cap {
-    font-size: var(--fs-sm);
-    letter-spacing: 2px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
     color: var(--muted);
   }
 
@@ -322,9 +344,9 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    font-size: var(--fs-lg);
-    font-weight: 600;
-    color: var(--gold-bright);
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
   }
 
   .detail {
@@ -334,61 +356,71 @@
     justify-content: center;
     flex-wrap: wrap;
     gap: 6px;
-    font-size: var(--fs-sm);
+    font-size: 13px;
+    font-weight: 600;
     color: var(--muted);
   }
+
   .detail b {
     color: var(--text);
+    font-weight: 900;
     font-variant-numeric: tabular-nums;
   }
+
   .detail .sep {
     color: var(--muted-2);
   }
 
+  /* 下一宿预告：自己的浅薄荷提示卡 */
   .hint-line {
-    margin: 0;
-    font-size: var(--fs-sm);
+    margin: 2px 0 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    border-radius: var(--r-sm);
+    border: 2px solid var(--note-edge);
+    background: var(--note-bg);
+    font-size: 13px;
+    font-weight: 600;
     color: var(--muted);
   }
+
   .nh-tag {
-    color: var(--cyan);
-    font-weight: 600;
+    display: inline-block;
+    margin-right: 4px;
+    padding: 1px 8px;
+    border-radius: var(--r-pill);
+    background: var(--mint-dim);
+    color: var(--mint-edge);
+    font-weight: 900;
   }
 
   .actions {
     display: flex;
     flex-direction: column;
-    gap: 7px;
+    gap: 8px;
     width: 100%;
     margin-top: 6px;
   }
-  /* 主操作：金色厚键 */
+
   .go {
     width: 100%;
     min-height: var(--ctl-lg);
     padding: 0 18px;
     cursor: pointer;
     font-size: var(--ctl-font);
-    font-weight: 700;
-    letter-spacing: 2px;
+    font-weight: 800;
+    letter-spacing: 1px;
     -webkit-tap-highlight-color: transparent;
-    /* 形与四态交给公共件 .g-btn--primary（牌匾）：本地只保留布局与字号 */
   }
-  .go:active {
-    transform: translateY(2px);
-  }
-  /* 次操作：安静的一行描边 */
-  /* 次键：形与四态交给公共件 .g-btn（铜板键），本地只保留布局与字号 */
+
   .ghost-btn {
     width: 100%;
     min-height: var(--ctl-md);
     padding: 0 14px;
     font-size: var(--ctl-font-sm);
-    font-weight: 600;
+    font-weight: 700;
     white-space: nowrap;
-  }
-  .ghost-btn:active {
-    transform: translateY(1px);
   }
 
   /* 矮视口与手机竖屏：结算卡整屏显示 */
@@ -401,6 +433,7 @@
       padding: 10px;
     }
   }
+
   @media (max-height: 460px) {
     .card-body {
       gap: 6px;
@@ -411,14 +444,28 @@
     }
   }
 
+  @media (max-width: 640px) {
+    .score-big b {
+      font-size: 36px;
+    }
+    .line {
+      font-size: 22px;
+    }
+  }
+
   /* 减弱动态效果：位移动画关闭（颜色/透明度保留） */
   @media (prefers-reduced-motion: reduce) {
+    .result,
     .card,
+    .wave-ico,
     .stamp {
       animation: none;
     }
   }
+
+  :global(.reduce-motion) .result,
   :global(.reduce-motion) .card,
+  :global(.reduce-motion) .wave-ico,
   :global(.reduce-motion) .stamp {
     animation: none;
   }

@@ -127,215 +127,220 @@
 
 <style>
   .settings-rows {
-    /* 开关列宽：两个 --ctl-lg 加一个小间隔——刚好容下最宽的读数
-       （音量三格电平 + “100%”），五行左边缘因此对齐；不写死 px */
+    /* 开关列宽：两个 --ctl-lg 加一个小间隔，五行左边缘对齐（不写死 px） */
     --ctl-col: calc(var(--ctl-lg) * 2 + var(--space-2));
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    margin-bottom: var(--space-3);
+    gap: 10px;
+    margin-bottom: 14px;
   }
 
-  /* 每一行就是一行：名称在左、开关在右，行间用发丝线分隔（不套卡片） */
+  /* 每一行 = 自己的白卡面：白面 + 浅蓝描边 + 硬投影 */
   .setting-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: 4px 0;
-    min-height: 46px;
+    padding: 10px 12px 10px 14px;
+    min-height: 56px;
     box-sizing: border-box;
-    border-bottom: 1px solid var(--edge-faint);
-  }
-  .setting-row:last-child {
-    border-bottom: none;
-  }
-  .setting-row--seg {
-    flex-wrap: wrap;
-    row-gap: 8px;
+    background: var(--mat-block);
+    border: 2px solid var(--line);
+    border-radius: var(--r-md);
+    box-shadow: var(--mat-block-shadow);
   }
 
-  /* 行标题：左侧 3px 铭牌块 */
-  .setting-k {
+  .setting-row--seg {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+
+  /* 行标题：15px/800 深蓝字 + 左侧珊瑚铭牌条 */
+  .setting-row .setting-k {
+    position: relative;
     flex: 1 1 auto;
     min-width: 0;
-    padding-left: 8px;
+    padding-left: 12px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    text-transform: none;
+    color: var(--text);
     white-space: nowrap;
-    position: relative;
   }
-  .setting-k::before {
+
+  .setting-row .setting-k::before {
     content: '';
     position: absolute;
     left: 0;
     top: 50%;
-    width: 3px;
-    height: 12px;
-    margin-top: -6px;
-    border-radius: 1px;
-    background: linear-gradient(180deg, var(--gold-bright), var(--bronze) 70%, var(--bronze-deep));
+    width: 4px;
+    height: 18px;
+    margin-top: -9px;
+    border-radius: var(--r-pill);
+    background: var(--coral);
   }
 
-  /* 铜制拨钮：切角铜边 + 内层金属面，开 = 金面 + 右端宝石灯 */
-  /* 宽度统一走 --ctl-col：开/关、各行读数长短都不再让拨钮忽宽忽窄，
-     同一列左边缘对齐（右端对齐弹窗内容右边界） */
+  /* 糖果拨钮：药丸槽 + 右端指示灯；开 = 薄荷面 */
   .toggle-btn {
     appearance: none;
     position: relative;
-    isolation: isolate;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 7px;
+    justify-content: flex-start;
     flex: none;
     width: var(--ctl-col);
     min-height: var(--ctl-md);
-    padding: 0 var(--space-5) 0 var(--space-2);
-    cursor: pointer;
+    padding: 0 32px 0 12px;
+    border: 2px solid var(--line-bright);
+    border-radius: var(--r-pill);
+    background: var(--groove-bg);
     color: var(--muted);
+    font-family: var(--font-round);
     font-size: var(--ctl-font-sm);
-    font-weight: 600;
+    font-weight: 800;
+    letter-spacing: 0.5px;
     white-space: nowrap;
-    border: none;
-    border-radius: var(--r-sm);
-    background: var(--edge-bronze);
+    cursor: pointer;
+    box-shadow: inset 0 2px 4px rgba(90, 150, 190, 0.18);
     -webkit-tap-highlight-color: transparent;
-    transition: color 0.12s ease;
-  }
-  .toggle-btn::before {
-    content: '';
-    position: absolute;
-    inset: 1px 1px 2px;
-    z-index: -1;
-    border-radius: calc(var(--r-sm) - 1px);
-    background: var(--face-plate);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    transition: background 0.12s ease;
-  }
-  .toggle-btn:hover {
-    color: var(--text);
-    background: var(--edge-bronze-hot);
-  }
-  .toggle-btn:hover::before {
-    background: var(--face-plate-hot);
-  }
-  /* 开：金箔面 + 宝石灯（全屏唯一的发光只给选中态） */
-  .toggle-btn.on {
-    color: #2a1700;
-    font-weight: 700;
-    background: var(--edge-bronze-hot);
-  }
-  .toggle-btn.on::before {
-    background: var(--face-gold-plate, linear-gradient(180deg, #ffe7a3, #d69214));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transition:
+      background 0.14s ease,
+      color 0.14s ease,
+      border-color 0.14s ease;
   }
 
-  /* 指示灯 = 右端宝石（关：暗灯；开：亮宝石） */
+  .toggle-btn:hover {
+    border-color: var(--coral-text);
+    color: var(--coral-edge);
+  }
+
+  /* 开：薄荷糖果面 + 深字（mint-ink 在薄荷上 7.5:1） */
+  .toggle-btn.on {
+    background: var(--face-jade);
+    border-color: var(--mint-edge);
+    color: var(--mint-ink);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.5),
+      0 3px 0 var(--mint-edge);
+  }
+
+  /* 指示灯：关 = 浅蓝灯珠；开 = 白灯珠 */
   .lamp {
     position: absolute;
-    right: 6px;
+    right: 11px;
     top: 50%;
-    width: 7px;
-    height: 7px;
-    margin-top: -3.5px;
+    width: 12px;
+    height: 12px;
+    margin-top: -6px;
     border-radius: 50%;
     flex: none;
-    background: rgba(163, 144, 109, 0.28);
-    box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.7);
-  }
-  .toggle-btn.on .lamp {
-    background: radial-gradient(circle at 35% 30%, #fffdf2 0%, #ffd166 45%, #8a5a04 100%);
-    box-shadow: 0 0 7px rgba(255, 209, 102, 0.85);
+    background: var(--line-bright);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
   }
 
-  /* 音量：凹槽（内阴影 + 铜线）+ 刻度线 + 三格电平 */
+  .toggle-btn.on .lamp {
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
+  }
+
+  /* 音量：三格糖果电平 */
   .bars {
     display: inline-flex;
     align-items: flex-end;
-    gap: 2px;
-    height: 12px;
-    padding: 0 3px;
-    border-radius: 2px;
-    background:
-      repeating-linear-gradient(90deg, rgba(201, 162, 74, 0.22) 0 1px, transparent 1px 4px),
-      linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(255, 255, 255, 0.04));
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.7);
-  }
-  .bars .bar {
-    width: 3px;
-    border-radius: 1px;
-    background: rgba(163, 144, 109, 0.25);
-  }
-  .bars .bar:nth-child(1) {
-    height: 5px;
-  }
-  .bars .bar:nth-child(2) {
-    height: 8px;
-  }
-  .bars .bar:nth-child(3) {
-    height: 12px;
-  }
-  .bars .bar.lite {
-    background: var(--gold-bright);
+    gap: 3px;
+    height: 14px;
+    padding: 0 4px;
+    border-radius: var(--r-sm);
+    background: var(--mat-block);
+    box-shadow: inset 0 1px 2px rgba(90, 150, 190, 0.2);
   }
 
-  /* 分段器 = 标签页：未选中哑光金属，选中 = 面提亮 + 底部金滑块 */
+  .bars .bar {
+    width: 4px;
+    border-radius: 2px;
+    background: var(--line-bright);
+  }
+
+  .bars .bar:nth-child(1) {
+    height: 6px;
+  }
+  .bars .bar:nth-child(2) {
+    height: 9px;
+  }
+  .bars .bar:nth-child(3) {
+    height: 13px;
+  }
+
+  .bars .bar.lite {
+    background: var(--mint);
+  }
+
+  /* 分段器：浅蓝凹槽里放白药丸，选中 = 薄荷 */
   .chips {
     display: flex;
     gap: 4px;
     flex: none;
-    padding: 2px;
-    border-radius: 4px;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(255, 255, 255, 0.03));
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.65);
+    padding: 4px;
+    border-radius: var(--r-pill);
+    background: var(--groove-bg);
+    box-shadow: var(--groove-shadow);
   }
+
   .chip {
     appearance: none;
     min-width: 52px;
-    min-height: calc(var(--ctl-md) - 6px);
-    padding: 0 10px;
+    min-height: calc(var(--ctl-md) - 8px);
+    padding: 0 12px;
     cursor: pointer;
     color: var(--muted);
+    font-family: var(--font-round);
     font-size: var(--ctl-font-sm);
-    font-weight: 600;
+    font-weight: 800;
     white-space: nowrap;
     border: none;
-    border-radius: 3px;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
-    box-shadow: inset 0 -2px 0 transparent;
+    border-radius: var(--r-pill);
+    background: transparent;
     transition:
       color 0.12s ease,
       background 0.12s ease,
       box-shadow 0.12s ease;
   }
+
   .chip:hover {
     color: var(--text);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.01));
-  }
-  .chip.on {
-    color: var(--gold-bright);
-    font-weight: 700;
-    background: linear-gradient(180deg, rgba(245, 184, 65, 0.2), rgba(245, 184, 65, 0.04));
-    box-shadow: inset 0 -2px 0 var(--gold);
+    background: rgba(255, 255, 255, 0.75);
   }
 
-  /* 说明文字：与设置行用一条线隔开，不再包一层凹槽 */
+  .chip.on {
+    color: var(--mint-ink);
+    background: var(--face-jade);
+    box-shadow: 0 2px 0 var(--mint-edge);
+  }
+
+  /* 说明文字：每条都是自己的浅薄荷提示卡 */
   .settings-notes {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--edge-faint);
   }
+
   .desc {
     margin: 0;
-    font-size: var(--fs-sm);
+    padding: 10px 12px;
+    border-radius: var(--r-sm);
+    border: 2px solid var(--note-edge);
+    background: var(--note-bg);
+    font-size: 13px;
+    font-weight: 600;
     line-height: 1.6;
     color: var(--muted);
   }
+
   .desc.formula {
-    color: var(--cyan);
+    color: var(--grape-deep);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
   }
 
   /* 窄屏：分段选择器占满一行（高度由 --ctl-* 按指针类型自动切换） */

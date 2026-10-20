@@ -92,13 +92,9 @@
 
 <style>
   /* ============================================================
-   * 全屏座舱：整屏 grid，页面本身不滚动
-   * 桌面 ┌── 顶栏 ──┐ / ├ 舞台 │ 机坞 ┤ / └── 指令栏 ──┘
-   * 手机  舞台（含画布）→ 机坞面板（内部滚动）→ 指令栏 → 底部导航
+   * 第十四轮「糖果星域」：画布铺满整屏，HUD / 机坞 / 指令栏全是浮层
+   * 视觉：白卡 + 3px 白边 + 硬投影；不用黑阴影、不用玻璃拟态
    * ============================================================ */
-  /* 全屏舞台（第九轮）：游戏主区域占满整屏，HUD / 指令栏 / 机坞都是浮层。
-     原来「顶栏 + 舞台 + 机坞 + 指令栏」四区把主区域切成一块正方形，
-     正常游戏不会那样——画布必须是背景，UI 浮在上面。 */
   .game-screen {
     position: fixed;
     inset: 0;
@@ -110,44 +106,26 @@
     background: transparent;
   }
 
-  /* 整屏电影颗粒：盖在所有面板**上方**的一层静态后处理（fixed + z-index 40 + overlay）
-     —— 这是「贴了图的游戏」最关键的一层，只此一处，不参与并发动画额度 */
-  .game-screen::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 40;
-    pointer-events: none;
-    background-image: var(--tex-grain);
-    opacity: 0.045;
-    mix-blend-mode: overlay;
-  }
+  /* 整屏颗粒：第十四轮取消（浅底上噪点会让画面发灰） */
 
-  /* ---------- 浮层体系（第九轮）----------
-     舞台铺满整屏，其余三块都浮在画布之上：
-       HUD    贴顶，顶部渐隐让画布透出来
-       指令栏  贴底居中，胶囊浮条
-       机坞    右侧滑入面板（默认收起），点「调参」展开
-     pointer-events 只在需要的地方打开，画布始终可交互。 */
-
-  /* 顶栏：贴顶，背景渐隐（画布从下面透出来） */
+  /* 顶栏浮层 */
   .gs-hud {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 20;
+    height: var(--hud-h);
     min-width: 0;
     min-height: 0;
     pointer-events: none;
-    background: linear-gradient(180deg, rgba(6, 10, 18, 0.78) 0%, rgba(6, 10, 18, 0) 100%);
+    padding: 0 var(--hud-pad-x) 0 var(--hud-pad-x-end);
   }
-  /* 顶栏内部控件恢复可点（背景层本身不拦画布） */
   .gs-hud > :global(*) {
     pointer-events: auto;
   }
 
-  /* 舞台：占满整屏（唯一占 grid 的区） */
+  /* 舞台：占满整屏 */
   .gs-stage {
     grid-area: stage;
     position: relative;
@@ -157,11 +135,11 @@
     padding: 0;
   }
 
-  /* 指令栏：贴底居中的胶囊浮条 */
+  /* 指令栏：贴底居中的白药丸浮条 */
   .gs-cmd {
     position: fixed;
     left: 50%;
-    bottom: 14px;
+    bottom: var(--cmd-pad-b);
     transform: translateX(-50%);
     z-index: 22;
     min-width: 0;
@@ -169,7 +147,6 @@
     max-width: calc(100vw - 24px);
   }
 
-  /* 移动端底部导航：贴底浮层 */
   .gs-nav {
     display: none;
     position: fixed;
@@ -181,48 +158,59 @@
     min-height: 0;
   }
 
-  /* ---------- 调参台开关：机坞收起时唯一入口 ---------- */
+  /* ---------- 调参台开关：珊瑚厚实体药丸 ---------- */
   .dock-toggle {
     position: fixed;
-    right: 14px;
-    bottom: calc(var(--cmd-h) + 22px);
+    right: max(16px, var(--safe-r));
+    bottom: calc(var(--cmd-h) + var(--cmd-pad-b) + 8px);
     z-index: 23;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    min-height: var(--ctl-md);
-    padding: 0 16px;
-    border-radius: 999px;
-    background: var(--plate-brass);
-    border: 1px solid var(--plate-brass-line);
-    box-shadow: var(--plate-brass-shadow);
-    color: var(--gold-bright);
-    font-size: 12px;
-    font-weight: 700;
+    gap: 8px;
+    min-height: var(--ctl-lg);
+    padding: 0 20px;
+    border-radius: var(--r-pill);
+    background: var(--coral-edge);
+    border: 3px solid #ffffff;
+    box-shadow:
+      0 5px 0 var(--coral-edge),
+      0 14px 26px rgba(190, 70, 30, 0.28);
+    color: #ffffff;
+    font-family: var(--font-round);
+    font-size: var(--ctl-font);
+    font-weight: 900;
     letter-spacing: 1px;
     cursor: pointer;
     transition:
-      transform 120ms cubic-bezier(0.34, 1.56, 0.64, 1),
-      box-shadow 160ms ease;
+      transform 110ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      background 120ms ease;
+  }
+  .dock-toggle::before {
+    content: '';
+    position: absolute;
+    inset: 2px 2px 5px;
+    border-radius: var(--r-pill);
+    background: var(--face-gold-plate);
+    z-index: -1;
   }
   .dock-toggle:hover {
-    box-shadow: var(--plate-brass-shadow), var(--sh-glow-hot);
+    background: #a83814;
   }
   .dock-toggle:active {
-    transform: scale(0.96);
+    transform: translateY(3px);
   }
   .dock-toggle:focus-visible {
-    outline: 2px solid var(--gold-bright);
-    outline-offset: 2px;
+    outline: 3px solid #ffffff;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 7px var(--coral);
   }
   .dock-toggle-ico {
     display: inline-flex;
-    font-size: 14px;
+    font-size: 18px;
     line-height: 1;
   }
 
-  /* ---------- 右侧机坞：滑入式浮层（默认收起，不占主区域） ---------- */
-  /* 面 = 拉丝装甲板：斜向高光 + 拉丝 + 内沿暖亮线 + 内框发丝 + 外柔影 */
+  /* ---------- 右侧机坞：白卡滑入面板 ---------- */
   .gs-dock {
     position: fixed;
     top: 0;
@@ -235,43 +223,24 @@
     display: flex;
     flex-direction: column;
     background: var(--mat-plate);
-    border-left: 1px solid var(--edge-bronze);
-    box-shadow: -16px 0 44px rgba(0, 0, 0, 0.55);
-    /* 收起：整体移出屏幕右侧；展开由 .dock-open 打开 */
-    transform: translateX(calc(100% + 12px));
+    border-left: 4px solid #ffffff;
+    box-shadow:
+      -8px 0 0 #d6ecf9,
+      -26px 0 48px rgba(56, 116, 150, 0.22);
+    transform: translateX(calc(100% + 16px));
     transition: transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
     will-change: transform;
   }
   .game-screen.dock-open .gs-dock {
     transform: translateX(0);
   }
-  /* 器物框：内缩 6px 的一道铜线（伪元素，不加 DOM） */
-  .gs-dock::after {
-    content: '';
-    position: absolute;
-    inset: 6px;
-    z-index: 2;
-    border: 1px solid var(--mat-frame-line);
-    border-radius: 5px;
-    box-shadow: inset 0 0 0 1px var(--edge-inner);
-    pointer-events: none;
-  }
-  /* 雕花包角：全屏只此一枚（机坞右上角，镜像朝内） */
+  /* 器物内框与包角：第十四轮取消 */
+  .gs-dock::after,
   .gs-dock::before {
-    content: '';
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    z-index: 3;
-    width: 34px;
-    height: 34px;
-    background: var(--tex-corner) no-repeat center / 34px 34px;
-    transform: scaleX(-1);
-    opacity: 0.55;
-    pointer-events: none;
+    content: none;
   }
 
-  /* 抬头 = 一块黄铜铭牌（原来是贴边的冷蓝标题条） */
+  /* 抬头 = 珊瑚药丸铭牌 */
   .dock-head {
     position: relative;
     flex: 0 0 auto;
@@ -279,42 +248,36 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin: 8px 10px 0;
-    padding: 6px 10px;
+    margin: 12px 14px 0;
+    padding: 8px 18px;
     background: var(--plate-brass);
-    border: 1px solid var(--plate-brass-line);
-    border-radius: var(--r-sm);
+    border: 3px solid #ffffff;
+    border-radius: var(--r-pill);
     box-shadow: var(--plate-brass-shadow);
   }
   .dock-head::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    width: 3px;
-    height: 60%;
-    transform: translateY(-50%);
-    background: linear-gradient(180deg, var(--gold-bright), var(--bronze));
+    content: none;
   }
 
   .dock-title {
     margin: 0;
-    font-size: 13px;
-    color: var(--gold-bright);
-    letter-spacing: 1.5px;
-    font-weight: 700;
+    font-family: var(--font-round);
+    font-size: var(--fs-lg);
+    color: var(--coral-ink);
+    letter-spacing: 1px;
+    font-weight: 900;
     white-space: nowrap;
-    /* 柔和浮雕：深色下唇 + 暖色上唇（不用外发光） */
-    text-shadow:
-      0 1px 0 rgba(0, 0, 0, 0.6),
-      0 1px 0 rgba(255, 224, 150, 0.12);
   }
 
-  /* 计数在黄铜铭牌上：牌面比面板亮，用 --text 才够 4.5:1（--muted 实测仅 ≈3.9:1） */
   .dock-count {
+    font-family: var(--font-round);
     font-size: var(--ctl-font-sm);
-    color: var(--text);
-    font-weight: 600;
+    color: var(--coral-ink);
+    font-weight: 800;
+    background: rgba(255, 255, 255, 0.42);
+    padding: 3px 10px;
+    border-radius: var(--r-pill);
+    font-variant-numeric: tabular-nums;
   }
 
   .dock-body {
@@ -323,153 +286,148 @@
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior: contain;
-    /* 纵向弹性：面板矮于机坞时把调参台撑满，不留半屏死区 */
     display: flex;
     flex-direction: column;
-    padding: 8px 10px 10px;
+    padding: 12px 14px 16px;
     scrollbar-width: thin;
-    scrollbar-color: rgba(245, 184, 65, 0.35) transparent;
+    scrollbar-color: #b6dcf2 transparent;
     -webkit-overflow-scrolling: touch;
   }
 
-  /* 「画面偏窄」提示：与教学/专家提示同一族（铜牌，不用青色装饰） */
+  /* 「自动拟合中」提示：薄荷浅底卡 */
   .fitting-tip {
-    font-size: 12px;
-    color: var(--text);
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    color: var(--mint-ink);
     background: var(--note-bg);
-    border: 1px solid var(--note-edge);
+    border: 2px solid var(--note-edge);
     border-radius: var(--r-sm);
-    padding: 6px 10px;
-    margin: 0 0 10px;
-    line-height: 1.4;
+    padding: 8px 12px;
+    margin: 0 0 12px;
+    line-height: 1.5;
   }
+
   /* ============================================================
-   * 响应式：画布始终铺满，只调整浮层的位置与尺寸
-   * （第九轮重写：原来的六套 grid 都在给画布分一块地，现在画布是背景）
+   * 响应式：画布始终铺满，只调整浮层位置
    * ============================================================ */
 
-  /* 中等宽度：机坞窄一档（它已是浮层，不影响画布） */
   @media (max-width: 1180px) and (min-width: 901px) {
     .gs-dock {
-      width: min(340px, 92vw);
+      width: min(360px, 92vw);
     }
   }
 
-  /* ---------- 手机竖屏：顶栏隐藏（HUD 芯片已在画布上），底部导航浮层 ---------- */
+  /* ---------- 手机竖屏：顶栏隐藏，底部导航浮层 ---------- */
   @media (max-width: 640px) and (orientation: portrait) {
     .gs-hud {
       display: none;
     }
 
-    /* 画布铺满整屏（指令栏与导航都是浮层，压在画布上） */
-    .gs-stage {
-      padding: 0;
-    }
-
     .gs-nav {
       display: block;
-      height: var(--tab-h);
+      height: calc(var(--tab-h) + var(--safe-b));
+      padding-bottom: var(--safe-b);
       background: var(--mat-plate);
-      border-top: 1px solid var(--edge-bronze);
+      border-top: 3px solid #ffffff;
+      box-shadow: 0 -6px 0 #d6ecf9;
     }
 
     .gs-cmd {
-      bottom: calc(var(--tab-h) + 8px);
+      bottom: calc(var(--tab-h) + var(--safe-b) + 10px);
     }
 
     .gs-dock {
-      width: min(100vw, 460px);
+      width: 100vw;
       top: auto;
-      height: min(62dvh, 520px);
-      border-radius: var(--r-md) var(--r-md) 0 0;
+      height: min(66dvh, 560px);
+      border-radius: var(--r-lg) var(--r-lg) 0 0;
       border-left: none;
-      border-top: 1px solid var(--edge-bronze);
-      transform: translateY(calc(100% + 12px));
+      border-top: 4px solid #ffffff;
+      transform: translateY(calc(100% + 16px));
+      padding-bottom: var(--safe-b);
     }
     .game-screen.dock-open .gs-dock {
       transform: translateY(0);
     }
-    .gs-dock::before,
-    .gs-dock::after {
-      display: none;
-    }
 
-    /* 调参按钮避让底部导航 */
     .dock-toggle {
-      right: 12px;
-      bottom: calc(var(--cmd-h) + var(--tab-h) + 14px);
+      right: 14px;
+      bottom: calc(var(--tab-h) + var(--safe-b) + var(--cmd-h) + 16px);
+      min-height: var(--ctl-md);
+      padding: 0 16px;
     }
 
     .dock-head {
-      padding: 6px 12px;
+      margin: 10px 12px 0;
+      padding: 7px 14px;
     }
     .dock-title {
-      font-size: 14px;
-      letter-spacing: 1.5px;
+      font-size: var(--fs-md);
     }
     .dock-body {
-      padding: 8px 10px 12px;
+      padding: 10px 12px 16px;
     }
   }
 
-  /* ---------- 手机横屏：画布铺满，浮层更紧凑 ---------- */
+  /* ---------- 手机横屏 ---------- */
   @media (max-width: 900px) and (orientation: landscape) {
     .gs-hud {
       display: none;
     }
 
-    .gs-stage {
-      padding: 0;
-    }
-
     .gs-cmd {
-      bottom: 6px;
+      bottom: max(8px, var(--safe-b));
     }
 
     .gs-dock {
-      width: min(340px, 88vw);
+      width: min(360px, 86vw);
     }
 
     .dock-toggle {
-      right: 10px;
-      bottom: calc(var(--cmd-h) + 12px);
-      padding: 0 12px;
+      right: max(10px, var(--safe-r));
+      bottom: calc(var(--ctl-lg) + 18px);
+      padding: 0 14px;
+      min-height: var(--ctl-md);
     }
     .dock-toggle-text {
       display: none;
     }
-
-    .dock-head {
-      padding: 6px 10px;
-    }
-    .dock-title {
-      font-size: 13px;
-    }
   }
 
-  /* 运行态：调参台自动收起，把画面完全让给游戏 */
+  /* 运行态：调参台自动收起，画面完全让给游戏 */
   .game-screen.panel-hidden .gs-dock {
-    transform: translateX(calc(100% + 12px));
+    transform: translateX(calc(100% + 16px));
   }
   @media (max-width: 640px) and (orientation: portrait) {
     .game-screen.panel-hidden .gs-dock {
-      transform: translateY(calc(100% + 12px));
+      transform: translateY(calc(100% + 16px));
     }
   }
 
-  /* 展开调参台时，按钮变「收起」并让位到面板左侧之外 */
+  /* 展开调参台时按钮让位到面板左侧 */
   .game-screen.dock-open .dock-toggle {
-    right: calc(min(var(--dock-w), 92vw) + 14px);
+    right: calc(min(var(--dock-w), 92vw) + 18px);
   }
   @media (max-width: 1180px) and (min-width: 901px) {
     .game-screen.dock-open .dock-toggle {
-      right: calc(min(340px, 92vw) + 14px);
+      right: calc(min(360px, 92vw) + 18px);
     }
   }
   @media (max-width: 640px) and (orientation: portrait) {
     .game-screen.dock-open .dock-toggle {
-      right: 12px;
-      bottom: calc(min(62dvh, 520px) + 14px);
+      right: 14px;
+      bottom: calc(min(66dvh, 560px) + 14px);
     }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gs-dock,
+    .dock-toggle {
+      transition: none;
+    }
+  }
+  :global(.reduce-motion) .gs-dock,
+  :global(.reduce-motion) .dock-toggle {
+    transition: none;
   }
 </style>

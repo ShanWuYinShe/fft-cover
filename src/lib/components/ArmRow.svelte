@@ -18,7 +18,7 @@
   }
 </script>
 
-<!-- 指针插槽行：左边通电开关（状态灯），右边读数（安静样式，不发光） -->
+<!-- 指针插槽行：左边圆形通电开关，右边读数（厚卡片，安静样式） -->
 <div class="arm-slot" class:on={arm.on} class:sel={selected && arm.on} class:locked={isLocked}>
   <button
     type="button"
@@ -35,7 +35,7 @@
     onclick={togglePower}
   >
     <span class="power-rock" aria-hidden="true">
-      <span class="g-lamp power-lamp"></span>
+      <span class="power-lamp"></span>
     </span>
   </button>
 
@@ -55,33 +55,34 @@
 
 <style>
   /* ============================================================
-   * 指针插槽行 · 安静版
-   * 只有选中态加金边；其余靠底色与留白区分
+   * 指针插槽行 · 厚卡片
+   * 白面 + 浅蓝发丝边 + 硬投影；选中 = 珊瑚描边；
+   * 通电开关 = 圆形糖果灯（未通电浅蓝、通电薄荷），不发光。
    * ============================================================ */
   .arm-slot {
     display: flex;
     align-items: stretch;
     min-width: 0;
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-bronze);
-    background: var(--mat-block);
+    border: 2px solid var(--line-2);
+    border-radius: var(--r-md);
+    background: var(--card-bg);
+    box-shadow: var(--card-shadow);
     transition:
-      background 0.12s ease,
-      border-color 0.12s ease;
-  }
-  .arm-slot.on {
-    background: var(--mat-plate);
+      border-color 120ms ease,
+      box-shadow 120ms ease,
+      opacity 120ms ease;
   }
   .arm-slot.sel {
-    border-color: var(--edge-bronze-hot);
-    background: var(--mat-plate);
-    box-shadow: inset 0 0 0 1px var(--plate-brass-line);
+    border-color: var(--coral-text);
+    box-shadow:
+      0 0 0 3px var(--coral-dim),
+      var(--card-shadow);
   }
   .arm-slot.locked {
-    opacity: 0.5;
+    opacity: 0.55;
   }
 
-  /* 通电开关：物理小键（桌面紧凑，触屏由令牌放大） */
+  /* 通电开关：整块热区 ≥ --ctl-md，视觉是里面的糖果灯 */
   .power-btn {
     display: flex;
     align-items: center;
@@ -89,77 +90,92 @@
     flex: 0 0 var(--ctl-md);
     min-height: var(--ctl-md);
     padding: 0;
+    border: none;
+    background: transparent;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
   .power-btn:disabled {
     cursor: not-allowed;
   }
-  /* 通电键 = 键帽：铜边 + 内凹键槽 */
   .power-rock {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: var(--ctl-xs);
-    height: var(--ctl-xs);
-    border-radius: var(--r-sm);
-    background: var(--edge-bronze);
-    box-shadow:
-      inset 0 0 0 2px var(--bronze-deep),
-      var(--bevel-top);
+    width: calc(var(--ctl-md) - 10px);
+    height: calc(var(--ctl-md) - 10px);
+    border-radius: 50%;
+    background: var(--bg-bay-inset);
+    box-shadow: var(--groove-shadow);
     transition:
       transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
-      background 200ms ease;
+      background 200ms ease,
+      box-shadow 200ms ease;
   }
   .power-btn:active:not(:disabled) .power-rock {
-    transform: scale(0.94);
+    transform: scale(0.92);
     transition-timing-function: ease-out;
   }
+  .power-btn:focus-visible {
+    outline: 3px solid var(--sky-deep);
+    outline-offset: -3px;
+    border-radius: var(--r-sm);
+  }
   .power-lamp {
-    width: 5px;
-    height: 5px;
-    border-radius: 1px;
-    transform: rotate(45deg);
-    background: var(--bronze-deep);
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--line-bright);
     transition: background 240ms ease;
   }
-  /* 通电灯：青玉 = 能量/启用语义（D 定稿保留，不是冷蓝残留） */
+  .arm-slot.on .power-rock {
+    background: var(--note-bg);
+    box-shadow: inset 0 0 0 2px var(--note-edge);
+  }
   .arm-slot.on .power-lamp {
-    background: radial-gradient(circle at 35% 30%, #dffff7 0%, #00f5d4 60%, #065f52 100%);
-    box-shadow: 0 0 4px rgba(0, 245, 212, 0.65);
+    background: var(--mint);
+    box-shadow: 0 2px 0 var(--mint-edge);
     transition-duration: 140ms;
   }
 
-  /* 读数 */
+  /* 读数：编号 / 半径 / 方向 / 倍率 */
   .slot-body {
     flex: 1 1 auto;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     min-width: 0;
-    height: var(--ctl-md);
-    padding: 0 10px 0 2px;
+    min-height: var(--ctl-md);
+    padding: 0 12px 0 4px;
+    border: none;
+    border-radius: 0 var(--r-md) var(--r-md) 0;
+    background: transparent;
     cursor: pointer;
+    font-family: var(--font-round);
     font-variant-numeric: tabular-nums;
-    font-family: inherit;
     text-align: left;
     transition: transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .slot-body:active:not(:disabled) {
-    transform: scale(0.97);
+    transform: scale(0.99);
     transition-timing-function: ease-out;
+  }
+  .slot-body:focus-visible {
+    outline: 3px solid var(--sky-deep);
+    outline-offset: -3px;
   }
   .slot-body:disabled {
     cursor: not-allowed;
   }
+
   .idx {
     flex: 0 0 auto;
-    width: 18px;
+    width: 24px;
     text-align: center;
-    color: var(--gold-bright);
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    font-size: var(--ctl-font);
+    font-size: 15px;
+    font-weight: 900;
     line-height: 1;
+    color: var(--coral-edge);
   }
   .rv {
     flex: 1 1 auto;
@@ -167,42 +183,41 @@
     text-align: center;
   }
   .rv .slot-num {
-    font-size: 14px;
-    font-weight: 700;
-    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 900;
     color: var(--text);
+    font-variant-numeric: tabular-nums;
   }
   .arm-slot.on .slot-num {
-    color: var(--gold-bright);
+    color: var(--coral-text);
   }
   .locked .rv .slot-num {
-    font-size: var(--ctl-font-sm);
+    font-size: var(--fs-sm);
     color: var(--muted);
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
   }
   .dir {
     flex: 0 0 auto;
-    font-size: var(--ctl-font-sm);
-    font-weight: 700;
-    color: var(--cyan);
+    font-size: var(--fs-sm);
+    font-weight: 800;
+    color: var(--mint-edge);
   }
   .dir.ccw {
-    color: var(--purple);
+    color: var(--grape-deep);
   }
   .fv {
     flex: 0 0 auto;
-    width: 32px;
+    width: 36px;
     text-align: right;
-    font-size: var(--ctl-font-sm);
-    font-weight: 700;
+    font-size: var(--fs-sm);
+    font-weight: 800;
     color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
   }
 
-  /* reduce-motion：位移/缩放全关 */
+  /* reduce-motion：位移 / 缩放全关 */
   @media (prefers-reduced-motion: reduce) {
     .power-rock,
-    .slot-body {
+    .slot-body,
+    .power-lamp {
       transition: none;
     }
     .power-btn:active:not(:disabled) .power-rock,
@@ -211,7 +226,8 @@
     }
   }
   :global(.reduce-motion) .power-rock,
-  :global(.reduce-motion) .slot-body {
+  :global(.reduce-motion) .slot-body,
+  :global(.reduce-motion) .power-lamp {
     transition: none;
   }
   :global(.reduce-motion) .power-btn:active:not(:disabled) .power-rock,

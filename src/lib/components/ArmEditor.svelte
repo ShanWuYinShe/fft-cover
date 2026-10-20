@@ -49,8 +49,6 @@
   const deg = $derived(Math.round((arm.phase * 180) / Math.PI));
   const isCCW = $derived(arm.freq < 0);
   const absFreq = $derived(Math.abs(arm.freq || 1));
-  /** 档位矩阵是 5×2：当前选中档位所在的那一行（用于回纹装饰） */
-  const activeRow = $derived(Math.ceil(absFreq / 5));
 
   function setR(val: number): void {
     const clamped = Math.max(0, Math.min(R_MAX, Math.round(val)));
@@ -209,11 +207,11 @@
         {:else}
           <button
             type="button"
-            class="val-btn g-chip"
+            class="val-btn"
             title="点击输入精确半径"
             onclick={() => beginEdit('r')}
           >
-            <b class="g-num val-num">{arm.r}</b>
+            <b class="val-num">{arm.r}</b>
             <i class="val-unit">px</i>
           </button>
         {/if}
@@ -241,8 +239,6 @@
     </span>
   </div>
 
-  <hr class="g-divider" />
-
   <!-- 相位 -->
   <div class="param">
     <div class="param-head">
@@ -264,11 +260,11 @@
         {:else}
           <button
             type="button"
-            class="val-btn g-chip"
+            class="val-btn"
             title="点击输入精确角度"
             onclick={() => beginEdit('p')}
           >
-            <b class="g-num val-num">{deg}</b>
+            <b class="val-num">{deg}</b>
             <i class="val-unit">°</i>
           </button>
         {/if}
@@ -296,14 +292,12 @@
     </span>
   </div>
 
-  <hr class="g-divider" />
-
   <!-- 倍率与方向 -->
   <div class="param">
     <div class="param-head">
       <span class="param-name">倍率</span>
-      <span class="param-value param-value--plaque">
-        <b class="g-num val-num freq-num" class:ccw={isCCW} class:flash={bump === 'f'}>{absFreq}</b>
+      <span class="param-value">
+        <b class="val-num freq-num" class:ccw={isCCW} class:flash={bump === 'f'}>{absFreq}</b>
         <i class="val-unit">×</i>
       </span>
     </div>
@@ -339,8 +333,6 @@
       </button>
     </div>
   </div>
-
-  <hr class="g-divider" />
 
   <!-- 高级调谐：默认折叠，键盘可达 -->
   <details class="adv" bind:open={advOpen}>
@@ -510,8 +502,6 @@
                 type="button"
                 class="gear-key g-btn"
                 class:active
-                class:ccw={active && isCCW}
-                class:row-lit={Math.ceil(f / 5) === activeRow}
                 title={`切至 ${f}× 谐波`}
                 onclick={() => setFreqStep(f)}
               >
@@ -605,22 +595,22 @@
 
 <style>
   /* ============================================================
-   * 指针参数 · 渐进披露
-   * 默认：半径 / 相位 / 倍率 三条核心滑杆（说人话的标签 + 大读数）
-   * 折叠：罗盘、四象卡准、刻度尺、完整档位矩阵、撤销等工具
-   * 约定：无外发光、无英文副标题、字号 ≥12px、盒子不套盒子
+   * 指针参数 · 三张独立白卡（第十四轮「糖果星域」）
+   * 卡结构：名称（14/700）+ 大号珊瑚读数（26/900，tabular）+ 凹槽滑杆
+   * 滑杆：--groove-bg 轨道 / --plate-brass 填充 / 薄荷糖果拇指（≥22px）
+   * 高级调谐：第四张白卡，卡内虚线分隔；罗盘刻度改珊瑚与薄荷
+   * 没有回纹 / 切角 / 铆钉 / 发光 / 黑色阴影
    * ============================================================ */
   .tune {
     display: flex;
     flex-direction: column;
+    gap: 10px;
     min-width: 0;
-    /* 富余高度吃掉，但参数行从顶部起排（原 space-evenly 会把三条摊开 ~110px） */
     flex: 1 0 auto;
     justify-content: flex-start;
   }
 
-  /* 区块首次出现：上移 6px 淡入（300ms，逐块 60ms 错峰）；
-     只在挂载时播一次，参数变化导致的重复渲染不会重播 */
+  /* 区块首次出现：上移 6px 淡入（300ms，逐块 60ms 错峰），只在挂载时播一次 */
   .tune > .param,
   .tune > .adv {
     animation: block-in 300ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
@@ -648,110 +638,120 @@
     }
   }
 
-  /* ---------- 核心参数行 ---------- */
+  /* ---------- 参数卡：一张白卡装一个参数 ---------- */
   .param {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 4px 0 2px;
+    gap: 8px;
     min-width: 0;
+    padding: 10px 12px 12px;
+    border: 2px solid var(--line-2);
+    border-radius: var(--r-md);
+    background: var(--card-bg);
+    box-shadow: var(--card-shadow);
   }
   .param-head {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 8px;
+    min-height: var(--ctl-sm);
   }
-  /* 标签 = 次级暖灰（金留给读数）；不加字距，否则「半径」两字会被撑散 */
   .param-name {
-    font-size: var(--ctl-font);
-    font-weight: 600;
-    letter-spacing: 0;
+    font-family: var(--font-round);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     color: var(--muted);
     white-space: nowrap;
   }
   .param-value {
     display: inline-flex;
     align-items: baseline;
-    gap: 2px;
+    gap: 3px;
     flex: 0 0 auto;
   }
-  /* 读数键 = 玉牌（公共 .g-chip：内凹玉面 + 青铜描边 + 青碧字） */
+
+  /* 读数键：点一下变成输入框（透明底，只在 hover 时垫一层浅蓝） */
   .val-btn {
     display: inline-flex;
     align-items: baseline;
-    position: relative;
-    gap: 2px;
-    min-height: var(--ctl-md);
-    padding: 0 10px;
-    border-radius: 4px;
-    font-size: var(--ctl-font-sm);
+    gap: 3px;
+    min-height: var(--ctl-sm);
+    margin: 0;
+    padding: 0 8px;
+    border: none;
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: inherit;
     cursor: text;
     transition:
-      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1),
-      border-color 120ms ease,
-      background 120ms ease;
-  }
-  .val-btn:active {
-    transform: scale(0.97);
-    transition-timing-function: ease-out;
+      background 120ms ease,
+      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .val-btn:hover {
-    border-color: var(--edge-bronze-hot);
+    background: var(--bg-chassis);
   }
-  /* 读数 = 金漆数字（19px，等宽数字不跳动，柔和外光不是硬描边） */
-  .param-value .val-num {
-    font-size: 19px;
-    line-height: 1.1;
-    font-family: 'JetBrains Mono', monospace;
+  .val-btn:active {
+    transform: scale(0.98);
+  }
+  .val-btn:focus-visible {
+    outline: 3px solid var(--sky-deep);
+    outline-offset: 2px;
+  }
+
+  /* 大号 tabular 珊瑚数字 + 小单位 */
+  .val-num {
+    font-family: var(--font-round);
     font-variant-numeric: tabular-nums;
-    color: var(--gold-bright);
-    text-shadow: var(--thumb-shadow);
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.5px;
+    color: var(--coral-text);
   }
-  .param-value .val-num.ccw {
-    color: var(--purple);
+  .val-num.ccw {
+    color: var(--grape-deep);
   }
-  /* 跨档瞬间：读数轻弹一下 + 闪金（one-shot，160ms；未跨档不播） */
+  .val-unit {
+    font-style: normal;
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--muted-2);
+  }
+  /* 跨档瞬间：读数轻弹一下（one-shot，160ms；未跨档不播） */
   .freq-num.flash {
     animation: readout-pop 160ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   @keyframes readout-pop {
     45% {
       transform: scale(1.08);
-      color: var(--gold-bright);
-      filter: brightness(1.25);
     }
   }
-  .val-unit {
-    font-style: normal;
-    font-size: var(--ctl-font-sm);
-    color: var(--muted);
-  }
-  /* 只读读数（倍率）也用同一种凹槽承载，保证三行读数同一种器物语言 */
-  .param-value--plaque {
-    min-height: var(--ctl-md);
-    padding: 0 10px;
-    align-items: center;
-    border-radius: var(--r-sm);
-    background: var(--groove-bg);
-    border: 1px solid var(--edge-bronze);
-    box-shadow: var(--groove-shadow);
-  }
+
+  /* 内联数字输入：凹槽 + 珊瑚数字 */
   .num-input {
-    width: 64px;
-    height: var(--ctl-md);
-    padding: 0;
-    background: var(--groove-bg);
-    border: 1px solid var(--edge-bronze);
+    width: 88px;
+    min-height: var(--ctl-md);
+    padding: 0 8px;
+    border: 2px solid var(--line);
     border-radius: var(--r-sm);
+    background: var(--groove-bg);
     box-shadow: var(--groove-shadow);
-    color: var(--gold-bright);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: var(--ctl-font);
+    color: var(--coral-text);
+    font-family: var(--font-round);
+    font-variant-numeric: tabular-nums;
+    font-size: 20px;
+    font-weight: 900;
     text-align: center;
     outline: none;
     appearance: textfield;
     -moz-appearance: textfield;
+  }
+  .num-input:focus-visible {
+    outline: 3px solid var(--sky-deep);
+    outline-offset: 2px;
   }
   .num-input::-webkit-outer-spin-button,
   .num-input::-webkit-inner-spin-button {
@@ -770,72 +770,91 @@
     min-width: 0;
   }
 
-  /* 方向切换 = 小铜板键（未选中 --mat-block，选中态见下方 .ccw） */
+  /* 方向键：厚度交给 .g-btn，本地只留排版与方向语义色 */
   .dir-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
     flex: 0 0 auto;
     min-height: var(--ctl-md);
     padding: 0 10px;
-    background: var(--mat-block);
-    border: 1px solid var(--edge-bronze);
-    border-radius: var(--ctl-radius);
-    box-shadow: var(--mat-block-shadow);
-    color: var(--text);
-    font-size: var(--ctl-font-sm);
-    font-weight: 700;
+    gap: 5px;
+    /* 浅蓝底上要更深一档（mint-edge 只有 4.28:1） */
+    color: var(--mint-ink);
+    font-size: var(--fs-sm);
+    font-weight: 800;
     letter-spacing: 0.5px;
     white-space: nowrap;
-    transition:
-      color 120ms ease,
-      filter 120ms ease,
-      transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  /* 顺/逆切换：图标 120ms 旋转，颜色跟随过渡 */
-  .dir-ico {
-    display: inline-flex;
-    transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1);
   }
   .dir-btn.ccw {
-    color: var(--purple);
+    color: var(--grape-deep);
+  }
+  .dir-ico {
+    display: inline-flex;
+    transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
   }
   .dir-btn.ccw .dir-ico {
     transform: rotate(180deg);
   }
+  .dir-btn .g-socket {
+    color: currentColor;
+  }
 
-  /* ---------- 核心滑杆 = 雕刻凹槽 + 金珠把手 ---------- */
+  /* 引导态：珊瑚描边呼吸（不用发光毛边） */
+  .param.guide {
+    outline: 3px solid var(--coral);
+    outline-offset: 2px;
+    animation: guide-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes guide-pulse {
+    0%,
+    100% {
+      outline-color: var(--coral-text);
+    }
+    50% {
+      outline-color: var(--coral-bright);
+    }
+  }
+  .dir-btn.guide {
+    animation: key-guide-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes key-guide-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 3px var(--coral-dim);
+    }
+    50% {
+      box-shadow: 0 0 0 6px var(--coral-dim);
+    }
+  }
+
+  /* ---------- 滑杆：浅蓝凹槽 + 珊瑚填充 + 薄荷糖果拇指 ---------- */
   .range-wrap {
     position: relative;
     display: block;
     width: 100%;
     min-width: 0;
-    height: 26px;
+    height: 30px;
   }
-  /* 轨道 = 一条凹槽：内阴影 + 下沿暖亮线 + 1px 青铜边 */
   .range-track {
     position: absolute;
     top: 50%;
     left: 0;
     right: 0;
     z-index: 0;
-    height: 5px;
+    height: 12px;
     transform: translateY(-50%);
     border-radius: var(--r-pill);
-    border: 1px solid var(--edge-bronze);
     background: var(--groove-bg);
     box-shadow: var(--groove-shadow);
     overflow: hidden;
     pointer-events: none;
   }
-  /* 金箔填充条：transform 驱动，90ms 平滑跟随（不碰布局属性） */
   .range-fill {
     display: block;
     width: 100%;
     height: 100%;
     transform-origin: left center;
-    background: var(--face-gold-plate);
-    box-shadow: var(--hint-glow);
+    border-radius: var(--r-pill);
+    background: var(--plate-brass);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.28);
     transition: transform 90ms linear;
   }
 
@@ -853,66 +872,61 @@
     touch-action: pan-y;
   }
   .c-range::-webkit-slider-runnable-track {
-    height: 5px;
+    height: 12px;
     background: transparent;
     border: none;
   }
-  /* 把手 = 17px 金珠（宝石高光叠金箔），两套伪元素写法保持一致 */
+  /* 拇指 = 22px 薄荷糖球（白描边 + 硬侧壁），webkit / moz 两套写法一致 */
   .c-range::-webkit-slider-thumb {
     appearance: none;
     -webkit-appearance: none;
-    width: 17px;
-    height: 17px;
-    margin-top: -6px;
+    width: 22px;
+    height: 22px;
+    margin-top: -5px;
+    border: 3px solid #ffffff;
     border-radius: 50%;
-    border: 1px solid var(--bronze-deep);
-    background: var(--tex-gem), var(--thumb-fill);
+    background: var(--thumb-fill);
     box-shadow: var(--thumb-shadow);
     cursor: grab;
     transition: transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  /* 按住滑块：放大（红线内 1.08） */
   .c-range:active::-webkit-slider-thumb {
-    transform: scale(1.08);
+    transform: scale(1.06);
   }
-  /* 焦点：描边变金 + 一圈金雾（圆把手不需要切角补偿） */
   .c-range:focus-visible::-webkit-slider-thumb {
-    border-color: var(--gold-bright);
     box-shadow:
       var(--thumb-shadow),
-      0 0 0 2px var(--gold-dim);
+      0 0 0 3px var(--coral-dim);
   }
-  /* 到端点：一次轻微「顿」感，不循环 */
   .c-range.bump::-webkit-slider-thumb {
     animation: thumb-bump 200ms ease-out;
   }
   .c-range::-moz-range-track {
-    height: 5px;
+    height: 12px;
     background: transparent;
     border: none;
   }
   .c-range::-moz-range-progress {
-    height: 5px;
+    height: 12px;
     background: transparent;
   }
   .c-range::-moz-range-thumb {
-    width: 17px;
-    height: 17px;
+    width: 22px;
+    height: 22px;
+    border: 3px solid #ffffff;
     border-radius: 50%;
-    border: 1px solid var(--bronze-deep);
-    background: var(--tex-gem), var(--thumb-fill);
+    background: var(--thumb-fill);
     box-shadow: var(--thumb-shadow);
     cursor: grab;
     transition: transform 90ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .c-range:active::-moz-range-thumb {
-    transform: scale(1.08);
+    transform: scale(1.06);
   }
   .c-range:focus-visible::-moz-range-thumb {
-    border-color: var(--gold-bright);
     box-shadow:
       var(--thumb-shadow),
-      0 0 0 2px var(--gold-dim);
+      0 0 0 3px var(--coral-dim);
   }
   .c-range.bump::-moz-range-thumb {
     animation: thumb-bump 200ms ease-out;
@@ -929,109 +943,15 @@
     }
   }
 
-  /* 引导态：D 的定稿是「一圈细铜边 + 极淡金雾」，不是 2px 粗金框
-     （粗框会跟滑杆凹槽、读数芯片叠成三层盒子）；用 outline 而非 border，避免 2px 跳动 */
-  .param.guide {
-    outline: 1px solid var(--plate-brass-line);
-    outline-offset: 0;
-    border-radius: var(--r-sm);
-    background: var(--gold-dim);
-    box-shadow: var(--hint-glow);
-    animation: guide-pulse 1.6s ease-in-out infinite;
-  }
-  @keyframes guide-pulse {
-    0%,
-    100% {
-      outline-color: var(--gold-bright);
-    }
-    50% {
-      outline-color: var(--plate-brass-line);
-    }
-  }
-  /* 方向键：切角已取消，但键帽仍是圆角金属块，描边沿用金色光晕更稳 */
-  .dir-btn.guide {
-    animation: key-guide-pulse 1.6s ease-in-out infinite;
-  }
-  @keyframes key-guide-pulse {
-    0%,
-    100% {
-      filter: drop-shadow(0 0 2px var(--gold-bright)) drop-shadow(0 0 1px var(--gold-bright));
-    }
-    50% {
-      filter: drop-shadow(0 0 2px rgba(245, 184, 65, 0.3));
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .param.guide,
-    .dir-btn.guide {
-      animation: none;
-    }
-    .dir-btn.guide {
-      filter: drop-shadow(0 0 1px var(--gold-bright));
-    }
-  }
-  :global(.reduce-motion) .param.guide,
-  :global(.reduce-motion) .dir-btn.guide {
-    animation: none;
-  }
-  :global(.reduce-motion) .dir-btn.guide {
-    filter: drop-shadow(0 0 1px var(--gold-bright));
-  }
-
-  /* 触屏：读数热区抬到 ≥44 */
-  @media (pointer: coarse), (max-width: 640px) {
-    /* 读数键：触屏给足命中区（宽高都 ≥ --ctl-md=42） */
-    .val-btn {
-      min-width: var(--ctl-md);
-      min-height: var(--ctl-md);
-      justify-content: flex-end;
-    }
-    .param-value .val-num {
-      font-size: 17px;
-    }
-    /* 滑杆：视觉行高 34，输入层外扩到 40px 命中区（不靠放大视觉） */
-    .range-wrap {
-      height: 34px;
-    }
-    .range-track,
-    .c-range::-webkit-slider-runnable-track,
-    .c-range::-moz-range-track,
-    .c-range::-moz-range-progress {
-      height: 8px;
-    }
-    .c-range {
-      top: 50%;
-      height: 40px;
-      transform: translateY(-50%);
-    }
-    .c-range::-webkit-slider-thumb {
-      width: 22px;
-      height: 22px;
-      margin-top: -7px;
-    }
-    .c-range::-moz-range-thumb {
-      width: 22px;
-      height: 22px;
-    }
-  }
-
-  /* 触屏：键帽按下保留缩放回弹（桌面按第五轮规范改为「下沉 1px + 内阴影」） */
-  @media (pointer: coarse) {
-    .snap-key:active,
-    .mini-key:active,
-    .gear-key:active,
-    .tool-key:active,
-    .dir-btn:active {
-      transform: scale(0.97);
-      transition-timing-function: ease-out;
-    }
-  }
-
-  /* ---------- 高级调谐（默认折叠，钉在仪表舱底部） ---------- */
+  /* ---------- 高级调谐：第四张白卡 ---------- */
   .adv {
     min-width: 0;
-    /* 参数行从顶部起排后，折叠条吃掉剩余高度、贴到机坞底部 */
     margin-top: auto;
+    padding: 2px 12px 10px;
+    border: 2px solid var(--line-2);
+    border-radius: var(--r-md);
+    background: var(--card-bg);
+    box-shadow: var(--card-shadow);
   }
   .adv-summary {
     display: flex;
@@ -1040,40 +960,26 @@
     gap: 8px;
     min-height: var(--ctl-md);
     padding: 0 2px;
-    border-top: 1px solid var(--edge-faint);
+    border-bottom: 2px dashed var(--line);
     list-style: none;
     cursor: pointer;
-    font-size: var(--ctl-font);
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: var(--muted);
-    transition: color 0.12s ease;
+    font-family: var(--font-round);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: var(--text);
+    transition: color 120ms ease;
   }
   .adv-summary::-webkit-details-marker {
     display: none;
   }
-  /* 段头铭牌：标题文字前挂 3px 金铭牌块（不改 DOM） */
-  .adv-summary > span:first-child {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .adv-summary > span:first-child::before {
-    content: '';
-    flex: none;
-    width: 3px;
-    height: 12px;
-    border-radius: 1px;
-    background: var(--face-gold-plate);
-    box-shadow: 0 0 6px rgba(245, 184, 65, 0.35);
-  }
   .adv-summary:hover {
-    color: var(--gold-bright);
+    color: var(--coral-edge);
   }
   .adv-chev {
     display: inline-flex;
-    color: var(--gold);
-    transition: transform 0.15s ease;
+    color: var(--coral-edge);
+    transition: transform 150ms ease;
   }
   .adv[open] .adv-chev {
     transform: rotate(180deg);
@@ -1081,77 +987,83 @@
   .adv-body {
     display: flex;
     flex-direction: column;
-    padding-top: 4px;
+    padding-top: 6px;
   }
 
   .adv-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 3px 0 2px;
+    gap: 8px;
     min-width: 0;
+    padding: 3px 0 2px;
   }
   .adv-head {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 8px;
-    font-size: var(--ctl-font-sm);
-    color: var(--muted);
+    font-size: var(--fs-sm);
+    font-weight: 700;
     letter-spacing: 0.5px;
+    color: var(--muted);
   }
   .adv-val {
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
+    color: var(--coral-edge);
+    font-family: var(--font-round);
     font-variant-numeric: tabular-nums;
+    font-weight: 900;
   }
 
-  /* 罗盘 */
+  /* 罗盘：白卡上的浅蓝内腔 + 珊瑚指针 / 大刻度 */
   .compass-row {
     display: grid;
-    grid-template-columns: 96px minmax(0, 1fr);
-    gap: 8px;
+    grid-template-columns: 100px minmax(0, 1fr);
+    gap: 10px;
     align-items: center;
   }
   .compass-wrap {
     position: relative;
-    width: 96px;
-    height: 96px;
+    width: 100px;
+    height: 100px;
     user-select: none;
     touch-action: none;
   }
   .compass-svg {
     width: 100%;
     height: 100%;
+    border-radius: 50%;
     cursor: grab;
   }
   .compass-svg:active {
     cursor: grabbing;
   }
-  /* 罗盘 SVG 的面 = 暖黑金属阶（内腔 → 抬起面），不再是冷蓝 */
+  .compass-svg:focus-visible {
+    outline: 3px solid var(--sky-deep);
+    outline-offset: 2px;
+  }
   .dial-track {
-    fill: var(--metal-deep);
-    stroke: var(--edge-soft);
-    stroke-width: 1.5;
+    fill: var(--bg-bay-inset);
+    stroke: var(--line);
+    stroke-width: 2;
   }
   .dial-plate {
-    fill: var(--metal);
-    stroke: var(--edge-faint);
+    fill: #ffffff;
+    stroke: var(--line-2);
     stroke-width: 1;
   }
   .dial-tick {
-    stroke: rgba(245, 184, 65, 0.28);
+    stroke: var(--line-bright);
     stroke-width: 1;
   }
   .dial-tick.major {
-    stroke: var(--gold);
-    stroke-width: 1.6;
+    stroke: var(--coral);
+    stroke-width: 2;
   }
   .quadrant {
-    font-size: 8px;
-    fill: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 600;
+    font-size: 12px;
+    fill: var(--muted-2);
+    font-family: var(--font-round);
+    font-weight: 700;
   }
   .quadrant.center {
     text-anchor: middle;
@@ -1160,20 +1072,20 @@
     text-anchor: end;
   }
   .needle-shaft {
-    stroke: var(--gold-bright);
-    stroke-width: 2.5;
+    stroke: var(--coral-text);
+    stroke-width: 3;
     stroke-linecap: round;
   }
   .needle-tip {
-    fill: var(--gold-bright);
+    fill: var(--coral-text);
   }
   .hub-bg {
-    fill: var(--metal-2);
+    fill: var(--note-bg);
   }
   .hub-ring {
-    fill: var(--metal-3);
-    stroke: var(--edge-soft);
-    stroke-width: 1.5;
+    fill: #ffffff;
+    stroke: var(--mint);
+    stroke-width: 2;
   }
 
   .compass-side {
@@ -1187,14 +1099,14 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
   }
-  /* 卡准键 = 键帽（公共 .g-btn 提供切角铜边 + 内凹面，这里只留排版） */
   .snap-key {
     min-height: var(--ctl-md);
     padding: 0;
     text-align: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: var(--ctl-font-sm);
-    font-weight: 700;
+    font-family: var(--font-round);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--fs-sm);
+    font-weight: 800;
   }
   .step-row {
     display: flex;
@@ -1203,7 +1115,6 @@
   .step-row .mini-key {
     flex: 1 1 0;
   }
-  /* 步进键 = 键帽 */
   .mini-key {
     display: inline-flex;
     align-items: center;
@@ -1214,21 +1125,19 @@
     touch-action: manipulation;
   }
 
-  /* 刻度尺 */
+  /* 刻度尺 = 一条长凹槽，填充用珊瑚淡彩 */
   .ruler-row {
     display: flex;
     align-items: center;
     gap: 8px;
     min-width: 0;
   }
-  /* 刻度尺 = 一条长凹槽（与滑杆轨道同一种面） */
   .ruler {
     position: relative;
     flex: 1 1 auto;
     min-width: 0;
-    height: 26px;
-    border-radius: var(--ctl-radius);
-    border: 1px solid var(--edge-bronze);
+    height: 22px;
+    border-radius: var(--r-pill);
     background: var(--groove-bg);
     box-shadow: var(--groove-shadow);
     overflow: hidden;
@@ -1238,27 +1147,26 @@
     top: 0;
     bottom: 0;
     left: 0;
-    background: rgba(245, 184, 65, 0.18);
-    border-right: 2px solid var(--gold);
+    background: var(--coral-dim);
+    border-right: 3px solid var(--coral);
   }
   .ruler-ticks {
     position: absolute;
     inset: 0;
     background-image: repeating-linear-gradient(
       to right,
-      rgba(245, 184, 65, 0.22) 0px,
-      rgba(245, 184, 65, 0.22) 1px,
-      transparent 1px,
-      transparent 10px
+      var(--line-bright) 0 1px,
+      transparent 1px 10px
     );
   }
   .ruler-scale {
     display: flex;
     justify-content: space-between;
-    padding: 0 38px;
-    font-size: var(--ctl-font-sm);
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
+    padding: 0 44px;
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted-2);
   }
 
   /* 档位矩阵 */
@@ -1267,48 +1175,33 @@
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 6px;
   }
-  /* 档位键 = 键帽；选中 = 金面 + 极小回纹 + 内嵌宝石灯 */
   .gear-key {
     min-height: var(--ctl-md);
     padding: 0;
     text-align: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: var(--ctl-font-sm);
-    font-weight: 700;
+    font-family: var(--font-round);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--fs-sm);
+    font-weight: 800;
     letter-spacing: 0.5px;
   }
-  /* 选中档位所在行：键面加极小回纹（其余行保持素面） */
-  .gear-key.row-lit:not(.active)::before {
-    background: var(--face-plate);
-  }
-  .gear-key.row-lit:not(.active):hover:not(:disabled)::before {
-    background: var(--face-plate-hot);
-  }
+  /* 选中档位：珊瑚面 + 深棕字（全卡唯一的高饱和键） */
   .gear-key.active {
-    background: var(--bronze-bright);
-    color: #1a1002;
-    /* 选中的档位键弹入一次（切档时才播） */
+    background: var(--coral-edge);
+    color: var(--coral-ink);
     animation: gear-pop 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .gear-key.active::before {
     background: var(--face-gold-plate);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35);
   }
-  /* 宝石灯：内嵌在键帽右上角 */
-  .gear-key.active::after {
-    content: '';
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #fffbe8 0%, #ffd166 55%, #a86b00 100%);
-    box-shadow: 0 0 4px 1px rgba(255, 214, 130, 0.8);
-    pointer-events: none;
+  .gear-key.active:hover:not(:disabled)::before,
+  .gear-key.active:focus-visible::before {
+    background: var(--face-gold-hover);
   }
-  .gear-key.active:hover:not(:disabled) {
-    color: #1a1002;
+  .gear-key.active:hover:not(:disabled),
+  .gear-key.active:focus-visible {
+    color: var(--coral-ink);
   }
   @keyframes gear-pop {
     0% {
@@ -1321,20 +1214,6 @@
       transform: scale(1);
     }
   }
-  .gear-key.active.ccw {
-    background: #b39ddb;
-    color: #160c2e;
-  }
-  .gear-key.active.ccw::before {
-    background: linear-gradient(180deg, #c4b5fd 0%, #a78bfa 50%, #6d4fc4 100%);
-  }
-  .gear-key.active.ccw::after {
-    background: radial-gradient(circle at 35% 30%, #f3ebff 0%, #c4b5fd 55%, #4c2f8f 100%);
-    box-shadow: 0 0 4px 1px rgba(196, 181, 253, 0.8);
-  }
-  .gear-key.active.ccw:hover:not(:disabled) {
-    color: #160c2e;
-  }
 
   /* 工具 */
   .tool-row {
@@ -1342,68 +1221,86 @@
     flex-wrap: wrap;
     gap: 6px;
   }
-  /* 工具键 = 键帽；选中（专家/频谱）= 青碧面 + 内嵌宝石灯 */
   .tool-key {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     min-height: var(--ctl-md);
-    padding: 0 10px;
-    font-size: var(--ctl-font-sm);
-    font-weight: 700;
+    padding: 0 12px;
+    font-size: var(--fs-sm);
+    font-weight: 800;
     letter-spacing: 0.5px;
     white-space: nowrap;
   }
   .tool-key--gold {
-    color: var(--gold-bright);
+    color: var(--coral-edge);
   }
+  /* 选中（专家 / 频谱）：薄荷面 + 深绿字 */
   .tool-key.active {
-    background: rgba(0, 245, 212, 0.55);
-    color: #041512;
+    background: var(--mint-edge);
+    color: var(--mint-ink);
   }
   .tool-key.active::before {
-    background: linear-gradient(180deg, #49e6cf 0%, #12b39c 55%, #067a68 100%);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  }
-  .tool-key.active::after {
-    content: '';
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #dffff7 0%, #00f5d4 60%, #065f52 100%);
-    box-shadow: 0 0 3px 1px rgba(0, 245, 212, 0.75);
-    pointer-events: none;
-  }
-  .tool-key.active:hover:not(:disabled) {
-    color: #041512;
-  }
-  /* 选中键在 hover / focus 下保持「金面 / 青碧面」，不被 .g-btn 的提亮面盖掉 */
-  .gear-key.active:hover:not(:disabled)::before,
-  .gear-key.active:focus-visible::before {
-    background: var(--face-gold-plate);
-  }
-  .gear-key.active:focus-visible {
-    color: #1a1002;
-  }
-  .gear-key.active.ccw:hover:not(:disabled)::before,
-  .gear-key.active.ccw:focus-visible::before {
-    background: linear-gradient(180deg, #c4b5fd 0%, #a78bfa 50%, #6d4fc4 100%);
-  }
-  .gear-key.active.ccw:focus-visible {
-    color: #160c2e;
+    background: var(--face-jade);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4);
   }
   .tool-key.active:hover:not(:disabled)::before,
   .tool-key.active:focus-visible::before {
-    background: linear-gradient(180deg, #49e6cf 0%, #12b39c 55%, #067a68 100%);
+    background: var(--face-jade);
   }
+  .tool-key.active:hover:not(:disabled),
   .tool-key.active:focus-visible {
-    color: #041512;
+    color: var(--mint-ink);
   }
 
-  /* ---------- reduce-motion：位移/缩放/循环动画全关（颜色与瞬时状态保留） ---------- */
+  /* ---------- 触屏：可点件 ≥44px，滑杆拇指与命中区加大 ---------- */
+  @media (pointer: coarse) {
+    .param {
+      padding: 12px 14px 14px;
+    }
+    .val-btn {
+      min-width: var(--ctl-md);
+      min-height: var(--ctl-md);
+      justify-content: flex-end;
+    }
+    .adv-summary {
+      min-height: var(--ctl-md);
+    }
+    .range-wrap {
+      height: 36px;
+    }
+    .range-track,
+    .c-range::-webkit-slider-runnable-track,
+    .c-range::-moz-range-track,
+    .c-range::-moz-range-progress {
+      height: 14px;
+    }
+    .c-range {
+      top: 50%;
+      bottom: auto;
+      height: 44px;
+      transform: translateY(-50%);
+    }
+    .c-range::-webkit-slider-thumb {
+      width: 26px;
+      height: 26px;
+      margin-top: -6px;
+    }
+    .c-range::-moz-range-thumb {
+      width: 26px;
+      height: 26px;
+    }
+    .snap-key:active,
+    .mini-key:active,
+    .gear-key:active,
+    .tool-key:active,
+    .dir-btn:active {
+      transform: scale(0.97);
+      transition-timing-function: ease-out;
+    }
+  }
+
+  /* ---------- reduce-motion：位移 / 缩放 / 循环动画全关（颜色与瞬时状态保留） ---------- */
   @media (prefers-reduced-motion: reduce) {
     .tune > .param,
     .tune > .adv,

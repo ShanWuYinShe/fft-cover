@@ -68,10 +68,10 @@
   }
 </script>
 
-<!-- 暂停菜单：一块安静的面板盖住画布；画布很矮时外层滚动，三个按钮都能点到 -->
+<!-- 暂停菜单：--scrim 遮罩 + 居中白卡；画布很矮时整块可滚，三个按钮都点得到 -->
 <div class="pause-menu" role="dialog" aria-modal="true">
-  <div class="pm-panel g-rivets" class:closing>
-    <h3 class="font-celestial">已暂停</h3>
+  <div class="pm-panel" class:closing>
+    <h3>已暂停</h3>
     <p class="pm-sub">先看清现在的进度，再决定继续还是重来</p>
 
     {#if pauseProgress}
@@ -102,16 +102,19 @@
 </div>
 
 <style>
+  /* ============================================================
+   * 暂停菜单 · 白卡居中（第十四轮）
+   * 遮罩 --scrim；卡片 = 白卡 + 36px 大圆角 + 硬投影（--sh-3）。
+   * 不用玻璃拟态、不用模糊、不用黑色阴影。
+   * ============================================================ */
   .pause-menu {
     position: absolute;
     inset: 0;
     display: flex;
     padding: 12px;
     box-sizing: border-box;
-    background: rgba(5, 7, 14, 0.84);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: var(--radius-lg);
+    background: var(--scrim);
+    border-radius: var(--r-lg);
     z-index: 12;
     animation: fade-in 0.25s ease-out;
     /* 画布矮（手机竖屏）时整块可滚，按钮不会被裁掉 */
@@ -119,27 +122,23 @@
     overscroll-behavior: contain;
   }
 
-  /* 面板：一块平板 + 1px 描边，无包边、无扫描线、无外发光 */
   .pm-panel {
     position: relative;
     margin: auto;
-    width: min(100%, 320px);
+    width: min(100%, 340px);
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--space-2);
-    padding: var(--space-4);
-    /* 器物面板：青铜边 + 内侧暗线（右上角包角由 .g-rivets::after 提供，见模板）
-       两条阴影必须写在同一个 box-shadow 里——分两条会互相覆盖，内暗线会丢 */
-    background: var(--face-plate);
-    border: 1px solid var(--edge-bronze);
-    box-shadow:
-      inset 0 0 0 1px var(--edge-inner),
-      0 4px 8px rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
+    padding: var(--space-5);
+    box-sizing: border-box;
+    border: 3px solid #ffffff;
+    border-radius: var(--r-xl);
+    background: var(--mat-plate);
+    box-shadow: var(--sh-3);
     text-align: center;
-    /* 进场：0.97 缩放 + 淡入 220ms */
-    animation: pm-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    /* 进场：0.97 缩放 + 淡入 260ms（回弹曲线只用于缩放） */
+    animation: pm-in 0.26s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
   }
   @keyframes pm-in {
     from {
@@ -151,9 +150,9 @@
       transform: scale(1);
     }
   }
-  /* 退场：比进场快 30%（140ms），先缩再走 */
+  /* 退场：比进场快 30%（180ms），先缩再走 */
   .pm-panel.closing {
-    animation: pm-out 0.14s cubic-bezier(0.4, 0, 1, 1) forwards;
+    animation: pm-out 0.18s cubic-bezier(0.4, 0, 1, 1) forwards;
     pointer-events: none;
   }
   @keyframes pm-out {
@@ -167,40 +166,44 @@
     }
   }
 
-  /* 朱印标题：题头左侧一方小印（装饰，无文案） */
+  /* 标题：珊瑚圆点 + 深蓝字（不用朱印、不用宽字距） */
+  .pm-panel h3 {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-family: var(--font-round);
+    font-size: var(--fs-xl);
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
   .pm-panel h3::before {
     content: '';
     display: inline-block;
-    width: 10px;
-    height: 10px;
-    margin-right: 8px;
-    vertical-align: 1px;
-    border-radius: 2px;
-    background: var(--face-seal);
-    box-shadow: inset 0 0 0 1px rgba(255, 235, 220, 0.45);
-    transform: rotate(-8deg);
-  }
-  .pm-panel h3 {
-    margin: 0;
-    font-size: var(--fs-xl);
-    letter-spacing: 4px;
-    color: var(--text);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--coral);
+    box-shadow: 0 2px 0 var(--coral-edge);
   }
 
   .pm-sub {
     margin: 0;
     font-size: var(--fs-sm);
+    line-height: 1.5;
     color: var(--muted);
   }
 
-  /* 本局进度：一行等宽读数（不再是凹槽盒子） */
+  /* 本局进度：一行等宽读数 */
   .pm-prog {
     margin: 2px 0 0;
-    font-size: var(--fs-sm);
+    font-size: var(--fs-md);
+    font-weight: 700;
     color: var(--text);
   }
 
-  /* 最该调的频率：一行金色提示 */
+  /* 最该调的频率：一行珊瑚提示 */
   .pm-gaps {
     margin: 0;
     display: flex;
@@ -208,14 +211,12 @@
     justify-content: center;
     gap: 6px;
     font-size: var(--fs-sm);
-    color: var(--gold-bright);
+    font-weight: 700;
     line-height: 1.5;
+    color: var(--coral-edge);
   }
 
-  /* 三个动作：主操作金色，其余金属面 */
-  /* 按钮：形与四态（含 :focus-visible）全部交给公共件 .g-btn / .g-btn--primary，
-     本地只保留布局、字号与入场编排——本地的 border/background/box-shadow/color
-     会盖掉公共件与结算卡同一套的边色与焦点态 */
+  /* 三个动作：形与四态全部交给公共件 .g-btn，本地只留布局与入场编排 */
   .pm-btn {
     position: relative;
     width: 100%;
@@ -223,9 +224,8 @@
     margin-top: var(--space-1);
     padding: 0 14px;
     font-size: var(--ctl-font-sm);
-    font-weight: 600;
+    font-weight: 800;
     letter-spacing: 1px;
-    /* 按钮错峰进入（内联 animation-delay 40/90/140ms） */
     animation: pm-btn-in 0.26s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
   @keyframes pm-btn-in {
@@ -239,20 +239,23 @@
     }
   }
 
-  /* 主操作：金色实心（全屏唯一发光点之一），尺寸 = 结算卡的主操作。
-     焦点态由公共件 .g-btn--primary:focus-visible 统一表达，本地不再覆盖。 */
+  /* 主操作：尺寸 = 结算卡的主操作（视觉由 .g-btn--primary 提供） */
   .pm-btn.primary {
     min-height: var(--ctl-lg);
     margin-top: 0;
     font-size: var(--ctl-font);
-    font-weight: 700;
+    font-weight: 900;
     letter-spacing: 2px;
   }
-  .pm-btn:active {
-    transform: translateY(2px);
+
+  @media (max-width: 640px) and (orientation: portrait) {
+    .pm-panel {
+      padding: var(--space-4);
+      border-radius: var(--r-lg);
+    }
   }
 
-  /* 减弱动态效果：位移/缩放动画全部关闭（颜色/透明度保留） */
+  /* 减弱动态效果：位移 / 缩放动画全部关闭（颜色 / 透明度保留） */
   @media (prefers-reduced-motion: reduce) {
     .pm-panel,
     .pm-panel.closing,

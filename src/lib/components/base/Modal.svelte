@@ -39,7 +39,7 @@
 <svelte:window onkeydown={onKeydown} />
 
 <div class="modal-backdrop" onclick={onBackdropClick} role="presentation">
-  <!-- 弹窗 = 一块安静的面板：只有标题区 + 内容 + 页脚三段落，四角包边只此一处 -->
+  <!-- 弹窗 = 白卡厚边：标题区 + 内容 + 页脚三段落 -->
   <div class="modal modal-shell g-rivets modal-{size}" role="dialog" aria-modal="true">
     <span class="g-corner tl" aria-hidden="true"></span>
     <span class="g-corner tr" aria-hidden="true"></span>
@@ -90,76 +90,74 @@
 </div>
 
 <style>
+  /* ============================================================
+   * 弹层：深蓝天鹅绒遮罩 + 白卡厚边（3px 白边 / --r-lg / --sh-3）
+   * 标题 20px/900，正文 14px，副标题 13px；不再有玻璃模糊。
+   * ============================================================ */
   .modal-backdrop {
     position: fixed;
     inset: 0;
-    /* 全屏压暗即足够把注意力锁在弹窗上，不再加金色氛围光 */
-    background: var(--scrim);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: var(--scrim-strong);
     z-index: 100;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--space-3);
+    padding: var(--space-4);
     animation: fade-in 0.2s ease-out;
   }
 
   .modal-shell {
     position: relative;
-    /* 器物面板：拉丝材质面 + 青铜边；右上角包角来自 .g-rivets::after */
-    background: var(--mat-block);
-    border: 1px solid var(--edge-bronze);
-    border-radius: var(--r-md);
-    box-shadow: var(--mat-block-shadow);
     display: flex;
     flex-direction: column;
-    /* 矮屏（手机横屏 844×390 等）：整体不超视口，内部滚动 */
-    max-height: calc(100dvh - 24px);
     width: 100%;
-    animation: modal-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    max-height: calc(100dvh - 32px);
+    overflow: hidden;
+    background: var(--mat-block);
+    border: 3px solid #ffffff;
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh-3);
+    animation: modal-pop 0.26s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .modal-sm {
-    max-width: 380px;
+    max-width: 400px;
   }
   .modal-md {
-    max-width: 520px;
+    max-width: 560px;
   }
   .modal-lg {
-    max-width: 760px;
+    max-width: 780px;
   }
   .modal-full {
     max-width: 980px;
-    height: calc(100dvh - 24px);
+    height: calc(100dvh - 32px);
   }
 
-  /* 标题条：黄铜铭牌底 + 左侧 3px 金牌块 + 发丝底线 */
-  .modal-header {
+  /* 标题条：白卡面 + 左侧珊瑚铭牌条 + 浅蓝发丝底线 */
+  .modal-header,
+  .modal-header.g-pattern-bar {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: 12px var(--space-4) 10px 16px;
-    background: var(--plate-brass);
-    border-bottom: 1px solid var(--plate-brass-line);
-    box-shadow: var(--plate-brass-shadow);
+    padding: 15px 16px 13px 24px;
+    background: var(--mat-block);
+    border-bottom: 2px solid var(--line);
+    box-shadow: none;
     flex-shrink: 0;
-    position: relative;
-    z-index: 1;
   }
 
-  /* 左侧金牌块（铭牌） */
   .modal-header::before {
     content: '';
     position: absolute;
-    left: 6px;
-    top: 9px;
-    bottom: 9px;
-    width: 3px;
-    border-radius: 1px;
-    background: linear-gradient(180deg, var(--gold-bright), var(--bronze) 70%, var(--bronze-deep));
-    box-shadow: 0 0 6px rgba(245, 184, 65, 0.35);
+    left: 10px;
+    top: 17px;
+    bottom: 15px;
+    width: 5px;
+    border-radius: var(--r-pill);
+    background: var(--coral);
   }
 
   .modal-title-wrap {
@@ -167,35 +165,39 @@
     align-items: center;
     gap: 10px;
     min-width: 0;
-    color: var(--gold-bright);
+    color: var(--coral-text);
   }
 
   .modal-text {
     min-width: 0;
   }
 
-  .modal-title {
+  .modal-text .modal-title {
     margin: 0;
-    font-size: var(--fs-lg);
-    color: var(--gold-bright);
-    letter-spacing: 2px;
+    font-family: var(--font-round);
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
     line-height: 1.25;
+    color: var(--text);
   }
 
-  /* 副标题：小铭牌（≥12px），安静地做补充说明 */
+  /* 副标题：13px，安静地做补充说明 */
   .modal-subtitle {
-    margin: 3px 0 0;
+    margin: 4px 0 0;
     font-size: var(--fs-sm);
+    font-weight: 600;
+    line-height: 1.45;
     color: var(--muted);
   }
 
-  /* 关闭键：socket 键帽（.g-btn--icon 负责形与四态），这里只保证尺寸对齐 */
+  /* 关闭键：白面圆键（形与四态来自 .g-btn--icon） */
   .modal-close {
     flex: none;
-    color: var(--gold);
+    color: var(--muted);
   }
   .modal-close:hover {
-    color: var(--gold-bright);
+    color: var(--coral-text);
   }
 
   .modal-body {
@@ -204,9 +206,9 @@
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 12px var(--space-4);
+    padding: 16px 18px 18px;
     scrollbar-width: thin;
-    scrollbar-color: rgba(245, 184, 65, 0.3) transparent;
+    scrollbar-color: #b6dcf2 transparent;
   }
 
   .modal-footer {
@@ -214,12 +216,13 @@
     align-items: center;
     justify-content: flex-end;
     gap: var(--space-3);
-    padding: 10px var(--space-4) 12px;
-    border-top: 1px solid var(--edge-faint);
+    padding: 12px 18px 14px;
+    border-top: 2px solid var(--line);
+    background: var(--bg-chassis);
     flex-shrink: 0;
     flex-wrap: wrap;
   }
-  /* 页脚里的裸按钮兜底：走统一控件高度（桌面 30 / 触屏 42） */
+  /* 页脚里的裸按钮兜底：走统一控件高度 */
   .modal-footer :global(button) {
     min-height: var(--ctl-md);
   }
@@ -233,22 +236,37 @@
       max-height: calc(100dvh - 12px);
     }
     .modal-header {
-      padding: 9px var(--space-4);
+      padding: 10px 14px 9px 22px;
     }
     .modal-body {
-      padding: 10px var(--space-4);
+      padding: 12px 14px;
     }
     .modal-footer {
-      padding: 8px var(--space-4);
+      padding: 9px 14px;
     }
   }
 
   @media (max-width: 640px) {
     .modal-backdrop {
-      padding: var(--space-2);
+      padding: 10px;
     }
     .modal-shell {
-      max-height: calc(100dvh - 16px);
+      max-height: calc(100dvh - 20px);
     }
+    .modal-body {
+      padding: 14px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .modal-backdrop,
+    .modal-shell {
+      animation: none;
+    }
+  }
+
+  :global(.reduce-motion) .modal-backdrop,
+  :global(.reduce-motion) .modal-shell {
+    animation: none;
   }
 </style>

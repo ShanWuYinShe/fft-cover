@@ -188,7 +188,7 @@
     ctx.scale(dpr, dpr);
     const S = 150;
     ctx.clearRect(0, 0, S, S);
-    ctx.strokeStyle = 'rgba(255,255,255,.15)';
+    ctx.strokeStyle = 'rgba(74, 168, 216, 0.24)';
     ctx.lineWidth = 1;
     ctx.strokeRect(0.5, 0.5, S - 1, S - 1);
     ctx.beginPath();
@@ -216,8 +216,8 @@
       else ctx.lineTo(px, py);
     });
     ctx.closePath();
-    ctx.strokeStyle = '#4fd1c5';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#e2552a';
+    ctx.lineWidth = 2;
     ctx.stroke();
   });
 
@@ -328,7 +328,7 @@
     <Button variant="primary" size="md" disabled={activeCount === 0} onclick={play}>
       🎮 生成并游玩
     </Button>
-    <Button variant="outline" size="md" onclick={onclose}>关 闭</Button>
+    <Button variant="ghost" size="md" onclick={onclose}>关 闭</Button>
   {/snippet}
 </Modal>
 
@@ -338,122 +338,196 @@
     flex-direction: column;
     align-items: center;
   }
+
   .lead {
-    font-size: 12px;
-    color: var(--muted);
-    margin: 4px 0 10px;
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 600;
     line-height: 1.6;
+    color: var(--muted);
   }
+
   .lead b {
-    color: var(--gold-bright);
+    color: var(--coral-edge);
+    font-variant-numeric: tabular-nums;
   }
+
   .presets {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     flex-wrap: wrap;
-    margin-bottom: 8px;
-  }
-  .plabel {
-    font-size: var(--fs-xs);
-    color: var(--gold-bright);
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-    letter-spacing: 1px;
-  }
-  .name-input {
-    width: 100%;
-    margin-bottom: 8px;
-    padding: 8px 12px;
-    border-radius: var(--r-sm);
-    border: 1px solid rgba(245, 197, 66, 0.2);
-    background: rgba(255, 255, 255, 0.03);
-    color: var(--text);
-    font-size: var(--fs-sm);
-    transition: all 0.15s ease;
-  }
-  .name-input:focus {
-    outline: none;
-    border-color: var(--gold-bright);
-    box-shadow: 0 0 12px rgba(245, 197, 66, 0.2);
+    margin-bottom: 12px;
   }
 
-  .pchip {
+  .plabel {
     font-size: var(--fs-xs);
-    padding: 3px 10px;
-    min-height: 24px;
-    border-radius: 999px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--muted-2);
+  }
+
+  /* 预设芯片：白药丸厚键 */
+  .pchip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: var(--r-pill);
+    border: 2px solid #ffffff;
+    background: var(--mat-block);
+    box-shadow: var(--sh-1);
     color: var(--muted);
-    border: 1px solid rgba(245, 197, 66, 0.18);
-    background: rgba(255, 255, 255, 0.02);
-    transition: all 0.15s ease;
+    font-family: var(--font-round);
+    font-size: 12.5px;
+    font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      color 0.12s ease,
+      background 0.12s ease,
+      box-shadow 0.12s ease;
   }
+
   .pchip:hover:not(:disabled) {
-    color: var(--gold-bright);
-    border-color: rgba(245, 197, 66, 0.5);
-    background: rgba(245, 197, 66, 0.06);
-    box-shadow: none;
+    color: var(--coral-edge);
+    box-shadow: var(--sh-2);
   }
+
+  .pchip:focus-visible {
+    outline: 3px solid var(--sky-deep);
+    outline-offset: 2px;
+  }
+
+  .pchip:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
   .pchip.import {
-    border-color: rgba(45, 212, 191, 0.4);
-    color: var(--cyan);
+    border-color: var(--mint-bright);
+    color: var(--mint-edge);
   }
+
   .pchip.import:hover:not(:disabled) {
-    border-color: var(--cyan);
-    background: rgba(45, 212, 191, 0.08);
+    color: var(--mint-edge);
+    background: var(--note-bg);
   }
+
+  /* 已启用过滤：选中 = 薄荷 */
+  .pchip.rev {
+    background: var(--face-jade);
+    border-color: var(--mint-edge);
+    color: var(--mint-ink);
+    box-shadow: 0 3px 0 var(--mint-edge);
+  }
+
+  /* 作品名输入：浅蓝凹槽 */
+  .name-input {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 9px 12px;
+    border-radius: var(--r-sm);
+    border: 2px solid var(--line-bright);
+    background: var(--groove-bg);
+    box-shadow: var(--groove-shadow);
+    color: var(--text);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+
+  .name-input::placeholder {
+    color: var(--muted-2);
+  }
+
+  .name-input:focus {
+    outline: none;
+    border-color: var(--coral-text);
+  }
+
+  .name-input:focus-visible {
+    outline: 3px solid var(--coral);
+    outline-offset: 2px;
+  }
+
+  /* 预览画布：白卡 */
   canvas {
     width: 150px;
     height: 150px;
-    border: 1px solid rgba(245, 197, 66, 0.3);
-    border-radius: 12px;
-    background: #060913;
-    margin-bottom: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6) inset;
+    border: 3px solid #ffffff;
+    border-radius: var(--r-md);
+    background: #ffffff;
+    box-shadow: var(--mat-block-shadow);
+    margin-bottom: 12px;
   }
+
   .sliders {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin-bottom: 8px;
+    gap: 6px;
+    width: 100%;
+    margin-bottom: 12px;
   }
+
+  /* 每一阶谐波 = 自己的白卡面 */
   .row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: var(--muted);
-    opacity: 0.55;
-    transition: opacity 0.15s ease;
+    gap: 10px;
+    padding: 6px 10px;
+    border-radius: var(--r-sm);
+    border: 2px solid var(--line);
+    background: var(--mat-block);
+    box-shadow: 0 2px 0 #d9eefb;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--muted-2);
+    transition:
+      border-color 0.14s ease,
+      color 0.14s ease;
   }
+
   .row.active {
-    opacity: 1;
+    border-color: var(--mint-bright);
     color: var(--text);
   }
-  .row .k {
-    width: 44px;
-    text-align: left;
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+
+  .row .side {
+    flex: 0 0 auto;
+    color: var(--mint-edge);
+    font-weight: 900;
   }
+
+  .row .side.rev {
+    color: var(--grape-deep);
+  }
+
+  .row .k {
+    flex: 0 0 auto;
+    width: 48px;
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+  }
+
   .row input[type='range'] {
     flex: 1;
     min-width: 0;
-    accent-color: var(--gold-bright);
+    accent-color: var(--coral-text);
   }
-  .row .side.rev {
-    color: var(--purple);
-  }
+
   .neg-label {
-    margin: 6px 0 3px;
-    font-size: var(--fs-xs);
-    color: var(--purple);
+    margin: 8px 0 2px;
+    font-size: 12.5px;
+    font-weight: 900;
+    color: var(--grape-deep);
     text-align: center;
-    letter-spacing: 2px;
-    font-family: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+    letter-spacing: 1px;
   }
 
   @media (pointer: coarse), (max-width: 640px) {
     .pchip {
-      min-height: 44px;
+      min-height: 40px;
     }
   }
 </style>

@@ -1,21 +1,23 @@
 <script lang="ts">
   /**
-   * 浑天星穹背景：座舱背后的一层环境演出。
-   * 纯 CSS 装饰（旋转浑天环 + 星点 + 暗角），不参与交互、不抢帧。
-   * 运行态（.live）时环转得更快、暗角更收，让整屏「进入状态」。
+   * 明亮天空背景：座舱背后的一层环境演出（浅色天空 + 云朵 + 彩色柔光）。
+   * 纯 CSS 装饰，不参与交互、不抢帧；运行态（.live）只做极慢的旋转与呼吸。
    */
   import { engine } from '../../game/engine.svelte';
 </script>
 
 <div class="ambient" class:live={engine.phase === 'running'} aria-hidden="true">
-  <div class="halo halo-top"></div>
-  <div class="halo halo-bottom"></div>
+  <div class="clouds"></div>
+  <div class="glows"></div>
   <div class="ring ring-a"></div>
-  <div class="stars"></div>
-  <div class="vignette"></div>
 </div>
 
 <style>
+  /* ============================================================
+   * 天空背景（第十四轮）：奶油白 → 天蓝 → 浅薄荷，全屏没有一处深色。
+   * 层次：云朵（静态）+ 彩色柔光（呼吸）+ 天球环（缓转）。
+   * 浅底上大幅运动会晕，所以动效幅度都很小。
+   * ============================================================ */
   .ambient {
     position: fixed;
     inset: 0;
@@ -24,29 +26,49 @@
     overflow: hidden;
     max-width: 100vw;
     max-height: 100dvh;
-    /* D 的深空星云底：暖黑基底 + 青/紫/金三团星云（贴图内联，无外链） */
-    background: var(--tex-nebula), linear-gradient(180deg, #0d0a06 0%, #080604 55%, #050403 100%);
+    background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 58%, var(--bg-chassis) 100%);
   }
-  /* 注：整屏颗粒层不在这里 —— 它要盖在面板**上方**（后处理质感），
-     统一由 GameShell 的 .game-screen::after 提供（fixed + z-index 40 + opacity .045 + overlay） */
 
-  .halo {
+  /* 云朵：五团低透明度白 / 奶油径向渐变，固定不动 */
+  .clouds {
     position: absolute;
-    left: 50%;
-    width: 120vw;
-    height: 60vh;
-    transform: translateX(-50%);
-    filter: blur(40px);
-  }
-  .halo-top {
-    top: -28vh;
-    background: radial-gradient(ellipse at 50% 100%, rgba(0, 245, 212, 0.07), transparent 65%);
-  }
-  .halo-bottom {
-    bottom: -34vh;
-    background: radial-gradient(ellipse at 50% 0%, rgba(245, 184, 65, 0.07), transparent 65%);
+    inset: -4%;
+    background-image:
+      radial-gradient(36% 24% at 16% 20%, rgba(255, 255, 255, 0.95), transparent 72%),
+      radial-gradient(28% 18% at 68% 12%, rgba(255, 255, 255, 0.85), transparent 74%),
+      radial-gradient(44% 26% at 50% 74%, rgba(255, 255, 255, 0.7), transparent 76%),
+      radial-gradient(24% 16% at 90% 56%, rgba(255, 255, 255, 0.8), transparent 74%),
+      radial-gradient(30% 20% at 8% 88%, rgba(255, 255, 255, 0.6), transparent 76%);
   }
 
+  /* 彩色柔光：奶油 / 浅蓝 / 薄荷 / 珊瑚各一团，透明度很低，只把天空烘暖 */
+  .glows {
+    position: absolute;
+    inset: -6%;
+    background-image:
+      radial-gradient(34% 30% at 82% 14%, rgba(255, 236, 200, 0.55), transparent 72%),
+      radial-gradient(30% 28% at 12% 62%, rgba(206, 240, 255, 0.6), transparent 74%),
+      radial-gradient(26% 24% at 74% 82%, rgba(47, 199, 155, 0.16), transparent 72%),
+      radial-gradient(22% 20% at 96% 46%, rgba(255, 122, 69, 0.13), transparent 72%);
+    opacity: 0.85;
+    transition: opacity 600ms ease;
+  }
+
+  /* 运行态：柔光轻轻呼吸（9s，幅度只有 20%），不抢画布 */
+  .ambient.live .glows {
+    animation: sky-breathe 9s ease-in-out infinite;
+  }
+  @keyframes sky-breathe {
+    0%,
+    100% {
+      opacity: 0.8;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  /* 天球环：一条很淡的虚线，只做「世界在慢慢转」的暗示 */
   .ring {
     position: absolute;
     top: 50%;
@@ -58,14 +80,13 @@
     width: 1080px;
     height: 1080px;
     margin: -540px 0 0 -540px;
-    border: 1px dashed rgba(245, 184, 65, 0.075);
-    animation: hud-spin 300s linear infinite;
-    transition: border-color 0.4s ease;
+    border: 1px dashed rgba(31, 127, 168, 0.1);
+    animation: hud-spin 420s linear infinite;
+    transition: border-color 600ms ease;
   }
-  /* 运行态：环加速、描边提亮（世界「开机」了） */
   .ambient.live .ring-a {
-    border-color: rgba(0, 245, 212, 0.16);
-    animation-duration: 90s;
+    border-color: rgba(15, 148, 132, 0.16);
+    animation-duration: 240s;
   }
   @keyframes hud-spin {
     from {
@@ -76,38 +97,14 @@
     }
   }
 
-  /* 星点：两层不同密度的点阵，位置固定不闪烁（避免干扰读盘） */
-  .stars {
-    position: absolute;
-    inset: -2px;
-    background-image:
-      radial-gradient(1.4px 1.4px at 12% 22%, rgba(255, 255, 255, 0.5), transparent 60%),
-      radial-gradient(1.2px 1.2px at 82% 14%, rgba(245, 184, 65, 0.55), transparent 60%),
-      radial-gradient(1.6px 1.6px at 68% 72%, rgba(0, 245, 212, 0.45), transparent 60%),
-      radial-gradient(1.2px 1.2px at 28% 84%, rgba(255, 255, 255, 0.35), transparent 60%),
-      radial-gradient(1px 1px at 46% 36%, rgba(255, 255, 255, 0.3), transparent 60%),
-      radial-gradient(1px 1px at 92% 56%, rgba(255, 255, 255, 0.28), transparent 60%);
-    opacity: 0.85;
-  }
-
-  /* 暗角：把视线收进中央舞台 */
-  .vignette {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(
-      ellipse 78% 72% at 50% 46%,
-      transparent 55%,
-      rgba(0, 0, 0, 0.55) 100%
-    );
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .ring {
+    .ring,
+    .ambient.live .glows {
       animation: none;
     }
   }
-  /* 应用内设置里的「减弱动态效果」也会加这个类 */
-  :global(.reduce-motion) .ring {
+  :global(.reduce-motion) .ring,
+  :global(.reduce-motion) .ambient.live .glows {
     animation: none;
   }
 </style>
