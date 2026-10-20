@@ -572,10 +572,22 @@
     return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
   }
 
-  /** 回纹边框路径（构建一次复用）：中国器物上的连续"回"字纹 */
+  /**
+   * 回纹边框路径（构建一次复用）：中国器物上的连续"回"字纹。
+   *
+   * 第九轮：画布铺满容器后可视范围不再是 640 正方形，边框必须沿**可视边缘**
+   * 绘制。原来写死 SIZE，铺满后它变成屏幕正中的一个 640 方块，
+   * 左右两条竖边就是用户看到的「接缝亮线」。
+   */
   let huiPath: Path2D | null = null;
+  let huiKey = '';
   function huiBorder(): Path2D {
-    if (huiPath) return huiPath;
+    // 以可视范围（含缩放）为画框，取整避免亚像素抖动
+    const vw = Math.ceil(viewW / zoom);
+    const vh = Math.ceil(viewH / zoom);
+    const key = vw + 'x' + vh;
+    if (huiPath && huiKey === key) return huiPath;
+    huiKey = key;
     const cell = 13;
     const inset = 4;
     const p = new Path2D();
@@ -584,13 +596,13 @@
       p.rect(x + 1.5, y + 1.5, cell - 3, cell - 3);
       p.rect(x + 4.5, y + 4.5, cell - 9, cell - 9);
     };
-    for (let x = inset; x + cell <= SIZE - inset; x += cell) {
+    for (let x = inset; x + cell <= vw - inset; x += cell) {
       glyph(x, inset);
-      glyph(x, SIZE - inset - cell);
+      glyph(x, vh - inset - cell);
     }
-    for (let y = inset + cell; y + cell <= SIZE - inset - cell; y += cell) {
+    for (let y = inset + cell; y + cell <= vh - inset - cell; y += cell) {
       glyph(inset, y);
-      glyph(SIZE - inset - cell, y);
+      glyph(vw - inset - cell, y);
     }
     huiPath = p;
     return p;
@@ -703,10 +715,14 @@
       ctx.fill();
     }
 
-    // 回纹边框：极淡的中国纹样，铺在内容之下（不随缩放平移，只作画框）
+    // 回纹边框：极淡的中国纹样，沿可视边缘（不随缩放平移，只作画框）
+    ctx.save();
+    // 可视范围左上角 = 中心 - 可视半宽/半高
+    ctx.translate(SIZE / 2 - viewW / 2, SIZE / 2 - viewH / 2);
     ctx.strokeStyle = 'rgba(251, 191, 36, 0.05)';
     ctx.lineWidth = lineW(1);
     ctx.stroke(huiBorder());
+    ctx.restore();
 
     // 切关淡入：整画布内容透明度过渡（0.4 秒）
     const fade = Math.min(1, (now - engine.levelSwitchAt) / 400);
@@ -1165,7 +1181,11 @@
         const w = lineW(12 * (1 - mp) + 1);
         ctx.strokeStyle = 'rgba(255,209,102,' + ((1 - mp) * 0.5).toFixed(3) + ')';
         ctx.lineWidth = w;
-        ctx.strokeRect(w / 2, w / 2, SIZE - w, SIZE - w);
+        // 脉冲沿**可视边缘**画：原来用 SIZE，铺满后变成屏幕中间一个 640 方块，
+        // 左右两条竖边会被看成画布接缝。
+        const px0 = SIZE / 2 - viewW / 2;
+        const py0 = SIZE / 2 - viewH / 2;
+        ctx.strokeRect(px0 + w / 2, py0 + w / 2, viewW - w, viewH - w);
         const pop = mp < 0.35 ? 1.35 - mp * 1.0 : 1;
         ctx.save();
         ctx.translate(SIZE - 78 * canvasK(), 78 * canvasK());

@@ -418,8 +418,9 @@ export class GameEngine {
   readonly collectAnim = new Map<number, number>();
   /** 运行尾迹 */
   trail: Vec[] = [];
-  /** 连击数（音高用） */
-  combo = 0;
+  /** 连击数（音高用 + HUD 常驻显示）。第九轮改 $state：
+      原来不是响应式，HUD 读它不会重渲染，连击数字会停在旧值。 */
+  combo = $state(0);
   /** 收集飘字（连击反馈，画布绘制用），advance 中清理过期项 */
   floaters: Floater[] = [];
   /** 挑战模式 2× 快进（跳过明显无法全清的等待，不影响计分公平） */
