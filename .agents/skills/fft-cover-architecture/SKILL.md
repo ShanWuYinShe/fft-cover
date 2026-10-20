@@ -128,9 +128,15 @@ workspace 内起一个专属 headless Chrome，用 CDP HTTP + 内置 WebSocket �
 
 ```bash
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
-  --remote-debugging-port=9411 --no-sandbox --disable-gpu --no-first-run \
+  --remote-debugging-port=9411 --no-first-run \
   --user-data-dir="$PWD/.workwork/ui-redesign/chrome-profile" about:blank &
 ```
+
+**禁止 `--disable-gpu`（第十二轮实测修正）**：它把 Chrome 打进软件光栅，活动标签渲染 CPU 从
+~12% 涨到 73–87%、空实例从 8.6% 涨到 42.4%（见下节量化表）。第九/十一轮会话照抄旧模板带上它，
+是风扇狂转的第二根因。full-access 下也不加 `--no-sandbox`（原生沙盒保留，2026-10-20 实测
+GPU 渲染正常、页面加载正常）；只有 workspace-write 沙盒内才需要 `--no-sandbox`
+（嵌套 Seatbelt 冲突，见 browser-automation-safety skill）。
 
 - 脚本：`.workwork/ui-redesign/shot.mjs <scenario> <out.png> [宽] [高] [mobile]`（单场景截图；
   星图场景点的是顶栏 `.hud-quiet-btn`——入口改过名，旧类名 `.hud-starmap-btn` 已不存在）
@@ -163,6 +169,25 @@ workspace 内起一个专属 headless Chrome，用 CDP HTTP + 内置 WebSocket �
 - **收尾必关**：`kill -9 <主进程 pid>` 后要 `pgrep -f "remote-debugging-port"` 复查，
   子进程可能残留；`top` 在本机沙盒里会被拒（`Operation not permitted`），
   用 `pgrep -P <pid> | wc -l` 数子进程规模代替。
+
+### CPU 归因量化（第十二轮实测，2026-10-20，`.workwork/cpu-r12/`）
+
+第九轮只定位了「标签泄漏 → 进程堆积」，第十二轮用受控实验补全了另一半，并修正一个误判：
+
+| 场景（8 个本应用标签） | `--disable-gpu`（旧模板） | GPU 正常 | 倍率 |
+| --- | --- | --- | --- |
+| 空实例（0 标签） | 42.4% | 8.6% | 4.9x |
+| 8 标签稳定 | 129.6% | 37.1% | 3.5x |
+| 单活动标签（渲染线程内） | 73–87% | ~12% | 6–7x |
+
+- **真正的持续高 CPU 来自「活动标签 × 软件光栅」**：`--disable-gpu` 下画布 rAF 重绘占渲染
+  线程 70%+（停掉 rAF 后降到 3–6%），整实例吃满约一个核。泄漏的**隐藏**标签不烧 CPU——
+  headless 对后台标签 rAF 节流到 0（实测 hidden tab 3 秒 0 帧），泄漏的主要代价是
+  **内存**（每标签 130–250MB，44 标签 ≈ 6–10GB → swap 压力）与最后一个活动标签的满核燃烧。
+- **应用侧无需改造**：游戏页在真实浏览器里被切后台时同样被节流，属正常行为；
+  不要给 Stage 加「document.hidden 停绘」之类的守卫（对已节流的场景是死代码）。
+- **量 CPU 别用 `ps pcpu` 的瞬时值下结论**：macOS `ps -o pcpu` 是近期加权平均，
+  受控对比要固定场景、固定窗口（CDP `Performance.getMetrics` 的 TaskDuration 差值最可靠）。
 
 ### 移动端视口要用真实机型，别用 390（第九轮纠正）
 
