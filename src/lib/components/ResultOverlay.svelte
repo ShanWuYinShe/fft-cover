@@ -134,20 +134,30 @@
       '」调出了' +
       (pick.isBest ? '最佳' : '这套') +
       '解法，你能全清吗？';
+    const payload = text + ' ' + url;
     try {
       if (navigator.share) {
         await navigator.share({ title: '傅立叶指针 · 解法挑战', text, url });
         shareState = 'ok';
         setTimeout(() => (shareState = 'idle'), 1600);
-      } else {
-        await navigator.clipboard.writeText(text + ' ' + url);
-        copyState = 'ok';
-        setTimeout(() => (copyState = 'idle'), 1600);
+        uiState.setShareNote('已调起系统分享');
+        return;
       }
     } catch {
-      copyState = 'fail';
-      setTimeout(() => (copyState = 'idle'), 1600);
+      /* 桌面 Chrome 常见：有 navigator.share 但没有分享目标 → 回退剪贴板
+         （原实现失败直接进 fail 态，挑战链接根本没发出去——第三十二轮实测） */
     }
+    let ok = false;
+    try {
+      await navigator.clipboard.writeText(payload);
+      ok = true;
+    } catch {
+      ok = fallbackCopy(payload);
+    }
+    copyState = ok ? 'ok' : 'fail';
+    setTimeout(() => (copyState = 'idle'), 1600);
+    // 菜单选中即关闭，菜单项上的标签看不见——反馈走全局 shareNote toast
+    uiState.setShareNote(ok ? '挑战链接已复制，发给好友吧' : '复制失败，请重试');
   }
 
   async function copyReport(): Promise<void> {
