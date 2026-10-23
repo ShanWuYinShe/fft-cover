@@ -78,7 +78,6 @@
         <Icon name="pause" size={15} />
         <span class="btn-label">暂停</span>
       </button>
-      <span class="key-hint desktop-only" aria-hidden="true"><kbd>空格</kbd>暂停</span>
     {:else}
       <button
         type="button"
@@ -99,9 +98,6 @@
           ★<span class="btn-label">最佳</span>
         </button>
       {/if}
-      <span class="key-hint desktop-only" aria-hidden="true">
-        <kbd>空格</kbd>开始<kbd>R</kbd>重置
-      </span>
     {/if}
   </div>
 
@@ -375,39 +371,10 @@
     white-space: nowrap;
   }
 
-  /* 快捷键提示：浅色 chip，不做 kbd 拟物 */
-  .key-hint {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: var(--fs-xs);
-    font-weight: 700;
-    color: var(--muted-2);
-    white-space: nowrap;
-  }
-  .key-hint kbd {
-    display: inline-flex;
-    align-items: center;
-    min-height: 20px;
-    padding: 0 7px;
-    border-radius: 6px;
-    background: #eaf7ff;
-    border: 2px solid #ffffff;
-    box-shadow: 0 2px 0 #d6ecf9;
-    font-family: var(--font-round);
-    font-size: 12px;
-    font-weight: 800;
-    color: var(--muted);
-  }
-
   /* ---------- 响应式 ---------- */
-  /* 快捷键提示只在宽屏显示：窄屏时会被主操作压住（1440 实测已钻到按钮底下） */
-  @media (max-width: 1500px) {
-    .key-hint {
-      display: none;
-    }
-  }
-
+  /* 快捷键提示已移除（第二十九轮）：指令栏是内容自适应药丸，cmd-left 在任何
+     视口都装不下 135px 的提示，>1500px 也只露出「空」一个字（实测）。
+     快捷键的完整文档在设置弹窗的「快捷键」说明里。 */
   @media (max-width: 900px) {
     .command-bar {
       padding: 7px 10px;
@@ -432,9 +399,6 @@
     }
     .bt-short {
       display: inline;
-    }
-    .key-hint {
-      display: none;
     }
     /* 窄屏：次级键收成图标键，把宽度让给主操作（原来文字按钮把主操作挤到溢出） */
     .ctrl-btn {
