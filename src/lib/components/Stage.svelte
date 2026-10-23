@@ -13,6 +13,8 @@
     solveDone,
     solveTick,
     starSound,
+    tickSound,
+    timeUpSound,
     woodfishSound,
   } from '../game/audio';
   import { haptic } from '../game/haptics';
@@ -266,6 +268,10 @@
   let skyGrad: CanvasGradient | null = null;
   /** 星云色块配置（resize 时重建） */
   let nebulaCache: { x: number; y: number; r: number; c: string }[] | null = null;
+  /** 终局警示红边光（按视口缓存；声明必须在 resize() 之前——TDZ 白屏坑） */
+  let urgentGlow: CanvasGradient | null = null;
+  let urgentGlowW = 0;
+  let urgentGlowH = 0;
   function resize(): void {
     if (!canvas) return;
     const dpr = window.devicePixelRatio || 1;
@@ -285,6 +291,7 @@
     bgDirty = true;
     skyGrad = null;
     nebulaCache = null;
+    urgentGlow = null;
 
     ctx = canvas.getContext('2d');
     // 把「可见逻辑范围」的中心对齐到容器中心：SIZE/2 是逻辑原点
@@ -510,6 +517,10 @@
   let shakeDone = false;
   /** 已播过升星音的档位（编辑态归零） */
   let lastStarTier = 0;
+  /** 已播过倒计时滴答的秒数（3/2/1；离开倒计时区归零，防换局漏播/重播） */
+  let lastTickSec = 0;
+  /** 时间到红光闪起点（0 = 未触发；终局演出） */
+  let timeUpFlashAt = 0;
 
   /* ============================================================
    * 第三轮「游戏味」：星盘 / 星尘 / 拖尾 / 收集爆发 / 起跑脉冲 / 连击印章
@@ -747,6 +758,31 @@
     bgDirty = false;
     bgRadius = arenaRadius();
   }
+  /** 终局警示红边光：径向渐变中心透明 → 边缘警示红，按视口缓存 */
+  function urgentVignette(alpha: number): void {
+    if (!ctx) return;
+    if (!urgentGlow || urgentGlowW !== viewW || urgentGlowH !== viewH) {
+      urgentGlowW = viewW;
+      urgentGlowH = viewH;
+      const g = ctx.createRadialGradient(
+        SIZE / 2,
+        SIZE / 2,
+        Math.min(viewW, viewH) * 0.34,
+        SIZE / 2,
+        SIZE / 2,
+        Math.hypot(viewW, viewH) / 2,
+      );
+      g.addColorStop(0, 'transparent');
+      g.addColorStop(1, 'rgba(224,71,58,1)');
+      urgentGlow = g;
+    }
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = urgentGlow;
+    ctx.fillRect(SIZE / 2 - viewW / 2, SIZE / 2 - viewH / 2, viewW, viewH);
+    ctx.restore();
+  }
+
   function draw(now: number): void {
     if (!ctx || !engine.level) return;
     // 全清震动：本局首次全清时触发一次 CSS 抖动
@@ -759,6 +795,8 @@
     if (engine.phase === 'edit') {
       shakeDone = false;
       lastStarTier = 0;
+      lastTickSec = 0;
+      timeUpFlashAt = 0;
     }
 
     // 清屏：铺满容器后可见逻辑范围可能比 SIZE 更大（宽屏左右/竖屏上下），
@@ -771,6 +809,16 @@
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.drawImage(bgCanvas, 0, 0);
       ctx.restore();
+    }
+    // 终局张力：最后 3 秒画布边缘随秒脉动警示红（贴着背景画，不压玩法元素；
+    // 一秒一息，滴答音落点最亮）；时间到后 620ms 内闪一下再退散
+    if (engine.phase === 'running' && !engine.sandbox && RUN_DUR - engine.t <= 3) {
+      const frac = engine.t % 1;
+      urgentVignette(motionOff() ? 0.08 : 0.06 + 0.1 * Math.pow(1 - frac, 2));
+    } else if (timeUpFlashAt > 0) {
+      const k = (now - timeUpFlashAt) / 620;
+      if (k < 1) urgentVignette(0.22 * (1 - k));
+      else timeUpFlashAt = 0;
     }
 
     // 相位切换：捕捉起跑瞬间 / 归位里程碑
@@ -1533,10 +1581,25 @@
           starSound(engine.starReached, engine.soundOn);
           haptic(engine.starReached >= 3 ? [16, 40, 16] : 14, engine.soundOn);
         }
+        // 终局倒计时：最后 3 秒每秒一声木鱼滴答（音高逐秒升高）+ 轻触感
+        // （沙盒无时长上限不参与；暂停时不跑 advance，天然静默）
+        const secsLeft = Math.ceil(RUN_DUR - engine.t);
+        if (secsLeft > 3) {
+          lastTickSec = 0;
+        } else if (secsLeft >= 1 && secsLeft !== lastTickSec) {
+          lastTickSec = secsLeft;
+          tickSound(secsLeft, engine.soundOn);
+          haptic(8, engine.soundOn);
+        }
         if (finished) {
           if (engine.collectedCount === engine.total)
             perfectArpeggio(engine.soundOn, engine.collectScale.slice(0, 8));
-          else finishChord(engine.soundOn);
+          else if (engine.t >= RUN_DUR - 1e-6) {
+            // 时间到（非全清）：下行「收秤」+ 红光一闪 + 双击触感，与主动结束区分
+            timeUpSound(engine.soundOn);
+            timeUpFlashAt = now;
+            haptic([12, 40, 12], engine.soundOn);
+          } else finishChord(engine.soundOn);
           // 本局盖了新印：等收尾音落定，一枚一枚盖下去（音 + 触感）
           engine.newSeals.forEach((_, i) => {
             setTimeout(

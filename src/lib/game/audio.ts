@@ -262,6 +262,26 @@ export function sealSound(on: boolean): void {
   setTimeout(() => beep(784, 0.26, 'triangle', 0.05, true), 40);
 }
 
+/**
+ * 终局倒计时滴答：木鱼轻叩，音高随剩余秒数升高（3→2→1），
+ * 与 UI 按键同一器物音色（knock），更短促、不抢收集音——
+ * 一局的最后 3 秒是张力顶点，每秒一击把「时间在流逝」敲进耳朵。
+ */
+export function tickSound(sec: number, on: boolean): void {
+  const f = sec >= 3 ? 620 : sec === 2 ? 760 : 900;
+  knock(f, f * 0.72, 0.07, 0.06, on);
+}
+
+/**
+ * 时间到：下行双音「收秤」。全清有上行琶音、手动结束有收束和弦，
+ * 「没跑完就到点」也该有自己的听觉身份——短促下行，不带庆祝感。
+ */
+export function timeUpSound(on: boolean): void {
+  if (!on) return;
+  beep(494, 0.16, 'sine', 0.12, true);
+  setTimeout(() => beep(330, 0.3, 'sine', 0.12, true), 140);
+}
+
 /* ---------- UI 音效（器物化：交互反馈用木鱼轻叩与编钟，音量远低于游戏音） ---------- */
 
 /**

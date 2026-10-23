@@ -47,6 +47,11 @@ class ScreenReaderManager {
         ' 波'
       );
     }
+    // 终局倒计时：翻入最后 3 秒播报一次（urgent 由引擎在 running 态维护，
+    // 读屏只认布尔翻转，不逐帧播剩余秒数）
+    if (engine.phase === 'running' && engine.urgent) {
+      return '最后 3 秒，抓紧收集';
+    }
     if (engine.starReached > 0) {
       return (
         '已收集 ' +

@@ -8,6 +8,7 @@
   import { CHAPTERS, LEVEL_DEFS } from '../game/levels';
   import { buildArmsUrl, buildChallengeLine, encodeArms, pickChallengeArms } from '../game/share';
   import { fitScore, starsFor } from '../game/scoring';
+  import { STAR_LEVELS } from '../game/constants';
 
   /** 本关朱印进度（结算时给一条"这一关还差什么"的落点） */
   const sealProg = $derived(goalProgress(levelGoals(engine.levelGoalState)));
@@ -362,6 +363,15 @@
     if (engine.newClearRecord) parts.push('最快全清');
     if (engine.streakJustBumped > 1) parts.push('连胜 ' + engine.streakJustBumped + ' 天');
     if (engine.newSeals.length > 0) parts.push('新盖 ' + engine.newSeals.length + ' 印');
+    // 近失钩子：距下一颗星只差 ≤3 点时把「就差一点点」说出口
+    // （差得远的时候不提——0 星时说「还差 15 点」只会泄气，不构成动力）
+    if (st < 3 && engine.total > 0) {
+      const gap = Math.max(
+        0,
+        Math.ceil(STAR_LEVELS[2 - st] * engine.total) - engine.collectedCount,
+      );
+      if (gap >= 1 && gap <= 3) parts.push('再收 ' + gap + ' 点就是 ' + (st + 1) + ' 星');
+    }
     return parts;
   });
 

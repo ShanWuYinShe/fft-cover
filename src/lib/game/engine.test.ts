@@ -8,7 +8,7 @@ import {
   encodeCoeffs,
 } from './levels';
 import { dayKey, todayKey, yesterdayKey } from './dates';
-import { HISTORY_KEY, LAST_CUSTOM_KEY, LAST_LEVEL_KEY } from './constants';
+import { HISTORY_KEY, LAST_CUSTOM_KEY, LAST_LEVEL_KEY, RUN_DUR } from './constants';
 import { GameEngine } from './engine.svelte';
 import { fitScore, solveFromSpectrum } from './scoring';
 
@@ -323,6 +323,26 @@ describe('GameEngine', () => {
     for (const p of pts) engine.tryCollect(p);
     engine.stopRun();
     expect(engine.newSeals).toEqual([]);
+  });
+
+  it('终局倒计时：最后 3 秒置 urgent，结算与重开清除', () => {
+    engine.resetRun();
+    // 关掉全部指针：圆关默认解会提前全清并触发「全清 3 秒自动结算」，
+    // 一局在终局窗口之前就结束，测不到最后 3 秒
+    engine.setArm(0, { on: false });
+    engine.startRun();
+    // 推进到剩余 3.5 秒：还没进入终局
+    for (let i = 0; i < Math.floor((RUN_DUR - 3.5) * 60); i++) engine.advance(1 / 60);
+    expect(engine.urgent).toBe(false);
+    // 再推 2/3 秒（躲开 1/60 累加的浮点边界）：越过后 urgent 翻真
+    for (let i = 0; i < 40; i++) engine.advance(1 / 60);
+    expect(engine.urgent).toBe(true);
+    engine.stopRun();
+    expect(engine.urgent).toBe(false);
+    // 重开一局：urgent 从头开始
+    engine.resetRun();
+    engine.startRun();
+    expect(engine.urgent).toBe(false);
   });
 
   it('记录上一局漏点，换关后失效', () => {

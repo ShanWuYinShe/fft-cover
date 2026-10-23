@@ -288,6 +288,8 @@ export class GameEngine {
   musicOn = $state(loadMusic());
   /** 沙盒模式：无限时长自由旋转，成绩不计入记录 */
   sandbox = $state(false);
+  /** 终局倒计时：非沙盒 running 态进入最后 3 秒（读屏播报与画布/时间条演出共用） */
+  urgent = $state(false);
   /** 刚结束的一局是否为沙盒（结算浮层展示用） */
   lastRunSandbox = $state(false);
   /** 各关卡历史最佳星级 */
@@ -680,6 +682,7 @@ export class GameEngine {
     this.newChapterSeal = null;
     this.starReached = 0;
     this.starReachedAt = 0;
+    this.urgent = false;
   }
 
   /** 关闭通关演出（继续挑战 / 回看关卡面板） */
@@ -1084,6 +1087,7 @@ export class GameEngine {
   startRun(): void {
     this.sandbox = false;
     this.lastRunExpert = this.expertMode;
+    this.urgent = false;
     this.phase = 'running';
   }
 
@@ -1191,6 +1195,7 @@ export class GameEngine {
     if (this.phase !== 'running' && this.phase !== 'paused') return;
     this.starsBeforeRun = this.level ? (this.bestStars[this.level.id] ?? 0) : 0;
     this.phase = 'done';
+    this.urgent = false;
     this.resultDismissed = false;
     if (this.sandbox) {
       this.sandbox = false;
@@ -1757,6 +1762,8 @@ export class GameEngine {
       this.trail.push({ x: p.x, y: p.y });
     }
     if (this.trail.length > 2400) this.trail.splice(0, this.trail.length - 2400);
+    // 终局倒计时标记：非沙盒进入最后 3 秒（读屏播报与画布/时间条演出共用）
+    this.urgent = !this.sandbox && this.t >= RUN_DUR - 3;
     // 星级阈值实时反馈：越过 35% / 65% / 90% 时点亮（Stage 画布上的星条 + 一声提示）
     if (!this.sandbox && this.total > 0) {
       const tier = starsFor(this.collectedCount / this.total);

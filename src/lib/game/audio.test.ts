@@ -4,6 +4,8 @@ import {
   getVolume,
   initVolumeFromStorage,
   setVolume,
+  tickSound,
+  timeUpSound,
   uiClick,
   uiChime,
   woodfishSound,
@@ -94,5 +96,13 @@ describe('UI 器物音在音频不可用时不抛错', () => {
     expect(() => uiClick(false)).not.toThrow();
     expect(() => uiChime(false)).not.toThrow();
     expect(() => woodfishSound(false)).not.toThrow();
+  });
+
+  it('终局滴答与时间到音在无音频环境里调用安全', () => {
+    expect(() => tickSound(3, true)).not.toThrow();
+    expect(() => tickSound(1, true)).not.toThrow();
+    expect(() => timeUpSound(true)).not.toThrow();
+    expect(() => tickSound(2, false)).not.toThrow();
+    expect(() => timeUpSound(false)).not.toThrow();
   });
 });

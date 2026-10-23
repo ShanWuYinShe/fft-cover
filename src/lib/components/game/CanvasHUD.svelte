@@ -156,11 +156,16 @@
 
   <!-- 底部：本局剩余时间条（单局 RUN_DUR 秒，sandbox 不显示） -->
   {#if !engine.sandbox && (running || engine.phase === 'edit')}
-    <div class="time-bar" class:urgent={timeLeft <= 3 && running}>
+    <div class="time-bar" class:urgent={timeLeft <= 3 && engine.phase === 'running'}>
       <div class="time-bar-fill" style="width: {timePct}%"></div>
       <span class="time-bar-label font-tabular">
         {#if running}
-          {timeLeft}s
+          <!-- {#key}：只在最后 3 秒内随秒数换键重挂载，数字每秒弹一下（其余时间静止不抢戏） -->
+          {#key timeLeft <= 3 && engine.phase === 'running' ? timeLeft : 'steady'}
+            <span class="time-count" class:urgent={timeLeft <= 3 && engine.phase === 'running'}>
+              {timeLeft}s</span
+            >
+          {/key}
         {:else}
           本局 {RUN_DUR}s
         {/if}
@@ -509,6 +514,45 @@
     font-weight: 900;
     color: var(--text);
     letter-spacing: 0.5px;
+  }
+  /* 终局倒计时：数字每秒弹跳 + 轨道警示红心跳环（rgba 即 --danger 的 28%，
+     时间条自带的演出，不新增控件；暂停时回到静止，不无限闪） */
+  .time-count {
+    display: inline-block;
+  }
+  .time-count.urgent {
+    color: var(--danger-deep);
+    animation: count-pop 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes count-pop {
+    from {
+      transform: scale(1.5);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+  .time-bar.urgent {
+    animation: bar-heartbeat 1s ease-in-out infinite;
+  }
+  @keyframes bar-heartbeat {
+    0%,
+    100% {
+      box-shadow:
+        0 4px 0 #d6ecf9,
+        var(--groove-shadow);
+    }
+    45% {
+      box-shadow:
+        0 4px 0 #d6ecf9,
+        var(--groove-shadow),
+        0 0 0 4px rgba(224, 71, 58, 0.28);
+    }
+  }
+
+  :global(.reduce-motion) .time-count.urgent,
+  :global(.reduce-motion) .time-bar.urgent {
+    animation: none;
   }
 
   /* ---------- 响应式 ---------- */
