@@ -324,6 +324,8 @@ GPU 渲染正常、页面加载正常）；只有 workspace-write 沙盒内才�
 | 暂停（paused） | 5.8% | **2.4%** |
 | 标题页 | 8.8% | **3.9%** |
 
+**第十五~二十四轮加法后的整体回归（2026-10-24，agent-browser 页面内实测）**：编辑态与运行态均 60fps（rAF 计数；30fps 绘制节流不影响 rAF 频率）、0 longtask、控制台零错误——滴答音/终局红光/擦边闪光/暂停键全部在线时性能无回退。回归口径：fps 与 longtask 用页面内 rAF 计数 + PerformanceObserver('longtask')，分两次 eval 安装与读取（eval 对长 await 有超时）；关键断言清单见各轮小节。
+
 三招（都在 `Stage.svelte`）：
 1. **静态背景烘焙到离屏 canvas**（夜空 + 星云 + 星点 + 暗角），每帧只 `drawImage` 一次；
    尺寸或 `arenaRadius()` 变化才重烘（`bgDirty`/`bgRadius`）。
