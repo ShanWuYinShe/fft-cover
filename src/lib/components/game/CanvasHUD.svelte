@@ -453,6 +453,14 @@
     outline-offset: 2px;
   }
 
+  @media (min-width: 901px) {
+    /* 入口去重：≥901px 顶栏常驻（成就/设置都在），画布 HUD 的设置齿轮
+       是「手机无顶栏」场景的专属快捷入口，桌面端隐藏（Tab 顺序也少一站） */
+    .hud-settings-btn {
+      display: none;
+    }
+  }
+
   /* 幽灵竞速芯片 */
   .ghost-chip {
     display: inline-flex;
