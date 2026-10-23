@@ -159,6 +159,7 @@
       ...h,
       phase: (h.phase * 180) / Math.PI,
     }));
+    appliedPreset = '';
     saveDraft();
   }
 
@@ -170,8 +171,12 @@
       const i = c.k > 0 ? c.k - 1 : 9 - c.k;
       if (i >= 0 && i < 20) coeffs[i] = { ...c };
     }
+    appliedPreset = name;
     saveDraft();
   }
+
+  /** 当前生效的预设名：芯片点亮用；手动改任何滑杆即转为自定义 */
+  let appliedPreset = $state('');
 
   let canvas: HTMLCanvasElement | undefined = $state();
 
@@ -224,10 +229,12 @@
 
   function setMag(k: number, v: number): void {
     coeffs[k - 1].mag = v;
+    appliedPreset = '';
     saveDraft();
   }
   function setPhase(k: number, v: number): void {
     coeffs[k - 1].phase = v;
+    appliedPreset = '';
     saveDraft();
   }
 
@@ -256,7 +263,12 @@
   <div class="presets">
     <span class="plabel">预设</span>
     {#each Object.keys(PRESETS) as name (name)}
-      <button type="button" class="pchip" onclick={() => applyPreset(name)}>{name}</button>
+      <button
+        type="button"
+        class="pchip"
+        class:active={appliedPreset === name}
+        onclick={() => applyPreset(name)}>{name}</button
+      >
     {/each}
     <button
       type="button"
@@ -318,6 +330,7 @@
                 value={c.mag}
                 oninput={(e) => setMag(i + 1, +(e.currentTarget as HTMLInputElement).value)}
               />
+              <b class="val">{c.mag}</b>
               <input
                 type="range"
                 min="0"
@@ -326,6 +339,7 @@
                 value={c.phase}
                 oninput={(e) => setPhase(i + 1, +(e.currentTarget as HTMLInputElement).value)}
               />
+              <b class="val val-deg">{c.phase}°</b>
             </div>
           {/if}
         {/each}
@@ -379,6 +393,12 @@
   }
 
   /* 预设芯片：白药丸厚键 */
+  .pchip.active {
+    background: var(--face-jade);
+    border-color: var(--mint-edge);
+    color: var(--mint-ink);
+  }
+
   .pchip {
     display: inline-flex;
     align-items: center;
@@ -510,6 +530,19 @@
     gap: 6px;
     width: 100%;
     margin-bottom: 12px;
+  }
+
+  /* 数值读出：tabular 对齐，读得回设定值（精度工具的基本功） */
+  .row .val {
+    min-width: 26px;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .row .val-deg {
+    min-width: 40px;
   }
 
   /* 每一阶谐波 = 自己的白卡面 */
