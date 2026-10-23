@@ -695,6 +695,19 @@ export class GameEngine {
     return campaignState(this.bestStars, LEVEL_DEFS);
   }
 
+  /**
+   * 当前关是否为战役内置关（无前缀 id、非沙盒、非无尽）。
+   * 新手教学只在这种关上展示——直奔沙盒/创作/每日/无尽等进阶路径的玩家
+   * 不被圆关教学伏击，等他们回到战役关时再教（第二十四轮，
+   * 取代第二十三轮在 enterSandbox 里打补丁的做法：单点修因，覆盖全部路径）。
+   */
+  get isCampaignLevel(): boolean {
+    const id = this.level?.id;
+    if (!id) return false;
+    if (this.sandbox || this.endless) return false;
+    return !id.startsWith('daily-') && !id.startsWith('weekly-') && !id.startsWith('custom-');
+  }
+
   /* ---------- 精通工具的渐进解锁：入门期不出现，减轻新手的选择负担 ---------- */
 
   /** 专家模式入口：通过第二关（拿到 1★）后出现——那时玩家已理解基本调参 */
@@ -1098,9 +1111,6 @@ export class GameEngine {
     this.lastRunSandbox = true;
     this.phase = 'running';
     this.markFlag('sandboxUsed');
-    // 直奔沙盒的玩家跳过了圆关教学——不标记的话教学会悬在沙盒画面上
-    // （实测 2026-10-24）。圆关仍有 GuideOverlay 分步引导兜底。
-    this.markFlag('tutorialSeen');
   }
 
   /** 结束沙盒：展示成果但不记录 */

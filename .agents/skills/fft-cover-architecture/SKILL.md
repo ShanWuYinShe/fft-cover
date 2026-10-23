@@ -116,6 +116,7 @@ description: 傅立叶指针（fft_cover）项目架构事实：全屏座舱 UI 
   渲染前要剥掉，否则和 SVG 图标出现两个三角）。
 - **暂停的入口（第十九轮，2026-10-24）**：运行态指令栏左侧可见「⏸ 暂停」按钮（Icon.svelte 的 `pause` 图标，onclick = keyboardHandler 的 `toggleRun`）+ 空格键；此前只有空格一条隐形入口，而暂停浮层的偏差诊断是「边跑边看」的正经工具。不要把暂停挪进更多菜单（两跳且更隐蔽）。
 - **沙盒入口（第二十三轮，2026-10-24）**：`enterSandbox()` 同时 `markFlag('tutorialSeen')`——直奔沙盒的玩家跳过圆关教学，不标记的话教学会悬在沙盒画面上；沙盒运行态隐藏快进键（快进=跳等待到超时，沙盒无时限，转速键已覆盖速度，两个形似 1× 并排是歧义）。另：App.svelte onMount 挂了全局调试桥 `window.__ENGINE = engine`，浏览器验证可直接读引擎状态，无需插桩。
+- **新手教学展示条件（第二十四轮，取代第二十三轮的沙盒单点补丁）**：`App.tutorialUp` 加 `engine.isCampaignLevel`（无前缀 id 且非沙盒/无尽）——直奔创作/每日/每周/无尽等进阶路径不再被圆关教学伏击，回到战役关时教学如期补上（延迟教学时刻保留）。enterSandbox 不再 markFlag('tutorialSeen')。ComposerModal 生成并游玩时顺手 `uiState.closeStarmap()`（此前星图抽屉盖着玩家刚造好的关卡）。另：调试桥 `window.__ENGINE`（App onMount 挂的）可直接读引擎状态做浏览器验证。
 - **公共件**在 `src/styles/game-ui.css`（`.g-btn` / `.g-plate` / `.g-inset` / `.g-label` / `.g-num` /
   `.g-divider` / `.g-corners` / `.g-lamp` / `.g-scanlines`），尺寸与金属质感令牌在 `tokens.css`
   （`--hud-h/--cmd-h/--dock-w/--tab-h`、`--metal-*`、`--face-*`、`--edge*`、`--bevel-*`）。

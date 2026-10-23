@@ -698,11 +698,13 @@ describe('GameEngine', () => {
     expect(engine.newRecord).toBe(false);
   });
 
-  it('进入沙盒标记教学已读：教学不再悬在沙盒画面上', () => {
+  it('进阶路径不是战役关：新手教学不在其上展示（isCampaignLevel）', () => {
     engine.resetRun();
-    expect(engine.flags.tutorialSeen).toBeFalsy();
+    expect(engine.isCampaignLevel).toBe(true); // 圆关：教学的教学现场
     engine.enterSandbox();
-    expect(engine.flags.tutorialSeen).toBe(true); // 直奔沙盒 = 跳过圆关教学
+    expect(engine.isCampaignLevel).toBe(false); // 沙盒不伏击
+    engine.exitSandbox();
+    expect(engine.isCampaignLevel).toBe(true);
   });
 
   it('loadRandomSeed 同码复现同一关卡', () => {

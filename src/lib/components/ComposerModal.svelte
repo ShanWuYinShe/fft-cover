@@ -3,6 +3,7 @@
   import Modal from './base/Modal.svelte';
   import Button from './base/Button.svelte';
   import { engine } from '../game/engine.svelte';
+  import { uiState } from '../stores/uiState.svelte';
   import { uiChime } from '../game/audio';
   import { untrack } from 'svelte';
   import { encodeCoeffs, type HarmonicCoeff } from '../game/levels';
@@ -243,6 +244,9 @@
     } catch {
       /* 忽略 */
     }
+    // 生成并游玩：顺手收起星图抽屉——玩家刚造好自己的星轨，
+    // 应该立刻满幅看到它，而不是隔着一层抽屉（第二十四轮实测）
+    uiState.closeStarmap();
     onclose();
   }
 </script>

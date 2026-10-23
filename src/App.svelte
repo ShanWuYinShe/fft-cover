@@ -135,7 +135,7 @@
    * 新手教程只在「没有别的浮层」时出现：
    * 从标题页直接点「星图 / 成就 / 设置」时，目标浮层优先，教程不抢镜。
    */
-  const tutorialUp = $derived(!tutorialSeen && !otherOverlayUp);
+  const tutorialUp = $derived(!tutorialSeen && !otherOverlayUp && engine.isCampaignLevel);
 
   /** 任一浮层开着时，把游戏骨架整块 inert：焦点不会跑到背景 HUD 上 */
   const overlayUp = $derived(otherOverlayUp || tutorialUp);
