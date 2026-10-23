@@ -23,7 +23,9 @@
     </ol>
 
     <button type="button" class="g-btn g-btn--primary tut-start-btn" onclick={onDismiss}>
-      开始挑战
+      <!-- 「开始调参」而非「开始挑战」：这个按钮只关闭教学回到调参态
+           （教学挂载时没接 onstart，不真正开跑）——标签要承诺它做得到的事 -->
+      开始调参
     </button>
   </div>
 </div>
