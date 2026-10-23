@@ -49,6 +49,13 @@
     screenReader.update();
   });
 
+  /** 引导期自动展开调参台：跟踪引导可见性与阶段，条件成立时交给 uiState 判定 */
+  $effect(() => {
+    if (engine.phase === 'edit' && (engine.showFirstGuide || engine.showEllipseGuide)) {
+      uiState.autoExpandForGuide();
+    }
+  });
+
   /** 章节入场卡：第一次进入某一章时介绍这一章教什么 */
   const chapters = $derived(chapterProgress(LEVEL_DEFS, engine.bestStars));
   const currentChapter = $derived(
