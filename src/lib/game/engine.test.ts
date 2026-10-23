@@ -698,6 +698,13 @@ describe('GameEngine', () => {
     expect(engine.newRecord).toBe(false);
   });
 
+  it('进入沙盒标记教学已读：教学不再悬在沙盒画面上', () => {
+    engine.resetRun();
+    expect(engine.flags.tutorialSeen).toBeFalsy();
+    engine.enterSandbox();
+    expect(engine.flags.tutorialSeen).toBe(true); // 直奔沙盒 = 跳过圆关教学
+  });
+
   it('loadRandomSeed 同码复现同一关卡', () => {
     engine.loadRandomSeed(42);
     const a = engine.level!.pts.map((p) => Math.round(p.x * 100));

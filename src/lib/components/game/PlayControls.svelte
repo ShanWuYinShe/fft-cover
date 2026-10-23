@@ -150,7 +150,9 @@
   </div>
 
   <div class="cmd-group cmd-right">
-    {#if running}
+    {#if running && !engine.sandbox}
+      <!-- 快进的意义是「跳过等待到超时」；沙盒无时限，转速键已覆盖速度，
+           两个形似的 1× 并排只会让人分不清（第二十三轮实测） -->
       <button
         type="button"
         class="ctrl-btn"

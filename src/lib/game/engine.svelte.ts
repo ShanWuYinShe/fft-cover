@@ -1098,6 +1098,9 @@ export class GameEngine {
     this.lastRunSandbox = true;
     this.phase = 'running';
     this.markFlag('sandboxUsed');
+    // 直奔沙盒的玩家跳过了圆关教学——不标记的话教学会悬在沙盒画面上
+    // （实测 2026-10-24）。圆关仍有 GuideOverlay 分步引导兜底。
+    this.markFlag('tutorialSeen');
   }
 
   /** 结束沙盒：展示成果但不记录 */
