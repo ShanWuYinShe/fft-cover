@@ -29,6 +29,13 @@
   /** ghost 轨迹缓存与参数签名（参数未变时跳过重建） */
   let ghostSig = '';
   let ghostPathCache: Path2D | null = null;
+  /**
+   * 擦边提示（第十八轮）：运行态指针从未收集点附近（<2.2×tol）扫过时，
+   * 该点「兴奋」地闪一下薄荷光——死时间变成连续的距离信号
+   * 「就差一点」。只在 running 触发；专家模式关闭（不泄露容差信息）。
+   */
+  let nearFlashAt: number[] = [];
+  let nearFlashLevel = '';
   /** 运行态幽灵轨迹缓存：key = engine.t（两位小数） */
   let ghostRunSig = '';
   let ghostRunPath: Path2D | null = null;
@@ -1090,6 +1097,13 @@
     const pts = engine.level.pts;
     // 上届漏点（编辑态提示）：这次预览能扫到的会先被金色分支接管
     const missedSet = engine.phase === 'edit' ? engine.lastMissedSet : null;
+    // 擦边提示：指针实时位置（编辑态走幽灵预览，不需要这里）
+    const tipNow =
+      engine.phase === 'running' && !engine.expertMode ? tipAt(engine.arms, engine.t) : null;
+    if (nearFlashLevel !== (engine.level?.id ?? '')) {
+      nearFlashLevel = engine.level?.id ?? '';
+      nearFlashAt = [];
+    }
     for (let i = 0; i < pts.length; i++) {
       const p = pts[i];
       if (engine.collected.has(i)) {
@@ -1167,10 +1181,31 @@
         ctx.fill();
         ctx.lineWidth = Math.max(1 / zoom, 1.2 * (SIZE / shownW()));
       } else {
+        // 擦边触发：指针正在附近扫过（tol ≤ 距离 < 2.2×tol）→ 记下时刻。
+        // 每点 600ms 冷却，贴着绕圈不会连续频闪；已收集/容差内由收集逻辑接管。
+        if (tipNow) {
+          const dxn = p.x - tipNow.x;
+          const dyn = p.y - tipNow.y;
+          const d2n = dxn * dxn + dyn * dyn;
+          const nearR = engine.level.tol * 2.2;
+          if (d2n < nearR * nearR && d2n >= engine.level.tol * engine.level.tol) {
+            if (now - (nearFlashAt[i] ?? -1e9) > 600) nearFlashAt[i] = now;
+          }
+        }
         // 未收集目标：第十四轮改成「糖果圈」——白色厚外环 + 金色内环 + 呼吸
         // （原来是深色小宝石，在夜空里像噪点；卡通风格要粗、要亮、要一眼可辨）
         const breathe = motionOff() ? 1 : 1 + 0.14 * Math.sin(now / 560 + i * 0.7);
-        const rr = 5.4 * kd * breathe;
+        // 擦边演出：糖果圈本体随薄荷闪光「兴奋」鼓一下（金色=已收，薄荷=擦边）
+        const fAge = (now - (nearFlashAt[i] ?? -1e9)) / 380;
+        const fKick = !motionOff() && fAge >= 0 && fAge < 1 ? 1 - fAge : 0;
+        const rr = 5.4 * kd * breathe * (1 + 0.42 * fKick);
+        if (fKick > 0) {
+          ctx.strokeStyle = 'rgba(47,199,155,' + (fKick * 0.85).toFixed(3) + ')';
+          ctx.lineWidth = lineW(2.6);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, rr * (1.3 + (1 - fKick) * 1.3), 0, Math.PI * 2);
+          ctx.stroke();
+        }
         // 外圈柔光：让目标在星云底上「浮起来」
         ctx.fillStyle = 'rgba(251,191,36,.10)';
         ctx.beginPath();
