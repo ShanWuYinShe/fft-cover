@@ -71,7 +71,15 @@
 <!-- 底部指令栏：左边「次级操作」，中间一颗主操作，右边「更多」 -->
 <div class="command-bar" class:live={running}>
   <div class="cmd-group cmd-left">
-    {#if !running}
+    {#if running}
+      <!-- 第十九轮：暂停此前只有空格键一条入口（运行中 UI 完全不可见），
+           而暂停浮层带偏差诊断、是「边跑边看」的正经工具——给它一个对称的可见入口 -->
+      <button type="button" class="ctrl-btn" title="暂停（空格）" onclick={toggleRun}>
+        <Icon name="pause" size={15} />
+        <span class="btn-label">暂停</span>
+      </button>
+      <span class="key-hint desktop-only" aria-hidden="true"><kbd>空格</kbd>暂停</span>
+    {:else}
       <button
         type="button"
         class="ctrl-btn"

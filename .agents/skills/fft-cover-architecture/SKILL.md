@@ -114,6 +114,7 @@ description: 傅立叶指针（fft_cover）项目架构事实：全屏座舱 UI 
   （手机无顶栏时用画布 HUD 齿轮）+ 更多菜单；音量/音乐只在更多菜单；缩放只靠滚轮/双指 + 画布右下角
   一个「复位视图」键。主操作文案是人话：**开始旋转 / 结束并结算**（引擎 `runLabel` 仍带 ▶/⏸ 字形，
   渲染前要剥掉，否则和 SVG 图标出现两个三角）。
+- **暂停的入口（第十九轮，2026-10-24）**：运行态指令栏左侧可见「⏸ 暂停」按钮（Icon.svelte 的 `pause` 图标，onclick = keyboardHandler 的 `toggleRun`）+ 空格键；此前只有空格一条隐形入口，而暂停浮层的偏差诊断是「边跑边看」的正经工具。不要把暂停挪进更多菜单（两跳且更隐蔽）。
 - **公共件**在 `src/styles/game-ui.css`（`.g-btn` / `.g-plate` / `.g-inset` / `.g-label` / `.g-num` /
   `.g-divider` / `.g-corners` / `.g-lamp` / `.g-scanlines`），尺寸与金属质感令牌在 `tokens.css`
   （`--hud-h/--cmd-h/--dock-w/--tab-h`、`--metal-*`、`--face-*`、`--edge*`、`--bevel-*`）。
