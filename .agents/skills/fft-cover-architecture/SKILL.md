@@ -118,6 +118,7 @@ description: 傅立叶指针（fft_cover）项目架构事实：全屏座舱 UI 
 - **沙盒入口（第二十三轮，2026-10-24）**：`enterSandbox()` 同时 `markFlag('tutorialSeen')`——直奔沙盒的玩家跳过圆关教学，不标记的话教学会悬在沙盒画面上；沙盒运行态隐藏快进键（快进=跳等待到超时，沙盒无时限，转速键已覆盖速度，两个形似 1× 并排是歧义）。另：App.svelte onMount 挂了全局调试桥 `window.__ENGINE = engine`，浏览器验证可直接读引擎状态，无需插桩。
 - **新手教学展示条件（第二十四轮，取代第二十三轮的沙盒单点补丁）**：`App.tutorialUp` 加 `engine.isCampaignLevel`（无前缀 id 且非沙盒/无尽）——直奔创作/每日/每周/无尽等进阶路径不再被圆关教学伏击，回到战役关时教学如期补上（延迟教学时刻保留）。enterSandbox 不再 markFlag('tutorialSeen')。ComposerModal 生成并游玩时顺手 `uiState.closeStarmap()`（此前星图抽屉盖着玩家刚造好的关卡）。另：调试桥 `window.__ENGINE`（App onMount 挂的）可直接读引擎状态做浏览器验证。
 - **清空进度武装态超时（第二十六轮，2026-10-24）**：存档 tab 的「清空进度」两步确认，武装态（确认清空？）4 秒后自动解除（confirmTimer + onDestroy 清理）——原实现武装后永不解除，「点一下走开回来再点」会误清存档。数据安全控件的标准做法。验证坑：Svelte 状态更新在微任务批量刷 DOM，点击后**同 tick** 查询读到的还是旧文案，要等两个 rAF 再断言；agent-browser eval 长 await 不可靠，用两段式（先装状态再读）。
+- **打卡日历未来日可见性（第二十八轮，2026-10-24）**：统计 tab 日历的 `.cal-cell.future` 原本只把数字色 muted→muted-2，两个蓝灰在浅底上不可分辨；改为 `background: transparent` + 弱边（未来日=空槽，过去空日=浅蓝底，已打卡=薄荷，今天=珊瑚描边，四态分明）。5 周窗口按周一对齐，未来日通常只有本周剩余几天。
 - **菜单项反馈不可见（第二十七轮，2026-10-24）**：MoreMenu 的 `run()` 先 `open=false` 再执行  handler——选中项上的反馈标签（如「✓ 已复制战报」）随菜单卸载，用户永远看不到。菜单动作的结果反馈一律走 `uiState.setShareNote()` 全局 toast（分享战报/保存成绩图已接，含失败分支的诚实提示）；持久按钮（如每日分享）的内联标签不受此限。另：headless 下剪贴板 write 与 execCommand 都会失败，恰好可用来验证失败分支。
 - **公共件**在 `src/styles/game-ui.css`（`.g-btn` / `.g-plate` / `.g-inset` / `.g-label` / `.g-num` /
   `.g-divider` / `.g-corners` / `.g-lamp` / `.g-scanlines`），尺寸与金属质感令牌在 `tokens.css`

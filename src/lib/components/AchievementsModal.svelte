@@ -903,6 +903,11 @@
   }
 
   .cal-cell.future {
+    /* 未来日「还没到」：去掉底色变纯描边空槽，与过去空日（浅蓝底）
+       拉开可感知的差距——原写法只换数字色，两个蓝灰在浅底上分不清
+       （第二十八轮实测截图对照） */
+    background: transparent;
+    border-color: var(--line-2);
     color: var(--muted-2);
   }
 
