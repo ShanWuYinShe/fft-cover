@@ -31,6 +31,15 @@
       不在组件里用 best <= score 反推（打平会误报，边界 bug） */
   const newBest = $derived(engine.endlessNewBest);
 
+  /**
+   * 无尽近失钩子（第二十一轮）：力竭波的 35% 过波线只差 ≤3 点。
+   * 与常规关结算的近失判定同一语言——"就差一点点"是强有力的重试动机，
+   * 差得远时不提（报「差 18 点」只会泄气）。
+   */
+  const waveNearMiss = $derived(
+    !engine.endlessSurvived && engine.endless && engine.endlessNeed > 0 && engine.endlessNeed <= 3,
+  );
+
   const reduceMotion = $derived(!!engine.flags.reduceMotion);
 
   /**
@@ -146,13 +155,17 @@
         </p>
         <span class="stamp g-seal" aria-hidden="true">{stamp}</span>
         <p class="detail">
+          {#if waveNearMiss}
+            <span>本波就差 <b>{engine.endlessNeed}</b> 点过线</span>
+            <span class="sep">·</span>
+          {/if}
           {#if engine.endlessBest.wave > 0}
             <span>历代最佳 第 {engine.endlessBest.wave} 宿 · {engine.endlessBest.score} 分</span>
-            {#if engine.endlessWave === engine.endlessBest.wave}
+            {#if !newBest && engine.endlessWave === engine.endlessBest.wave}
               <span class="sep">·</span>
               <span>仅差 <b>{engine.endlessBest.score - engine.endlessScore}</b> 分</span>
             {/if}
-          {:else}
+          {:else if !waveNearMiss}
             <span>下次试试先收满 35%，就能续到下一宿</span>
           {/if}
         </p>

@@ -244,6 +244,7 @@ GPU 渲染正常、页面加载正常）；只有 workspace-write 沙盒内才�
 - **randomDiff 必须与当前波同步**（无尽关 id 不含难度，分享链接靠它）——startEndless 设 easy、nextEndlessWave 先 `endlessWave++` 再取 `endlessDiff(wave)`（有单测锁定）
 - 断点续玩：过波时落 `run`（seed/diff/wave/score），启动 `resumeEndlessRun()` 按 seed 复现当前波、从波首重开，**优先于常规续玩**；exitEndless 清 run
 - 结算：`settleEndlessBest()` 严格更优才置 `endlessNewBest`（打平不算，有单测）；`endlessNeed` = 距 35% 线还差几点
+- **力竭卡近失钩子（第二十一轮，2026-10-24）**：力竭时若过波线只差 ≤3 点，EndlessResult detail 行显示「本波就差 N 点过线」（`endlessNeed` 结算后仍反映失败波差距）；newBest（刚刷新历代最佳）时**不显示**「仅差 N 分」——settle 后 best==本局，会算出「仅差 0 分」自指噪声（与第十七轮新纪录同款问题）
 
 ## 画布坐标系与补偿体系（Stage.svelte）
 
