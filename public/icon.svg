@@ -1,35 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#141a30"/>
-      <stop offset="1" stop-color="#0a0d18"/>
+      <stop offset="0" stop-color="#eaf7ff"/>
+      <stop offset="1" stop-color="#bfe3ff"/>
     </linearGradient>
-    <linearGradient id="tip" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#4fd1c5"/>
-      <stop offset="1" stop-color="#a78bfa"/>
+    <linearGradient id="arm" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ff9d6b"/>
+      <stop offset="1" stop-color="#e2552a"/>
     </linearGradient>
     <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#4fd1c5" stop-opacity="0.35"/>
-      <stop offset="1" stop-color="#4fd1c5" stop-opacity="0"/>
+      <stop offset="0" stop-color="#ff7a45" stop-opacity="0.32"/>
+      <stop offset="1" stop-color="#ff7a45" stop-opacity="0"/>
     </radialGradient>
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#bg)"/>
   <circle cx="256" cy="256" r="210" fill="url(#glow)"/>
-  <!-- 目标轨迹：一圈圆点（收集点） -->
-  <g fill="#fbbf24">
+  <!-- 目标轨迹：一圈糖果点（收集点） -->
+  <g fill="#fbbf24" stroke="#ffffff" stroke-width="4">
     <circle cx="256" cy="76" r="11"/><circle cx="383" cy="129" r="11"/>
     <circle cx="436" cy="256" r="11"/><circle cx="383" cy="383" r="11"/>
     <circle cx="256" cy="436" r="11"/><circle cx="129" cy="383" r="11"/>
     <circle cx="76" cy="256" r="11"/><circle cx="129" cy="129" r="11"/>
   </g>
   <!-- 大圆（第一根指针的半径圈） -->
-  <circle cx="256" cy="256" r="150" fill="none" stroke="#4fd1c5" stroke-opacity="0.28" stroke-width="3"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#2f6580" stroke-opacity="0.25" stroke-width="3"/>
   <!-- 指针链：中心 → 关节 → 末端 -->
-  <line x1="256" y1="256" x2="356" y2="196" stroke="url(#tip)" stroke-width="13" stroke-linecap="round"/>
-  <line x1="356" y1="196" x2="418" y2="238" stroke="#4fd1c5" stroke-width="13" stroke-linecap="round"/>
-  <circle cx="256" cy="256" r="13" fill="#a78bfa"/>
+  <line x1="256" y1="256" x2="356" y2="196" stroke="url(#arm)" stroke-width="13" stroke-linecap="round"/>
+  <line x1="356" y1="196" x2="418" y2="238" stroke="#e2552a" stroke-width="13" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="13" fill="#16455b"/>
   <circle cx="356" cy="196" r="10" fill="#ffffff"/>
   <!-- 尖端 -->
-  <circle cx="418" cy="238" r="15" fill="#4fd1c5"/>
-  <circle cx="418" cy="238" r="26" fill="#4fd1c5" fill-opacity="0.25"/>
+  <circle cx="418" cy="238" r="15" fill="#e2552a"/>
+  <circle cx="418" cy="238" r="26" fill="#e2552a" fill-opacity="0.25"/>
 </svg>
