@@ -98,15 +98,18 @@
         </button>
       </nav>
 
-      <!-- 三步上手：一行一步，让第一次玩的人 3 秒看懂 -->
-      <section class="ts-steps" aria-labelledby="ts-steps-title">
-        <h2 class="ts-steps-title" id="ts-steps-title">三步上手</h2>
-        <ol class="ts-steps-list">
-          <li>调半径，让紫色轨迹贴上金色虚线</li>
-          <li>点「开始旋转」，指针扫过点就能收</li>
-          <li>收得越多，结算的星越多</li>
-        </ol>
-      </section>
+      <!-- 三步上手：一行一步，让第一次玩的人 3 秒看懂。
+           有进度（星/连胜）的回访玩家看下方战绩行，不再看新手三步 -->
+      {#if !hasProgress}
+        <section class="ts-steps" aria-labelledby="ts-steps-title">
+          <h2 class="ts-steps-title" id="ts-steps-title">三步上手</h2>
+          <ol class="ts-steps-list">
+            <li>调半径，让紫色轨迹贴上金色虚线</li>
+            <li>点「开始旋转」，指针扫过点就能收</li>
+            <li>收得越多，结算的星越多</li>
+          </ol>
+        </section>
+      {/if}
 
       <!-- 战绩：无进度时整行隐藏（沿用原有逻辑），纯文字不套盒子 -->
       {#if hasProgress}
