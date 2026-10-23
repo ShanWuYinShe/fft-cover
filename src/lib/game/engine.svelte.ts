@@ -1299,8 +1299,10 @@ export class GameEngine {
     if (after !== before) this.finale = after === 'mastered' ? 'mastered' : 'cleared';
 
     if (this.score > (this.bestScores[id] ?? 0)) {
+      // 「新纪录」只在破了一个既有纪录时点亮：首局只是建立基准。
+      // 否则 0 星烂局也挂「新纪录」，与「还没拿到星」自相矛盾（实测 2026-10-24）。
+      this.newRecord = (this.bestScores[id] ?? 0) > 0;
       this.bestScores = { ...this.bestScores, [id]: this.score };
-      this.newRecord = true;
       writeJson(BEST_SCORE_KEY, this.bestScores);
     }
     // 历史成绩入档（趋势展示；每关保留最近 HISTORY_MAX 局）
@@ -1343,14 +1345,15 @@ export class GameEngine {
     // 每日挑战：刷新今日最佳
     if (id.startsWith('daily-') && this.score > (this.dailyBest[id] ?? 0)) {
       this.dailyBest = { ...this.dailyBest, [id]: this.score };
-      this.newRecord = true;
+      // 同上：首次打卡是建立今日基准，不是破纪录
+      this.newRecord = (this.dailyBest[id] ?? 0) > 0;
       this.markFlag('dailyWon');
       writeJson(DAILY_KEY, this.dailyBest);
     }
     // 本周挑战：同表记录（weekly- 前缀与每日关互不干扰），一周里刷出最好成绩
     if (id.startsWith('weekly-') && this.score > (this.dailyBest[id] ?? 0)) {
       this.dailyBest = { ...this.dailyBest, [id]: this.score };
-      this.newRecord = true;
+      this.newRecord = (this.dailyBest[id] ?? 0) > 0;
       writeJson(DAILY_KEY, this.dailyBest);
     }
     // 每日挑战连胜：今天首次完成即累加（昨天完成过则 +1，否则重新从 1 开始）

@@ -620,6 +620,20 @@ describe('GameEngine', () => {
     expect(engine.newChapterSeal).toBeNull();
   });
 
+  it('结算判定：首局只是建立基准，破既有纪录才点亮「新纪录」', () => {
+    const pts = engine.level!.pts;
+    engine.phase = 'running';
+    engine.tryCollect(pts[0]);
+    engine.stopRun();
+    expect(engine.bestScore).toBeGreaterThan(0);
+    expect(engine.newRecord).toBe(false); // 首局：建立基准，不是破纪录
+    engine.resetRun();
+    engine.phase = 'running';
+    for (let i = 1; i < 6; i++) engine.tryCollect(pts[i]);
+    engine.stopRun();
+    expect(engine.newRecord).toBe(true); // 第二局更高：真的破了纪录
+  });
+
   it('stopRun 结算最佳分，resetRun 清零', () => {
     const pts = engine.level!.pts;
     engine.phase = 'running';
