@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import Icon from './Icon.svelte';
   import Modal from './base/Modal.svelte';
   import Button from './base/Button.svelte';
@@ -118,11 +119,19 @@
       msg = { ok: false, text: res.detail };
     }
   }
+  let confirmTimer: ReturnType<typeof setTimeout> | undefined;
+  onDestroy(() => clearTimeout(confirmTimer)); // 弹层关闭即卸载，别让定时器敲在卸载的组件上
+
   function doClear(): void {
     if (!confirmClear) {
       confirmClear = true;
+      // 武装态 4 秒后自动解除：防止"点一下走开，回来再点"的误触清空
+      // （数据安全控制的标准做法；第二十六轮实测补上）
+      clearTimeout(confirmTimer);
+      confirmTimer = setTimeout(() => (confirmClear = false), 4000);
       return;
     }
+    clearTimeout(confirmTimer);
     clearSave();
     msg = { ok: true, text: '已清空进度，正在刷新…' };
     setTimeout(() => location.reload(), 700);
