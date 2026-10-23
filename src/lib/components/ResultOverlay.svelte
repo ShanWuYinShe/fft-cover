@@ -21,7 +21,12 @@
     const g = levelGoals(engine.levelGoalState).find((x) => !x.done);
     if (!g) return null;
     let how = g.how;
-    if (g.id === 'stars' || g.id === 'perfect') {
+    if (g.id === 'stars') {
+      // 三星线是 90%（STAR_LEVELS[0]），不是全收——用全收数字会把「还差多少」
+      // 说多（实测：24 点关 2/24 时提示「再收集 22 点」，实际再收 20 就三星）
+      const left = Math.max(1, Math.ceil(STAR_LEVELS[0] * n) - got);
+      how = '再收集 ' + left + ' 点即可';
+    } else if (g.id === 'perfect') {
       const left = Math.max(0, n - got);
       if (left > 0) how = '再收集 ' + left + ' 点即可';
     } else if (g.id === 'exact') {
