@@ -25,6 +25,10 @@ description: 傅立叶指针（fft_cover）项目架构事实：全屏座舱 UI 
   **机坞三段（第六轮定案，别再改回去）**：`.dock-head`（标题条）→ **`<GuideOverlay/>`（引导条，钉在这、不随内部滚动）**
   → `.dock-body`（弹性列，内滚）。引导条曾经绝对定位在画布内，实测压掉 15.4%（竖屏）/26.2%（横屏）画布；
   挪进机坞后全视口 0%，同时填掉机坞顶部空档。**任何「把提示挂回画布」的改动都会重新遮挡目标点环。**
+  **第十六轮补全（2026-10-24）**：桌面机坞默认收起时引导条随之不可见（走查新玩家路径实测发现）——
+  引导期（圆/椭圆未毕业 + 编辑态 + ≥901px）由 `uiState.autoExpandForGuide()` 自动展开机坞；
+  用户经 `toggleDock` 手动收起后 `dockAutoDismissed` 记住意愿、本会话不再自动展开
+  （程序化 `closeDock` 不算用户手势）。动引导条位置前先想清楚这条链路。
   机坞撑满靠三处 flex（缺一处就仍留死区）：`.dock-body` 设 `display:flex; flex-direction:column`、
   `ArmPanel .deck` 设 `flex:1 0 auto`（撑满剩余高度）、`ArmEditor .tune` 设 `flex:1 0 auto; justify-content:space-evenly`
   （无富余高度时与原来一致，不影响手机内滚）。实测机坞死区 1280/1440/1920 = 150/330/510px → **0px**。
