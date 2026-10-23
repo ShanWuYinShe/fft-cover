@@ -591,6 +591,14 @@
     accent-color: var(--coral-text);
   }
 
+  /* 触屏命中 ≥40：裸 range 原生盒只有 ~21px，触屏下拉满滑杆行高令牌
+     （令牌表：--ctl-md 即「滑杆行高」；桌面鼠标精度优先保持原生紧凑） */
+  @media (pointer: coarse) {
+    .row input[type='range'] {
+      height: var(--ctl-md);
+    }
+  }
+
   .neg-label {
     margin: 8px 0 2px;
     font-size: 12.5px;
