@@ -277,55 +277,60 @@
     >
   </div>
 
-  <div class="composer-body">
-    <div class="sliders">
-      {#each coeffs as c, i (i)}
-        {#if i === 10}
-          <div class="neg-label">⟲ 反转（负频率）</div>
+  <div class="composer-layout">
+    <div class="preview-pane">
+      <input
+        class="name-input"
+        placeholder="给作品起个名字（可选，最多 12 字）"
+        maxlength="12"
+        bind:value={levelName}
+        onblur={() => saveNamePref(levelName)}
+      />
+      <canvas bind:this={canvas} width="150" height="150"></canvas>
+      <p class="lead">
+        启用谐波 {activeCount} 个 · 邀请码 <b>{code || '—'}</b>
+        {#if code}
+          <button
+            type="button"
+            class="pchip"
+            title="复制邀请码，好友在邀请码输入框粘贴即可挑战同一关"
+            onclick={copyCode}>{copied ? '✓ 已复制' : '📋 复制'}</button
+          >
         {/if}
-        {#if !showOnlyActive || c.mag > 0.5}
-          <div class="row" class:active={c.mag > 0.5}>
-            <span class="side" class:rev={c.k < 0}>{c.k < 0 ? '⟲' : '⟳'}</span>
-            <span class="k">{CIRCLED[Math.abs(c.k) - 1] || Math.abs(c.k)} {Math.abs(c.k)}×</span>
-            <input
-              type="range"
-              min="0"
-              max="150"
-              step="2"
-              value={c.mag}
-              oninput={(e) => setMag(i + 1, +(e.currentTarget as HTMLInputElement).value)}
-            />
-            <input
-              type="range"
-              min="0"
-              max="360"
-              step="5"
-              value={c.phase}
-              oninput={(e) => setPhase(i + 1, +(e.currentTarget as HTMLInputElement).value)}
-            />
-          </div>
-        {/if}
-      {/each}
+      </p>
     </div>
-    <input
-      class="name-input"
-      placeholder="给作品起个名字（可选，最多 12 字）"
-      maxlength="12"
-      bind:value={levelName}
-      onblur={() => saveNamePref(levelName)}
-    />
-    <canvas bind:this={canvas} width="150" height="150"></canvas>
-    <p class="lead">
-      启用谐波 {activeCount} 个 · 邀请码 <b>{code || '—'}</b>
-      {#if code}
-        <button
-          type="button"
-          class="pchip"
-          title="复制邀请码，好友在邀请码输入框粘贴即可挑战同一关"
-          onclick={copyCode}>{copied ? '✓ 已复制' : '📋 复制'}</button
-        >
-      {/if}
-    </p>
+
+    <div class="composer-body">
+      <div class="sliders">
+        {#each coeffs as c, i (i)}
+          {#if i === 10}
+            <div class="neg-label">⟲ 反转（负频率）</div>
+          {/if}
+          {#if !showOnlyActive || c.mag > 0.5}
+            <div class="row" class:active={c.mag > 0.5}>
+              <span class="side" class:rev={c.k < 0}>{c.k < 0 ? '⟲' : '⟳'}</span>
+              <span class="k">{CIRCLED[Math.abs(c.k) - 1] || Math.abs(c.k)} {Math.abs(c.k)}×</span>
+              <input
+                type="range"
+                min="0"
+                max="150"
+                step="2"
+                value={c.mag}
+                oninput={(e) => setMag(i + 1, +(e.currentTarget as HTMLInputElement).value)}
+              />
+              <input
+                type="range"
+                min="0"
+                max="360"
+                step="5"
+                value={c.phase}
+                oninput={(e) => setPhase(i + 1, +(e.currentTarget as HTMLInputElement).value)}
+              />
+            </div>
+          {/if}
+        {/each}
+      </div>
+    </div>
   </div>
 
   {#snippet footer()}
@@ -338,6 +343,8 @@
 
 <style>
   .composer-body {
+    overflow-y: auto;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -455,7 +462,25 @@
     outline-offset: 2px;
   }
 
-  /* 预览画布：白卡 */
+  /* 双栏（第二十九轮实测 40 根滑块把 150px 预览挤出视口造成盲编辑）：
+     左=预览窗格（名字/画布/邀请码）固定不滚，右=参数列表独立内滚，
+     曲线永远在眼前。窄屏收成上下两段（预览在上不滚、滑块内滚） */
+  .composer-layout {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 10px;
+    height: min(56vh, 500px);
+    min-height: 300px;
+  }
+  .preview-pane {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 4px 2px;
+  }
   canvas {
     width: 150px;
     height: 150px;
@@ -463,7 +488,20 @@
     border-radius: var(--r-md);
     background: #ffffff;
     box-shadow: var(--mat-block-shadow);
-    margin-bottom: 12px;
+  }
+
+  @media (max-width: 720px) {
+    .composer-layout {
+      grid-template-columns: 1fr;
+      height: min(58vh, 460px);
+    }
+    .preview-pane {
+      flex: 0 0 auto;
+      overflow: visible;
+    }
+    .composer-body {
+      flex: 1 1 auto;
+    }
   }
 
   .sliders {
