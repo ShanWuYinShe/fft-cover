@@ -662,6 +662,24 @@ describe('GameEngine', () => {
     expect(engine.achievements['weekly-clear']).toBeTruthy();
   });
 
+  it('每日结算：首局是建立今日基准不报新纪录，破纪录才点亮', () => {
+    engine.loadDaily();
+    engine.phase = 'running';
+    const pts = engine.level!.pts;
+    engine.tryCollect(pts[0]);
+    engine.stopRun();
+    // 首日局：建立基准（第二十二轮：读后写曾把本局分当既有纪录而误报）
+    expect(engine.newRecord).toBe(false);
+    expect(engine.dailyBest[engine.level!.id]).toBeGreaterThan(0);
+    engine.resetRun();
+    engine.loadDaily();
+    engine.phase = 'running';
+    engine.tryCollect(pts[0]);
+    engine.tryCollect(pts[1]);
+    engine.stopRun();
+    expect(engine.newRecord).toBe(true); // 更高：真的破了今日纪录
+  });
+
   it('沙盒模式：超时不自动结算，exitSandbox 不写最佳分', () => {
     engine.enterSandbox();
     expect(engine.sandbox).toBe(true);

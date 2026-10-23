@@ -1344,16 +1344,18 @@ export class GameEngine {
     }
     // 每日挑战：刷新今日最佳
     if (id.startsWith('daily-') && this.score > (this.dailyBest[id] ?? 0)) {
-      this.dailyBest = { ...this.dailyBest, [id]: this.score };
-      // 同上：首次打卡是建立今日基准，不是破纪录
+      // 同上：首次打卡是建立今日基准，不是破纪录。
+      // 必须先算标志再落库——写在前面会把本局分数当成"既有纪录"，
+      // 首局必误报「新纪录」（第二十二轮实测：0 星首局盖新纪录印章）
       this.newRecord = (this.dailyBest[id] ?? 0) > 0;
+      this.dailyBest = { ...this.dailyBest, [id]: this.score };
       this.markFlag('dailyWon');
       writeJson(DAILY_KEY, this.dailyBest);
     }
     // 本周挑战：同表记录（weekly- 前缀与每日关互不干扰），一周里刷出最好成绩
     if (id.startsWith('weekly-') && this.score > (this.dailyBest[id] ?? 0)) {
-      this.dailyBest = { ...this.dailyBest, [id]: this.score };
       this.newRecord = (this.dailyBest[id] ?? 0) > 0;
+      this.dailyBest = { ...this.dailyBest, [id]: this.score };
       writeJson(DAILY_KEY, this.dailyBest);
     }
     // 每日挑战连胜：今天首次完成即累加（昨天完成过则 +1，否则重新从 1 开始）
