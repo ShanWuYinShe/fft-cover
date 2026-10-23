@@ -252,7 +252,15 @@ GPU 渲染正常、页面加载正常）；只有 workspace-write 沙盒内才�
 
 ## 里程碑反馈清单（改动后对照，别漏）
 
-收集（音阶+飘字）/ 连击每 5（木鱼）/ 星级跨档（starSound+haptic）/ 印章（sealSound+haptic）/ 章节印（chapterSeal+haptic）/ 成就（achvSound+toast+haptic）/ 通关（perfectArpeggio 或 finishChord+震屏）/ 无尽过波（achvSound+haptic）/ 读屏播报（aria-live，优先级链：结算 > 成就 > 过波 > 星级；600ms 防抖；**过波分支需 endlessSurvived 门控**——续玩恢复的存量波次不播）
+收集（音阶+飘字）/ 连击每 5（木鱼）/ 星级跨档（starSound+haptic）/ 印章（sealSound+haptic）/ 章节印（chapterSeal+haptic）/ 成就（achvSound+toast+haptic）/ 通关（perfectArpeggio 或 finishChord+震屏）/ 无尽过波（achvSound+haptic）/ **终局倒计时（第十五轮新增：最后 3 秒每秒 tickSound+haptic+画布红光脉动；时间到非全清 = timeUpSound+红光一闪+双击触感）** / 读屏播报（aria-live，优先级链：结算 > 成就 > 过波 > **终局倒计时（urgent 翻转播一次）** > 星级；600ms 防抖；**过波分支需 endlessSurvived 门控**——续玩恢复的存量波次不播）
+
+## 终局张力（第十五轮，2026-10-24 落地）
+
+- **引擎单一事实源**：`engine.urgent`（$state）——advance() 里派生 `!sandbox && t >= RUN_DUR - 3`，resetRun/startRun/stopRun 清除。读屏与画布/时间条演出都消费它，**不要**在 UI 里各自拿 `RUN_DUR - engine.t` 重算（读屏 getter 读 t 会让 App 的 $effect 每帧重跑）。
+- **三个通道**：① 每秒一击 = Stage 帧循环里 `lastTickSec` 守卫（离开 >3s 区归零防重播）+ `tickSound(sec)`（knock 620/760/900 Hz 逐秒升高）+ 8ms haptic；② 时间到（非全清，判据 `t >= RUN_DUR - 1e-6`）= `timeUpSound` 下行双音 + 画布红光一闪 620ms + `[12,40,12]` 触感——与主动结束 finishChord、全清 perfectArpeggio 三者听觉身份互斥；③ 画布边光 = `urgentVignette()` 径向渐变按视口缓存（`urgentGlow` 声明在 resize 之前——TDZ 坑同 skyGrad），随秒脉动 `0.06+0.1*(1-t%1)²`，`motionOff()` 时恒定 0.08。
+- **时间条演出**：数字用 `{#key urgent ? timeLeft : 'steady'}` 换键重挂载做每秒弹跳（非 urgent 区不重挂）；轨道心跳环动画**只在 `phase === 'running'`**——暂停时回到静止，否则无限动画闪到天荒地老。
+- **引擎计时类测试的坑（实测）**：GameEngine 默认圆关 + 默认 1× 指针会**直接全清**，advance 循环跑到 t≈7.6s 触发「全清 3 秒后自动结算」，一局在终局窗口之前就 done——测最后 3 秒/超时类逻辑必须先 `setArm(0, { on: false })` 断掉全清。另外 780×(1/60) 浮点累加会得到 12.999…，边界断言要多推几帧。
+- **结算近失钩子**：结论行（verdictParts）在「距下一颗星 ≤3 点」时追加「再收 N 点就是 M 星」；差得远不报（0 星报「还差 15 点」是泄气不是动力）。
 
 ## UI 器物音（2026-10-19 落地，动 UI 音效前先读）
 
