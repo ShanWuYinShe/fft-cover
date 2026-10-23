@@ -9,6 +9,7 @@
   import { buildArmsUrl, buildChallengeLine, encodeArms, pickChallengeArms } from '../game/share';
   import { fitScore, starsFor } from '../game/scoring';
   import { STAR_LEVELS } from '../game/constants';
+  import { uiState } from '../stores/uiState.svelte';
 
   /** 本关朱印进度（结算时给一条"这一关还差什么"的落点） */
   const sealProg = $derived(goalProgress(levelGoals(engine.levelGoalState)));
@@ -167,6 +168,9 @@
         await navigator.share({ title: '傅立叶指针战报', text });
         shareState = 'ok';
         setTimeout(() => (shareState = 'idle'), 1500);
+        // 菜单在选中项后立即关闭，菜单项上的标签看不见——
+        // 反馈走全局 shareNote toast（第二十七轮）
+        uiState.setShareNote('已调起系统分享');
         return;
       } catch {
         /* 用户取消或环境不支持则走剪贴板 */
@@ -181,6 +185,7 @@
     }
     copyState = ok ? 'ok' : 'fail';
     setTimeout(() => (copyState = 'idle'), 1500);
+    uiState.setShareNote(ok ? '战报已复制到剪贴板' : '复制失败，请重试');
   }
 
   /** 导出画布当前帧 + 成绩条为 PNG */
@@ -272,6 +277,7 @@
         await navigator.share({ files: [file], title: '傅立叶指针战报' });
         imgState = 'ok';
         setTimeout(() => (imgState = 'idle'), 1500);
+        uiState.setShareNote('已调起系统分享');
         return;
       }
     } catch {
@@ -283,6 +289,7 @@
     a.click();
     imgState = 'ok';
     setTimeout(() => (imgState = 'idle'), 1500);
+    uiState.setShareNote('成绩图已保存到下载');
   }
 
   const n = $derived(engine.total);
