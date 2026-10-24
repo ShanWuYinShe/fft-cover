@@ -76,17 +76,18 @@
   );
   if (close) close.click();
   // 合成器回归锚：20 行槽位 + 负频分隔条（20 槽改造）
-  // 「🎨 创作」在「更多玩法」折叠条内：新存档默认折叠，先展开再找
+  // 「🎨 创作星轨」在「每日一练与无尽演武」折叠条内（曾名「更多玩法」）：
+  // 折叠条可能是 details（开合靠 open 属性）或按钮（aria-expanded），两种都兼容
   await new Promise((r) => setTimeout(r, 300));
-  const moreToggle = [...document.querySelectorAll('button')].find(
-    (x) =>
-      (x.textContent || '').includes('更多玩法') && x.getAttribute('aria-expanded') === 'false',
+  const details = [...document.querySelectorAll('details')].find((x) =>
+    (x.textContent || '').includes('每日一练'),
   );
-  if (moreToggle) moreToggle.click();
-  await new Promise((r) => setTimeout(r, 500));
+  if (details) details.open = true;
+  await new Promise((r) => setTimeout(r, 400));
   const composerBtn = [...document.querySelectorAll('button')].find((x) =>
-    (x.textContent || '').includes('创作'),
+    (x.textContent || '').includes('创作星轨'),
   );
+  if (!composerBtn) throw new Error('创作星轨入口未找到（星图抽屉需先打开）');
   composerBtn.click();
   await new Promise((r) => setTimeout(r, 600));
   out.composerRows = document.querySelectorAll('.sliders .row').length; // 20
