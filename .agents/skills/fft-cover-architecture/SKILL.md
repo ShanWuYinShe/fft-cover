@@ -296,7 +296,12 @@ GPU 渲染正常、页面加载正常）；只有 workspace-write 沙盒内才�
 
 ## e2e 冒烟要点
 
-详见 `scripts/e2e-smoke.md`。关键：必须跑 dev server（动态 import 源码在 preview 不可用）；seg1 结果落 `sessionStorage['__e2eSeg1']`；每次运行用全新会话（长会话劣化）；「🎨 创作」在更多玩法折叠条内。agent-browser 通用坑见用户级 browser-automation-safety skill。
+详见 `scripts/e2e-smoke.md`。关键：必须跑 dev server（动态 import 源码在 preview 不可用）；seg1 结果落 `sessionStorage['__e2eSeg1']`；每次运行用全新会话（长会话劣化）；「🎨 创作星轨」在「每日一练与无尽演武」折叠条内（曾名「更多玩法」）。
+- **eval 空输出/页面空白的第一排查项：dev server 是否存活**（第五十轮修正诊断）：dev server 死亡后，
+  页面的动态 import（如 e2e 脚本开头的 await import('/src/…')）会**永久挂起**、
+  新导航报 ERR_CONNECTION_REFUSED——会话劣化与 server 死亡症状叠加时，
+  先 `lsof -iTCP:<端口>` 验存活（5200 server 曾在深夜静默退出一次，重启即愈）。
+  agent-browser 通用坑见用户级 browser-automation-safety skill。
 
 
 ## 美术皮肤：糖果星域（第十四轮定稿，**取代第七轮「星图金铜」**）
