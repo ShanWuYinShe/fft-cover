@@ -7,8 +7,11 @@
  */
 (async () => {
   const out = { errs: window.__errs || [] };
-  const M = await import('/src/lib/game/engine.svelte.ts');
-  out.resumed = M.engine.level?.id ?? null; // 期望 custom-…（续玩）
+  // 引擎从调试桥取（window.__ENGINE 由 App onMount 挂载）——
+  // 避免 await import(engine.svelte.ts) 的动态导入偶发挂起 eval
+  // （第四十九轮实测；levels/scoring 纯数据模块的动态导入保留）
+  const e2 = window.__ENGINE;
+  out.resumed = e2.level?.id ?? null; // 期望 custom-…（续玩）
   // 结算卡重开回归锚（第 130 轮）：完成一局 → 收起结算卡 → 运行栏重开
   const S = await import('/src/lib/game/scoring.ts');
   const L2 = await import('/src/lib/game/levels.ts');
