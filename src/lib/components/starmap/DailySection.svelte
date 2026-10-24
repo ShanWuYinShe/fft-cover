@@ -25,12 +25,21 @@
   function shareDaily(): void {
     const diff = (dailyDiff as 'easy' | 'normal' | 'hard') || engine.difficulty;
     const url = buildDailyUrl(diff);
+    // 风味文案与挑战链接同一语言——裸 URL 在聊天里没有上下文
+    const today = engine.dailyWeek.find((d) => d.today);
+    const score = today && engine.dailyBest['daily-' + today.date + '-' + diff];
+    const text =
+      '今日的傅立叶指针每日挑战（' +
+      (diff === 'easy' ? '简单' : diff === 'hard' ? '困难' : '普通') +
+      '）来了' +
+      (score ? '，我的最高分是 ' + score : '') +
+      '，你能拿几颗星？';
     if (!navigator.clipboard) {
       uiState.setShareNote('复制失败，请重试');
       return;
     }
     navigator.clipboard
-      .writeText(url)
+      .writeText(text + ' ' + url)
       .then(() => {
         dailyShared = true;
         setTimeout(() => (dailyShared = false), 2000);
