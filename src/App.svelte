@@ -179,6 +179,23 @@
     const onUpdate = () => (uiState.updateReady = true);
     window.addEventListener('pwa-update', onUpdate);
 
+    // 双标签页并发：另一页写入进度时本页感知不到（最后写入者胜出会静默丢进度）
+    // ——storage 事件只在本页之外的标签触发，恰好用来做一次性告知（第六十一轮）
+    const SAVE_KEYS = new Set([
+      'fft-pointers-best-v1',
+      'fft-pointers-best-score-v1',
+      'fft-pointers-best-run-v1',
+      'fft-pointers-history-v1',
+      'fft-pointers-daily-v1',
+      'fft-pointers-streak-v1',
+    ]);
+    const onStorage = (e: StorageEvent): void => {
+      if (e.key && SAVE_KEYS.has(e.key)) {
+        uiState.setShareNote('检测到其他标签页改动了进度——刷新本页以同步，同步前请勿在此页结算');
+      }
+    };
+    window.addEventListener('storage', onStorage);
+
     // 安装分享与音频监听
     const cleanupShare = setupShareListener();
     const cleanupAudio = audioController.setupListeners();
@@ -186,6 +203,7 @@
     return () => {
       panelMq.removeEventListener('change', syncPanel);
       window.removeEventListener('pwa-update', onUpdate);
+      window.removeEventListener('storage', onStorage);
       cleanupShare();
       cleanupAudio();
     };
