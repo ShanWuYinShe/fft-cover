@@ -188,7 +188,16 @@
     align-items: flex-start;
     padding: calc(var(--hud-h) + 10px) max(14px, var(--safe-l)) 14px max(14px, var(--safe-r));
     padding-right: max(14px, var(--safe-r));
-    z-index: 8;
+  }
+
+  /* 桌面档机坞覆盖在舞台右侧：HUD 的右缘让开机坞宽度，
+     否则右上的收集/星级/本关目标芯片会钻到机坞下方被盖住
+     （超宽屏 3440 实测：芯片 x=3294 落在机坞 x3040-3440 之下） */
+
+  @media (min-width: 901px) {
+    .hud {
+      right: var(--dock-w);
+    }
   }
   .hud > * {
     pointer-events: auto;
