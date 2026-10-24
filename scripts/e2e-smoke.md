@@ -29,6 +29,10 @@ agent-browser --session <名> eval "$(cat scripts/e2e-smoke-part2.js)"
   `sessionStorage.getItem('__e2eSeg1')`（JSON：`errs` + `steps`）。
 - **每次运行用全新会话**：同一 session 反复导航/重载后 eval 会陆续失效（长会话
   劣化）。换一个 session 名重跑（结束后 `--session <名> close`）。
+- **长脚本 eval 的返回值不被 await**：`(async () => …)()` 形式的脚本会被序列化成
+  `{}` 而非等它结算（原生 `new Promise` 反而会被 await 到）。可靠做法二选一：
+  结果写进 `sessionStorage` 后另起 eval 读取；或给 async IIFE 接 `.then((s) => s)`
+  桥接成原生 promise 再返回（2026-10-24 实测：part2 全脚本不接桥会静默无输出）。
 - **part2 前置状态**：seg1 的 reload 会以「反转创作」关续玩；part2 里「🎨 创作」
   在「更多玩法」折叠条内，脚本已先展开再找，无需手工干预。
 
