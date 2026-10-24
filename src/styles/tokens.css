@@ -132,7 +132,7 @@
      muted2 #4a7d93 =  4.8:1（小字/辅助） --- */
   --text: #16455b;
   --muted: #2f6580;
-  --muted-2: #4a7d93;
+  --muted-2: #457689; /* 原 #4a7d93 在浅卡上 4.37:1 不达 AA；加深至 4.99/4.82（白/浅卡，第六十轮对比度审计） */
   --color-text: var(--text);
   --color-text-muted: var(--muted);
   --color-text-dim: var(--muted-2);
