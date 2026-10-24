@@ -35,7 +35,7 @@
     try {
       await navigator.clipboard.writeText(inviteCode);
     } catch {
-      /* 忽略 */
+      uiState.setShareNote('复制失败，请重试');
     }
   }
 
@@ -59,13 +59,24 @@
     try {
       if (navigator.share) {
         await navigator.share({ title, text, url });
-      } else {
-        await navigator.clipboard.writeText(url);
-        shareCopied = true;
-        setTimeout(() => (shareCopied = false), 1800);
+        return;
       }
     } catch {
-      /* 忽略 */
+      /* 桌面 Chrome 常见：有 navigator.share 但没有分享目标 → 回退剪贴板
+         （原实现 catch 忽略——分享失败时无提示、无剪贴板，什么都没发生） */
+    }
+    let ok = false;
+    try {
+      await navigator.clipboard.writeText(url);
+      ok = true;
+    } catch {
+      ok = false;
+    }
+    if (ok) {
+      shareCopied = true;
+      setTimeout(() => (shareCopied = false), 1800);
+    } else {
+      uiState.setShareNote('复制失败，请重试');
     }
   }
 

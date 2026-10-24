@@ -3,6 +3,7 @@
   import { engine } from '../../game/engine.svelte';
   import { daysLeftInWeek } from '../../game/dates';
   import { buildDailyUrl } from '../../game/share';
+  import { uiState } from '../../stores/uiState.svelte';
 
   let { onselect }: { onselect?: () => void } = $props();
 
@@ -24,12 +25,19 @@
   function shareDaily(): void {
     const diff = (dailyDiff as 'easy' | 'normal' | 'hard') || engine.difficulty;
     const url = buildDailyUrl(diff);
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(url).then(() => {
+    if (!navigator.clipboard) {
+      uiState.setShareNote('复制失败，请重试');
+      return;
+    }
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
         dailyShared = true;
         setTimeout(() => (dailyShared = false), 2000);
+      })
+      .catch(() => {
+        uiState.setShareNote('复制失败，请重试');
       });
-    }
   }
 </script>
 
