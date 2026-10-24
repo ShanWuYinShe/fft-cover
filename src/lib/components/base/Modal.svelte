@@ -22,6 +22,9 @@
     footer?: Snippet;
   } = $props();
 
+  // SR 进入对话框时播报其名称（aria-labelledby 指向标题）
+  const titleId = 'modal-title-' + Math.random().toString(36).slice(2, 8);
+
   function onBackdropClick(e: MouseEvent): void {
     if (e.target === e.currentTarget && onclose) {
       onclose();
@@ -40,7 +43,13 @@
 
 <div class="modal-backdrop" onclick={onBackdropClick} role="presentation">
   <!-- 弹窗 = 白卡厚边：标题区 + 内容 + 页脚三段落 -->
-  <div class="modal modal-shell g-rivets modal-{size}" role="dialog" aria-modal="true">
+  <div
+    class="modal modal-shell g-rivets modal-{size}"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby={title ? titleId : undefined}
+    aria-label={title ? undefined : '对话框'}
+  >
     <span class="g-corner tl" aria-hidden="true"></span>
     <span class="g-corner tr" aria-hidden="true"></span>
     <span class="g-corner bl" aria-hidden="true"></span>
@@ -54,7 +63,7 @@
           {/if}
           <div class="modal-text">
             {#if title}
-              <h2 class="modal-title font-celestial">{title}</h2>
+              <h2 id={titleId} class="modal-title font-celestial">{title}</h2>
             {/if}
             {#if subtitle}
               <p class="modal-subtitle">{subtitle}</p>
