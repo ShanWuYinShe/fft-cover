@@ -5,6 +5,7 @@ import {
   buildDailyUrl,
   buildRandomUrl,
   buildShareUrl,
+  buildWeeklyUrl,
   buildChallengeLine,
   decodeArms,
   encodeArms,
@@ -16,6 +17,7 @@ import {
   readDailyFromHash,
   readLevelFromHash,
   readRandomFromHash,
+  readWeeklyFromHash,
 } from './share';
 import { decodeCoeffs, encodeCoeffs } from './levels';
 
@@ -70,6 +72,21 @@ describe('解法分享码', () => {
     // 非法输入不抛错
     expect(readRandomFromHash('#r=random-abc')).toBeNull();
     expect(readRandomFromHash('#arms=v1-0:1:1:1')).toBeNull();
+  });
+
+  it('每周挑战链接只带难度（周键由打开那周决定，r54 补测）', () => {
+    expect(buildWeeklyUrl('https://game.chaoset.com/')).toBe('https://game.chaoset.com/#w=hard');
+    expect(buildWeeklyUrl('https://game.chaoset.com/', 'normal')).toBe(
+      'https://game.chaoset.com/#w=normal',
+    );
+    expect(readWeeklyFromHash('#w=hard')).toBe('hard');
+    expect(readWeeklyFromHash('#w=normal')).toBe('normal');
+    // 非法难度 / 其它 hash 都返回 null，不抛错
+    expect(readWeeklyFromHash('#w=impossible')).toBeNull();
+    expect(readWeeklyFromHash('#d=normal')).toBeNull();
+    // 往返：构造的链接取回同一难度
+    const url = buildWeeklyUrl('https://game.chaoset.com/', 'easy');
+    expect(readWeeklyFromHash(url.slice(url.indexOf('#')))).toBe('easy');
   });
 
   it('每日挑战链接只带难度（日期由打开那天决定）', () => {
