@@ -2,7 +2,7 @@
   import Icon from '../Icon.svelte';
   import { engine } from '../../game/engine.svelte';
   import { daysLeftInWeek } from '../../game/dates';
-  import { buildDailyUrl } from '../../game/share';
+  import { buildDailyUrl, buildWeeklyUrl } from '../../game/share';
   import { uiState } from '../../stores/uiState.svelte';
 
   let { onselect }: { onselect?: () => void } = $props();
@@ -21,10 +21,36 @@
   );
 
   let dailyShared = $state(false);
+  let weeklyShared = $state(false);
+
+  function shareWeekly(): void {
+    // 公平竞争设计：全局限定一条曲线，分享=好友同题竞技
+    // buildWeeklyUrl(base, diff)——首参是页面 base URL（r53 曾误传 diff 当 base，生成坏链）
+    const url = buildWeeklyUrl(location.origin + location.pathname);
+    const text =
+      '本周的傅立叶指针每周挑战来了' +
+      (engine.weeklyBest > 0 ? '，历史最佳 ' + engine.weeklyBest + ' 分' : '') +
+      '，来比比？ ' +
+      url;
+    if (!navigator.clipboard) {
+      uiState.setShareNote('复制失败，请重试');
+      return;
+    }
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        weeklyShared = true;
+        setTimeout(() => (weeklyShared = false), 2000);
+      })
+      .catch(() => {
+        uiState.setShareNote('复制失败，请重试');
+      });
+  }
 
   function shareDaily(): void {
     const diff = (dailyDiff as 'easy' | 'normal' | 'hard') || engine.difficulty;
-    const url = buildDailyUrl(diff);
+    // buildDailyUrl(base, diff)——首参是页面 base URL（r53 曾误传 diff 当 base，生成坏链）
+    const url = buildDailyUrl(location.origin + location.pathname, diff);
     // 风味文案与挑战链接同一语言——裸 URL 在聊天里没有上下文
     const today = engine.dailyWeek.find((d) => d.today);
     const score = today && engine.dailyBest['daily-' + today.date + '-' + diff];
@@ -93,20 +119,34 @@
 
   <!-- 本周挑战 -->
   <div class="weekly-card">
-    <button
-      type="button"
-      class="weekly-btn g-btn"
-      class:active={engine.level?.id.startsWith('weekly-')}
-      onclick={() => {
-        engine.loadWeekly();
-        onselect?.();
-      }}
-    >
-      <span class="w-left"><Icon name="flag" size={14} /> 每周挑战</span>
-      <span class="w-right font-tabular">
-        {engine.weeklyBest > 0 ? engine.weeklyBest + ' 分 · ' : ''}还剩 {daysLeftInWeek()} 天
-      </span>
-    </button>
+    <div class="weekly-row">
+      <button
+        type="button"
+        class="weekly-btn g-btn"
+        class:active={engine.level?.id.startsWith('weekly-')}
+        onclick={() => {
+          engine.loadWeekly();
+          onselect?.();
+        }}
+      >
+        <span class="w-left"><Icon name="flag" size={14} /> 每周挑战</span>
+        <span class="w-right font-tabular">
+          {engine.weeklyBest > 0 ? engine.weeklyBest + ' 分 · ' : ''}还剩 {daysLeftInWeek()} 天
+        </span>
+      </button>
+      <button
+        type="button"
+        class="weekly-share g-btn g-btn--sm"
+        title="复制本周挑战链接，好友同题竞技"
+        aria-label="分享本周挑战"
+        onclick={shareWeekly}
+      >
+        {#if weeklyShared}<Icon name="check" size={11} /> 已复制{:else}<Icon
+            name="share"
+            size={11}
+          />{/if}
+      </button>
+    </div>
   </div>
 
   <!-- 最近 7 天打卡 -->
@@ -201,6 +241,25 @@
 
   .weekly-card {
     width: 100%;
+  }
+
+  .weekly-row {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .weekly-share {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    color: var(--muted);
+  }
+
+  .weekly-share:hover {
+    color: var(--coral-text);
   }
 
   /* 每周挑战：整行白卡 */
