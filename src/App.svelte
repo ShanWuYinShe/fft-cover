@@ -150,6 +150,7 @@
     // 减弱动态效果初始检测
     if (
       engine.flags.reduceMotion === undefined &&
+      !engine.flags.reduceMotionTouched && // 用户显式关过：系统偏好不再覆盖其选择
       typeof matchMedia === 'function' &&
       matchMedia('(prefers-reduced-motion: reduce)').matches
     ) {

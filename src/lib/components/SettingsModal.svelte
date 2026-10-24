@@ -99,7 +99,12 @@
         class="toggle-btn"
         class:on={reduceMotion}
         aria-pressed={reduceMotion}
-        onclick={() => engine.setFlag('reduceMotion', !reduceMotion)}
+        onclick={() => {
+          // 显式切换（无论方向）都记 touched：否则「关」会删键回 undefined，
+          // 系统偏好播种在下次刷新时把用户的显式关闭悄悄翻回开启（第三十八轮推演）
+          engine.markFlag('reduceMotionTouched');
+          engine.setFlag('reduceMotion', !reduceMotion);
+        }}
       >
         <span class="lamp" aria-hidden="true"></span>
         <span class="tv">{reduceMotion ? '开' : '关'}</span>
