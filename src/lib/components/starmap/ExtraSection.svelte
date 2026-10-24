@@ -4,6 +4,7 @@
   import { engine } from '../../game/engine.svelte';
   import { decodeCoeffs } from '../../game/levels';
   import { buildCustomUrl, buildRandomUrl, parseInvite } from '../../game/share';
+  import { uiState } from '../../stores/uiState.svelte';
 
   let { onselect }: { onselect?: () => void } = $props();
 
@@ -69,8 +70,15 @@
   }
 
   function loadSeed(): void {
-    const parsed = parseInvite(seedInput);
-    if (!parsed) return;
+    const raw = seedInput.trim();
+    if (!raw) return;
+    const parsed = parseInvite(raw);
+    if (!parsed) {
+      // 无效邀请码的静默失败会让玩家困惑（实测 2026-10-24）——
+      // 反馈走全局 shareNote toast（与挑战链接同一通道）
+      uiState.setShareNote('邀请码无法识别，请检查后重试');
+      return;
+    }
     seedInput = '';
     if (parsed.kind === 'custom') {
       const coeffs = decodeCoeffs(parsed.code);
