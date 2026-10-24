@@ -194,7 +194,8 @@
     align-items: center;
     justify-content: flex-start;
     flex: none;
-    width: var(--ctl-col);
+    /* width 曾引用未定义的 --ctl-col（声明静默失效回退 auto）——
+       移除死引用，自然宽度 + 内边距即设计宽度（第四十四轮扫盘） */
     min-height: var(--ctl-md);
     padding: 0 32px 0 12px;
     border: 2px solid var(--line-bright);
