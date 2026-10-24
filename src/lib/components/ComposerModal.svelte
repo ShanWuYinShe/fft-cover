@@ -72,7 +72,8 @@
       copied = true;
       setTimeout(() => (copied = false), 1500);
     } catch {
-      /* 剪贴板不可用则忽略 */
+      // 剪贴板不可用不再静默（r45 通则）：toast 明确告知失败
+      uiState.setShareNote('邀请码复制失败，请重试');
     }
   }
 

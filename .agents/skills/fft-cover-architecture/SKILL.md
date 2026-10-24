@@ -130,6 +130,7 @@ description: 傅立叶指针（fft_cover）项目架构事实：全屏座舱 UI 
 - **打卡日历未来日可见性（第二十八轮，2026-10-24）**：统计 tab 日历的 `.cal-cell.future` 原本只把数字色 muted→muted-2，两个蓝灰在浅底上不可分辨；改为 `background: transparent` + 弱边（未来日=空槽，过去空日=浅蓝底，已打卡=薄荷，今天=珊瑚描边，四态分明）。5 周窗口按周一对齐，未来日通常只有本周剩余几天。
 - **菜单项反馈不可见（第二十七轮，2026-10-24）**：MoreMenu 的 `run()` 先 `open=false` 再执行  handler——选中项上的反馈标签（如「✓ 已复制战报」）随菜单卸载，用户永远看不到。菜单动作的结果反馈一律走 `uiState.setShareNote()` 全局 toast（分享战报/保存成绩图已接，含失败分支的诚实提示）；持久按钮（如每日分享）的内联标签不受此限。另：headless 下剪贴板 write 与 execCommand 都会失败，恰好可用来验证失败分支。
 - **无效邀请码的静默失败同修（第四十四轮，2026-10-24）**：星图 ExtraSection 的邀请码输入，粘贴无法识别的内容原本 `if (!parsed) return` 静默失败——实测玩家零感知。同样接 setShareNote（「邀请码无法识别，请检查后重试」）。通则：**任何解析/加载失败的静默 return 都值得问一句「用户知道发生了什么吗」**。
+- **创作器邀请码复制同修（第四十七轮，2026-10-24）**：ComposerModal copyCode 的 catch 忽略 → setShareNote（「邀请码复制失败，请重试」）。静默失败类至此全量清场：战报/成绩图/挑战好友/每日分享/邀请码复制/创作器邀请码/无效邀请码输入，共七处。
 - **navigator.share 失败必须回退剪贴板（第三十二轮，2026-10-24）**：`if (navigator.share)` 只保证 API 存在，桌面 Chrome 无分享目标时 `share()` 照样 reject——shareArms 原实现失败直接进  fail 态，「挑战好友」在桌面 Chrome 上发不出去（copyReport 同位置就有回退，漏了这里）。修后 catch → 剪贴板回退 + setShareNote，端到端实测：分享 stub 捕获挑战链接 → 好友打开 URL 载入同题同参 + 「参数已装好」提示。
 - **公共件**在 `src/styles/game-ui.css`（`.g-btn` / `.g-plate` / `.g-inset` / `.g-label` / `.g-num` /
   `.g-divider` / `.g-corners` / `.g-lamp` / `.g-scanlines`），尺寸与金属质感令牌在 `tokens.css`
