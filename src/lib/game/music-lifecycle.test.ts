@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { __setAudioGraphForTests, setMusicSuspended, updateMusic, type AmbientBus } from './music';
+import {
+  __setAudioGraphForTests,
+  isMusicReady,
+  setMusicSuspended,
+  updateMusic,
+  type AmbientBus,
+} from './music';
 import type { Arm } from './types';
 
 /**
@@ -73,6 +79,8 @@ describe('updateMusic：只更新快照，不建持续振荡器（常鸣 = 嗡�
   beforeEach(() => {
     ac1 = fakeContext();
     __setAudioGraphForTests(ac1, fakeBus());
+    // 注入后音频图应视为就绪（isMusicReady 的既有用途）
+    expect(isMusicReady()).toBe(true);
   });
 
   it('指针在转（voiced）也不创建任何振荡器，只更新总线响度', () => {
