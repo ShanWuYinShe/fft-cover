@@ -1,4 +1,4 @@
-import { parseRandomSpec, randomSpec, type RandomDifficulty } from './levels';
+import { LEVEL_DEFS, parseRandomSpec, randomSpec, type RandomDifficulty } from './levels';
 import type { Arm } from './types';
 
 /**
@@ -97,6 +97,11 @@ export function buildShareUrl(base: string, code: string): string {
  * 否则分享出去会悄悄降级成 normal。
  */
 export function levelHashPart(levelId: string, diff?: RandomDifficulty): string {
+  // 战役内置关也带上关卡（否则好友打开链接会落在自己上次的关卡，对不上题）。
+  // 好友端即使还没解锁到这一关，也能直接面对同一道题——挑战的意义就在这。
+  if (LEVEL_DEFS.some((l) => l.id === levelId)) {
+    return 'lv=' + levelId;
+  }
   if (levelId.startsWith('random-')) {
     const m = /^(-?\d+)(?:-(easy|normal|hard))?$/.exec(levelId.slice('random-'.length));
     if (!m) return '';
@@ -134,6 +139,14 @@ export function buildArmsUrl(
   const u = base.split('#')[0];
   const part = levelHashPart(levelId, diff);
   return u + '#' + (part ? part + '&' : '') + 'arms=' + code;
+}
+
+/** 从 hash 读好友挑战的战役关（lv= 段；必须是内置关才认） */
+export function readLevelFromHash(hash: string): string | null {
+  const m = /(?:^#|&)lv=([^&]+)/.exec(hash);
+  if (!m) return null;
+  const id = decodeURIComponent(m[1]);
+  return LEVEL_DEFS.some((l) => l.id === id) ? id : null;
 }
 
 /** 邀请码输入的三种含义 */

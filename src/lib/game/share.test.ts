@@ -14,6 +14,7 @@ import {
   readArmsFromHash,
   readCustomFromHash,
   readDailyFromHash,
+  readLevelFromHash,
   readRandomFromHash,
 } from './share';
 import { decodeCoeffs, encodeCoeffs } from './levels';
@@ -91,11 +92,15 @@ describe('解法分享码', () => {
 });
 
 describe('解法分享链接要带上关卡（否则好友对不上题）', () => {
-  it('内置关不带关卡段', () => {
+  it('内置关带 lv= 段（否则好友打开链接会落在自己上次的关卡，对不上题）', () => {
     expect(buildArmsUrl('https://x/y', 'v1-0:120:1:0', 'circle')).toBe(
-      'https://x/y#arms=v1-0:120:1:0',
+      'https://x/y#lv=circle&arms=v1-0:120:1:0',
     );
-    expect(levelHashPart('circle')).toBe('');
+    expect(levelHashPart('circle')).toBe('lv=circle');
+    expect(levelHashPart('heart')).toBe('lv=heart');
+    expect(readLevelFromHash('#lv=heart')).toBe('heart');
+    expect(readLevelFromHash('#lv=not-a-level')).toBeNull();
+    expect(readLevelFromHash('#arms=v1-0:120:1:0')).toBeNull();
   });
 
   it('随机关：id 只有 seed，难度要另外传（否则会悄悄降级成 normal）', () => {

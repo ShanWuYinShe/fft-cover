@@ -3,11 +3,12 @@
  */
 
 import { engine } from '../game/engine.svelte';
-import { decodeCoeffs } from '../game/levels';
+import { decodeCoeffs, LEVEL_DEFS } from '../game/levels';
 import {
   readArmsFromHash,
   readCustomFromHash,
   readDailyFromHash,
+  readLevelFromHash,
   readRandomFromHash,
   readWeeklyFromHash,
 } from '../game/share';
@@ -43,11 +44,26 @@ export function applyHashShare(): void {
     uiState.setShareNote('已载入好友分享的本周挑战');
   }
 
+  // 战役内置关挑战（lv= 段）：先落到同一关，再套好友的解法参数——
+  // 否则好友打开链接只会落在自己上次的关卡，跨关挑战对不上题
+  const lvId = readLevelFromHash(hash);
+  let lvName = '';
+  if (lvId) {
+    const def = LEVEL_DEFS.find((l) => l.id === lvId);
+    if (def) {
+      engine.loadLevel(def);
+      lvName = def.name;
+    }
+  }
+
   const code = readArmsFromHash(hash);
   if (code && engine.applyArmsCode(code)) {
     uiState.setShareNote(
-      (shared || sharedDaily || sharedCustomLoaded ? '已载入好友分享的关卡，' : '') +
-        '好友向你发起解法挑战——参数已装好，点 ▶ 开始旋转试试全清！',
+      (shared || sharedDaily || sharedCustomLoaded
+        ? '已载入好友分享的关卡，'
+        : lvName
+          ? '已载入好友的挑战：《' + lvName + '》——'
+          : '') + '好友向你发起解法挑战——参数已装好，点 ▶ 开始旋转试试全清！',
     );
     history.replaceState(null, '', location.pathname + location.search);
   } else if (shared || sharedDaily || sharedCustomLoaded) {
