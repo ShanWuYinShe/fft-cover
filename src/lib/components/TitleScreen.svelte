@@ -140,7 +140,7 @@
 
       <!-- 页脚：版本号铭牌 -->
       <footer class="ts-foot">
-        <span class="ts-ver">v{version} · 浑天璇玑 © 2026</span>
+        <span class="ts-ver">v{version} · 浑天璇玑 © {new Date().getFullYear()}</span>
       </footer>
     </div>
   </div>
