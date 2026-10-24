@@ -69,7 +69,7 @@
 </script>
 
 <!-- 暂停菜单：--scrim 遮罩 + 居中白卡；画布很矮时整块可滚，三个按钮都点得到 -->
-<div class="pause-menu" role="dialog" aria-modal="true">
+<div class="pause-menu" role="dialog" aria-modal="true" aria-label="已暂停">
   <div class="pm-panel" class:closing>
     <h3>已暂停</h3>
     <p class="pm-sub">先看清现在的进度，再决定继续还是重来</p>
