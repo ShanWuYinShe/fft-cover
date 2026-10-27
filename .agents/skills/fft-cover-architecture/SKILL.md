@@ -144,7 +144,11 @@ description: 傅立叶指针（fft_cover）项目架构事实：全屏座舱 UI 
   （有浮层时整个 `.game-layer` 失效，避免 Tab 跑到背景 HUD）。
 - **快捷键门控类名**必须保留：`.modal / .modal-backdrop / .finale / .ch-intro / .title-screen / .tutorial`。
 
-## 本地截图链路（免提权、免打扰，2026-10-18 实测）
+## 本地截图链路（免提权、免打扰，2026-10-18 实测；**2026-10-27 已废弃，仅作历史记录**）
+
+> 本节做法（自研 headless Chrome + CDP HTTP 直连）已被 2026-10-21 用户级红线禁止——自研 spawn
+> Chrome/CDP 管线是 Dock 身份劫持的根因，截图统一走 agent-browser（wrapper 内置 chrome-guard
+> 与孤儿收割）。勿再照做。
 
 agent-browser 的 owner（headless Chrome）可能中途消失（实测 62425 掉线），而沙盒里
 `agent-browser` 因 `~/.agent-browser` 不可写会硬失败。**兜底且更稳的一条**：自己在
