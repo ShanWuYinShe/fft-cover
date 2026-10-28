@@ -49,7 +49,7 @@ agent-browser screenshot --if-changed .workwork/ui-audit/20-desktop-title.png
 - 模型：默认 Flash-Lite 快跑；要 Pro / Argon 质量时分两步——配额耗尽的菜单项带 `disabled` 类且点击无效，用尽但可点时菜单项文本会带
   重置时间（「用量限额重置时间：…」）；等重置后再跑，或接受 Flash-Lite 结果 + 人工把关。低 / 中 / 高「思考等级」在二级菜单，
   Flash-Lite 无需 thinking tier。
-- 具体命令、上传 / 菜单 / 采集四坑的通用写法**见用户级 skill**，不要在项目里复写一套。
+- 具体命令、上传 / 菜单 / 采集四坑的通用写法**见用户级 skill `browser-automation-safety` 的 `gemini-web-automation.md`（其 references 目录）**，不要在项目里复写一套。
 
 ### 3. 落地（worktree → 验证 → ff-only）
 
@@ -69,13 +69,9 @@ agent-browser screenshot --if-changed .workwork/ui-audit/20-desktop-title.png
 
 ## 已踩坑（仍有效）
 
-- **未登录 Gemini**：能附加图片（缩略图出现）但附件处理转圈不完成、消息发不出；模型只有 Flash-Lite。
-  要 Pro 质量必须走登录态（首次有头登录一次后持久；headless 下登录后可全功能操作）。
-- **上传「临时失效」是误诊**：真因是标签在后台（rAF 节流 → 菜单不渲染），不是服务端反滥用。每次上传前先确认标签是活动标签；
-  共享浏览器里别的会话可能把标签切走，重试循环里也要重新激活。
-- **回答采集「假死」**：判据要返回布尔（`!!stop`，不是字符串 `"false"`——字符串 `"false"` 是真值）；只数精确 `<model-response>` 标签，
-  别用 `[class*=model-response]`（会匹配嵌套容器，一个回答被数成 4 个）；取正文用 `textContent`。
-- **大量自动化上传后失败**：先小步验证（点菜单 → 查 input 数量）再跑整套流程，别等整套跑一半才发现。
+- **Gemini 网页自动化的通用机制不在本文件复写**：后台标签 rAF 导致「上传和工具」菜单里 `input[type=file]` 恒为 0、
+  上传与读取回答的判据（`textContent` vs `innerText`）、Flash-Lite / Argon 配额与重渲染复位、未登录形态——统一见用户级 skill
+  `browser-automation-safety` 的 `gemini-web-automation.md`（其 references 目录）。
 - **dev server 死了会伪装成页面空白**：eval 空输出 / 脚本挂起时先 `lsof -iTCP:5200 -sTCP:LISTEN` 验存活
   （本项目 dev 端口 5200，别和 5199 / 5173 混）。
 - **`ps` 在沙盒里被拒**（`/bin/ps: Operation not permitted`）：查监听用 `lsof -nP -iTCP:<port> -sTCP:LISTEN`；
