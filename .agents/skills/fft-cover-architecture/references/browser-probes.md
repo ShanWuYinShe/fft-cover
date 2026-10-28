@@ -14,12 +14,14 @@
 
 ## 量尺脚本与基线
 
-- `.workwork/ui-r6/probe4.mjs`：一次输出 6 个视口的画布尺寸 / 引导条压画布 % / HUD 压画布 % / 机坞死区 px / 横向溢出 / 页面滚动。
-  基线 → 改后：引导条压画布 15.4 / 26.2 / 5.1%（竖屏/横屏/桌面）→ **0 / 0 / 0**；机坞死区 150/330/510 → **0 / 0 / 0**；
+- **脚本已随 2026-10-21 自研管线清理**（`probe4.mjs` / `contrast.mjs` / `check6.mjs` / `sizes.mjs` / `touch.mjs` / `clutter.mjs` / `juice.mjs` 均不在库内），
+  按下面口径用 `agent-browser eval` 重写：
+  6 个视口的画布尺寸 / 引导条压画布 % / HUD 压画布 % / 机坞死区 px / 横向溢出 / 页面滚动（`getBoundingClientRect` + 命中测试）。
+  历史基线 → 改后：引导条压画布 15.4 / 26.2 / 5.1%（竖屏/横屏/桌面）→ **0 / 0 / 0**；机坞死区 150/330/510 → **0 / 0 / 0**；
   HUD 压画布手机竖屏 9.2% → 7.7%（收集读数由两行改单行「收集 0/24」；横屏 12.4% 来自「本关目标」行，只在 ≤700px 高时隐藏）。
-- `.workwork/ui-r6/contrast.mjs`：像素级对比度，逐元素取值 + 命中测试跳过被遮挡元素，比旧 `audit.mjs` 的渐变背景误判可靠。
-- `.workwork/ui-r6/check6.mjs`：`pause` 实拍暂停浮层；`focus` 用 `CSS.forcePseudoState` 强制 `:focus-visible` 并对比前后计算属性。
-- `.workwork/ui-redesign/sizes.mjs`（尺寸普查）/ `touch.mjs`（命中区普查）/ `clutter.mjs`（信息密度）/ `juice.mjs`（活跃度）。
+- **对比度**：像素级逐元素取值 + 命中测试跳过被遮挡元素，比旧 `audit.mjs` 的渐变背景误判可靠。
+- **焦点态 / 暂停浮层**：`focus` 用 `CSS.forcePseudoState` 强制 `:focus-visible` 并对比前后计算属性；`pause` 实拍暂停浮层。
+- **尺寸普查 / 命中区普查 / 信息密度 / 活跃度**：枚举可交互元素 rect；按钮 / 容器 / 发光元素 / 字符数；画布区域连续帧像素变化率 + rAF 帧率。
 - **量遮挡要按「画布面积占比」而不是「有没有重叠」**：56px 高引导条在 338px 画布上是 15%、在 886px 画布上只有 5%，会被误判为可接受。
 
 ## CDP 侧验证手法（agent-browser 内 eval 可用时）

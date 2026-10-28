@@ -1,6 +1,6 @@
 ---
 name: fft-cover-architecture
-description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界面（grid 四区/机坞三段/断点/入口去重）、糖果星域视觉体系与对比度铁律、画布坐标系与性能（离屏烘焙/30fps/canvasK 补偿）、存档键与无尽模式语义、结算判定、反馈与动效（器物音/终局张力）、浏览器验证（agent-browser）与 e2e。触发：改界面布局/样式/弹层/皮肤；改引擎/存档/画布绘制/无尽模式/结算卡/可访问性；需要知道某个 localStorage 键的语义；改难度曲线或收集判定；写 e2e 或截图验收脚本。细节见 references/。
+description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界面（满屏浮层布局/机坞三段/断点/入口去重）、糖果星域视觉体系与对比度铁律、画布坐标系与性能（离屏烘焙/30fps/canvasK 补偿）、存档键与无尽模式语义、结算判定、反馈与动效（器物音/终局张力）、浏览器验证（agent-browser）与 e2e。触发：改界面布局/样式/弹层/皮肤；改引擎/存档/画布绘制/无尽模式/结算卡/可访问性；需要知道某个 localStorage 键的语义；改难度曲线或收集判定；写 e2e 或截图验收脚本。细节见 references/。
 ---
 
 # 傅立叶指针 · 项目架构事实
@@ -12,21 +12,22 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
 - **信息三层（新控件先归层）**：一级 = 本关目标与下一步 / 画布 / 主操作 / 收集进度（可发光、大字）；
   二级 = 关卡入口 / 星级 / 本关目标 / 重置·更多·设置·成就 / 指针调参台（安静，无发光）；
   三级 = 相位罗盘、四象卡准、刻度尺、倍率矩阵、撤销重做（折进「高级调谐」，**折叠时不挂载**）。
-  量化基线（`.workwork/ui-redesign/clutter.mjs`）：桌面游戏屏 65 按钮 / 22 盒子 / 43 发光 / 587 字 → **14 / 5 / 3 / 186**；成就弹窗盒子 47 → 6。
-- **GameShell 是 grid 四区**：`--hud-h`(56) 顶栏 / 舞台 / `--dock-w`(384) 机坞 / `--cmd-h`(78) 指令栏；
-  手机竖屏改成 `stage → dock → cmd → nav` 四行；机坞按内容自适应（上限 46dvh，`panel-expanded` 68dvh），
-  `panel-hidden`（运行态）时机坞让位、画布吃掉剩余高度。竖屏平板 641–900 与横屏 ≤900 各有一套单独 grid。
+  量化基线（量法：数按钮 / 容器 / 发光元素 / 正文字符数；当时的 `.workwork/ui-redesign/clutter.mjs` 已随自研管线清理）：桌面游戏屏 65 按钮 / 22 盒子 / 43 发光 / 587 字 → **14 / 5 / 3 / 186**；成就弹窗盒子 47 → 6。
+- **GameShell 是满屏浮层布局**（`.game-screen` 只有 `grid-template-areas: 'stage'` 单区）：舞台铺满整屏，
+  顶栏 `--hud-h`(64)、底部指令栏 `--cmd-h`(84)、右侧机坞 `--dock-w`(400)、移动端底部导航 `--tab-h`(60) 全是 `position:fixed` 浮层。
+  机坞是右侧滑入抽屉（`.dock-open` 打开，`.panel-hidden` 运行态自动收起）；手机竖屏（≤640 portrait）改为底部抽屉
+  `height: min(66dvh, 560px)` 并显示底部导航；桌面窄档 901–1180 机坞缩到 360px；手机横屏走 ≤900 landscape 档。
 - **机坞三段（别再改回去）**：`.dock-head`（标题条）→ `<GuideOverlay/>`（引导条，钉在这、不随内部滚动）→ `.dock-body`（弹性列，内滚）。
   引导条曾绝对定位在画布内，实测压掉 15.4%（竖屏）/ 26.2%（横屏）画布；挪进机坞后全视口 0%。
   **任何"把提示挂回画布"的改动都会重新遮挡目标点环。**
 - **引导期自动展开机坞**：桌面机坞默认收起时引导条随之不可见——引导期（圆/椭圆未毕业 + 编辑态 + ≥901px）由 `uiState.autoExpandForGuide()` 自动展开；
   用户经 `toggleDock` 手动收起后 `dockAutoDismissed` 记住意愿、本会话不再自动展开（程序化 `closeDock` 不算用户手势）。
-- **机坞撑满靠三处 flex**（缺一处就仍留死区）：`.dock-body` 设 `display:flex; flex-direction:column`、`ArmPanel .deck` 设 `flex:1 0 auto`、
-  `ArmEditor .tune` 设 `flex:1 0 auto; justify-content:space-evenly`。实测死区 1280/1440/1920 = 150/330/510px → **0px**。
-- **`--dock-w` 不要为了画布变窄**：1280–1920 下画布都是「高度 − 56 − 78 − 60」受限（526/706/886 都是高度值），缩机坞不会让画布变大，只会挤压参数区。
+- **机坞内容铺满**：`.dock-body` 是弹性列（`display:flex; flex-direction:column`，内滚），`ArmPanel .deck` 与 `ArmEditor .tune`
+  都是 `flex: 1 0 auto`（`.tune` 的 `justify-content` 现为 `flex-start`）。
+- **浮层不占画布布局**：HUD / 指令栏 / 机坞都是 fixed 浮层，画布始终铺满整屏；改浮层尺寸只改变遮挡范围，不会改变画布尺寸。
 - **整屏锁死**：`html/body/#app` 是 `height:100dvh + overflow:hidden`，页面不滚动；滚动只发生在 `.gs-dock .dock-body` 与弹层内部。新弹层必须自带上限 + 内滚。
 - **折叠用 `bind:open` + `{#if}`**：Chrome 下 `<details>` 折叠态子元素仍有布局尺寸（`getBoundingClientRect` 非 0），会漏进度量、Tab 顺序与读屏。
-- **控件尺寸只看指针类型**：`tokens.css` 的 `--ctl-xs/sm/md/lg/menu`（22/26/30/40/46 桌面；`@media (pointer: coarse)` 下 32/40/42/46/52）
+- **控件尺寸只看指针类型**：`tokens.css` 的 `--ctl-xs/sm/md/lg/menu`（26/30/36/50/52 桌面；`@media (pointer: coarse)` 下 34/40/44/56/58）
   + `--ctl-font(-sm)` / `--ctl-radius` / `--ctl-icon`。**不要写死 px**；触屏命中区必须 ≥40（视觉不够用 `::after { inset }` 外扩，range 这类替换元素用输入层外扩）。
 - **入口去重**（改动时守住）：朱印只在画布 HUD；章节星数只在顶栏「关卡」；成就/设置只在顶栏（手机无顶栏时用画布 HUD 齿轮）+ 更多菜单；
   音量/音乐只在更多菜单；缩放只靠滚轮/双指 + 画布右下角一个「复位视图」键。主操作文案是人话：**开始旋转 / 结束并结算**
@@ -39,8 +40,8 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
 - **公共件**：`src/styles/game-ui.css`（`.g-btn` / `.g-plate` / `.g-inset` / `.g-label` / `.g-num` / `.g-divider` / `.g-corners` / `.g-lamp` / `.g-scanlines`）；
   尺寸与质感令牌在 `tokens.css`（`--hud-h/--cmd-h/--dock-w/--tab-h`、`--metal-*`、`--face-*`、`--edge*`、`--bevel-*`）。
   `reset.css` 给原生 `button` 去了皮（background/border/padding 清零）——凡按钮必须自己声明背景，否则透明（成就页「白色胶囊」就是这么来的）。
-- **装饰层**：`AmbientField`（浑天环 + 星点 + 暗角）与 `ScreenFrame`（四角包边）都是 `position:fixed; pointer-events:none`，`z-index:0/40`；
-  `inert` 门控在 `App.svelte`（有浮层时整个 `.game-layer` 失效，避免 Tab 跑到背景 HUD）。快捷键门控类名必须保留：
+- **装饰层**：`AmbientField`（浑天环 + 星点 + 暗角）是 `position:fixed; pointer-events:none; z-index:0`；`ScreenFrame` 自糖果星域起是空壳组件
+  （四角包边已取消，仅为兼容引用保留）。`inert` 门控在 `App.svelte`（有浮层时整个 `.game-layer` 失效，避免 Tab 跑到背景 HUD）。快捷键门控类名必须保留：
   `.modal / .modal-backdrop / .finale / .ch-intro / .title-screen / .tutorial`。
 - 断点细节、超宽屏 HUD、创作器双栏、打卡日历、换肤资产清单、各控件修复口径与验证坑见 `references/ui-layout.md`。
 
@@ -70,7 +71,7 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
   只有 `<style>` 浮层色可动。目标改白厚环 + 金内环的「糖果圈」，连杆加粗到 4.2/5.6 并加圆头。
 - **星盘半径按内容算**，不要按视口短边：`arenaRadius()` 用关卡 `pts`/`curve` 相对中心的外接半径 ×1.5（下限 140，上限短边/2−16）。
   旧写法 `shortSide/2 - 10` 在竖屏下环比玩法内容大 2.4 倍。
-- **"游戏味"四来源**（改 UI 前先想清楚是加装饰还是加反馈）：① 世界是活的（星盘刻度环缓转 + 绕盘扫掠 + 外环/柔光呼吸 + 36 颗星尘 + 目标点呼吸宝石）；
+- **"游戏味"四来源**（改 UI 前先想清楚是加装饰还是加反馈）：① 世界是活的（星盘刻度环缓转 + 绕盘扫掠 + 外环/柔光呼吸 + 24 颗星尘 + 目标点呼吸宝石）；
   ② 操作有回弹（按下 0.97、滑杆跨档顿感、律柱通电自下而上填充）；③ 状态有演出（关卡入场卡 1.4s、起跑 1.06→1.0 + 青色扩散环 +「起」字、
   结算星星逐颗弹入 + 分数 count-up）；④ 反馈有力度（收集 = 扩散环 + 6 火花 + 飘字弹跳 + HUD 数字弹跳；每 5 连 = 四边脉冲 + ×N 印章）。
   **加反馈 ≠ 加装饰**：控件依旧不加发光/包边/扫描线，clutter 目标不变。
@@ -96,16 +97,16 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
 
 ## 存档与玩法语义
 
-存档键（`constants.ts`，全部登记在 `SAVE_KEYS` 参与备份）：
+存档键（`src/lib/game/constants.ts`；进度类登记在 `SAVE_KEYS`、偏好类在 `PREF_KEYS`，两类都参与备份）：
 
 | 键 | 内容 | 备注 |
 | --- | --- | --- |
-| fft-pointers-endless-v1 | `{ wave, score, run?: { seed, diff, wave, score } }` | best + 进行中一局（run=null 表示已结束） |
+| fft-pointers-endless-v1 | `{ wave, score, run: { seed, diff, wave, score } | null }` | best + 进行中一局（run=null 表示已结束） |
 | fft-pointers-clear-v1 | `Record<关卡id, 全清秒数>` | **注意键名是单数 clear**（不是 clears） |
-| fft-pointers-best-v1 / best-score-v1 | 各关星级 / 最佳分 | |
+| fft-pointers-best-v1 / fft-pointers-best-score-v1 | 各关星级 / 最佳分 | |
 | fft-pointers-best-run-v1 | 个人最佳那局（解法+节奏同源） | 幽灵竞速对准更强的一条 |
 | fft-pointers-last-level-v1 / last-custom-v1 | 常规续玩 / 创作关续玩 | 无尽续玩优先于这两者 |
-| fft-pointers-diff-v1 | 随机关难度（easy/normal/hard） | |
+| fft-pointers-diff-v1 | 随机关难度（easy/normal/hard） | 偏好键（`PREF_KEYS`，清空进度时保留） |
 
 - **无尽模式**：1–2 波 easy、3–5 波 normal、6+ 波 hard（`endlessDiff(wave)`）；过波线 = 收集 ≥35%（一星线，`starsFor(ratio) >= 1`）；
   `randomDiff` 必须与当前波同步（无尽关 id 不含难度，分享链接靠它）——`startEndless` 设 easy、`nextEndlessWave` 先 `endlessWave++`
@@ -146,11 +147,11 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
 - **浏览器验证统一走 agent-browser**（用户明确要求：不要自研 CDP 管线）。常用：
   `agent-browser set viewport 1440 900` → `open <url>` → `wait --fn "!!document.querySelector('canvas')"` → `screenshot --if-changed name.png`；
   量指标用 `eval "<表达式>"`（结果自己解析）。**务必 `agent-browser close` 收尾**；全机 owner daemon（`--remote-debugging-port=0` 那批进程）不受影响，别去 kill。
-- **量尺脚本**（改布局/对比度/热区前先跑基线）：`.workwork/ui-r6/probe4.mjs`（一次输出 6 个视口的画布尺寸 / 引导条压画布 % / HUD 压画布 % /
-  机坞死区 px / 横向溢出 / 页面滚动）、`.workwork/ui-r6/contrast.mjs`（像素级对比度，逐元素取值 + 命中测试跳过被遮挡元素，比旧 `audit.mjs` 的渐变背景误判可靠）、
-  `.workwork/ui-r6/check6.mjs`（`pause` 实拍暂停浮层；`focus` 用 `CSS.forcePseudoState` 强制 `:focus-visible` 并对比前后计算属性）、
-  `.workwork/ui-redesign/sizes.mjs`（尺寸普查）/ `touch.mjs`（命中区普查）/ `clutter.mjs` / `juice.mjs`、
-  `.workwork/ui-r7/accept.sh`（format → svelte-check → 311 测试 → build → 9 条红线静态扫描 → 画布未改动校验）。
+- **量尺口径**（改布局/对比度/热区前先量；脚本已随 2026-10-21 自研管线清理，按口径用 `agent-browser eval` 重写）：
+  6 个视口的画布尺寸 / 引导条压画布 % / HUD 压画布 % / 机坞死区 px / 横向溢出 / 页面滚动（`getBoundingClientRect` + 命中测试）；
+  像素级对比度（逐元素取实际渲染色 + 跳过被遮挡元素）；`sizes` 尺寸普查 / `touch` 命中区普查（枚举可交互元素 rect）；
+  `clutter` 信息密度（按钮 / 容器 / 发光元素 / 字符数）；`juice` 活跃度（画布区域连续帧像素变化率 + rAF 帧率）。
+  仍在库的只有 `.workwork/ui-r7/accept.sh`（format → svelte-check → 311 测试 → build → 9 条红线静态扫描 → 画布未改动校验）。
 - **量遮挡要按「画布面积占比」而不是「有没有重叠」**：56px 高引导条在 338px 画布上是 15%、在 886px 画布上只有 5%，会被误判为可接受。
 - **截图看着不对先取数据**：怀疑画布被浮层遮挡用 `document.elementFromPoint` 在画布四个采样点取顶层元素（返回 `CANVAS` 且 `filter:none` 即无遮挡）；
   缩略图里中文像乱码时先取 `textContent` 核对，别急着报 bug。`:focus-visible` 这类截图表达不出的状态用 CDP 强制伪类 + 读计算属性。

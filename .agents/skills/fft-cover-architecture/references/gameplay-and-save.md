@@ -2,16 +2,16 @@
 
 本文件是 SKILL.md「存档与玩法语义」的细节。
 
-## 存档键（constants.ts，全部登记在 SAVE_KEYS 参与备份）
+## 存档键（`src/lib/game/constants.ts`；进度类在 `SAVE_KEYS`、偏好类在 `PREF_KEYS`，两类都参与备份）
 
 | 键 | 内容 | 备注 |
 | --- | --- | --- |
-| fft-pointers-endless-v1 | `{ wave, score, run?: { seed, diff, wave, score } }` | best + 进行中一局（run=null 表示已结束）；旧格式无 run 自动兼容 |
+| fft-pointers-endless-v1 | `{ wave, score, run: { seed, diff, wave, score } | null }` | best + 进行中一局（run=null 表示已结束）；旧格式无 run 自动兼容 |
 | fft-pointers-clear-v1 | `Record<关卡id, 全清秒数>` | **注意键名是单数 clear**（不是 clears） |
-| fft-pointers-best-v1 / best-score-v1 | 各关星级 / 最佳分 | 结算判定「新纪录」读它 |
+| fft-pointers-best-v1 / fft-pointers-best-score-v1 | 各关星级 / 最佳分 | 结算判定「新纪录」读它 |
 | fft-pointers-best-run-v1 | 个人最佳那局（解法+节奏同源） | 幽灵竞速对准更强的一条 |
 | fft-pointers-last-level-v1 / last-custom-v1 | 常规续玩 / 创作关续玩 | 无尽续玩优先于这两者 |
-| fft-pointers-diff-v1 | 随机关难度（easy/normal/hard） | |
+| fft-pointers-diff-v1 | 随机关难度（easy/normal/hard） | 偏好键（`PREF_KEYS`，清空进度时保留） |
 
 ## 无尽模式语义
 

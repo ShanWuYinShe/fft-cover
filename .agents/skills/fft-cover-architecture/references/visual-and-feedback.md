@@ -25,7 +25,7 @@
   与主动结束 `finishChord`、全清 `perfectArpeggio` 三者听觉身份互斥；
   ③ 画布边光 = `urgentVignette()` 径向渐变按视口缓存（`urgentGlow` 声明在 `resize()` 之前——TDZ 坑同 `skyGrad`），
   随秒脉动 `0.06+0.1*(1-t%1)²`，`motionOff()` 时恒定 0.08。
-- **时间条演出**：数字用 `{#key urgent ? timeLeft : 'steady'}` 换键重挂载做每秒弹跳（非 urgent 区不重挂）；
+- **时间条演出**：数字用 `{#key timeLeft <= 3 && engine.phase === 'running' ? timeLeft : 'steady'}` 换键重挂载做每秒弹跳（非最后 3 秒不重挂）；
   轨道心跳环动画**只在 `phase === 'running'`**——暂停时回到静止，否则无限动画闪到天荒地老。
 - **引擎计时类测试的坑**：GameEngine 默认圆关 + 默认 1× 指针会**直接全清**，advance 循环跑到 t≈7.6s 触发「全清 3 秒后自动结算」，
   一局在终局窗口之前就 done——测最后 3 秒/超时类逻辑必须先 `setArm(0, { on: false })` 断掉全清。
@@ -40,7 +40,7 @@
 
 ## 活跃度可量
 
-`.workwork/ui-redesign/juice.mjs`（采样画布区域连续帧的像素变化率 + rAF 帧率）：静息 0.29% / 运行 2.8% / 减动效 0%；运行态 61fps。
+活跃度量法（当时脚本 `.workwork/ui-redesign/juice.mjs` 已随自研管线清理）：采样画布区域连续帧的像素变化率 + rAF 帧率——静息 0.29% / 运行 2.8% / 减动效 0%；运行态 61fps。
 整体回归口径：编辑态与运行态均 60fps（rAF 计数；30fps 绘制节流不影响 rAF 频率）、0 longtask、控制台零错误——fps 与 longtask 用页面内
 rAF 计数 + `PerformanceObserver('longtask')`，分两次 eval 安装与读取（eval 对长 await 有超时）。
 **测量前必须 `Page.bringToFront` 且用不节流的 Chrome**（`--disable-background-timer-throttling --disable-backgrounding-occluded-windows

@@ -73,7 +73,7 @@ agent-browser screenshot --if-changed .workwork/ui-audit/20-desktop-title.png
   上传与读取回答的判据（`textContent` vs `innerText`）、Flash-Lite / Argon 配额与重渲染复位、未登录形态——统一见用户级 skill
   `browser-automation-safety` 的 `gemini-web-automation.md`（其 references 目录）。
 - **dev server 死了会伪装成页面空白**：eval 空输出 / 脚本挂起时先 `lsof -iTCP:5200 -sTCP:LISTEN` 验存活
-  （本项目 dev 端口 5200，别和 5199 / 5173 混）。
+  （本项目 UI 审查会话惯用 5200；`scripts/e2e-smoke.md` 用 5199——两套约定并存，以启动日志里的实际 URL 为准）。
 - **`ps` 在沙盒里被拒**（`/bin/ps: Operation not permitted`）：查监听用 `lsof -nP -iTCP:<port> -sTCP:LISTEN`；
   确认进程归属用 `lsof -a -p <pid> -d cwd -Fn`；清理只 kill 自己起的实例（按端口逐个核对）。
 

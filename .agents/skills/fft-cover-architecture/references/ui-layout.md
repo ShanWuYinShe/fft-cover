@@ -4,8 +4,8 @@
 
 ## 断点与移动端布局
 
-- **手机竖屏机坞 grid 行**：`auto（舞台，按内容取高）| minmax(0,1fr)（机坞，内部滚动）| auto（指令栏）| auto（底部导航）`；
-  `panel-expanded` 时舞台行置 0 并 `display:none`（否则画布会被压扁、引导条会压到面板控件上）；`panel-hidden`（运行态）时机坞让位、画布吃掉剩余高度。
+- **手机竖屏**（≤640 portrait）：机坞改为底部抽屉（`height: min(66dvh, 560px)`，`.dock-open` 上滑打开），底部导航 `.gs-nav` 显示；
+  运行态 `.panel-hidden` 自动收起机坞、画面让给游戏；`panelExpanded` 只剩 MobileNav 的展开态语义（不再切 grid 行）。
 - **画布设置齿轮按断点显隐**：`.hud-settings-btn` 只在 ≤900px（顶栏成就/设置按钮隐藏的区间）显示，≥901px 隐藏（顶栏常驻，入口去重）——
   此前桌面端顶栏齿轮与画布齿轮重复且都占 Tab 序。实测断点行为：≤900 顶栏三键 `display:none`。
 - **超宽屏 HUD 芯片被机坞遮挡**：`.hud` 容器 `inset:0` 铺满全窗，右上收集/星级/本关目标芯片锚定窗口右缘——3440px 下落进机坞覆盖区被引导浮层盖住
@@ -28,9 +28,9 @@
 
 ## 控件尺寸与「减重」
 
-- `tokens.css` 的 `--ctl-xs/sm/md/lg/menu`（22/26/30/40/46 桌面；`@media (pointer: coarse)` 下 32/40/42/46/52）+ `--ctl-font(-sm)` / `--ctl-radius` / `--ctl-icon`。
+- `tokens.css` 的 `--ctl-xs/sm/md/lg/menu`（26/30/36/50/52 桌面；`@media (pointer: coarse)` 下 34/40/44/56/58）+ `--ctl-font(-sm)` / `--ctl-radius` / `--ctl-icon`。
   **不要写死 px**；触屏命中区必须 ≥40（视觉不够就用 `::after { inset }` 外扩，range 这类替换元素用输入层外扩）。
-- 实测基线：桌面可交互元素高度中位 30px、>40px 0 个；触屏 390×844 / 844×390 无 <40。量尺脚本：`.workwork/ui-redesign/sizes.mjs`（尺寸普查）与 `touch.mjs`（命中区普查）。
+- 实测基线：桌面可交互元素高度中位 30px、>40px 0 个；触屏 390×844 / 844×390 无 <40。量法：枚举可交互元素的 `getBoundingClientRect`（当时脚本 `.workwork/ui-redesign/sizes.mjs` / `touch.mjs` 已随自研管线清理）。
 - 「减重」同属这条：描边 1px、底部硬阴影 2px、按钮字重 ≤700、中文标签字距 ≤1.5px。
 
 ## 交互与反馈口径
