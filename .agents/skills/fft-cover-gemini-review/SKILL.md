@@ -6,7 +6,7 @@ description: fft_cover 的 UI 评审工作流：agent-browser 截图 → Gemini 
 # fft_cover · 截图 → Gemini 网页评审
 
 **浏览器自动化一律 agent-browser**。通用机制（上传、菜单渲染、回答采集、后台标签节流、profile/session）见用户级 skill
-`browser-automation-safety` 的 Gemini 网页自动化一节；本文件只记 fft_cover 专属流程与红线。
+`browser-automation-safety` 的 `gemini-web-automation.md`（其 references 目录）；本文件只记 fft_cover 专属流程与红线。
 
 ## 红线（用户明确要求，先读）
 
