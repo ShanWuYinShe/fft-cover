@@ -63,6 +63,7 @@ rAF 计数 + `PerformanceObserver('longtask')`，分两次 eval 安装与读取�
 ## UI 返工的验收脚本
 
 `.workwork/ui-r7/accept.sh`：一次跑完 format → svelte-check → 311 测试 → build → 9 条红线静态扫描 → 画布未改动校验，输出「N 项通过 / M 项不通过」。
+其中「Tests +311 passed」是**历史基线**；当前测试数已变化（2026-10-29 实跑 317 条，以实跑为准）。
 扫描器有两条**必须保留的排除规则**，否则全是假阳性：
 ① `!important` 排除 `src/styles/animations.css`（`prefers-reduced-motion` 的标准写法，main 原有）；
 ② `--pattern-hui`/`--rivet` 只查组件层（`^src/styles/` 排除），令牌定义本身要留作兜底。

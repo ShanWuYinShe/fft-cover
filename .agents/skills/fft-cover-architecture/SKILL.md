@@ -152,6 +152,7 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
   像素级对比度（逐元素取实际渲染色 + 跳过被遮挡元素）；`sizes` 尺寸普查 / `touch` 命中区普查（枚举可交互元素 rect）；
   `clutter` 信息密度（按钮 / 容器 / 发光元素 / 字符数）；`juice` 活跃度（画布区域连续帧像素变化率 + rAF 帧率）。
   仍在库的只有 `.workwork/ui-r7/accept.sh`（format → svelte-check → 311 测试 → build → 9 条红线静态扫描 → 画布未改动校验）。
+  其中「Tests +311 passed」是**历史基线**（当时的测试数）；当前测试数已变化——2026-10-29 实跑 317（316 passed + 1 failed），验收以实跑为准。
 - **量遮挡要按「画布面积占比」而不是「有没有重叠」**：56px 高引导条在 338px 画布上是 15%、在 886px 画布上只有 5%，会被误判为可接受。
 - **截图看着不对先取数据**：怀疑画布被浮层遮挡用 `document.elementFromPoint` 在画布四个采样点取顶层元素（返回 `CANVAS` 且 `filter:none` 即无遮挡）；
   缩略图里中文像乱码时先取 `textContent` 核对，别急着报 bug。`:focus-visible` 这类截图表达不出的状态用 CDP 强制伪类 + 读计算属性。
