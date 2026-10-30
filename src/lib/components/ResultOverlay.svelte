@@ -462,8 +462,9 @@
           {#if engine.lastGhostDelta !== null}
             <span class="sep">·</span>
             <span class:ghost-ahead={engine.lastGhostDelta > 0}
-              >较{engine.lastGhostVsBest ? '最佳' : '上届'}
-              {engine.lastGhostDelta > 0 ? '+' : ''}{engine.lastGhostDelta}</span
+              >{engine.lastGhostDelta === 0
+                ? `与${engine.lastGhostVsBest ? '最佳' : '上届'}持平`
+                : `较${engine.lastGhostVsBest ? '最佳' : '上届'} ${engine.lastGhostDelta > 0 ? '+' : ''}${engine.lastGhostDelta}`}</span
             >
           {/if}
           {#if engine.bestGap !== null}

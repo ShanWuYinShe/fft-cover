@@ -30,9 +30,6 @@
     return Math.max(0, needCount - engine.collectedCount);
   });
 
-  /** 连击：COMBO_WINDOW 内连续收集的倍数（combo=0 表示无连击） */
-  const comboNow = $derived(engine.combo > 0 ? engine.combo + 1 : 0);
-
   /** 启用指针数 / 上限：机坞收起后这是唯一能看到它的地方 */
   const armOn = $derived(engine.arms.filter((a) => a.on).length);
   const armMax = $derived(engine.level?.armLimit ?? 10);
@@ -63,14 +60,6 @@
       <div class="stat-chip stat-arms" title="已启用的指针数 / 本关上限（点右下「调参」可编辑）">
         <span class="stat-label">指针</span>
         <b class="stat-value font-tabular">{armOn}<i class="stat-sub">/{armMax}</i></b>
-      </div>
-    {/if}
-
-    <!-- 连击：当前连击倍数，断连即归零 -->
-    {#if running && comboNow > 1}
-      <div class="stat-chip stat-combo" title="连击：1.2 秒内连续收集，倍数越高单点分越高">
-        <span class="stat-label">连击</span>
-        <b class="stat-value font-tabular">×{comboNow}</b>
       </div>
     {/if}
 
@@ -190,12 +179,18 @@
     padding-right: max(14px, var(--safe-r));
   }
 
-  /* 桌面档机坞覆盖在舞台右侧：HUD 的右缘让开机坞宽度，
+  /* 桌面档机坞覆盖在舞台右侧：机坞打开时 HUD 右缘让开其宽度，
      否则右上的收集/星级/本关目标芯片会钻到机坞下方被盖住
-     （超宽屏 3440 实测：芯片 x=3294 落在机坞 x3040-3440 之下） */
+     （超宽屏 3440 实测：芯片 x=3294 落在机坞 x3040-3440 之下）。
+     收起时不再恒定避让——此前画布右缘恒留 400px 空白，时间条
+     与得分芯片整体偏左、不像居中（2026-10-31 截图实测）。 */
 
   @media (min-width: 901px) {
     .hud {
+      right: max(14px, var(--safe-r));
+      transition: right 280ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    :global(.game-screen.dock-open) .hud {
       right: var(--dock-w);
     }
   }

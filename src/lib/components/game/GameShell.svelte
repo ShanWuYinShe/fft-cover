@@ -14,6 +14,16 @@
 
   const onArmCount = $derived(engine.arms.filter((a) => a.on).length);
   const armLimit = $derived(engine.level?.armLimit ?? 10);
+  /** 暂停/结算演出中：画布外 HUD（顶栏/指令栏/调参入口/底部导航）退到幕后。
+   *  画布内的暂停卡与结算卡自带 --scrim，不受影响；这两态下背景按钮
+   *  也不应可点（此前只有画布区域被遮罩盖住，红色「结束并结算」比卡片
+   *  主按钮还抢眼——层级倒挂，2026-10-31 桌面截图实测）。 */
+  const overlayDim = $derived(
+    engine.phase === 'paused' ||
+      // 结算卡（done）：玩家点「看轨迹」收起后要能操作背景，不 dim
+      (engine.phase === 'done' && !engine.resultDismissed) ||
+      !!engine.finale,
+  );
 </script>
 
 <!-- 星空背景与环境演出 -->
@@ -30,6 +40,7 @@
   class:panel-hidden={engine.phase === 'running'}
   class:starmap-open={uiState.starMapOpen}
   class:dock-open={uiState.dockOpen}
+  class:overlay-dim={overlayDim}
 >
   <!-- 顶部座舱天穹 HUD（浮层，背景渐隐让画布透出） -->
   <div class="gs-hud">
@@ -158,7 +169,27 @@
     min-height: 0;
   }
 
-  /* ---------- 调参台开关：珊瑚厚实体药丸 ---------- */
+  /* ---------- 暂停/结算演出：画布外 HUD 退到幕后 ----------
+   * 只压暗画布外的固定浮层；画布内的暂停卡/结算卡有自己的 --scrim。
+   * pointer-events 一并收掉：这两态下背景按钮不该响应（防误触）。 */
+  .gs-hud,
+  .gs-cmd,
+  .gs-nav,
+  .dock-toggle {
+    transition:
+      opacity 240ms ease,
+      filter 240ms ease;
+  }
+  .game-screen.overlay-dim .gs-hud,
+  .game-screen.overlay-dim .gs-cmd,
+  .game-screen.overlay-dim .gs-nav,
+  .game-screen.overlay-dim .dock-toggle {
+    opacity: 0.32;
+    filter: saturate(0.7);
+    pointer-events: none;
+  }
+
+  /* ---------- 调参台开关：白药丸键（二级控件，珊瑚实体留给主操作） ---------- */
   .dock-toggle {
     position: fixed;
     right: max(16px, var(--safe-r));
@@ -170,12 +201,12 @@
     min-height: var(--ctl-lg);
     padding: 0 20px;
     border-radius: var(--r-pill);
-    background: var(--coral-edge);
+    background: var(--mat-block);
     border: 3px solid #ffffff;
     box-shadow:
-      0 5px 0 var(--coral-edge),
-      0 14px 26px rgba(190, 70, 30, 0.28);
-    color: #ffffff;
+      0 4px 0 #d6ecf9,
+      0 10px 20px rgba(56, 116, 150, 0.14);
+    color: var(--text);
     font-family: var(--font-round);
     font-size: var(--ctl-font);
     font-weight: 900;
@@ -186,28 +217,24 @@
       background 120ms ease;
   }
   .dock-toggle::before {
-    content: '';
-    position: absolute;
-    inset: 2px 2px 5px;
-    border-radius: var(--r-pill);
-    background: var(--face-gold-plate);
-    z-index: -1;
+    content: none;
   }
   .dock-toggle:hover {
-    background: #a83814;
+    background: #ffffff;
   }
   .dock-toggle:active {
-    transform: translateY(3px);
+    transform: translateY(2px);
   }
   .dock-toggle:focus-visible {
-    outline: 3px solid #ffffff;
-    outline-offset: 3px;
-    box-shadow: 0 0 0 7px var(--coral);
+    outline: 3px solid var(--sky-deep);
+    outline-offset: 2px;
   }
   .dock-toggle-ico {
     display: inline-flex;
     font-size: 18px;
     line-height: 1;
+    /* 白卡上留一点珊瑚识别度（图标珊瑚、文字中性） */
+    color: var(--coral-text);
   }
 
   /* ---------- 右侧机坞：白卡滑入面板 ---------- */
@@ -352,7 +379,9 @@
 
     .dock-toggle {
       right: 14px;
-      bottom: calc(var(--tab-h) + var(--safe-b) + var(--cmd-h) + 16px);
+      /* 手机竖屏：时间条底沿到 cmd+22+16=38px，按钮上移到它之上，
+         否则 44px 高的按钮与 16px 的时间条同基准叠在一起（2026-10-31 实测） */
+      bottom: calc(var(--tab-h) + var(--safe-b) + var(--cmd-h) + 52px);
       min-height: var(--ctl-md);
       padding: 0 16px;
     }
