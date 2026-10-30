@@ -43,6 +43,8 @@
   **清理只 kill 自己起的**（按端口逐个核对），别人的实例（如用户自己跑着的 dev server）原样留着。
 - **worktree 里软链 node_modules 会让 `git status` 出现未跟踪项**：`.gitignore` 的 `node_modules/` 只匹配真目录、不匹配软链。
   清理 worktree 前**先 `rm` 这个软链**（删软链不会动主树），否则 `git worktree remove` 会因未跟踪文件失败，而 `--force` 有删穿主树依赖的风险。
+  **`git add -A` 也会把软链带进提交**（2026-10-31 实测：`A node_modules` 混进 commit，靠 `git rm --cached` + amend 补救）——
+  提交前 `git status --short` 见到 node_modules 一律先 `git rm --cached`。
 
 ## CPU 与渲染归因（旧自起 Chrome 管线的实测数据）
 

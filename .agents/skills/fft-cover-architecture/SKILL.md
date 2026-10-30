@@ -41,6 +41,9 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
 - **画布 HUD 桌面避让只在机坞打开时**：`.hud` 的 `right: var(--dock-w)` 仅 `:global(.game-screen.dock-open)` 生效（transition 280ms 同机坞）；
   收起时贴 `max(14px, --safe-r)`——恒定避让会让时间条/得分芯片整体偏左 200px、收集面板悬空 400px（截图实测）。
   连击反馈画布印章是唯一承载（×N + 窗口条 + 5 连里程碑），HUD 无连击胶囊；结算明细 delta=0 显示「与上届/最佳持平」。
+- **含 `<b>` 的文案必须 `{@html}` 渲染**：`levels.ts` 的 `hint` / `chapter.intro` 内嵌 `<b>` 强调（硬编码可信内容），
+  消费点用 `{}` 插值会把标签当纯文本漏出（2026-10-31 破题玄机实测）；现行 `ChapterIntroOverlay` 与 `LevelPicker` 都是 `@html`，
+  新增消费点照做。星图徽章（完美 crown / 精确 target / 专家 gem）的 `title` 已补，别在重构中丢掉。
 - **教学展示条件**：`App.tutorialUp` 加 `engine.isCampaignLevel`（无前缀 id 且非沙盒/无尽）——直奔创作/每日/每周/无尽不再被圆关教学伏击，
   回到战役关时教学如期补上（延迟教学时刻保留）。**沙盒不再 markFlag 教学已看**。
   **沙盒运行态隐藏快进键**（快进 = 跳等待到超时，沙盒无时限，转速键已覆盖速度；两个形似 1× 并排是歧义）。
