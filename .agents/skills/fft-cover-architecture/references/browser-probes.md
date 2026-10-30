@@ -35,6 +35,9 @@
 - **后台标签与 rAF**：Chrome 对后台标签节流 rAF（实测 hidden tab 3 秒 0 帧），测量前必须把标签置前台/活动。
 - **eval 长脚本不可靠**：agent-browser 对长 await 的 eval 有超时/不可靠问题，用两段式（先装状态/监听器，再读取）；
   Svelte 状态更新在微任务批量刷 DOM，点击后同 tick 读到的还是旧值，要等两个 rAF 再断言。
+- **按文本找按钮必须先去空白**（2026-10-31 实测踩坑）：中文按钮的视觉文本带字间空格（textContent 是「继 续 旋 转」），
+  `b.textContent.includes('继续旋转')` 恒不命中；且 `find(...)?.click()` 静默落空、自己拼的返回字符串照常打印，极易误判已点击。
+  正确写法：`[...document.querySelectorAll('button')].find(b => b.textContent.replace(/\s/g, '').includes('继续旋转'))?.click()`。
 - **沙盒里 `ps` 被拒**（`/bin/ps: Operation not permitted`）：查监听进程用 `lsof -nP -iTCP:<port> -sTCP:LISTEN`；
   确认某进程是不是自己起的用 `lsof -a -p <pid> -d cwd -Fn`（看 cwd）或 `lsof -a -p <pid> -Fn | grep <profile 目录名>`。
   **清理只 kill 自己起的**（按端口逐个核对），别人的实例（如用户自己跑着的 dev server）原样留着。

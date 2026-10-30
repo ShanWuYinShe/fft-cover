@@ -33,6 +33,14 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
   音量/音乐只在更多菜单；缩放只靠滚轮/双指 + 画布右下角一个「复位视图」键。主操作文案是人话：**开始旋转 / 结束并结算**
   （引擎 `runLabel` 仍带 ▶/⏸ 字形，渲染前要剥掉，否则和 SVG 图标出现两个三角）。
 - **暂停入口**：运行态指令栏左侧「⏸ 暂停」（Icon 的 `pause`，onclick = keyboardHandler 的 `toggleRun`）+ 空格键；不要挪进更多菜单（两跳且更隐蔽）。
+- **弹层演出聚焦（overlay-dim，2026-10-31）**：暂停卡/结算卡只自带画布内 `--scrim`，画布外固定浮层靠 `GameShell` 的 `overlay-dim` 态压暗——
+  条件 `paused / (done && !resultDismissed) / finale`，把 `.gs-hud/.gs-cmd/.gs-nav/.dock-toggle` 降到 opacity .32 + `pointer-events:none`
+  （此前红色「结束并结算」在暂停卡背后最抢眼，层级倒挂）；「看轨迹」收起态（`engine.resultDismissed=true`，点画布重开结算）**必须不 dim**，背景要可点。
+- **调参台入口是白药丸键**：珊瑚实体 = 主操作专属（开始旋转/下一关），`dock-toggle` 用 `--mat-block` 白卡 + 珊瑚图标；手机竖屏其
+  `bottom` 在时间条之上（cmd-h+52px），与时间条同基准会叠（实测过）。
+- **画布 HUD 桌面避让只在机坞打开时**：`.hud` 的 `right: var(--dock-w)` 仅 `:global(.game-screen.dock-open)` 生效（transition 280ms 同机坞）；
+  收起时贴 `max(14px, --safe-r)`——恒定避让会让时间条/得分芯片整体偏左 200px、收集面板悬空 400px（截图实测）。
+  连击反馈画布印章是唯一承载（×N + 窗口条 + 5 连里程碑），HUD 无连击胶囊；结算明细 delta=0 显示「与上届/最佳持平」。
 - **教学展示条件**：`App.tutorialUp` 加 `engine.isCampaignLevel`（无前缀 id 且非沙盒/无尽）——直奔创作/每日/每周/无尽不再被圆关教学伏击，
   回到战役关时教学如期补上（延迟教学时刻保留）。**沙盒不再 markFlag 教学已看**。
   **沙盒运行态隐藏快进键**（快进 = 跳等待到超时，沙盒无时限，转速键已覆盖速度；两个形似 1× 并排是歧义）。
