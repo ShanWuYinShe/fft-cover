@@ -36,13 +36,19 @@
           <span class="h-badge h-badge--lit font-celestial">{campaignBadge}</span>
         {/if}
         {#if perfectCount > 0}
-          <span class="h-badge"><Icon name="crown" size={12} /> 完美 {perfectCount}</span>
+          <span class="h-badge" title="全星且全清（完美）的关卡数">
+            <Icon name="crown" size={12} /> 完美 {perfectCount}</span
+          >
         {/if}
         {#if exactCount > 0}
-          <span class="h-badge"><Icon name="target" size={12} /> {exactCount}</span>
+          <span class="h-badge" title="拿到「精确解」印的关卡数（拟合度 ≥99%）">
+            <Icon name="target" size={12} /> {exactCount}</span
+          >
         {/if}
         {#if expertCount > 0}
-          <span class="h-badge"><Icon name="gem" size={12} /> {expertCount}</span>
+          <span class="h-badge" title="用专家模式通关的关卡数">
+            <Icon name="gem" size={12} /> {expertCount}</span
+          >
         {/if}
       </div>
     {/if}
@@ -78,7 +84,9 @@
         <span class="lhd-caret">{hintPinned ? '▴' : '▾'}</span>
       </summary>
       <div class="lhd-body">
-        <p class="lhd-text">{engine.level.hint}</p>
+        <!-- hint 文案含 <b> 强调（levels.ts 硬编码可信内容），与 chapter.intro 同源同风格，
+             用 @html 渲染；{} 插值会把标签当纯文本漏出（2026-10-31 实测截图） -->
+        <p class="lhd-text">{@html engine.level.hint}</p>
       </div>
     </details>
   {/if}

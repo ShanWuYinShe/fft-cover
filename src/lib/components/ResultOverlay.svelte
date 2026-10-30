@@ -31,7 +31,8 @@
       const left = Math.max(0, n - got);
       if (left > 0) how = '再收集 ' + left + ' 点即可';
     } else if (g.id === 'exact') {
-      how = '当前拟合度 ' + (fit * 100).toFixed(0) + '% · 需 ≥99%';
+      // 「需≥99%」不拆词：中间的空格会让折行落在「需」后，孤出「≥99%」（实测截图）
+      how = '当前拟合度 ' + (fit * 100).toFixed(0) + '% · 需≥99%';
     }
     return { id: g.id, seal: g.seal, name: g.name, how };
   });

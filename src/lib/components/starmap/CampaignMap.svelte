@@ -172,13 +172,13 @@
               <span class="nm">
                 {def.name}
                 {#if engine.perfectLevels[def.id]}
-                  <i class="pf"><Icon name="crown" size={11} /></i>
+                  <i class="pf" title="完美全清"><Icon name="crown" size={11} /></i>
                 {/if}
                 {#if engine.exactLevels[def.id]}
-                  <i class="pf"><Icon name="target" size={11} /></i>
+                  <i class="pf" title="精确解（拟合度 ≥99%）"><Icon name="target" size={11} /></i>
                 {/if}
                 {#if engine.expertClears[def.id]}
-                  <i class="pf"><Icon name="gem" size={11} /></i>
+                  <i class="pf" title="专家模式通关"><Icon name="gem" size={11} /></i>
                 {/if}
               </span>
               <span class="st" aria-label="{st} 星">
