@@ -43,8 +43,11 @@
   **清理只 kill 自己起的**（按端口逐个核对），别人的实例（如用户自己跑着的 dev server）原样留着。
 - **worktree 里软链 node_modules 会让 `git status` 出现未跟踪项**：`.gitignore` 的 `node_modules/` 只匹配真目录、不匹配软链。
   清理 worktree 前**先 `rm` 这个软链**（删软链不会动主树），否则 `git worktree remove` 会因未跟踪文件失败，而 `--force` 有删穿主树依赖的风险。
-  **`git add -A` 也会把软链带进提交**（2026-10-31 实测：`A node_modules` 混进 commit，靠 `git rm --cached` + amend 补救）——
-  提交前 `git status --short` 见到 node_modules 一律先 `git rm --cached`。
+  **`git add -A` 也会把软链带进提交**（2026-10-31 一天连犯两次：第一次 amend 补救，第二次已合并进 main）——
+  **规定动作顺序：验证完成 → `rm node_modules`（软链）→ 再 `git add -A && git commit`**，把删软链放在提交命令**之前**，
+  不要依赖提交后核对；提交命令里顺带 `git status --short | grep node_modules && exit 1` 做闸。漏拦的后果不止提交污染：
+  该 commit 被合并检出时，symlink 会**覆盖主树真实依赖目录**（实测变成自引用循环链、依赖全失），只能 `rm` 软链 + `pnpm install`
+  + 追加 `git rm --cached` 提交补救（main 不许改写历史，坏 blob 留在旧 commit 里）。
 
 ## CPU 与渲染归因（旧自起 Chrome 管线的实测数据）
 
