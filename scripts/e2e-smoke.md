@@ -12,15 +12,16 @@ pnpm dev -- --port 5199
 agent-browser --session <名> eval "$(cat scripts/e2e-smoke.js)"
 # 4) 刷新后运行第二段（续玩 + UI 抽查）
 
-第二段（刷新后）：
+第二段（刷新后，脚本尾部已内建 `.then(s=>s)` 接桥与 `.catch` 落盘兜底——
+失败时读 `sessionStorage.getItem('__e2ePart2Err')`）：
 
 ```bash
 agent-browser --session <名> eval "$(cat scripts/e2e-smoke-part2.js)"
 ````
 
-期望：`resumed` 以 `custom-` 开头；`reopenBtn=true`（结算卡重开）；`resultBack=true`；`achvCount=22`；`dexChapters=7`；`composerRows=20`；`negLabel=true`；`nameInput=true`；`filterChipOff=true`；`errs` 为空。
+期望：`resumed` 以 `custom-` 开头（多轮 reload 消耗续玩后为当前关 id，属正常）；`reopenBtn=true`（结算卡重开）；`resultBack=true`；`achvCount=22`；`dexChapters=7`；`composerRows=20`；`negLabel=true`；`nameInput=true`；`filterChipOff=true`；`errs` 为空。
 
-## 运行要点（2026-10-13 实测）
+## 运行要点（2026-10-13 实测，2026-10-31 复核修正）
 
 - **必须跑在 dev server**：脚本里 `import('/src/*.ts')` 动态导入源码模块，
   在 `vite preview`（生产产物）上会报 `Failed to fetch dynamically imported module`。
@@ -29,6 +30,12 @@ agent-browser --session <名> eval "$(cat scripts/e2e-smoke-part2.js)"
   `sessionStorage.getItem('__e2eSeg1')`（JSON：`errs` + `steps`）。
 - **每次运行用全新会话**：同一 session 反复导航/重载后 eval 会陆续失效（长会话
   劣化）。换一个 session 名重跑（结束后 `--session <名> close`）。
+  劣化末期的表现是**连最简单的探针都无输出**（2026-10-31 实测：`1+1` 级
+  eval 都静默）——此时不要排查脚本，直接换会话。
+- **part2 静默无输出的诊断顺序**：① 先确认会话未劣化（简单探针有输出）；
+  ② 脚本尾部已内建 catch 落盘，读 `sessionStorage.getItem('__e2ePart2Err')`；
+  ③ 历史坑：`.run-row` 旧选择器与 `const e2` 重复声明都曾让 part2 静默
+  （已修，2026-10-31）。
 - **长脚本 eval 的返回值不被 await**：`(async () => …)()` 形式的脚本会被序列化成
   `{}` 而非等它结算（原生 `new Promise` 反而会被 await 到）。可靠做法二选一：
   结果写进 `sessionStorage` 后另起 eval 读取；或给 async IIFE 接 `.then((s) => s)`

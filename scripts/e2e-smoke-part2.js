@@ -15,7 +15,8 @@
   // 结算卡重开回归锚（第 130 轮）：完成一局 → 收起结算卡 → 运行栏重开
   const S = await import('/src/lib/game/scoring.ts');
   const L2 = await import('/src/lib/game/levels.ts');
-  const e2 = M.engine;
+  // （2026-10-31 修复：这里曾有 const e2 = M.engine 与 13 行重复声明——
+  //   SyntaxError 让整个 part2 静默无输出；M 也从未导入。统一用调试桥 e2）
   e2.loadLevel(L2.LEVEL_DEFS.find((d) => d.id === 'circle'));
   S.solveFromSpectrum(e2.level.spectrum, e2.level.armLimit).forEach((a, i) =>
     e2.setArm(i, { ...a }),
@@ -36,8 +37,9 @@
   );
   eye.click();
   await new Promise((r) => setTimeout(r, 300));
-  // 「📊 结算卡」同样收进运行栏 ⋯ 菜单
-  const runMM = [...document.querySelectorAll('.run-row .mm-btn')][0];
+  // 「📊 结算卡」同样收进运行栏 ⋯ 菜单（2026-10-31：.run-row 是旧版容器名，
+  //   现行指令栏是 .gs-cmd > PlayControls，菜单键 class=.mm-btn）
+  const runMM = [...document.querySelectorAll('.gs-cmd .mm-btn')][0];
   runMM.click();
   await new Promise((r) => setTimeout(r, 300));
   const reopen = [...document.querySelectorAll('.mm-pop button')].find((x) =>
@@ -113,7 +115,17 @@
   );
   playBtn.click();
   await new Promise((r) => setTimeout(r, 300));
-  out.playedName = M.engine.level?.name ?? null; // 期望「冒烟作品」
+  out.playedName = e2.level?.name ?? null; // 期望「冒烟作品」
   out.escClosed = !document.querySelector('.modal');
   return JSON.stringify(out, null, 1);
-})();
+})()
+  // 接桥 + 兜底：eval 只 await 原生 promise；中途 throw 时落盘便于诊断
+  // （2026-10-31：此前 reject 被 eval 静默吞掉，part2 失败无任何输出）
+  .then((s) => s)
+  .catch((e) => {
+    sessionStorage.setItem(
+      '__e2ePart2Err',
+      'FATAL:' + String(e).slice(0, 300),
+    );
+    return 'FATAL(见 sessionStorage.__e2ePart2Err)';
+  });
