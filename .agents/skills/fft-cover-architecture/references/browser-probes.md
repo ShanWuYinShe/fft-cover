@@ -22,6 +22,13 @@
 - **对比度**：像素级逐元素取值 + 命中测试跳过被遮挡元素，比旧 `audit.mjs` 的渐变背景误判可靠。
 - **焦点态 / 暂停浮层**：`focus` 用 `CSS.forcePseudoState` 强制 `:focus-visible` 并对比前后计算属性；`pause` 实拍暂停浮层。
 - **尺寸普查 / 命中区普查 / 信息密度 / 活跃度**：枚举可交互元素 rect；按钮 / 容器 / 发光元素 / 字符数；画布区域连续帧像素变化率 + rAF 帧率。
+- **热区普查有系统误差，别拿桌面视口的 rect 下结论**（2026-10-31 实测）：agent-browser 是桌面 pointer，量到的是
+  桌面 token（26/30/36），触屏上 `pointer:coarse` token 放大（tokens.css:360，34/40/44/56/58）后达标。
+  正确口径是**代码审计 token 消费**：高频件（CanvasHUD 读数键、ArmEditor `.mini-key`、CampaignMap `.nav-btn`/`g-btn--icon`）
+  全走 `--ctl-*` → coarse 达标；视觉必须小的场景用 `::after` 外扩（`base/Button` btn-sm 补 1px 到 40、`Toast` close 补 9px）。
+  新控件照此办理：走 token 或补外扩，不要写死 px。
+- **eval 模拟点击在 Drawer 隐藏态不可靠**：星图抽屉关着时，折叠条里的「创作星轨」按钮 `click()` 触发 handler 但界面无反应
+  （Drawer 挂载条件未知，clicked:true 假阳性）——要测真实路径就先重开抽屉再点；深流程界面留给 Playwright 立项。
 - **量遮挡要按「画布面积占比」而不是「有没有重叠」**：56px 高引导条在 338px 画布上是 15%、在 886px 画布上只有 5%，会被误判为可接受。
 
 ## CDP 侧验证手法（agent-browser 内 eval 可用时）
