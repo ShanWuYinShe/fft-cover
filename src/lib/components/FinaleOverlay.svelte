@@ -141,7 +141,9 @@
           >
         </div>
         <div class="cell">
-          <b class="g-num g-num--gold">{shown[5]}<i>/{seals.total}</i></b><span>本关目标</span>
+          <!-- 数据是全局朱印（sealSummary.done，21 关 × 4 枚），标签曾写
+              「本关目标」——与本关四印制语义错位（2026-10-31 实测截图） -->
+          <b class="g-num g-num--gold">{shown[5]}<i>/{seals.total}</i></b><span>全局朱印</span>
         </div>
         <div class="cell">
           <b class="g-num g-num--gold">{shown[6]}<i>/{seals.chaptersTotal}</i></b><span>章节印</span
