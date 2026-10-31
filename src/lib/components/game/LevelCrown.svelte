@@ -19,7 +19,8 @@
     <span class="crown-eyebrow">{curChapterName}</span>
     <h1 class="crown-title">
       {#if engine.endless}
-        周天无尽 · 第 {engine.endlessWave} 宿
+        <!-- eyebrow 已是「周天无尽 · 演武」，标题再说一遍「周天无尽」是重复 -->
+        第 {engine.endlessWave} 宿
       {:else}
         {engine.level?.name ?? '自由星轨'}
       {/if}

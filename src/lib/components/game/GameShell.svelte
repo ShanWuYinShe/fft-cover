@@ -175,6 +175,7 @@
   .gs-hud,
   .gs-cmd,
   .gs-nav,
+  .gs-dock,
   .dock-toggle {
     transition:
       opacity 240ms ease,
@@ -183,6 +184,7 @@
   .game-screen.overlay-dim .gs-hud,
   .game-screen.overlay-dim .gs-cmd,
   .game-screen.overlay-dim .gs-nav,
+  .game-screen.overlay-dim .gs-dock,
   .game-screen.overlay-dim .dock-toggle {
     opacity: 0.32;
     filter: saturate(0.7);

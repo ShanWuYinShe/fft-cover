@@ -292,9 +292,10 @@
 
   <div class="composer-layout">
     <div class="preview-pane">
+      <!-- 16 字占位文本在左列容器（~190px）里必然截断成「…最多」，缩到 12 字内 -->
       <input
         class="name-input"
-        placeholder="给作品起个名字（可选，最多 12 字）"
+        placeholder="作品名（可选，12 字内）"
         maxlength="12"
         bind:value={levelName}
         onblur={() => saveNamePref(levelName)}
