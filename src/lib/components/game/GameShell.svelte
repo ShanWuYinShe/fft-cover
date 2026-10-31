@@ -14,16 +14,11 @@
 
   const onArmCount = $derived(engine.arms.filter((a) => a.on).length);
   const armLimit = $derived(engine.level?.armLimit ?? 10);
-  /** 暂停/结算演出中：画布外 HUD（顶栏/指令栏/调参入口/底部导航）退到幕后。
-   *  画布内的暂停卡与结算卡自带 --scrim，不受影响；这两态下背景按钮
-   *  也不应可点（此前只有画布区域被遮罩盖住，红色「结束并结算」比卡片
-   *  主按钮还抢眼——层级倒挂，2026-10-31 桌面截图实测）。 */
-  const overlayDim = $derived(
-    engine.phase === 'paused' ||
-      // 结算卡（done）：玩家点「看轨迹」收起后要能操作背景，不 dim
-      (engine.phase === 'done' && !engine.resultDismissed) ||
-      !!engine.finale,
-  );
+  /** 暂停/结算演出中：画布外 HUD（顶栏/指令栏/调参入口/底部导航）退到幕后，
+   *  且 inert 拦键盘（条件与拦截共用 uiState.overlayDim 单一事实源）。
+   *  画布内的暂停卡与结算卡自带 --scrim，不受影响；此前只有画布区域被
+   *  遮罩盖住，红色「结束并结算」比卡片主按钮还抢眼——层级倒挂实测。 */
+  const overlayDim = $derived(uiState.overlayDim);
 </script>
 
 <!-- 星空背景与环境演出 -->
@@ -42,8 +37,11 @@
   class:dock-open={uiState.dockOpen}
   class:overlay-dim={overlayDim}
 >
-  <!-- 顶部座舱天穹 HUD（浮层，背景渐隐让画布透出） -->
-  <div class="gs-hud">
+  <!-- 顶部座舱天穹 HUD（浮层，背景渐隐让画布透出）。
+      暂停/结算时一并 inert：overlay-dim 的 pointer-events 只挡鼠标，
+      Tab 仍会聚焦进压暗的背景（实测 40 个焦点逃逸），Enter 误触
+      「结束并结算」会直接结束本局——inert 才把键盘一并拦住 -->
+  <div class="gs-hud" inert={overlayDim}>
     <TopBar />
   </div>
 
@@ -61,6 +59,7 @@
     class="dock-toggle"
     aria-label={uiState.dockOpen ? '收起调参台' : '展开调参台'}
     aria-expanded={uiState.dockOpen}
+    inert={overlayDim}
     onclick={() => uiState.toggleDock()}
   >
     <span class="dock-toggle-ico" aria-hidden="true">{uiState.dockOpen ? '✕' : '⚙'}</span>
@@ -68,7 +67,7 @@
   </button>
 
   <!-- 右侧机坞：指针调参台 -->
-  <aside class="gs-dock" aria-label="指针调参台">
+  <aside class="gs-dock" aria-label="指针调参台" inert={overlayDim}>
     <div class="dock-head">
       <h2 class="dock-title font-celestial">指针调参台</h2>
       <span class="dock-count font-tabular" title="本关启用的指针数 / 上限">
@@ -88,12 +87,12 @@
   </aside>
 
   <!-- 底部指令栏 -->
-  <div class="gs-cmd">
+  <div class="gs-cmd" inert={overlayDim}>
     <PlayControls />
   </div>
 
   <!-- 移动端底部切换条 -->
-  <div class="gs-nav">
+  <div class="gs-nav" inert={overlayDim}>
     <MobileNav />
   </div>
 </div>

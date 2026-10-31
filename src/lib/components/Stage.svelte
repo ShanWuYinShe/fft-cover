@@ -19,6 +19,7 @@
   } from '../game/audio';
   import { haptic } from '../game/haptics';
   import { starsFor } from '../game/scoring';
+  import { uiState } from '../stores/uiState.svelte';
 
   let canvas: HTMLCanvasElement | undefined = $state();
   /** 自动拟合音效的进度档位（-1 = 未在拟合） */
@@ -1703,6 +1704,7 @@
   class="view-reset"
   title="复位视图（滚轮或双指缩放，Shift/中键/右键拖动或双指平移；双击画布同效）"
   aria-label="复位视图"
+  inert={uiState.overlayDim}
   onclick={resetView}
 >
   ⤢

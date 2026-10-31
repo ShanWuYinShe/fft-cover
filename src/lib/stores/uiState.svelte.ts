@@ -99,6 +99,21 @@ class UIState {
     this.dockOpen = false;
   }
 
+  /**
+   * 暂停/结算演出态（单一事实源）：视觉压暗（GameShell 的 overlay-dim）与
+   * 键盘拦截（各背景浮层 inert）共用同一条件——pointer-events 不拦 Tab，
+   * 视觉暗掉仍可聚焦就是焦点逃逸（2026-10-31 实测暂停态 40 个逃逸焦点、
+   * Enter 误触「结束并结算」会直接结束本局）。「看轨迹」收起态要能操作
+   * 背景，必须豁免。
+   */
+  get overlayDim(): boolean {
+    return (
+      engine.phase === 'paused' ||
+      (engine.phase === 'done' && !engine.resultDismissed) ||
+      !!engine.finale
+    );
+  }
+
   /** 设置分享通知文本，数秒后自动淡出 */
   setShareNote(note: string, timeout = 5200): void {
     this.shareNote = note;

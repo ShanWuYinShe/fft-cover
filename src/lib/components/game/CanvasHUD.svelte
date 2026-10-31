@@ -6,6 +6,9 @@
   import { RUN_DUR, STAR_LEVELS } from '../../game/constants';
   import { starsFor } from '../../game/scoring';
 
+  /** 暂停/结算演出时由 GameArena 传入：整个 HUD 不可聚焦（焦点不逃逸进压暗层） */
+  let { inert = false }: { inert?: boolean } = $props();
+
   const sealDone = $derived(levelGoals(engine.levelGoalState).filter((x) => x.done).length);
 
   /* ---- 运行态信息（第九轮补：原来主游戏屏 95% 是空白，得分/进度/连击都没常驻显示）---- */
@@ -44,8 +47,8 @@
   });
 </script>
 
-<!-- 画布内 HUD：四角贴边读数，中间留给星域 -->
-<div class="hud">
+<!-- 画布内 HUD：四角贴边读数，中间留给星域（暂停/结算时 inert，焦点不逃逸） -->
+<div class="hud" {inert}>
   <!-- 得分：顶部居中（游戏惯例位置）。引擎 engine.score 原来只在结算时可见 -->
   {#if !engine.sandbox}
     <div class="stat-chip stat-score hud-score-top" title="本局得分（连击越高单点得分越高）">

@@ -7,6 +7,7 @@
   import ResultOverlay from '../ResultOverlay.svelte';
   import EndlessResult from '../EndlessResult.svelte';
   import { engine } from '../../game/engine.svelte';
+  import { uiState } from '../../stores/uiState.svelte';
 </script>
 
 <section class="stage-wrap">
@@ -21,8 +22,8 @@
     <!-- 核心渲染视口 -->
     <Stage />
 
-    <!-- 顶部 HUD 叠层 -->
-    <CanvasHUD />
+    <!-- 顶部 HUD 叠层（暂停/结算时随画布级浮层一起 inert，焦点不逃逸） -->
+    <CanvasHUD inert={uiState.overlayDim} />
 
     <!-- 暂停决策菜单 -->
     {#if engine.phase === 'paused' && !engine.sandbox}
