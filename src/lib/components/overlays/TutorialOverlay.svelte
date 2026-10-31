@@ -1,10 +1,23 @@
 <script lang="ts">
   import { engine } from '../../game/engine.svelte';
+  import { uiState } from '../../stores/uiState.svelte';
 
   let { onstart }: { onstart?: () => void } = $props();
 
   function onDismiss(): void {
     engine.markFlag('tutorialSeen');
+    // 按钮承诺「开始调参」就要兑现：窄屏（≤900）被 autoExpandForGuide 的断点
+    // 拦住，引导条钉在收起的抽屉里、教学关掉后看不见（2026-10-31 移动截图实测）。
+    // 竖屏抽屉 min(66dvh,560px) 会盖住星盘中部，不做教学后的静默展开，
+    // 只在玩家点了「开始调参」（明确要去调参）时把抽屉连同引导条一起送达。
+    if (
+      window.matchMedia('(max-width: 900px)').matches &&
+      !uiState.dockOpen &&
+      !uiState.dockAutoDismissed && // 玩家手动收起过 → 尊重意愿，与桌面同口径
+      (engine.showFirstGuide || engine.showEllipseGuide)
+    ) {
+      uiState.dockOpen = true;
+    }
     if (onstart) onstart();
   }
 </script>

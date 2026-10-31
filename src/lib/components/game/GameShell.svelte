@@ -448,6 +448,14 @@
       bottom: calc(min(66dvh, 560px) + 14px);
     }
   }
+  /* 手机横屏：展开时让位到真实抽屉左缘（360px）。无条件让位规则用的
+     --dock-w=400 在横屏会悬空 58px、压住时间条（2026-10-31 实测按钮落
+     x=377，抽屉左缘 484）——放在无条件规则之后按序覆盖（竖屏同模式） */
+  @media (max-width: 900px) and (orientation: landscape) {
+    .game-screen.dock-open .dock-toggle {
+      right: calc(min(360px, 86vw) + 12px);
+    }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .gs-dock,

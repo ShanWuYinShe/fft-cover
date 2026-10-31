@@ -637,6 +637,12 @@
       width: min(300px, 40vw);
       bottom: calc(var(--ctl-lg) + 26px);
     }
+    /* 机坞打开时右上芯片让开真实抽屉宽（360px）：桌面 ≥901 档的避让
+       到不了横屏档，收集/本关目标会钻到抽屉底下（2026-10-31 横屏实测）。
+       时间条随 .hud 一并居中到可见区，不再与让位后的调参按钮重叠 */
+    :global(.game-screen.dock-open) .hud {
+      right: min(360px, 86vw);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
