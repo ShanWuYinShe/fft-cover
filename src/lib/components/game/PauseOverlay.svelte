@@ -48,6 +48,12 @@
     setTimeout(fn, 140);
   }
 
+  /** 挂载即聚焦主按钮：Enter 直接恢复旋转，Tab 也从卡内开始（焦点不逃逸） */
+  let primaryBtn: HTMLButtonElement | undefined = $state();
+  $effect(() => {
+    primaryBtn?.focus();
+  });
+
   function resume(): void {
     leave(() => engine.toggleRun());
   }
@@ -88,6 +94,7 @@
       type="button"
       class="pm-btn primary g-btn g-btn--primary g-btn--lg"
       style="animation-delay: 40ms"
+      bind:this={primaryBtn}
       onclick={resume}
     >
       <Icon name="play" size={14} /> 继 续 旋 转

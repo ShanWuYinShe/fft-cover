@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import GameShell from './lib/components/game/GameShell.svelte';
+  import StarmapDrawer from './lib/components/game/StarmapDrawer.svelte';
   import TitleScreen from './lib/components/TitleScreen.svelte';
   import AchievementsModal from './lib/components/AchievementsModal.svelte';
   import SettingsModal from './lib/components/SettingsModal.svelte';
@@ -219,6 +220,11 @@
 
 <!-- 浮层通知托管 -->
 <ToastHost />
+
+<!-- 星图抽屉：必须在 game-layer 外——overlayUp 含 starMapOpen，留在层内
+     会让抽屉把自己 inert 掉（真实用户无法点选关/开创作器，2026-10-31
+     焦点流审计发现；此前 eval click 绕过 inert 掩盖了它） -->
+<StarmapDrawer />
 
 <!-- 模态弹窗与流程浮层 -->
 {#if uiState.showTitle}

@@ -1,7 +1,6 @@
 <script lang="ts">
   import TopBar from './TopBar.svelte';
   import MobileNav from './MobileNav.svelte';
-  import StarmapDrawer from './StarmapDrawer.svelte';
   import GameArena from './GameArena.svelte';
   import GuideOverlay from './GuideOverlay.svelte';
   import PlayControls from './PlayControls.svelte';
@@ -96,9 +95,6 @@
     <MobileNav />
   </div>
 </div>
-
-<!-- 周天星图抽屉 -->
-<StarmapDrawer />
 
 <style>
   /* ============================================================

@@ -25,6 +25,14 @@
   // SR 进入对话框时播报其名称（aria-labelledby 指向标题）
   const titleId = 'modal-title-' + Math.random().toString(36).slice(2, 8);
 
+  /** 挂载即聚焦对话框容器（tabindex=-1）：背景 game-layer inert 化后触发键
+   *  失焦、焦点会丢到 body（2026-10-31 实测）——聚焦容器让 Tab 从弹层内
+   *  第一个控件开始，读屏也以容器为锚播报。 */
+  let panel: HTMLDivElement | undefined = $state();
+  $effect(() => {
+    panel?.focus();
+  });
+
   function onBackdropClick(e: MouseEvent): void {
     if (e.target === e.currentTarget && onclose) {
       onclose();
@@ -49,6 +57,8 @@
     aria-modal="true"
     aria-labelledby={title ? titleId : undefined}
     aria-label={title ? undefined : '对话框'}
+    tabindex="-1"
+    bind:this={panel}
   >
     <span class="g-corner tl" aria-hidden="true"></span>
     <span class="g-corner tr" aria-hidden="true"></span>

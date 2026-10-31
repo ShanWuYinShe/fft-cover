@@ -26,6 +26,25 @@
       onclose();
     }
   }
+
+  /** 开→聚焦面板（焦点不丢到 body）；关→归还打开前焦点。
+   *  星图抽屉此前收起后焦点悬空（2026-10-31 焦点流审计）。 */
+  let panel: HTMLElement | undefined = $state();
+  let lastTrigger: HTMLElement | null = null;
+  let prevOpen = false;
+  $effect(() => {
+    if (open && !prevOpen) {
+      lastTrigger = document.activeElement as HTMLElement | null;
+      // focus 必须等 visibility 过渡完成：hidden→visible 的离散过渡前半程
+      // 仍取 hidden（260ms 过渡的前 ~130ms），期间 focus() 静默无效——
+      // rAF（16ms）实测照样失败，280ms 是过渡结束后的稳妥点
+      setTimeout(() => panel?.focus(), 280);
+    } else if (!open && prevOpen) {
+      lastTrigger?.focus?.();
+      lastTrigger = null;
+    }
+    prevOpen = open;
+  });
 </script>
 
 <svelte:window onkeydown={onKeydown} />
@@ -39,6 +58,8 @@
   class:open
   style="--drawer-width: {width}"
   aria-hidden={!open}
+  tabindex="-1"
+  bind:this={panel}
 >
   <!-- 抽屉把手：底部抽屉用一根糖果条提示“可推回” -->
   {#if side === 'bottom'}

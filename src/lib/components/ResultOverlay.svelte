@@ -358,7 +358,10 @@
    * 缩放窗口后方向不更新，实测踩到）。
    */
   let narrow = $state(false);
+  /** 挂载即聚焦主按钮：Enter 直接执行主操作（焦点不逃到 body） */
+  let primaryBtn: HTMLButtonElement | undefined = $state();
   onMount(() => {
+    primaryBtn?.focus();
     const mq = window.matchMedia('(max-width: 640px)');
     const sync = (): void => {
       narrow = mq.matches;
@@ -498,7 +501,11 @@
       {/if}
     </div>
     <div class="btns">
-      <button class="g-btn g-btn--primary g-btn--lg primary" onclick={mainAction.fn}>
+      <button
+        class="g-btn g-btn--primary g-btn--lg primary"
+        bind:this={primaryBtn}
+        onclick={mainAction.fn}
+      >
         {mainAction.label}
       </button>
       <!-- 方向自适应：窄屏向下（避开卡片里的星级/得分），桌面向上（避开下方运行栏） -->

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import Icon from './Icon.svelte';
   import { engine } from '../game/engine.svelte';
   import { haptic } from '../game/haptics';
@@ -65,6 +66,11 @@
   /** 大数字：总分与宿位都做 count-up（宿位快一些，像计数器跳到位） */
   let shownScore = $state(0);
   let shownWave = $state(0);
+  /** 挂载即聚焦主按钮（破劫/力竭两分支互斥渲染，同一 ref）：Enter 直接续/重启 */
+  let primaryBtn: HTMLButtonElement | undefined = $state();
+  onMount(() => {
+    primaryBtn?.focus();
+  });
   $effect(() => {
     const stopA = countUp(engine.endlessScore, 600, (v) => (shownScore = v));
     const stopB = countUp(engine.endlessWave, 420, (v) => (shownWave = v));
@@ -128,8 +134,11 @@
         </p>
 
         <div class="actions">
-          <button type="button" class="go g-btn g-btn--primary g-btn--lg" onclick={goNext}
-            >启赴下一宿</button
+          <button
+            type="button"
+            class="go g-btn g-btn--primary g-btn--lg"
+            bind:this={primaryBtn}
+            onclick={goNext}>启赴下一宿</button
           >
           <button type="button" class="ghost-btn g-btn g-btn--ghost" onclick={quit}>
             带着 {engine.endlessScore} 分返回星图
@@ -171,8 +180,11 @@
         </p>
 
         <div class="actions">
-          <button type="button" class="go g-btn g-btn--primary g-btn--lg" onclick={retry}
-            >重启周天璇玑</button
+          <button
+            type="button"
+            class="go g-btn g-btn--primary g-btn--lg"
+            bind:this={primaryBtn}
+            onclick={retry}>重启周天璇玑</button
           >
           <button type="button" class="ghost-btn g-btn g-btn--ghost" onclick={quit}>返回星图</button
           >

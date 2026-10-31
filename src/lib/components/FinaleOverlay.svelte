@@ -50,6 +50,12 @@
     if (e.key === 'Escape') engine.dismissFinale();
   }
 
+  /** 挂载即聚焦主按钮：大成结局的 Enter 直接回到挑战（焦点不悬空到 body） */
+  let primaryBtn: HTMLButtonElement | undefined = $state();
+  $effect(() => {
+    primaryBtn?.focus();
+  });
+
   const reduceMotion = $derived(!!engine.flags.reduceMotion);
 
   /** 战绩数字：0 → 终值 count-up（600ms easeOut，结束帧取终值保证与引擎一致） */
@@ -191,6 +197,7 @@
         <button
           type="button"
           class="primary g-btn g-btn--primary g-btn--lg"
+          bind:this={primaryBtn}
           onclick={() => engine.dismissFinale()}
         >
           继续挑战
