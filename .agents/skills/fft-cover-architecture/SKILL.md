@@ -5,25 +5,25 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
 
 # 傅立叶指针 · 项目架构事实
 
-全部为会话内实测验证的事实（以代码与单测为准）。改动相关区域前先读本文；细节与历史实测数据在 `references/`。
+全部为实测验证的事实（以代码与单测为准）。改动相关区域前先读本文；细节与测量数据在 `references/`。
 
 ## 界面架构（浑天座舱 HUD）
 
 - **信息三层（新控件先归层）**：一级 = 本关目标与下一步 / 画布 / 主操作 / 收集进度（可发光、大字）；
   二级 = 关卡入口 / 星级 / 本关目标 / 重置·更多·设置·成就 / 指针调参台（安静，无发光）；
   三级 = 相位罗盘、四象卡准、刻度尺、倍率矩阵、撤销重做（折进「高级调谐」，**折叠时不挂载**）。
-  量化基线（量法：数按钮 / 容器 / 发光元素 / 正文字符数；当时的 `.workwork/ui-redesign/clutter.mjs` 已随自研管线清理）：桌面游戏屏 65 按钮 / 22 盒子 / 43 发光 / 587 字 → **14 / 5 / 3 / 186**；成就弹窗盒子 47 → 6。
+  量化基线（量法：数按钮 / 容器 / 发光元素 / 正文字符数）：桌面游戏屏 **14 按钮 / 5 盒子 / 3 发光 / 186 字**；成就弹窗盒子 6。
 - **GameShell 是满屏浮层布局**（`.game-screen` 只有 `grid-template-areas: 'stage'` 单区）：舞台铺满整屏，
   顶栏 `--hud-h`(64)、底部指令栏 `--cmd-h`(84)、右侧机坞 `--dock-w`(400)、移动端底部导航 `--tab-h`(60) 全是 `position:fixed` 浮层。
   机坞是右侧滑入抽屉（`.dock-open` 打开，`.panel-hidden` 运行态自动收起）；手机竖屏（≤640 portrait）改为底部抽屉
   `height: min(66dvh, 560px)` 并显示底部导航；桌面窄档 901–1180 机坞缩到 360px；手机横屏走 ≤900 landscape 档。
 - **机坞三段（别再改回去）**：`.dock-head`（标题条）→ `<GuideOverlay/>`（引导条，钉在这、不随内部滚动）→ `.dock-body`（弹性列，内滚）。
-  引导条曾绝对定位在画布内，实测压掉 15.4%（竖屏）/ 26.2%（横屏）画布；挪进机坞后全视口 0%。
+  引导条若绝对定位在画布内，会压掉 15.4%（竖屏）/ 26.2%（横屏）画布；钉在机坞内时全视口 0%。
   **任何"把提示挂回画布"的改动都会重新遮挡目标点环。**
 - **引导期自动展开机坞**：桌面机坞默认收起时引导条随之不可见——引导期（圆/椭圆未毕业 + 编辑态 + ≥901px）由 `uiState.autoExpandForGuide()` 自动展开；
   用户经 `toggleDock` 手动收起后 `dockAutoDismissed` 记住意愿、本会话不再自动展开（程序化 `closeDock` 不算用户手势）。
 - **机坞内容铺满**：`.dock-body` 是弹性列（`display:flex; flex-direction:column`，内滚），`ArmPanel .deck` 与 `ArmEditor .tune`
-  都是 `flex: 1 0 auto`（`.tune` 的 `justify-content` 现为 `flex-start`）。
+  都是 `flex: 1 0 auto`（`.tune` 的 `justify-content` 是 `flex-start`）。
 - **浮层不占画布布局**：HUD / 指令栏 / 机坞都是 fixed 浮层，画布始终铺满整屏；改浮层尺寸只改变遮挡范围，不会改变画布尺寸。
 - **整屏锁死**：`html/body/#app` 是 `height:100dvh + overflow:hidden`，页面不滚动；滚动只发生在 `.gs-dock .dock-body` 与弹层内部。新弹层必须自带上限 + 内滚。
 - **折叠用 `bind:open` + `{#if}`**：Chrome 下 `<details>` 折叠态子元素仍有布局尺寸（`getBoundingClientRect` 非 0），会漏进度量、Tab 顺序与读屏。
@@ -33,17 +33,17 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
   音量/音乐只在更多菜单；缩放只靠滚轮/双指 + 画布右下角一个「复位视图」键。主操作文案是人话：**开始旋转 / 结束并结算**
   （引擎 `runLabel` 仍带 ▶/⏸ 字形，渲染前要剥掉，否则和 SVG 图标出现两个三角）。
 - **暂停入口**：运行态指令栏左侧「⏸ 暂停」（Icon 的 `pause`，onclick = keyboardHandler 的 `toggleRun`）+ 空格键；不要挪进更多菜单（两跳且更隐蔽）。
-- **弹层演出聚焦（overlay-dim，2026-10-31）**：暂停卡/结算卡只自带画布内 `--scrim`，画布外固定浮层靠 `GameShell` 的 `overlay-dim` 态压暗——
+- **弹层演出聚焦（overlay-dim）**：暂停卡/结算卡只自带画布内 `--scrim`，画布外固定浮层靠 `GameShell` 的 `overlay-dim` 态压暗——
   条件 `paused / (done && !resultDismissed) / finale`，把 `.gs-hud/.gs-cmd/.gs-nav/.dock-toggle` 降到 opacity .32 + `pointer-events:none`
-  （此前红色「结束并结算」在暂停卡背后最抢眼，层级倒挂）；「看轨迹」收起态（`engine.resultDismissed=true`，点画布重开结算）**必须不 dim**，背景要可点。
+  （否则红色「结束并结算」会在暂停卡背后最抢眼，层级倒挂）；「看轨迹」收起态（`engine.resultDismissed=true`，点画布重开结算）**必须不 dim**，背景要可点。
 - **调参台入口是白药丸键**：珊瑚实体 = 主操作专属（开始旋转/下一关），`dock-toggle` 用 `--mat-block` 白卡 + 珊瑚图标；手机竖屏其
   `bottom` 在时间条之上（cmd-h+52px），与时间条同基准会叠（实测过）。
 - **画布 HUD 桌面避让只在机坞打开时**：`.hud` 的 `right: var(--dock-w)` 仅 `:global(.game-screen.dock-open)` 生效（transition 280ms 同机坞）；
   收起时贴 `max(14px, --safe-r)`——恒定避让会让时间条/得分芯片整体偏左 200px、收集面板悬空 400px（截图实测）。
   连击反馈画布印章是唯一承载（×N + 窗口条 + 5 连里程碑），HUD 无连击胶囊；结算明细 delta=0 显示「与上届/最佳持平」。
 - **含 `<b>` 的文案必须 `{@html}` 渲染**：`levels.ts` 的 `hint` / `chapter.intro` 内嵌 `<b>` 强调（硬编码可信内容），
-  消费点用 `{}` 插值会把标签当纯文本漏出（2026-10-31 破题玄机实测）；现行 `ChapterIntroOverlay` 与 `LevelPicker` 都是 `@html`，
-  新增消费点照做。星图徽章（完美 crown / 精确 target / 专家 gem）的 `title` 已补，别在重构中丢掉。
+  消费点用 `{}` 插值会把标签当纯文本漏出（实测）；`ChapterIntroOverlay` 与 `LevelPicker` 都是 `@html`，
+  新增消费点照做。星图徽章（完美 crown / 精确 target / 专家 gem）的 `title` 必须有，别在重构中丢掉。
 - **教学展示条件**：`App.tutorialUp` 加 `engine.isCampaignLevel`（无前缀 id 且非沙盒/无尽）——直奔创作/每日/每周/无尽不再被圆关教学伏击，
   回到战役关时教学如期补上（延迟教学时刻保留）。**沙盒不再 markFlag 教学已看**。
   **沙盒运行态隐藏快进键**（快进 = 跳等待到超时，沙盒无时限，转速键已覆盖速度；两个形似 1× 并排是歧义）。
@@ -51,15 +51,15 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
 - **公共件**：`src/styles/game-ui.css`（`.g-btn` / `.g-plate` / `.g-inset` / `.g-label` / `.g-num` / `.g-divider` / `.g-corners` / `.g-lamp` / `.g-scanlines`）；
   尺寸与质感令牌在 `tokens.css`（`--hud-h/--cmd-h/--dock-w/--tab-h`、`--metal-*`、`--face-*`、`--edge*`、`--bevel-*`）。
   `reset.css` 给原生 `button` 去了皮（background/border/padding 清零）——凡按钮必须自己声明背景，否则透明（成就页「白色胶囊」就是这么来的）。
-- **装饰层**：`AmbientField`（浑天环 + 星点 + 暗角）是 `position:fixed; pointer-events:none; z-index:0`；`ScreenFrame` 自糖果星域起是空壳组件
+- **装饰层**：`AmbientField`（浑天环 + 星点 + 暗角）是 `position:fixed; pointer-events:none; z-index:0`；`ScreenFrame` 是空壳组件
   （四角包边已取消，仅为兼容引用保留）。`inert` 门控在 `App.svelte`（有浮层时整个 `.game-layer` 失效，避免 Tab 跑到背景 HUD）。快捷键门控类名必须保留：
   `.modal / .modal-backdrop / .finale / .ch-intro / .title-screen / .tutorial`。
 - 断点细节、超宽屏 HUD、创作器双栏、打卡日历、换肤资产清单、各控件修复口径与验证坑见 `references/ui-layout.md`。
 
 ## 视觉体系：糖果星域
 
-**反模式**：早先的「星图金铜」皮肤同时上六件装饰（回纹带 / 四角铆钉 / 云纹 / 朱印 / 切角 / 内高光），噪声盖过信息，被用户直接否掉
-（评价「整个 UI 太难看」）；现行是明亮卡通（玩具盒）皮肤。改皮肤不要再回退金属拟物风。
+**反模式**：「星图金铜」皮肤同时上六件装饰（回纹带 / 四角铆钉 / 云纹 / 朱印 / 切角 / 内高光），噪声盖过信息
+（评价「整个 UI 太难看」）；现用明亮卡通（玩具盒）皮肤。改皮肤不要回退金属拟物风。
 
 - **三层三色纪律**：60% 中性（白卡 / 浅蓝底）、30% 珊瑚主色（主操作 / 选中 / 铭牌）、10% 点缀（薄荷=成功启用、天蓝=信息、葡萄紫=高级、危险红=结束）。**不允许五色竞争。**
 - **厚度公式**：本体当「侧壁」+ `::before` 当面 + 底部露 3–5px；投影是 0 模糊纯色偏移。
@@ -73,7 +73,7 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
   | 白底上的珊瑚字 | `--coral-deep` 3.77:1 | `--coral-text` #b5431a → 5.55:1 |
   | 珊瑚面上的白字 | 白字 2.6:1 | `--coral-ink` #4a1a00 → 5.6:1 |
   | 薄荷面上的白字 | 白字 2.15:1 | `--mint-ink` #073a34 → 5.9:1 |
-  | 危险面上的白字 | 原 `--face-seal` 3.0:1 | 渐变加深到 #c9332a→#a3201a → 5.3:1 |
+  | 危险面上的白字 | `--face-seal` 3.0:1 | 渐变加深到 #c9332a→#a3201a → 5.3:1 |
   | 未获得星 | `--line-bright` 1.8:1 | #6f96ab → 3.17:1 |
 
   文字色基线：`--text` 10.3:1 / `--muted` 6.3:1 / `--muted-2` 4.8:1。**改面料必须重算字色**（对比度会随面料变亮而掉；铭牌比面板更亮，铭牌上的字用 `--text`）。
@@ -81,7 +81,7 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
   星盘边界只由刻度环与柔光表达。语义色（金目标 #fbbf24 / 青指针 #00f5d4 / 紫轨迹 / 红警示）**硬编码在 `Stage.svelte` 绘制代码里，一个字都不许改**；
   只有 `<style>` 浮层色可动。目标改白厚环 + 金内环的「糖果圈」，连杆加粗到 4.2/5.6 并加圆头。
 - **星盘半径按内容算**，不要按视口短边：`arenaRadius()` 用关卡 `pts`/`curve` 相对中心的外接半径 ×1.5（下限 140，上限短边/2−16）。
-  旧写法 `shortSide/2 - 10` 在竖屏下环比玩法内容大 2.4 倍。
+  反例 `shortSide/2 - 10` 在竖屏下环比玩法内容大 2.4 倍。
 - **"游戏味"四来源**（改 UI 前先想清楚是加装饰还是加反馈）：① 世界是活的（星盘刻度环缓转 + 绕盘扫掠 + 外环/柔光呼吸 + 36 颗星尘 + 目标点呼吸宝石）；
   ② 操作有回弹（按下 0.97、滑杆跨档顿感、律柱通电自下而上填充）；③ 状态有演出（关卡入场卡 1.4s、起跑 1.06→1.0 + 青色扩散环 +「起」字、
   结算星星逐颗弹入 + 分数 count-up）；④ 反馈有力度（收集 = 扩散环 + 6 火花 + 飘字弹跳 + HUD 数字弹跳；每 5 连 = 四边脉冲 + ×N 印章）。
@@ -155,21 +155,21 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
 
 ## 浏览器验证与 e2e
 
-- **浏览器验证统一走 agent-browser**（用户明确要求：不要自研 CDP 管线）。常用：
+- **浏览器验证统一走 agent-browser**（不要自研 CDP 管线）。常用：
   `agent-browser set viewport 1440 900` → `open <url>` → `wait --fn "!!document.querySelector('canvas')"` → `screenshot --if-changed name.png`；
   量指标用 `eval "<表达式>"`（结果自己解析）。**务必 `agent-browser close` 收尾**；全机 owner daemon（`--remote-debugging-port=0` 那批进程）不受影响，别去 kill。
-- **量尺口径**（改布局/对比度/热区前先量；脚本已随 2026-10-21 自研管线清理，按口径用 `agent-browser eval` 重写）：
+- **量尺口径**（改布局/对比度/热区前先量；量尺脚本已随自研管线清理，按口径用 `agent-browser eval` 重写）：
   6 个视口的画布尺寸 / 引导条压画布 % / HUD 压画布 % / 机坞死区 px / 横向溢出 / 页面滚动（`getBoundingClientRect` + 命中测试）；
   像素级对比度（逐元素取实际渲染色 + 跳过被遮挡元素）；`sizes` 尺寸普查 / `touch` 命中区普查（枚举可交互元素 rect）；
   `clutter` 信息密度（按钮 / 容器 / 发光元素 / 字符数）；`juice` 活跃度（画布区域连续帧像素变化率 + rAF 帧率）。
-  仍在库的只有 `.workwork/ui-r7/accept.sh`（format → svelte-check → 311 测试 → build → 9 条红线静态扫描 → 画布未改动校验）。
-  其中「Tests +311 passed」是**历史基线**（当时的测试数）；当前测试数已变化——2026-10-29 实跑 317（316 passed + 1 failed），验收以实跑为准。
+  仍在库的只有 `.workwork/ui-r7/accept.sh`（format → svelte-check → 测试 → build → 9 条红线静态扫描 → 画布未改动校验）。
+  其中的测试数是写死的基线，**验收以实跑为准**（取数：脚本输出的 Tests 行）。
 - **量遮挡要按「画布面积占比」而不是「有没有重叠」**：56px 高引导条在 338px 画布上是 15%、在 886px 画布上只有 5%，会被误判为可接受。
 - **截图看着不对先取数据**：怀疑画布被浮层遮挡用 `document.elementFromPoint` 在画布四个采样点取顶层元素（返回 `CANVAS` 且 `filter:none` 即无遮挡）；
   缩略图里中文像乱码时先取 `textContent` 核对，别急着报 bug。`:focus-visible` 这类截图表达不出的状态用 CDP 强制伪类 + 读计算属性。
 - **e2e 冒烟**：详见 `scripts/e2e-smoke.md`。关键：必须跑 dev server（动态 import 源码在 preview 不可用）；seg1 结果落 `sessionStorage['__e2eSeg1']`；
   每次运行用全新会话（长会话劣化）；「🎨 创作星轨」在「每日一练与无尽演武」折叠条内。eval 空输出/页面空白的第一排查项是 dev server 是否存活
-  （`lsof -iTCP:<端口>`；5200 server 曾静默退出一次，重启即愈）。
+  （`lsof -iTCP:<端口>`；dev server 可能静默退出，重启即愈）。
 - 测量口径、agent-browser 沙盒与提权、CDP 方法、flags 与 CPU 归因、e2e 脚本细节见 `references/browser-probes.md`。
 
 ## 已知限制

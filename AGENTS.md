@@ -19,7 +19,7 @@ pnpm build
 | `fft-cover-architecture` | 架构事实：座舱 HUD 满屏浮层布局、机坞三段、断点、入口去重、糖果星域视觉体系 |
 | `fft-cover-gemini-review` | UI 评审工作流：agent-browser 截图 → Gemini 网页评审 → worktree 落地，含截图场景与视口清单、评审 prompt 约定 |
 
-> 新增 skill 时同步本表——漏索引时系统仍会挂载，但 AI 很难主动想到加载它（2026-10-31 补建本文时本目录有 skill 却没有任何 AGENTS.md）。
+> 新增 skill 时同步本表——漏索引时系统仍会挂载，但 AI 很难主动想到加载它。
 
 ## 维护提醒
 

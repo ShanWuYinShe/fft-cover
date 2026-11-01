@@ -8,12 +8,12 @@ description: fft_cover 的 UI 评审工作流：agent-browser 截图 → Gemini 
 **浏览器自动化一律 agent-browser**。通用机制（上传、菜单渲染、回答采集、后台标签节流、profile/session）见用户级 skill
 `browser-automation-safety` 的 `gemini-web-automation.md`（其 references 目录）；本文件只记 fft_cover 专属流程与红线。
 
-## 红线（用户明确要求，先读）
+## 红线（先读）
 
 - **用户不在场时禁止对其日常 Chrome 发起一切 CDP 连接尝试**。每次新的 DevTools WS 握手都可能触发「正在请求远程控制」弹窗；
   连接失败 ≠ 纯技术问题，而是「每次尝试都在打扰用户」。连接失败一次即停：不写重试循环、不跨轮反复探测，
   把「等用户在场 / 重启 Chrome 后再试」写进交接说明。状态探测优先走无副作用通道（读文件、`lsof`），而不是发起连接本身。
-- **禁止自研 spawn Chrome / 固定端口 CDP 直连管线**（反模式，2026-10-21 用户级红线：Dock 身份劫持的根因）：
+- **禁止自研 spawn Chrome / 固定端口 CDP 直连管线**（反模式，用户级红线：Dock 身份劫持的根因）：
   不再新增或运行 `gemini.mjs`、`ws-retry.mjs`、`auto-chrome.sh`、`r4-gemini-lib.mjs`、`runner-r4.mjs` 这类自研脚本；
   截图与 Gemini 操作统一走 `agent-browser`（wrapper 内置 chrome-guard 与孤儿收割）。owner 掉线交给 wrapper 自愈，不纠缠重连。
 - 不 kill / 不重启用户 Chrome、不反复重连（每次重连 = 弹窗风险）；Gemini 登录态跟着 agent-browser profile 走，别指望别的 profile 自带登录。
@@ -67,7 +67,7 @@ agent-browser screenshot --if-changed .workwork/ui-audit/20-desktop-title.png
 - **复评轮**：标注「同一会话上下文」，逐条说明上轮改了什么（附新截图），只问未触达区域与「是否引入新问题」，避免重复全文。
 - prompt 用中文、不贴代码；要求 Gemini 给可直接落地的 CSS 级建议，不要求它改代码。
 
-## 已踩坑（仍有效）
+## 已知坑
 
 - **Gemini 网页自动化的通用机制不在本文件复写**：后台标签 rAF 导致「上传和工具」菜单里 `input[type=file]` 恒为 0、
   上传与读取回答的判据（`textContent` vs `innerText`）、Flash-Lite / Argon 配额与重渲染复位、未登录形态——统一见用户级 skill
@@ -80,4 +80,4 @@ agent-browser screenshot --if-changed .workwork/ui-audit/20-desktop-title.png
 ## 已知限制
 
 - agent-browser 长会话跑多步 e2e 不可靠（session 劣化），全流程自动化需独立 Playwright 实例（未立项，等用户决定）。
-- Gemini 网页是消费级 SPA：菜单结构会改版、配额与模型随时可能变。以当次实测为准，不要把某次菜单文案写进脚本硬编码。
+- Gemini 网页是消费级 SPA：菜单结构会改版、配额与模型随时可能变。以实测为准，不要把菜单文案写进脚本硬编码。

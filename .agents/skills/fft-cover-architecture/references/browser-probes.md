@@ -1,11 +1,11 @@
 # 浏览器验证、量尺与 CPU 归因
 
-本文件是 SKILL.md「浏览器验证与 e2e」的细节，以及测量口径与历史数据。
+本文件是 SKILL.md「浏览器验证与 e2e」的细节，以及测量口径与基线数据。
 
 ## agent-browser（唯一浏览器入口）
 
-- 用户要求「不要再用自研管线了，必须全部走浏览器自动化的 skill」。**不要再写自建 CDP 截图脚本**；
-  `.workwork/` 下旧的 `capture.mjs`/`audit.mjs` 只作历史参考，不再新增。
+- 浏览器自动化必须走 skill `agent-browser`，不写自研管线。**不要再写自建 CDP 截图脚本**；
+  `.workwork/` 下的 `capture.mjs`/`audit.mjs` 只作参考，不再新增。
 - `agent-browser` 在 workspace-write 沙盒下会因 `~/.agent-browser` 不可写而硬失败；本机约定是**以固有权限运行**它
   （保住 Chrome 原生沙盒 + 全机共享 daemon），不是绕过沙盒。
 - 常用：`agent-browser set viewport 1440 900` → `open <url>` → `wait --fn "!!document.querySelector('canvas')"` →
@@ -14,15 +14,16 @@
 
 ## 量尺脚本与基线
 
-- **脚本已随 2026-10-21 自研管线清理**（`probe4.mjs` / `contrast.mjs` / `check6.mjs` / `sizes.mjs` / `touch.mjs` / `clutter.mjs` / `juice.mjs` 均不在库内），
+- **量尺脚本已随自研管线清理**（`probe4.mjs` / `contrast.mjs` / `check6.mjs` / `sizes.mjs` / `touch.mjs` / `clutter.mjs` / `juice.mjs` 均不在库内），
   按下面口径用 `agent-browser eval` 重写：
   6 个视口的画布尺寸 / 引导条压画布 % / HUD 压画布 % / 机坞死区 px / 横向溢出 / 页面滚动（`getBoundingClientRect` + 命中测试）。
-  历史基线 → 改后：引导条压画布 15.4 / 26.2 / 5.1%（竖屏/横屏/桌面）→ **0 / 0 / 0**；机坞死区 150/330/510 → **0 / 0 / 0**；
-  HUD 压画布手机竖屏 9.2% → 7.7%（收集读数由两行改单行「收集 0/24」；横屏 12.4% 来自「本关目标」行）。（2026-10-31 校正：旧文说该行「只在 ≤700px 高时隐藏」——`CanvasHUD.svelte` 里**没有任何基于高度的隐藏规则**，`@media` 只有 901px/900px/640px+竖屏/900px+横屏/reduced-motion 五组，横屏档 `629-633` 只 `display:none` `.star-meter`；「12.4%」这个数本轮未复测，按历史数字看待。）
-- **对比度**：像素级逐元素取值 + 命中测试跳过被遮挡元素，比旧 `audit.mjs` 的渐变背景误判可靠。
+  基线（当前实现）：引导条压画布 **0 / 0 / 0**（竖屏/横屏/桌面）；机坞死区 **0 / 0 / 0**；HUD 压画布手机竖屏 7.7%（收集读数单行「收集 0/24」）。
+  `CanvasHUD.svelte` 里**没有任何基于高度的隐藏规则**，`@media` 只有 901px/900px/640px+竖屏/900px+横屏/reduced-motion 五组，横屏档 `629-633` 只 `display:none` `.star-meter`；
+  「12.4%」（横屏「本关目标」行）未复测，不要当基线用。
+- **对比度**：像素级逐元素取值 + 命中测试跳过被遮挡元素，比 `audit.mjs` 的渐变背景误判可靠。
 - **焦点态 / 暂停浮层**：`focus` 用 `CSS.forcePseudoState` 强制 `:focus-visible` 并对比前后计算属性；`pause` 实拍暂停浮层。
 - **尺寸普查 / 命中区普查 / 信息密度 / 活跃度**：枚举可交互元素 rect；按钮 / 容器 / 发光元素 / 字符数；画布区域连续帧像素变化率 + rAF 帧率。
-- **热区普查有系统误差，别拿桌面视口的 rect 下结论**（2026-10-31 实测）：agent-browser 是桌面 pointer，量到的是
+- **热区普查有系统误差，别拿桌面视口的 rect 下结论**：agent-browser 是桌面 pointer，量到的是
   桌面 token（26/30/36），触屏上 `pointer:coarse` token 放大（tokens.css:360，34/40/44/56/58）后达标。
   正确口径是**代码审计 token 消费**：高频件（CanvasHUD 读数键、ArmEditor `.mini-key`、CampaignMap `.nav-btn`/`g-btn--icon`）
   全走 `--ctl-*` → coarse 达标；视觉必须小的场景用 `::after` 外扩（`base/Button` btn-sm 补 1px 到 40、`Toast` close 补 9px）。
@@ -36,13 +37,13 @@
 - **:focus-visible 的确定性验证**：截图没法表达焦点态，用 CDP 强制伪类 + 读计算属性：
   `DOM.getDocument` → `DOM.querySelector` → `CSS.forcePseudoState`（`forcedPseudoClasses: ['focus-visible']`）→
   `DOM.resolveNode` + `Runtime.callFunctionOn` 返回 `backgroundColor/boxShadow/color/…` 前后对比。
-  `check6.mjs focus` 就是这么抓到「主操作按钮焦点后金字压金面（2.36:1）」的——截图完全看不出来。
+  截图完全看不出这类问题（例：主操作按钮焦点后金字压金面 2.36:1，靠该探测法抓到）。
 - **渲染复核的探测法**：截图看着「画布变暗了」不要凭肉眼断定，用 `document.elementFromPoint` 在画布四个采样点取顶层元素——
   返回 `CANVAS` 且 `filter:none` 就说明没有浮层遮挡。同理，缩略图里的中文看起来像乱码时，先取 `textContent` 核对，别急着报 bug。
 - **后台标签与 rAF**：Chrome 对后台标签节流 rAF（实测 hidden tab 3 秒 0 帧），测量前必须把标签置前台/活动。
 - **eval 长脚本不可靠**：agent-browser 对长 await 的 eval 有超时/不可靠问题，用两段式（先装状态/监听器，再读取）；
   Svelte 状态更新在微任务批量刷 DOM，点击后同 tick 读到的还是旧值，要等两个 rAF 再断言。
-- **按文本找按钮必须先去空白**（2026-10-31 实测踩坑）：中文按钮的视觉文本带字间空格（textContent 是「继 续 旋 转」），
+- **按文本找按钮必须先去空白**：中文按钮的视觉文本带字间空格（textContent 是「继 续 旋 转」），
   `b.textContent.includes('继续旋转')` 恒不命中；且 `find(...)?.click()` 静默落空、自己拼的返回字符串照常打印，极易误判已点击。
   正确写法：`[...document.querySelectorAll('button')].find(b => b.textContent.replace(/\s/g, '').includes('继续旋转'))?.click()`。
 - **沙盒里 `ps` 被拒**（`/bin/ps: Operation not permitted`）：查监听进程用 `lsof -nP -iTCP:<port> -sTCP:LISTEN`；
@@ -50,13 +51,13 @@
   **清理只 kill 自己起的**（按端口逐个核对），别人的实例（如用户自己跑着的 dev server）原样留着。
 - **worktree 里软链 node_modules 会让 `git status` 出现未跟踪项**：`.gitignore` 的 `node_modules/` 只匹配真目录、不匹配软链。
   清理 worktree 前**先 `rm` 这个软链**（删软链不会动主树），否则 `git worktree remove` 会因未跟踪文件失败，而 `--force` 有删穿主树依赖的风险。
-  **`git add -A` 也会把软链带进提交**（2026-10-31 一天连犯两次：第一次 amend 补救，第二次已合并进 main）——
+  **`git add -A` 也会把软链带进提交**——
   **规定动作顺序：验证完成 → `rm node_modules`（软链）→ 再 `git add -A && git commit`**，把删软链放在提交命令**之前**，
   不要依赖提交后核对；提交命令里顺带 `git status --short | grep node_modules && exit 1` 做闸。漏拦的后果不止提交污染：
   该 commit 被合并检出时，symlink 会**覆盖主树真实依赖目录**（实测变成自引用循环链、依赖全失），只能 `rm` 软链 + `pnpm install`
   + 追加 `git rm --cached` 提交补救（main 不许改写历史，坏 blob 留在旧 commit 里）。
 
-## CPU 与渲染归因（旧自起 Chrome 管线的实测数据）
+## CPU 与渲染归因（自起 Chrome 管线的实测数据）
 
 **反模式**：自起 headless Chrome 时带 `--disable-gpu`——它把 Chrome 打进软件光栅，活动标签渲染 CPU 从 ~12% 涨到 73–87%、
 空实例从 8.6% 涨到 42.4%。现行浏览器统一由 agent-browser 托管，**不要再自己带 flags 起 Chrome**；以下数据只用于识别同类问题。
@@ -75,7 +76,7 @@
 ## e2e 冒烟
 
 详见 `scripts/e2e-smoke.md`。关键：必须跑 dev server（动态 import 源码在 preview 不可用）；seg1 结果落 `sessionStorage['__e2eSeg1']`；
-每次运行用全新会话（长会话劣化）；「🎨 创作星轨」在「每日一练与无尽演武」折叠条内（曾名「更多玩法」）。
+每次运行用全新会话（长会话劣化）；「🎨 创作星轨」在「每日一练与无尽演武」折叠条内。
 - **eval 空输出/页面空白的第一排查项：dev server 是否存活**——dev server 死亡后，页面的动态 import（如 e2e 脚本开头的
   `await import('/src/…')`）会**永久挂起**、新导航报 `ERR_CONNECTION_REFUSED`——会话劣化与 server 死亡症状叠加时，
-  先 `lsof -iTCP:<port>` 验存活（5200 server 曾在深夜静默退出一次，重启即愈）。agent-browser 通用坑见用户级 `browser-automation-safety` skill。
+  先 `lsof -iTCP:<port>` 验存活（dev server 可能静默退出，重启即愈）。agent-browser 通用坑见用户级 `browser-automation-safety` skill。
