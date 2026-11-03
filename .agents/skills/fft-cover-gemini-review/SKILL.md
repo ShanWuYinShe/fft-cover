@@ -14,7 +14,7 @@ description: fft_cover 的 UI 评审工作流：agent-browser 截图 → Gemini 
   连接失败 ≠ 纯技术问题，而是「每次尝试都在打扰用户」。连接失败一次即停：不写重试循环、不跨轮反复探测，
   把「等用户在场 / 重启 Chrome 后再试」写进交接说明。状态探测优先走无副作用通道（读文件、`lsof`），而不是发起连接本身。
 - **禁止自研 spawn Chrome / 固定端口 CDP 直连管线**（反模式，用户级红线：Dock 身份劫持的根因）：
-  不再新增或运行 `gemini.mjs`、`ws-retry.mjs`、`auto-chrome.sh`、`r4-gemini-lib.mjs`、`runner-r4.mjs` 这类自研脚本；
+  禁止新增或运行任何自研截图/Gemini 脚本；
   截图与 Gemini 操作统一走 `agent-browser`（wrapper 内置 chrome-guard 与孤儿收割）。owner 掉线交给 wrapper 自愈，不纠缠重连。
 - 不 kill / 不重启用户 Chrome、不反复重连（每次重连 = 弹窗风险）；Gemini 登录态跟着 agent-browser profile 走，别指望别的 profile 自带登录。
 
@@ -73,7 +73,7 @@ agent-browser screenshot --if-changed .workwork/ui-audit/20-desktop-title.png
   上传与读取回答的判据（`textContent` vs `innerText`）、Flash-Lite / Argon 配额与重渲染复位、未登录形态——统一见用户级 skill
   `browser-automation-safety` 的 `gemini-web-automation.md`（其 references 目录）。
 - **dev server 死了会伪装成页面空白**：eval 空输出 / 脚本挂起时先 `lsof -iTCP:5200 -sTCP:LISTEN` 验存活
-  （本项目 UI 审查会话惯用 5200；`scripts/e2e-smoke.md` 用 5199——两套约定并存，以启动日志里的实际 URL 为准）。
+  （端口约定：UI 评审用 5200，`scripts/e2e-smoke.md` 的 e2e 用 5199；以启动日志里的实际 URL 为准）。
 - **`ps` 在沙盒里被拒**（`/bin/ps: Operation not permitted`）：查监听用 `lsof -nP -iTCP:<port> -sTCP:LISTEN`；
   确认进程归属用 `lsof -a -p <pid> -d cwd -Fn`；清理只 kill 自己起的实例（按端口逐个核对）。
 

@@ -5,7 +5,7 @@
 ## agent-browser（唯一浏览器入口）
 
 - 浏览器自动化必须走 skill `agent-browser`，不写自研管线。**不要再写自建 CDP 截图脚本**；
-  `.workwork/` 下的 `capture.mjs`/`audit.mjs` 只作参考，不再新增。
+  `.workwork/` 下的 `capture.mjs`/`audit.mjs` 只作参考，禁止新增同类脚本。
 - `agent-browser` 在 workspace-write 沙盒下会因 `~/.agent-browser` 不可写而硬失败；本机约定是**以固有权限运行**它
   （保住 Chrome 原生沙盒 + 全机共享 daemon），不是绕过沙盒。
 - 常用：`agent-browser set viewport 1440 900` → `open <url>` → `wait --fn "!!document.querySelector('canvas')"` →
@@ -14,12 +14,10 @@
 
 ## 量尺脚本与基线
 
-- **量尺脚本已随自研管线清理**（`probe4.mjs` / `contrast.mjs` / `check6.mjs` / `sizes.mjs` / `touch.mjs` / `clutter.mjs` / `juice.mjs` 均不在库内），
-  按下面口径用 `agent-browser eval` 重写：
+- **量尺脚本不在库内**，按下面口径用 `agent-browser eval` 重写：
   6 个视口的画布尺寸 / 引导条压画布 % / HUD 压画布 % / 机坞死区 px / 横向溢出 / 页面滚动（`getBoundingClientRect` + 命中测试）。
   基线（当前实现）：引导条压画布 **0 / 0 / 0**（竖屏/横屏/桌面）；机坞死区 **0 / 0 / 0**；HUD 压画布手机竖屏 7.7%（收集读数单行「收集 0/24」）。
-  `CanvasHUD.svelte` 里**没有任何基于高度的隐藏规则**，`@media` 只有 901px/900px/640px+竖屏/900px+横屏/reduced-motion 五组，横屏档 `629-633` 只 `display:none` `.star-meter`；
-  「12.4%」（横屏「本关目标」行）未复测，不要当基线用。
+  `CanvasHUD.svelte` 里**没有任何基于高度的隐藏规则**，`@media` 只有 901px/900px/640px+竖屏/900px+横屏/reduced-motion 五组，横屏档 `629-633` 只 `display:none` `.star-meter`。
 - **对比度**：像素级逐元素取值 + 命中测试跳过被遮挡元素，比 `audit.mjs` 的渐变背景误判可靠。
 - **焦点态 / 暂停浮层**：`focus` 用 `CSS.forcePseudoState` 强制 `:focus-visible` 并对比前后计算属性；`pause` 实拍暂停浮层。
 - **尺寸普查 / 命中区普查 / 信息密度 / 活跃度**：枚举可交互元素 rect；按钮 / 容器 / 发光元素 / 字符数；画布区域连续帧像素变化率 + rAF 帧率。
@@ -37,7 +35,7 @@
 - **:focus-visible 的确定性验证**：截图没法表达焦点态，用 CDP 强制伪类 + 读计算属性：
   `DOM.getDocument` → `DOM.querySelector` → `CSS.forcePseudoState`（`forcedPseudoClasses: ['focus-visible']`）→
   `DOM.resolveNode` + `Runtime.callFunctionOn` 返回 `backgroundColor/boxShadow/color/…` 前后对比。
-  截图完全看不出这类问题（例：主操作按钮焦点后金字压金面 2.36:1，靠该探测法抓到）。
+  截图完全看不出这类问题（例：主操作按钮焦点后金字压金面 2.36:1）。
 - **渲染复核的探测法**：截图看着「画布变暗了」不要凭肉眼断定，用 `document.elementFromPoint` 在画布四个采样点取顶层元素——
   返回 `CANVAS` 且 `filter:none` 就说明没有浮层遮挡。同理，缩略图里的中文看起来像乱码时，先取 `textContent` 核对，别急着报 bug。
 - **后台标签与 rAF**：Chrome 对后台标签节流 rAF（实测 hidden tab 3 秒 0 帧），测量前必须把标签置前台/活动。
@@ -53,11 +51,10 @@
   清理 worktree 前**先 `rm` 这个软链**（删软链不会动主树），否则 `git worktree remove` 会因未跟踪文件失败，而 `--force` 有删穿主树依赖的风险。
   **`git add -A` 也会把软链带进提交**——
   **规定动作顺序：验证完成 → `rm node_modules`（软链）→ 再 `git add -A && git commit`**，把删软链放在提交命令**之前**，
-  不要依赖提交后核对；提交命令里顺带 `git status --short | grep node_modules && exit 1` 做闸。漏拦的后果不止提交污染：
-  该 commit 被合并检出时，symlink 会**覆盖主树真实依赖目录**（实测变成自引用循环链、依赖全失），只能 `rm` 软链 + `pnpm install`
-  + 追加 `git rm --cached` 提交补救（main 不许改写历史，坏 blob 留在旧 commit 里）。
+  不要依赖提交后核对；提交命令里顺带 `git status --short | grep node_modules && exit 1` 做闸。
+  判据：软链一旦被提交并在他处检出，会**覆盖主树真实依赖目录**（自引用循环链、依赖全失）；main 不许改写历史，坏 blob 永久留在旧 commit，只能 `rm` 软链 + `pnpm install` + `git rm --cached` 补救。
 
-## CPU 与渲染归因（自起 Chrome 管线的实测数据）
+## CPU 与渲染归因（识别 `--disable-gpu` 类反模式）
 
 **反模式**：自起 headless Chrome 时带 `--disable-gpu`——它把 Chrome 打进软件光栅，活动标签渲染 CPU 从 ~12% 涨到 73–87%、
 空实例从 8.6% 涨到 42.4%。现行浏览器统一由 agent-browser 托管，**不要再自己带 flags 起 Chrome**；以下数据只用于识别同类问题。

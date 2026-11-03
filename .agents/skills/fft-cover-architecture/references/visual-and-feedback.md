@@ -40,7 +40,7 @@
 
 ## 活跃度可量
 
-活跃度量法（量尺脚本已随自研管线清理）：采样画布区域连续帧的像素变化率 + rAF 帧率——静息 0.29% / 运行 2.8% / 减动效 0%；运行态 61fps。
+活跃度量法（量尺脚本不在库内）：采样画布区域连续帧的像素变化率 + rAF 帧率——静息 0.29% / 运行 2.8% / 减动效 0%；运行态 61fps。
 整体回归口径：编辑态与运行态均 60fps（rAF 计数；30fps 绘制节流不影响 rAF 频率）、0 longtask、控制台零错误——fps 与 longtask 用页面内
 rAF 计数 + `PerformanceObserver('longtask')`，分两次 eval 安装与读取（eval 对长 await 有超时）。
 **测量前必须 `Page.bringToFront` 且用不节流的 Chrome**（`--disable-background-timer-throttling --disable-backgrounding-occluded-windows
@@ -60,7 +60,7 @@ rAF 计数 + `PerformanceObserver('longtask')`，分两次 eval 安装与读取�
 读屏播报（aria-live，优先级链：结算 > 成就 > 过波 > **终局倒计时（urgent 翻转播一次）** > 星级；600ms 防抖；
 **过波分支需 `endlessSurvived` 门控**——续玩恢复的存量波次不播）。
 
-## UI 返工的验收脚本
+## UI 验收脚本
 
 `.workwork/ui-r7/accept.sh`：一次跑完 format → svelte-check → 测试 → build → 9 条红线静态扫描 → 画布未改动校验，输出「N 项通过 / M 项不通过」。
 其中的测试数是写死的基线，**以实跑为准**（取数：脚本输出的 Tests 行）。

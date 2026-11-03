@@ -49,6 +49,6 @@
 
 ## 大成结局（FinaleOverlay）的审计触发配方
 
-该 surface 需全 Campaign 通关才一见，实测可注入触发：localStorage `fft-pointers-best-v1` 写入全部 21 个战役关 id（值 3）
+该 surface 需全 Campaign 通关才一见，实测可注入触发：localStorage `fft-pointers-best-v1` 写入全部战役关 id（值 3；取数：`src/lib/game/campaign.ts` 的章节分组）
 **但留目标关不写**，刷新后全清目标关 → `stopRun` 时 `campaignState` 变为「全三星精通」即触发（含谐波大师成就）。
-500px 窄窗已验证渲染完整（统计行 / 大成印 / 继续挑战）。
+判据：500px 窄窗下统计行 / 大成印 / 继续挑战渲染完整（截图核对）。
