@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { todayKey } from './dates';
 import {
   bestForPrefix,
   calendarRows,
@@ -56,8 +55,10 @@ describe('daily.ts：每日挑战纯计算域', () => {
     expect(settleStreak(r0, '2026-10-09', '2026-10-08')).toEqual({ streak: 1, last: '2026-10-09' });
   });
 
-  it('calendarRows / weekRows：形状正确，today 标记落在今天', () => {
-    const today = todayKey(); // 用真实"今天"，避免测试跨午夜时写死日期失配
+  it('calendarRows / weekRows：形状正确，today 与打卡标记正确', () => {
+    // calendarRows 以显式 today 生成网格：用固定基准日，避免真实日期跨月后
+    // 记录日期（2026-10-01）掉出窗口造成日期炸弹。
+    const today = '2026-10-03';
     const rows = calendarRows(rec, 5, today);
     expect(rows).toHaveLength(5);
     expect(rows[0]).toHaveLength(7);
@@ -70,7 +71,8 @@ describe('daily.ts：每日挑战纯计算域', () => {
     // 未来格子
     expect(flat.filter((c) => c.future).every((c) => c.date > today)).toBe(true);
 
-    const week = weekRows(rec, today);
+    // weekRows 固定统计真实最近 7 天，最后一项必为今天
+    const week = weekRows(rec);
     expect(week).toHaveLength(7);
     expect(week[6].today).toBe(true);
   });

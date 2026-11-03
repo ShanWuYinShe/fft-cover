@@ -80,7 +80,7 @@ export function calendarRows(
   weeks = 5,
   today = dayKey(new Date()),
 ): { date: string; day: number; done: boolean; today: boolean; future: boolean }[][] {
-  const d = new Date();
+  const d = new Date(today + 'T00:00:00');
   const dow = (d.getDay() + 6) % 7; // 0 = 周一
   d.setDate(d.getDate() - dow - (weeks - 1) * 7);
   const rows: { date: string; day: number; done: boolean; today: boolean; future: boolean }[][] =
