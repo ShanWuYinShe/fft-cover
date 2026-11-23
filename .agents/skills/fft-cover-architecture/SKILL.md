@@ -101,8 +101,7 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
   空闲 CPU 主要来自「每帧重画静态背景」（判据：停掉 rAF 降到 0.1%）。
 - **TDZ 白屏**：在 `Stage.svelte` 新增 `let skyGrad = null` 这类缓存变量时，**必须声明在 `resize()` 之前**——
   `resize()` 在组件初始化阶段就被 `$effect` 调用，声明在后面会抛 `ReferenceError: skyGrad is not defined` 并整页白屏。
-- **长文件一律用 node 脚本按字符串替换改**：`read` 工具对长文件会静默截断（`Stage.svelte` 1497 行只回来 1322 行且不报错），
-  直接「读全文 → 回写」会丢掉 175 行。改完 `wc -l` 核对行数、`svelte-check` 复核。
+- **长文件先分页读全、再定点修改**：`read` 工具对长文件会静默截断（`Stage.svelte` 1497 行只回来 1322 行且不报错），直接「读全文 → 回写」会丢掉 175 行；分页读到累计行数等于 `totalLines` 后可整文件写回，否则用 node 脚本按字符串替换或 edit 定点改。改完 `wc -l` 核对行数、`svelte-check` 复核。
 - 帧率/活跃度/CPU 归因的测量口径与禁用 flags 见 `references/browser-probes.md`。
 
 ## 存档与玩法语义
