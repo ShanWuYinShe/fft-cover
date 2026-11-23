@@ -101,7 +101,7 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
   空闲 CPU 主要来自「每帧重画静态背景」（判据：停掉 rAF 降到 0.1%）。
 - **TDZ 白屏**：在 `Stage.svelte` 新增 `let skyGrad = null` 这类缓存变量时，**必须声明在 `resize()` 之前**——
   `resize()` 在组件初始化阶段就被 `$effect` 调用，声明在后面会抛 `ReferenceError: skyGrad is not defined` 并整页白屏。
-- **长文件先分页读全、再定点修改**：`read` 工具对长文件会静默截断（`Stage.svelte` 1497 行只回来 1322 行且不报错），直接「读全文 → 回写」会丢掉 175 行；分页读到累计行数等于 `totalLines` 后可整文件写回，否则用 node 脚本按字符串替换或 edit 定点改。改完 `wc -l` 核对行数、`svelte-check` 复核。
+- **长文件先分页读全、再定点修改**：`read` 工具对长文件会静默截断（`read` 对长文件可能只返回部分内容且不报错；用 `wc -l` 与该次 read 的 `totalLines` 比对，不等即截断），未确认读全时「读全文 → 回写」会丢行；分页读到累计行数等于 `totalLines` 后可整文件写回，否则用 node 脚本按字符串替换或 edit 定点改。改完 `wc -l` 核对行数、`svelte-check` 复核。
 - 帧率/活跃度/CPU 归因的测量口径与禁用 flags 见 `references/browser-probes.md`。
 
 ## 存档与玩法语义
@@ -158,10 +158,10 @@ description: 傅立叶指针（fft_cover）项目架构事实：座舱 HUD 界�
   `agent-browser set viewport 1440 900` → `open <url>` → `wait --fn "!!document.querySelector('canvas')"` → `screenshot --if-changed name.png`；
   量指标用 `eval "<表达式>"`（结果自己解析）。**务必 `agent-browser close` 收尾**；全机 owner daemon（`--remote-debugging-port=0` 那批进程）不受影响，别去 kill。
 - **量尺口径**（改布局/对比度/热区前先量；量尺脚本不在库内，按口径用 `agent-browser eval` 重写）：
-  6 个视口的画布尺寸 / 引导条压画布 % / HUD 压画布 % / 机坞死区 px / 横向溢出 / 页面滚动（`getBoundingClientRect` + 命中测试）；
+  多视口（数量以量尺脚本实际条目为准）的画布尺寸 / 引导条压画布 % / HUD 压画布 % / 机坞死区 px / 横向溢出 / 页面滚动（`getBoundingClientRect` + 命中测试）；
   像素级对比度（逐元素取实际渲染色 + 跳过被遮挡元素）；`sizes` 尺寸普查 / `touch` 命中区普查（枚举可交互元素 rect）；
   `clutter` 信息密度（按钮 / 容器 / 发光元素 / 字符数）；`juice` 活跃度（画布区域连续帧像素变化率 + rAF 帧率）。
-  仍在库的只有 `.workwork/ui-r7/accept.sh`（format → svelte-check → 测试 → build → 9 条红线静态扫描 → 画布未改动校验）。
+  仍在库的只有 `.workwork/ui-r7/accept.sh`（format → svelte-check → 测试 → build → 红线静态扫描（条数以脚本实际条目为准）→ 画布未改动校验）。
   其中的测试数是写死的基线，**验收以实跑为准**（取数：脚本输出的 Tests 行）。
 - **量遮挡按「画布面积占比」判定，不看是否重叠**（例：56px 高引导条在 338px 画布上占 15%、在 886px 画布上只占 5%）。截图异常先取数据再下结论：`document.elementFromPoint` 在画布四角取顶层元素、`textContent` 核对乱码、`:focus-visible` 用 CDP 强制伪类读计算属性。e2e 冒烟必须跑 dev server、seg1 结果落 `sessionStorage['__e2eSeg1']`、每次用全新会话；空输出/白屏先验 dev server 存活（`lsof -iTCP:<端口>`）。
 - 测量口径、agent-browser 沙盒与提权、CDP 方法、flags 与 CPU 归因、e2e 脚本细节见 `references/browser-probes.md`。
