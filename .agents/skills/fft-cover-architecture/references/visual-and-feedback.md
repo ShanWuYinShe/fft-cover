@@ -62,8 +62,9 @@ rAF 计数 + `PerformanceObserver('longtask')`，分两次 eval 安装与读取�
 
 ## UI 验收脚本
 
-`.workwork/ui-r7/accept.sh`：一次跑完 format → svelte-check → 测试 → build → 9 条红线静态扫描 → 画布未改动校验，输出「N 项通过 / M 项不通过」。
-其中的测试数是写死的基线，**以实跑为准**（取数：脚本输出的 Tests 行）。
+验收脚本属临时产物（`.workwork/` 已 gitignore），仓库内没有固定脚本；需要时按
+`format → svelte-check → 测试 → build → 红线静态扫描 → 画布未改动校验` 重写，输出「N 项通过 / M 项不通过」。
+测试数一律以实跑为准（取数：vitest 输出的 Tests 行）。
 扫描器有两条**必须保留的排除规则**，否则全是假阳性：
 ① `!important` 排除 `src/styles/animations.css`（`prefers-reduced-motion` 的标准写法）；
 ② `--pattern-hui`/`--rivet` 只查组件层（`^src/styles/` 排除），令牌定义本身要留作兜底。
